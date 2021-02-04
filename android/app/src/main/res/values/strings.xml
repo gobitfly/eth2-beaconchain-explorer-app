@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Beaconchain</string>
+    <string name="title_activity_main">Beaconchain</string>
+    <string name="package_name">in.beaconcha.mobile</string>
+    <string name="custom_url_scheme">beaconchainmobile</string>
+</resources>

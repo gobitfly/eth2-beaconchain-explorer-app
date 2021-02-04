@@ -1,0 +1,109 @@
+<!-- 
+    Copyright (C) 2020 - 2021 Bitfly GmbH
+    Manuel Caspari (manuel@bitfly.at)
+    
+    This file is part of Beaconchain Dashboard.
+
+    Beaconchain Dashboard is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Beaconchain Dashboard is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<ion-list *ngIf="!onlyGuides" class="first-item-group" class="primary">
+
+  <ion-item lines="none" [routerLink]="['/tabs/validators']">
+    <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+    <ion-label>Add Validators to your Dashboard</ion-label>
+  </ion-item>
+
+  <ion-item lines="none" (click)="login()" *ngIf="!isAlreadyLoggedIn">
+    <ion-icon slot="start" name="log-in-outline"></ion-icon>
+    <ion-label>Or login with beaconcha.in</ion-label>
+  </ion-item>
+
+</ion-list>
+
+<ion-list-header class="first-item-group">
+  <ion-label>Guides & Help</ion-label>
+</ion-list-header>
+
+<ion-list>
+  <ion-item lines="none" (click)="openBrowser('https://launchpad.ethereum.org/faq')">
+    <ion-icon slot="start" name="bulb-outline"></ion-icon>
+    <ion-label>Ethereum 2.0 Guide & FAQ</ion-label>
+  </ion-item>
+
+  <ion-item lines="none" (click)="openBrowser('https://launchpad.ethereum.org/checklist')">
+    <ion-icon slot="start" name="bulb-outline"></ion-icon>
+    <ion-label>Checklist</ion-label>
+  </ion-item>
+
+  <ion-item lines="none" (click)="openBrowser('https://www.attestant.io/posts/defining-attestation-effectiveness/')">
+    <ion-icon slot="start" name="bulb-outline"></ion-icon>
+    <ion-label>Improve Attestation Effectiveness</ion-label>
+  </ion-item>
+
+  <ion-item lines="none"
+    (click)="openBrowser('https://medium.com/@danhwang88/ethereum-2-0-the-first-slash-a-retrospective-5c24a0208d11')">
+    <ion-icon slot="start" name="bulb-outline"></ion-icon>
+    <ion-label>Slashing Retrospective</ion-label>
+  </ion-item>
+</ion-list>
+
+
+<ion-list-header>
+  <ion-label>How to set up a Validator</ion-label>
+</ion-list-header>
+
+<ion-list>
+  <ion-item lines="none"
+    (click)="openBrowser('https://someresat.medium.com/guide-to-staking-on-ethereum-2-0-ubuntu-lighthouse-41de20513b12')">
+    <ion-icon slot="start" name="bulb-outline"></ion-icon>
+    <ion-label>Setup Guide for Lighthouse</ion-label>
+  </ion-item>
+
+  <ion-item lines="none"
+    (click)="openBrowser('https://someresat.medium.com/guide-to-staking-on-ethereum-2-0-ubuntu-prysm-56f681646f74?sk=b61691b713d37802b8345855dc356b02')">
+    <ion-icon slot="start" name="bulb-outline"></ion-icon>
+    <ion-label>Setup Guide for Prysm</ion-label>
+  </ion-item>
+
+  <ion-item lines="none"
+    (click)="openBrowser('https://someresat.medium.com/guide-to-staking-on-ethereum-2-0-ubuntu-nimbus-e86bdee8c550?sk=6d2d96e714d0ec41c702b94bddec5040')">
+    <ion-icon slot="start" name="bulb-outline"></ion-icon>
+    <ion-label>Setup Guide for Nimbus</ion-label>
+  </ion-item>
+
+  <ion-item lines="none"
+    (click)="openBrowser('https://someresat.medium.com/guide-to-staking-on-ethereum-2-0-ubuntu-teku-e4247e7c75a1?sk=6d63b55ebe821bd18788c99fa81e437c')">
+    <ion-icon slot="start" name="bulb-outline"></ion-icon>
+    <ion-label>Setup Guide for Teku</ion-label>
+  </ion-item>
+
+</ion-list>
+
+
+<ion-list-header>
+  <ion-label>Useful Links</ion-label>
+</ion-list-header>
+<ion-list>
+
+  <ion-item lines="none" (click)="openBrowser('https://beaconcha.in')">
+    <ion-icon slot="start" name="cube-outline"></ion-icon>
+    <ion-label>Beaconcha.in Block Explorer</ion-label>
+  </ion-item>
+
+  <ion-item lines="none" (click)="openBrowser('https://reddit.com/r/ethstaker')">
+    <ion-icon slot="start" name="logo-reddit"></ion-icon>
+    <ion-label>r/ethstaker</ion-label>
+  </ion-item>
+</ion-list>

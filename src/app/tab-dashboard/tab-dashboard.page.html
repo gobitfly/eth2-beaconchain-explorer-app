@@ -1,0 +1,54 @@
+<!-- 
+    Copyright (C) 2020 - 2021 Bitfly GmbH
+    Manuel Caspari (manuel@bitfly.at)
+    
+    This file is part of Beaconchain Dashboard.
+
+    Beaconchain Dashboard is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Beaconchain Dashboard is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Dashboard
+    </ion-title>
+  </ion-toolbar>
+  <app-offline *ngIf="!api.connectionStateOK"></app-offline>
+</ion-header>
+
+<ion-content [fullscreen]="true" [scrollEvents]="true" (ionScroll)="onScroll($event)"
+  (ionScrollStart)="onScrollStarted()" (ionScrollEnd)="onScrollEnded()">
+
+  <ion-item class="setup-head" *ngIf="!initialized">
+
+    <div class="inner-setup-head">
+      <ion-icon class="setup-icon" name="color-wand-outline" [ngStyle]="{'opacity': currentY | fadeoutpipe: 100 }">
+      </ion-icon>
+      <h2 i18n="dashboard get started title" [ngStyle]="{'opacity': currentY | fadeoutpipe: 180 }">
+        Let´s get started
+      </h2>
+    </div>
+
+  </ion-item>
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" [disabled]="!initialized">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <app-validator-dashboard [data]="overallData" [currentY]="currentY" [scrolling]="scrolling"
+    [updates]="updates.updates" *ngIf="initialized"></app-validator-dashboard>
+
+  <app-help *ngIf="!initialized"></app-help>
+
+</ion-content>

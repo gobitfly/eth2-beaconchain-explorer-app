@@ -1,0 +1,257 @@
+/* 
+ *  // Copyright (C) 2020 - 2021 Bitfly GmbH
+ *  // Manuel Caspari (manuel@bitfly.at)
+ *  // 
+ *  // This file is part of Beaconchain Dashboard.
+ *  // 
+ *  // Beaconchain Dashboard is free software: you can redistribute it and/or modify
+ *  // it under the terms of the GNU General Public License as published by
+ *  // the Free Software Foundation, either version 3 of the License, or
+ *  // (at your option) any later version.
+ *  // 
+ *  // Beaconchain Dashboard is distributed in the hope that it will be useful,
+ *  // but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  // GNU General Public License for more details.
+ *  // 
+ *  // You should have received a copy of the GNU General Public License
+ *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "~@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "~@ionic/angular/css/normalize.css";
+@import "~@ionic/angular/css/structure.css";
+@import "~@ionic/angular/css/typography.css";
+@import "~@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "~@ionic/angular/css/padding.css";
+@import "~@ionic/angular/css/float-elements.css";
+@import "~@ionic/angular/css/text-alignment.css";
+@import "~@ionic/angular/css/text-transformation.css";
+@import "~@ionic/angular/css/flex-utils.css";
+
+@font-face {
+  font-family: "Varela";
+  font-style: normal;
+  font-weight: normal;
+  src: url("./assets/fonts/Montserrat-Medium.ttf");
+}
+
+ion-button {
+  --box-shadow: none;
+}
+
+.fixed-content {
+  background: #dedede;
+}
+
+.tooltip {
+  background-color: var(--tooltip-background) !important;
+  color: var(--tooltip-textcolor) !important;
+  box-shadow: none !important;
+  border-radius: 9px !important;
+  padding: 8px 14px !important;
+  margin-left: 12px !important;
+}
+
+.tooltip-right::after {
+  border-color: transparent var(--tooltip-background) transparent transparent !important;
+}
+
+ion-header {
+  background: var(--ion-toolbar-background) !important;
+  --background: var(--ion-toolbar-background) !important;
+  --box-shadow: none;
+}
+
+body.dark .alert-wrapper,
+body.dark .loading-wrapper {
+  background: #222222;
+  --background: #222222;
+}
+
+.alert-wrapper,
+.loading-wrapper {
+  border-radius: 16px !important;
+}
+
+.alert-title,
+.loading-content {
+  color: var(--x-alert-primary) !important;
+}
+
+.alert-button {
+  font-weight: bold !important;
+  color: var(--x-alert-primary) !important;
+}
+
+ion-list,
+ion-list-header,
+ion-virtual-scroll {
+  --background: var(--ion-background-color);
+  background: var(--ion-background-color);
+}
+
+.header-md::after {
+  display: none;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Varela";
+  --font-family: "Varela";
+}
+
+ion-toolbar ion-title {
+  --color: var(--x-toolbar-title-color);
+
+  left: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-weight: 400;
+  font-family: "Varela";
+  font-size: 1.4em;
+}
+
+.highcharts-background {
+  fill: var(--background-color);
+}
+.highcharts-container text {
+  fill: var(--text-color);
+}
+.highcharts-subtitle,
+.highcharts-credits,
+.highcharts-axis-title,
+.highcharts-axis-labels,
+.highcharts-data-label,
+.highcharts-drilldown-axis-label,
+.highcharts-legend-box,
+.highcharts-legend-item,
+.highcharts-legend-title,
+.highcharts-title,
+.highcharts-tooltip text {
+  stroke-opacity: 1;
+  color: var(--text-color) !important;
+}
+.highcharts-grid-line {
+  stroke: var(--text-color);
+  stroke-opacity: 0.2;
+}
+.highcharts-tooltip-box,
+.highcharts-label-box {
+  fill: var(--background-color) !important;
+}
+.highcharts-column-series rect.highcharts-point {
+  stroke: var(--background-color);
+}
+
+.highcharts-series path {
+  stroke-linecap: initial;
+}
+
+.positive-value {
+  color: var(--ion-color-success) !important;
+  font-weight: bold;
+}
+
+.negative-value {
+  color: var(--ion-color-danger) !important;
+  font-weight: bold;
+}
+
+.warn-value {
+  color: var(--ion-color-warning) !important;
+  font-weight: bold;
+}
+
+ion-tab-button {
+  --color-selected: var(--ion-tab-button-color-selected);
+  --color: var(--ion-tab-button-color);
+}
+
+ion-label {
+  font-weight: bold;
+}
+
+ion-toolbar ion-buttons ion-button ion-icon {
+  color: var(--x-toolbar-title-color);
+}
+
+ion-item,
+ion-header,
+ion-toolbar {
+  --border-width: 0 !important;
+  --inner-border-width: 0 !important;
+  border-style: none !important;
+}
+
+.fade-in {
+  -webkit-animation: fadein 0.7s;
+  -moz-animation: fadein 0.7s;
+  -ms-animation: fadein 0.7s;
+  -o-animation: fadein 0.7s;
+  animation: fadein 0.7s;
+}
+
+.invisible {
+  opacity: 0;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Firefox < 16 */
+@-moz-keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Safari, Chrome and Opera > 12.1 */
+@-webkit-keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Internet Explorer */
+@-ms-keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,360 @@
+<!-- 
+    Copyright (C) 2020 - 2021 Bitfly GmbH
+    Manuel Caspari (manuel@bitfly.at)
+    
+    This file is part of Beaconchain Dashboard.
+
+    Beaconchain Dashboard is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Beaconchain Dashboard is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<div class="container" [ngClass]="fadeIn" *ngIf="data && api.connectionStateOK" [hidden]="!doneLoading">
+
+  <ion-list class="status">
+    <div lines="none" class="status-container">
+
+      <div [ngStyle]="{'opacity': currentY | fadeoutpipe: 85 }">
+
+        <ion-icon class="status-icon" [class]="data.dashboardState.iconCss" name="{{ data.dashboardState.icon }}">
+        </ion-icon>
+
+      </div>
+
+      <div class="status-text" [ngStyle]="{'opacity': currentY | fadeoutpipe: 195 }">
+        <ion-label class="validator-count" *ngIf="!data.foreignValidator">
+          <strong>{{ data.dashboardState.title }}</strong>
+
+        </ion-label>
+
+        <div class="status-text">
+          <ion-label>
+            {{ data.dashboardState.description }}
+          </ion-label>
+        </div>
+
+        <div class="status-text" *ngIf="data.dashboardState.extendedDescription">
+          <ion-label>
+            {{ data.dashboardState.extendedDescriptionPre }}<strong>{{ data.dashboardState.extendedDescription }}</strong>
+          </ion-label>
+        </div>
+      </div>
+
+    </div>
+  </ion-list>
+
+  <ion-list class="updates">
+
+
+    <span *ngFor="let update of updates">
+      <app-clientupdate [data]="update" *ngIf="update"></app-clientupdate>
+    </span>
+
+    <app-message title="Network struggles with finality" icon="alert-circle-outline" iconStyle="alert"
+      [openUrl]="beaconChainUrl" *ngIf="finalizationIssue"></app-message>
+
+    <app-message title="Network is preparing for liftoff" icon="time-outline" iconStyle="genesis"
+      [openUrl]="beaconChainUrl" *ngIf="awaitGenesis"></app-message>
+
+    <app-message title="Happy Liftoff! Network is now live" icon="rocket-outline" iconStyle="genesis"
+      [openUrl]="beaconChainUrl" *ngIf="earlyGenesis"></app-message>
+
+    <app-message title="Happy Holidays!" icon="gift-outline" iconStyle="genesis" dismissAble="true"
+      openUrlExternal="true" openUrl="https://www.youtube.com/watch?v=N-PyWfVkjZc" *ngIf="theme.isWinterSeason()">
+    </app-message>
+
+    <app-message title="Congrats on your first proposal!" icon="ribbon-outline" iconStyle="genesis" dismissAble="true"
+      dismissKey="first_proposal_executed" confettiOnClick="true" *ngIf="showFirstProposalMsg"></app-message>
+
+
+  </ion-list>
+
+  <ion-list class="first-item-group">
+
+    <ion-item lines="none" *ngIf="data.foreignValidator">
+
+      <ion-label>
+        Unique Index
+      </ion-label>
+      <ion-label class="value">
+        {{ data.foreignValidatorItem.data.validatorindex | number:'1.0':'en-US' }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Balance
+      </ion-label>
+      <ion-label class="value" (click)="switchCurrencyPipe()">
+        {{ data.overallBalance | mcurrency: "GWEI":unit.pref }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="data.foreignValidator">
+
+      <ion-label>
+        Effective Balance
+      </ion-label>
+      <ion-label class="value" (click)="switchCurrencyPipe()">
+        {{ data.effectiveBalance | mcurrency: "GWEI":"ETHER"  }}
+      </ion-label>
+
+    </ion-item>
+  </ion-list>
+
+  <ion-list class="performances">
+
+
+    <ion-item lines="none">
+
+      <ion-label>
+        <span tooltip="Estimated yearly returns, based on the last 7 days" placement="right" trigger="click"
+          hideDelayAfterClick="5000">APR</span>
+      </ion-label>
+      <ion-label class="value" [class]="data.apr | valuestyle:0">
+        {{ data.apr }} %
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="data.attrEffectiveness >= 0">
+
+      <ion-label>
+        <span tooltip="The attestation inclusion effectiveness should be 80% or higher to minimize reward penalties."
+          placement="right" trigger="click" hideDelayAfterClick="5000">
+          Effectiveness
+        </span>
+      </ion-label>
+      <ion-label class="value" [class]="data.attrEffectiveness | valuestyle:80">
+        {{ data.attrEffectiveness }} %
+      </ion-label>
+
+    </ion-item>
+
+  </ion-list>
+
+
+  <ion-list class="performances">
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Last Day
+      </ion-label>
+      <ion-label class="value" [class]="data.performance1d | valuestyle:0" (click)="switchCurrencyPipe()">
+        {{ data.performance1d | mcurrency: "GWEI":unit.pref }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Last Week
+      </ion-label>
+
+      <ion-label class="value" [class]="data.performance7d | valuestyle:0" (click)="switchCurrencyPipe()">
+        {{ data.performance7d | mcurrency: "GWEI":unit.pref }}
+      </ion-label>
+
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Last Month
+      </ion-label>
+
+      <ion-label class="value" [class]="data.performance31d | valuestyle:0" (click)="switchCurrencyPipe()">
+        {{ data.performance31d | mcurrency: "GWEI":unit.pref }}
+      </ion-label>
+
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Total
+      </ion-label>
+
+      <ion-label class="value" [class]="data.performance365d | valuestyle:0" (click)="switchCurrencyPipe()">
+        {{ data.performance365d | mcurrency: "GWEI":unit.pref }}
+      </ion-label>
+
+
+    </ion-item>
+  </ion-list>
+
+
+  <ion-list class="performances">
+
+    <ion-item lines="none" *ngIf="data.bestRank == data.worstRank">
+      <ion-label>
+        <span tooltip="Global rank of this validator, based on last 7 days" placement="right" trigger="click"
+          hideDelayAfterClick="5000">
+          Rank
+        </span>
+      </ion-label>
+
+      <ion-label class="value" (click)="switchRank()">
+        <ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
+
+        <span class="rank-text">
+          {{ data.bestRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:"Top "  }}
+        </span>
+      </ion-label>
+    </ion-item>
+
+
+    <ion-item lines="none" *ngIf="data.bestRank != data.worstRank">
+      <ion-label>
+        <span tooltip="Global rank of your best performing validator, based on last 7 days" placement="right"
+          trigger="click" hideDelayAfterClick="5000">
+          Best Rank
+        </span>
+      </ion-label>
+
+
+      <ion-label class="value" (click)="switchRank()">
+        <ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
+        <span class="rank-text">
+          {{ data.bestRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:"Top " }}
+        </span>
+      </ion-label>
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="data.bestRank != data.worstRank">
+      <ion-label>
+        <span tooltip="Global rank of your worst performing validator, based on last 7 days" placement="right"
+          trigger="click" hideDelayAfterClick="5000">
+          Worst Rank
+        </span>
+
+      </ion-label>
+
+      <ion-label class="value" (click)="switchRank()">
+        <ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
+        <span class="rank-text">
+          {{ data.worstRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:"Top " }}
+        </span>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list class="performances" *ngIf="!chartError">
+    <ion-segment [(ngModel)]="selectedChart" mode="md">
+      <ion-segment-button value="chartIncome" [disabled]="scrolling">
+        <ion-label>Income</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="chartBlocks" *ngIf="chartDataProposals" [disabled]="scrolling">
+        <ion-label>Proposals</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+    <div class="chartcontainer">
+
+      <div class="stat-charts" id="highcharts{{ randomChartId }}" style="width:100%; height:350px;"
+        [hidden]="!chartData || selectedChart != 'chartIncome'"></div>
+      <div class="stat-charts" id="highchartsBlocks{{ randomChartId }}" style="width:100%; height:350px;"
+        [hidden]="!chartDataProposals || selectedChart != 'chartBlocks'"></div>
+
+      <div class="center" *ngIf="!chartData ">
+        <ion-skeleton-text animated style="width:80%;"></ion-skeleton-text>
+      </div>
+
+    </div>
+  </ion-list>
+
+  <ion-list class="performances" *ngIf="!data.foreignValidator">
+
+    <ion-item lines="none" *ngIf="utilizationAvg != -1">
+
+      <ion-label>
+        <span
+          tooltip="Based on your earnings and effective balance, this value indicates how well your validators perform."
+          placement="right" trigger="click" hideDelayAfterClick="5000">
+          Effective Performance
+        </span>
+      </ion-label>
+      <ion-label class="value" [class]="utilizationAvg | valuestyle:80">
+        {{ utilizationAvg }} %
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        <span
+          tooltip="Used to calculate rewards and penalties. Also influences luck on block proposals. Maximum is 32 per validator."
+          placement="right" trigger="click" hideDelayAfterClick="5000">
+          Effective Balance
+        </span>
+      </ion-label>
+      <ion-label class="value" (click)="switchCurrencyPipe()">
+        {{ data.effectiveBalance | mcurrency: "GWEI":"ETHER" }}
+      </ion-label>
+
+    </ion-item>
+  </ion-list>
+
+
+  <ion-list class="performances">
+
+    <ion-item lines="none" *ngIf="(unit.pref != 'ETHER' && unit.pref != 'FINNEY') || currencyPipe != null">
+
+      <ion-label>
+        Ethereum Price
+      </ion-label>
+      <ion-label class="value" (click)="switchCurrencyPipe()">
+        {{ 1 | mcurrency: "ETHER":unit.pref }}
+      </ion-label>
+
+    </ion-item>
+
+
+    <ion-item lines="none">
+      <ion-label>
+        <span tooltip="Last updated timestamp. New data is fetched every epoch (~6 minutes)" placement="right"
+          trigger="click" hideDelayAfterClick="5000">
+          Updated
+        </span>
+      </ion-label>
+      <ion-label class="value">
+        {{ api.lastRefreshed | timeago }}
+      </ion-label>
+
+    </ion-item>
+  </ion-list>
+
+  <ion-list class="performances">
+    <ion-item lines="none" (click)="openBrowser()">
+      <ion-icon slot="end" name="open-outline"></ion-icon>
+      <ion-label>
+        View on beaconcha.in
+      </ion-label>
+
+    </ion-item>
+  </ion-list>
+  <br />
+</div>
+
+
+<div class="container loading-container" *ngIf="(!data || !doneLoading) && api.connectionStateOK">
+  <div class="center">
+    <ion-spinner class="status-icon loading-spinner"></ion-spinner>
+  </div>
+</div>

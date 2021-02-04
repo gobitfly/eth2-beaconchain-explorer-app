@@ -1,0 +1,156 @@
+/* 
+ *  // Copyright (C) 2020 - 2021 Bitfly GmbH
+ *  // Manuel Caspari (manuel@bitfly.at)
+ *  // 
+ *  // This file is part of Beaconchain Dashboard.
+ *  // 
+ *  // Beaconchain Dashboard is free software: you can redistribute it and/or modify
+ *  // it under the terms of the GNU General Public License as published by
+ *  // the Free Software Foundation, either version 3 of the License, or
+ *  // (at your option) any later version.
+ *  // 
+ *  // Beaconchain Dashboard is distributed in the hope that it will be useful,
+ *  // but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  // GNU General Public License for more details.
+ *  // 
+ *  // You should have received a copy of the GNU General Public License
+ *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import "../../../theme/variables.scss";
+
+ion-segment-button {
+  --indicator-height: 0px !important;
+  text-transform: none !important;
+  --ripple-color: transparent !important;
+  //transition: color 0.15s ease;
+  font-size: 1.05em !important;
+  letter-spacing: normal !important;
+  opacity: 1 !important;
+}
+
+.segment-button-checked {
+  color: var(--segment-primary) !important;
+  font-weight: 600 !important;
+}
+
+.status ion-icon {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  padding-bottom: 12px;
+}
+
+.center {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.status {
+  text-align: center;
+  background-color: var(--ion-toolbar-background);
+  padding-bottom: 0px;
+}
+
+.status-icon {
+  margin-top: 7px;
+  font-size: 69px;
+}
+
+.rank-ribbon {
+  font-size: 14px;
+  margin-right: 5px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.rank-text {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.validator-count {
+  font-size: 20px;
+}
+
+.ok {
+  color: var(--ion-color-success);
+}
+
+.warn {
+  color: var(--ion-color-warning);
+}
+
+.err {
+  color: var(--ion-color-danger);
+}
+
+.waiting {
+  color: var(--ion-color-secondary);
+}
+
+.status-text {
+  margin-top: 15px;
+  padding-bottom: 7px;
+  color: var(--x-toolbar-title-color);
+}
+
+.skeleton-content {
+  text-align: center;
+}
+
+.performances {
+  margin-top: 12px;
+}
+
+ion-list {
+}
+
+ion-item {
+  max-width: 92%;
+
+  margin: auto;
+}
+
+.value {
+  text-align: end;
+  font-weight: bold !important;
+  font-size: 1.05em !important;
+}
+
+.chartcontainer {
+  padding-top: 20px;
+  padding-bottom: 10px;
+  width: 97%;
+  margin: auto;
+}
+
+.loading-spinner {
+  margin-top: 55px;
+  margin-bottom: 10px;
+}
+
+.updates {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.first-item-group {
+  margin-top: var(--x-first-item-group-margin-top);
+}
+
+.status-container {
+  padding-bottom: 6px;
+}
+
+.container {
+  background-color: var(--ion-background-color);
+}
+
+.loading-container {
+  height: 100%;
+}

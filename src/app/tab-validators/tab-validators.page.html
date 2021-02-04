@@ -1,0 +1,83 @@
+<!-- 
+    Copyright (C) 2020 - 2021 Bitfly GmbH
+    Manuel Caspari (manuel@bitfly.at)
+    
+    This file is part of Beaconchain Dashboard.
+
+    Beaconchain Dashboard is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Beaconchain Dashboard is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Validators
+    </ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar showCancelButton="focus" enterkeyhint="search" (search)="searchEvent($event)"
+      (ionClear)="cancelSearch()" (ionCancel)="cancelSearch()" placeholder="Public Key / Index / ETH1 Address" animated>
+    </ion-searchbar>
+  </ion-toolbar>
+  <app-offline *ngIf="!api.connectionStateOK"></app-offline>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-item *ngIf="items && items.length > 0 && !loading && initialized" class="top-bar" [class]="fadeIn">
+    <ion-label *ngIf="searchResultMode" i18n="Search Results">Search Results</ion-label>
+    <ion-label *ngIf="!searchResultMode" i18n="My Validators">My Validators</ion-label>
+    <ion-icon slot="end" name="bookmarks-outline" (click)="addAllDialog()"
+      *ngIf="searchResultMode && this.items && items.length > 1"></ion-icon>
+    <ion-icon slot="end" name="close-circle-outline" (click)="removeAllDialog()"
+      *ngIf="!searchResultMode && this.items && items.length > 1"></ion-icon>
+    <ion-icon slot="end" name="sync-circle-outline" (click)="syncRemote()"
+      *ngIf="isLoggedIn && !searchResultMode && this.items && items.length >= 1"></ion-icon>
+  </ion-item>
+
+  <app-message title="Current max limit is 100" icon="warning-outline" iconStyle="warn" msgTitle="Sorry"
+    msgText="Currently this app does not support more than 100 validators. Reach out to us and let us know if that's something you'd be interested in."
+    *ngIf="(items && items.length >= 99) || reachedMaxValidators">
+  </app-message>
+
+  <ion-virtual-scroll [items]="items" approxItemHeight="160px" [itemHeight]="itemHeightFn"
+    *ngIf="items && items.length > 0 && !loading">
+    <div *virtualItem="let item">
+      <app-validator [validator]="item" (click)="presentModal(item)"></app-validator>
+    </div>
+  </ion-virtual-scroll>
+
+  <div class="nothingfound" *ngIf="items && items.length <= 0 && searchResultMode && !loading">
+    <ion-icon name="telescope-outline"></ion-icon>
+    <h2 i18n="Search nothing found title">Nothing found</h2>
+    <ion-label i18n="Search nothing found text">We couldn't find the validators you are looking for.
+      Try searching by Index, Public Key or ETH1 address.</ion-label>
+  </div>
+
+  <div class="nothingfound" *ngIf="items && items.length <= 0 && !searchResultMode && !loading && initialized">
+    <ion-icon name="arrow-up-circle-outline"></ion-icon>
+    <h2 i18n="my validators add title">Add Validators</h2>
+    <ion-label i18n="Search nothing found text">
+      You can add your validators by searching for a public key, validator index or your eth 1 address.
+    </ion-label>
+  </div>
+
+  <div id="container" *ngIf="loading && !initialized" class="fadein fadeout">
+    <div class="center">
+      <ion-spinner class="status-icon loading-spinner"></ion-spinner>
+    </div>
+  </div>
+</ion-content>

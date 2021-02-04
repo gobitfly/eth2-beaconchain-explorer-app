@@ -1,0 +1,23 @@
+platform :ios, '11.0'
+use_frameworks!
+
+# workaround to avoid Xcode caching of Pods that requires
+# Product -> Clean Build Folder after new Cordova plugins installed
+# Requires CocoaPods 1.6 or newer
+install! 'cocoapods', :disable_input_output_paths => true
+
+def capacitor_pods
+  # Automatic Capacitor Pod dependencies, do not delete
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'ByteowlsCapacitorOauth2', :path => '../../node_modules/@byteowls/capacitor-oauth2'
+  pod 'CapacitorNavigationbarnx', :path => '../../node_modules/capacitor-navigationbarnx'
+  # Do not delete
+end
+
+target 'App' do
+  capacitor_pods
+  # Add your Pods here
+  pod 'FirebaseCore' # Add this line
+  pod 'Firebase/Messaging' # Add this line
+end
