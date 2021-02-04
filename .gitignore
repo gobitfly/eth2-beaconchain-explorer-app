@@ -32,3 +32,4 @@ npm-debug.log*
 capacitor.config.json
 /android/app/google-services.json
 /ios/App/GoogleService-Info.plist
+/appassets
