@@ -44,7 +44,7 @@ const { Device } = Plugins;
 const { Browser } = Plugins;
 const { Toast } = Plugins;
 
-const LOCK_KEY = "first_time_push_v5"
+const LOCK_KEY = "first_time_push_v6"
 const LOCKED_STATE = "locked"
 
 @Component({
