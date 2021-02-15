@@ -21,7 +21,7 @@
 import { ApiService } from '../services/api.service';
 import { StorageService, SETTING_NOTIFY_CLIENTUPDATE } from '../services/storage.service';
 import { Injectable } from '@angular/core';
-import { GithubReleaseRequest, GithubReleaseResponse, UserEthClientDeleteRequest, UserEthClientRequest } from '../requests/requests';
+import { GithubReleaseRequest, GithubReleaseResponse } from '../requests/requests';
 
 export interface ETHClient {
     key: string,
@@ -120,48 +120,6 @@ export default class ClientUpdateUtils {
         this.storage.setObject(UPDATE_LOCK, { ts: Date.now() })
     }
 
-    async notifyClientUpdate(client, notify): Promise<boolean> {
-        console.log("notifyClientUpdate", client)
-
-        return this.addRemoteUserClient(
-            client,
-            await this.getLastClosedVersionOrZero(client),
-            notify
-        ).catch((error) => {
-            return false
-        })
-    }
-
-    async deleteRemoteUserClient(clientName_: string): Promise<boolean> {
-        if (!clientName_) return true
-        const clientName = clientName_.toLocaleLowerCase()
-        if (clientName == "none") return true;
-
-        const request = new UserEthClientDeleteRequest(clientName)
-        const response = await this.api.execute(request)
-        const result = request.wasSuccessfull(response)
-        if (!result) {
-            console.warn("Cannot delete client on remote")
-            return false
-        }
-        return true
-    }
-
-    async addRemoteUserClient(clientName_: string, version: number = 0, notify: boolean): Promise<boolean> {
-        if (!clientName_) return true
-        const clientName = clientName_.toLocaleLowerCase()
-        if (clientName == "none") return true;
-
-        const request = new UserEthClientRequest(clientName, version, notify)
-        const response = await this.api.execute(request)
-        const result = request.wasSuccessfull(response)
-        if (!result) {
-            console.warn("Cannot save client on remote")
-            return false
-        }
-        return true
-    }
-
     private async isPreReleaseAllowed() {
         return await this.getUpdateChannel() == "PRERELEASE"
     }
@@ -246,11 +204,6 @@ export default class ClientUpdateUtils {
 
     async dismissRelease(release: Release) {
         this.storage.setObject(LOCAL_UPDATED_KEY + release.client.key, { clientKey: release.client.key, version: release.data.id })
-        this.addRemoteUserClient(
-            release.client.key,
-            release.data.id,
-            await this.areClientUpdatesNotified()
-        )
     }
 
     private async areClientUpdatesNotified() {

@@ -366,44 +366,15 @@ export class NotificationSubsRequest extends APIRequest<ApiTokenResponse> {
   postData: any = {}
   ignoreFails = true
 
-  constructor(eventName: string, enabled: boolean) {
+  constructor(eventName: string, filter: string = null, enabled: boolean) {
     super()
-    this.resource += (enabled ? this.subscribe : this.unsubscribe) + "?event=" + eventName
-  }
-}
-
-export class UserEthClientRequest extends APIRequest<ApiTokenResponse> {
-  resource = "user/clients";
-  method = Method.POST;
-  requiresAuth = true
-  postData: any = {}
-  ignoreFails = true
-
-  constructor(clientName: string, version: number, notify: boolean) {
-    super()
-    this.postData = {
-      clientName: clientName,
-      clientVersion: new BigNumber(version).toString(),
-      notify: notify
+    if (filter != null) {
+      this.resource += (enabled ? this.subscribe : this.unsubscribe) + "?event=" + eventName + "&filter=" + filter
+    } else {
+      this.resource += (enabled ? this.subscribe : this.unsubscribe) + "?event=" + eventName
     }
   }
 }
-
-export class UserEthClientDeleteRequest extends APIRequest<ApiTokenResponse> {
-  resource = "user/clients/delete";
-  method = Method.POST;
-  requiresAuth = true
-  postData: any = {}
-  ignoreFails = true
-
-  constructor(clientName: string) {
-    super()
-    this.postData = {
-      clientName: clientName
-    }
-  }
-}
-
 
 export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
   resource = "user/token";

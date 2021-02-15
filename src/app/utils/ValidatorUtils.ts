@@ -82,6 +82,10 @@ export class ValidatorUtils extends CacheModule {
         return (await this.getMap(await this.getStorageKey())).size > 0
     }
 
+    async localValidatorCount() {
+        return (await this.getMap(await this.getStorageKey())).size
+    }
+
     public async getStorageKey(): Promise<string> {
         return KEYPREFIX + await this.api.getNetworkName()
     }
@@ -253,11 +257,11 @@ export class ValidatorUtils extends CacheModule {
         })
     }
 
-    async postNotifySub(eventName, enabled, silent = true, network: string): Promise<boolean> {
+    async postNotifySub(eventName: string, filter: string = null, enabled, silent = true, network: string): Promise<boolean> {
         const loggedIn = await this.storage.isLoggedIn()
         if (!loggedIn) return false
 
-        const request = new NotificationSubsRequest(eventName, enabled); // this.getToggleFromEvent(eventName)
+        const request = new NotificationSubsRequest(eventName, filter, enabled); // this.getToggleFromEvent(eventName)
         if (network) {
             request.endPoint = network
         }

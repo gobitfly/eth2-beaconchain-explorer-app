@@ -23,6 +23,7 @@ import { Plugins } from "@capacitor/core";
 import * as StorageTypes from "../models/StorageTypes";
 import { findConfigForKey } from '../utils/NetworkData';
 import { CacheModule } from '../utils/CacheModule'
+import BigNumber from 'bignumber.js';
 
 const { Storage } = Plugins;
 
@@ -133,6 +134,16 @@ export class StorageService extends CacheModule {
   async isSubscribedTo(event): Promise<boolean> {
     const notify = await this.getBooleanSetting(SETTING_NOTIFY)
     return notify && await this.getBooleanSetting(event)
+  }
+
+  async getStakingShare(): Promise<BigNumber> {
+    const value = await this.getItem("staking_share")
+    if (!value) return null
+    return new BigNumber(value)
+  }
+
+  async setStakingShare(value: BigNumber){
+    await this.setItem("staking_share", value ? value.toString() : null)
   }
 
   // --- Low level ---

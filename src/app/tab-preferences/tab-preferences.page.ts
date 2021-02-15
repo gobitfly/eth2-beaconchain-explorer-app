@@ -20,6 +20,7 @@
 
 import { Component } from '@angular/core';
 import { ApiService } from '../services/api.service';
+import BigNumber from "bignumber.js";
 import { StorageService, SETTING_NOTIFY, SETTING_NOTIFY_SLASHED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_ATTESTATION_MISSED } from '../services/storage.service';
 import { UnitconvService } from '../services/unitconv.service';
 import { OAuthUtils } from '../utils/OAuthUtils';
@@ -88,6 +89,8 @@ export class Tab3Page {
 
   snowing: boolean
 
+  stakingShare = null
+
   constructor(
     private api: ApiService,
     private oauth: OAuthUtils,
@@ -119,6 +122,8 @@ export class Tab3Page {
     this.allTestNetworks = this.api.getAllTestNetNames()
 
     Device.getInfo().then((result) => this.appVersion = result.appVersion)
+
+    this.storage.getStakingShare().then((result) => this.stakingShare = result)
 
     this.fadeIn = "fade-in"
     setTimeout(() => {
@@ -489,6 +494,64 @@ export class Tab3Page {
   ionViewDidLeave() {
     this.sync.syncAllSettings()
   }
+
+
+  async partialStake() {
+    const validatorCount = await this.validatorUtils.localValidatorCount()
+    const shares = await this.storage.getStakingShare()
+
+    const minShareStake = 0.01 * validatorCount
+    const maxStakeShare = 32 * validatorCount
+    
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Define stake share',
+      message: 'If you own partial amounts of a validator, specify the amount of ether for a custom dashboard.',
+      inputs: [
+        {
+          name: 'share',
+          type: 'number',
+          placeholder: minShareStake + ' - ' + maxStakeShare + " Ether",
+          value: shares
+        }
+      ],
+      buttons: [
+        {
+          text: 'Remove',
+          handler: async (_) => {
+            this.stakingShare = null
+            await this.storage.setStakingShare(this.stakingShare)
+            this.validatorUtils.notifyListeners()
+          }
+        }, {
+          text: 'Save',
+          handler: async (alertData) => {
+            const shares = alertData.share
+            if (shares < minShareStake) {
+              Toast.show({
+                text: 'Share must be at least ' + minShareStake + ' ETH or more'
+              });
+              return
+            }
+
+            if (shares > maxStakeShare) {
+              Toast.show({
+                text: 'Share amount is higher than all of your added validators.'
+              });
+              return
+            }
+            console.log("save staking_share", alertData.share)
+            this.stakingShare = new BigNumber(alertData.share).decimalPlaces(4)
+            await this.storage.setStakingShare(this.stakingShare)
+            this.validatorUtils.notifyListeners()
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
 
   // --- Development methods ---
 

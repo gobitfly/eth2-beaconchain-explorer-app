@@ -24,6 +24,7 @@ import { ValidatorUtils } from '../utils/ValidatorUtils';
 import OverviewController, { OverviewData } from '../controllers/OverviewController';
 import ClientUpdateUtils from '../utils/ClientUpdateUtils';
 import { Plugins, AppState } from '@capacitor/core';
+import { StorageService } from '../services/storage.service';
 const { App } = Plugins;
 
 @Component({
@@ -42,7 +43,8 @@ export class Tab1Page {
   constructor(
     private validatorUtils: ValidatorUtils,
     public api: ApiService,
-    public updates: ClientUpdateUtils
+    public updates: ClientUpdateUtils,
+    private storage: StorageService
   ) {
     this.validatorUtils.registerListener(() => {
       this.refresh()
@@ -98,7 +100,13 @@ export class Tab1Page {
     const attestationPerformance = this.validatorUtils.getAllMyAttestationPerformances().catch((error) => { return null })
     const overviewController = new OverviewController()
     this.updates.checkUpdates()
-    this.overallData = overviewController.proccessDashboard(await validators, await performances, await epoch, await attestationPerformance)
+    this.overallData = overviewController.proccessDashboard(
+      await validators,
+      await performances,
+      await epoch,
+      await attestationPerformance,
+      await this.storage.getStakingShare()
+      )
     this.lastRefreshTs = this.getUnixSeconds()
   }
 

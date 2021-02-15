@@ -19,7 +19,8 @@
  */
 
 import { EpochResponse, PerformanceResponse, ValidatorResponse, AttestationPerformanceResponse } from '../requests/requests';
-import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
+import MathUtils, { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
+import Unit, { convertEthUnits } from '../utils/EthereumUnits'
 import BigNumber from "bignumber.js";
 import { Validator } from '../utils/ValidatorUtils';
 import { formatDate } from '@angular/common';
@@ -72,9 +73,10 @@ export default class OverviewController {
         validators: Validator[],
         performance: PerformanceResponse[],
         currentEpoch: EpochResponse,
-        attestationPerformance: AttestationPerformanceResponse[]
+        attestationPerformance: AttestationPerformanceResponse[],
+        share: BigNumber
     ) {
-        return this.process(validators, performance, currentEpoch, attestationPerformance, false)
+        return this.process(validators, performance, currentEpoch, attestationPerformance, false, share)
     }
 
     proccessDetail(
@@ -83,7 +85,7 @@ export default class OverviewController {
         currentEpoch: EpochResponse,
         attestationPerformance: AttestationPerformanceResponse[]
     ) {
-        return this.process(validators, performance, currentEpoch, attestationPerformance, true)
+        return this.process(validators, performance, currentEpoch, attestationPerformance, true, null)
     }
 
     private process(
@@ -91,17 +93,23 @@ export default class OverviewController {
         performance: PerformanceResponse[],
         currentEpoch: EpochResponse,
         attestationPerformance: AttestationPerformanceResponse[],
-        foreignValidator = false
+        foreignValidator = false,
+        share: BigNumber
     ): OverviewData {
         if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
-        const overallBalance = sumBigInt(validators, cur => cur.data.balance);
         const effectiveBalance = sumBigInt(validators, cur => cur.data.effectivebalance);
+
+        const effectiveBalanceInEth = convertEthUnits(effectiveBalance, Unit.GWEI, Unit.ETHER)
+        const sharePercentage = share ? share.dividedBy(effectiveBalanceInEth).decimalPlaces(4) : new BigNumber(1)
+
+        const overallBalance = sumBigInt(validators, cur => cur.data.balance)
+        
         const validatorCount = validators.length
 
-        const performance1d = sumBigInt(performance, cur => cur.performance1d)
+        const performance1d = sumBigInt(performance, cur => cur.performance1d);
         const performance31d = sumBigInt(performance, cur => cur.performance31d)
-        const performance7d = sumBigInt(performance, cur => cur.performance7d)
+        const performance7d = sumBigInt(performance, cur => cur.performance7d);
         const performance365d = sumBigInt(performance, cur => cur.performance365d)
 
         var attrEffectiveness = -1
@@ -117,16 +125,16 @@ export default class OverviewController {
         const worstRank = findHighest(performance, cur => cur.rank7d)
 
         return {
-            overallBalance: overallBalance,
+            overallBalance: overallBalance.multipliedBy(sharePercentage),
             validatorCount: validatorCount,
             bestRank: bestRank,
             worstRank: worstRank,
 
             attrEffectiveness: attrEffectiveness,
-            performance1d: performance1d,
-            performance31d: performance31d,
-            performance7d: performance7d,
-            performance365d: performance365d,
+            performance1d: performance1d.multipliedBy(sharePercentage),
+            performance31d: performance31d.multipliedBy(sharePercentage),
+            performance7d: performance7d.multipliedBy(sharePercentage),
+            performance365d: performance365d.multipliedBy(sharePercentage),
             dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator),
             lazyLoadChart: true,
             lazyChartValidators: getValidatorQueryString(validators, 2000, 99),

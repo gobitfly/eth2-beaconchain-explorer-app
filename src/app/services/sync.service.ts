@@ -146,24 +146,41 @@ export class SyncService {
         return this.updateRemoteGeneralNotifySettings(currentValue)
       }
     } else if (actionEvent == SyncActionEvent.NOTIFY_CLIENTUPDATE) {
-      return async (_) => {
-        const currentValue = await this.storage.getBooleanSetting(key)
-        return this.getClientUpdateNotifySyncAction(currentValue)
-      }
-    } else if (actionEvent == SyncActionEvent.ETH2_UPDATE) {
-      return async () => {
-        return this.getClientUpdateSyncAction(ETH2_CLIENT_SAVED)
-      }
+     return this.getClientUpdateNotifySyncAction()
+    } 
+    else if (actionEvent == SyncActionEvent.ETH2_UPDATE) {
+      return this.getClientUpdateSyncAction(ETH2_CLIENT_SAVED)
     } else if (actionEvent == SyncActionEvent.ETH1_UPDATE) {
-      return async () => {
-        return this.getClientUpdateSyncAction(ETH1_CLIENT_SAVED)
-      }
+      return this.getClientUpdateSyncAction(ETH1_CLIENT_SAVED)
     }
 
+    return this.getNotifySubSyncAction(key, null)
+  }
+
+  async getClientUpdateFilter(clientKey): Promise<any> {
+    const client = await this.updateUtils.getClient(clientKey)
+    if (!client) {
+      return new Error("No clients configured");
+    }
+    return client.toLocaleLowerCase()
+  }
+
+  getNotifySubSyncAction (key, filter: Promise<any> | null) {
     return async (syncChange) => {
       const currentValue = await this.storage.getBooleanSetting(key)
+
+      var resolvedFilter = filter ? await filter : null
+      if(resolvedFilter && resolvedFilter instanceof Error){
+        console.log("Error resolving filter", resolvedFilter)
+        // this case only fails if no eth clients are configured and we want to sync
+        // client update notification settings. In this case, we drop the sync request
+        // since there is nothing to sync (returning true)
+        return true
+      }
+      
       return this.validatorUtils.postNotifySub(
         syncChange.eventName,
+        resolvedFilter,
         currentValue,
         true,
         syncChange.network
@@ -185,22 +202,37 @@ export class SyncService {
     return SyncActionEvent.NOTIFICATIONS
   }
 
-  private async getClientUpdateNotifySyncAction(currentValue: boolean): Promise<boolean> {
-    const eth1 = await this.updateUtils.notifyClientUpdate(await this.storage.getItem(ETH1_CLIENT_SAVED), currentValue)
-    const eth2 = await this.updateUtils.notifyClientUpdate(await this.storage.getItem(ETH2_CLIENT_SAVED), currentValue)
-    return eth1 && eth2
+  private getClientUpdateNotifySyncAction() {
+    const eth2Success = this.getNotifySubSyncAction(SETTING_NOTIFY_CLIENTUPDATE,
+      this.getClientUpdateFilter(ETH2_CLIENT_SAVED)
+    )
+
+    const eth1Success = this.getNotifySubSyncAction(SETTING_NOTIFY_CLIENTUPDATE,
+      this.getClientUpdateFilter(ETH1_CLIENT_SAVED)
+    )
+
+    return async (syncChange): Promise<boolean> => {
+      return await eth1Success(syncChange) && await eth2Success(syncChange)
+    }
   }
 
-  private async getClientUpdateSyncAction(key): Promise<boolean> {
-    const oldClient = await this.getDeleteOldClient(key)
-    if (oldClient) {
-      const deleted = this.updateUtils.deleteRemoteUserClient(oldClient)
-      if (!deleted) return deleted
-      this.setDeleteOldClient(key, null)
+  private getClientUpdateSyncAction(key){
+    return async (syncChange) => {
+      const oldClient = await this.getDeleteOldClient(key)
+      if (oldClient) {
+        const deleted = this.validatorUtils.postNotifySub(
+            syncChange.eventName,
+            oldClient.toLocaleLowerCase(),
+            false,
+            true,
+            syncChange.network
+          )
+        if (!deleted) return deleted
+        this.setDeleteOldClient(key, null)
+      }
+      const filter = this.getClientUpdateFilter(key)
+      return this.getNotifySubSyncAction(SETTING_NOTIFY_CLIENTUPDATE, filter)(syncChange)
     }
-    const client = await this.updateUtils.getClient(key)
-    const notify = await this.storage.getBooleanSetting(SETTING_NOTIFY_CLIENTUPDATE)
-    return this.updateUtils.addRemoteUserClient(client, await this.updateUtils.getLastClosedVersionOrZero(client), notify)
   }
 
   private async updateRemoteGeneralNotifySettings(value): Promise<boolean> {
@@ -237,7 +269,7 @@ export class SyncService {
     const oldValue = await this.updateUtils.getETH2Client()
     const changed = await this.updateUtils.setETH2Client(value)
     if (changed) {
-      this.setLastChanged(ETH2_CLIENT_SAVED, ETH2_CLIENT_SAVED)
+      this.setLastChanged(ETH2_CLIENT_SAVED, "eth_client_update")
       this.setDeleteOldClient(ETH2_CLIENT_SAVED, oldValue)
     }
   }
@@ -246,7 +278,7 @@ export class SyncService {
     const oldValue = await this.updateUtils.getETH1Client()
     const changed = await this.updateUtils.setETH1Client(value)
     if (changed) {
-      this.setLastChanged(ETH1_CLIENT_SAVED, ETH1_CLIENT_SAVED)
+      this.setLastChanged(ETH1_CLIENT_SAVED, "eth_client_update")
       this.setDeleteOldClient(ETH1_CLIENT_SAVED, oldValue)
     }
   }
@@ -275,7 +307,7 @@ export class SyncService {
 
   changeNotifyClientUpdate(key: string, value: boolean) {
     this.storage.setBooleanSetting(key, value)
-    this.setLastChanged(key, key)
+    this.setLastChanged(key, "eth_client_update")
   }
 
   private async setLastSynced(key: string, event: string, value: number = Date.now()) {

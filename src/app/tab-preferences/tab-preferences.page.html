@@ -130,8 +130,7 @@
         (ionChange)="notifyEventToggle('validator_attestation_missed')" slot="end"></ion-toggle>
     </ion-item>
 
-    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized" *ngIf="false">
-      <!-- TODO -->
+    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
       <ion-label i18n="Setting client update notifications">
         Client Updates
@@ -183,6 +182,13 @@
   </ion-list-header>
 
   <ion-list>
+
+    <ion-item lines="none" (click)="partialStake()">
+      <ion-icon slot="start" name="pie-chart-outline"></ion-icon>
+      <ion-label>Stake Share</ion-label>
+      <ion-label slot="end" class="selected-option" *ngIf="stakingShare == null">Full</ion-label>
+      <ion-label slot="end" class="selected-option" *ngIf="stakingShare != null">{{ stakingShare }} Ether</ion-label>
+    </ion-item>
 
     <ion-item lines="none">
       <ion-icon slot="start" name="planet-outline"></ion-icon>
