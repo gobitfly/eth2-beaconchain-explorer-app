@@ -35,6 +35,11 @@
         <ion-label class="smaller-info"
           *ngIf="validator.searchAttrEffectiveness && validator.searchAttrEffectiveness != -1">Effectiveness:
           {{ validator.searchAttrEffectiveness }}%</ion-label>
+
+        <ion-label class="smaller-info"
+          *ngIf="validator.data.lastattestationslot">Last Attestation:
+          {{ validator.data.lastattestationslot }}</ion-label>
+          
       </div>
 
       <ion-icon slot="end" name="bookmark-outline" *ngIf="!tagged" (click)="tag($event)"></ion-icon>
