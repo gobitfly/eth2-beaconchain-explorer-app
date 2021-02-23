@@ -126,6 +126,7 @@ export interface ValidatorResponse {
   validatorindex: number;
   withdrawableepoch: number;
   withdrawalcredentials: string;
+  status: string;
 }
 
 export interface PerformanceResponse {
@@ -158,11 +159,12 @@ export interface EpochResponse {
   orphanedblocks: number,
   proposedblocks: number,
   proposerslashingscount: BigNumber,
-  scheduledblocks: BigNumber,
+  scheduledblocks: number,
   totalvalidatorbalance: BigNumber,
   validatorscount: number,
   voluntaryexitscount: number,
-  votedether: BigNumber
+  votedether: BigNumber,
+  lastCachedTimestamp: number
 }
 
 export interface BalanceHistoryResponse {

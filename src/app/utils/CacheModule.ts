@@ -80,7 +80,7 @@ export class CacheModule {
         this.cache[this.getKey(key)] = null
     }
 
-    protected invalidateAllCache() {
+    invalidateAllCache() {
         this.cache = new Map()
     }
 

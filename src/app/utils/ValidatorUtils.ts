@@ -340,6 +340,11 @@ export class ValidatorUtils extends CacheModule {
         const request = new EpochRequest(epoch)
         const response = await this.api.execute(request)
         const result = request.parse(response)[0]
+        if (response.request.fromCache != true) {
+            await this.storage.setLastEpochRequestTime(Date.now())
+        }
+        const lastCachedTime = await this.storage.getLastEpochRequestTime()
+        result.lastCachedTimestamp = lastCachedTime
 
         this.putCache(await this.getCachedEpochKey(), result)
         return result

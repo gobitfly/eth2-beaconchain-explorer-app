@@ -98,7 +98,11 @@ export class Tab1Page {
     const performances = this.validatorUtils.getAllMyPerformances().catch((error) => { return [] })
     const epoch = this.validatorUtils.getRemoteCurrentEpoch().catch((error) => { return null })
     const attestationPerformance = this.validatorUtils.getAllMyAttestationPerformances().catch((error) => { return null })
-    const overviewController = new OverviewController()
+    const overviewController = new OverviewController(() => {
+      if (this.lastRefreshTs + 30 > this.getUnixSeconds()) return
+      this.api.invalidateCache()
+      this.refresh()
+    })
     this.updates.checkUpdates()
     this.overallData = overviewController.proccessDashboard(
       await validators,

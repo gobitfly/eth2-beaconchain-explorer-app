@@ -22,13 +22,12 @@ import { Injectable } from '@angular/core';
 import axios, { AxiosResponse } from "axios";
 import { APIRequest, Method, RefreshTokenRequest } from "../requests/requests";
 import localforage from "localforage";
-import { setupCache } from "axios-cache-adapter";
+import { IAxiosCacheAdapterOptions, setupCache } from "axios-cache-adapter";
 import { StorageService } from './storage.service';
 import { ApiNetwork } from '../models/StorageTypes';
 import { isDevMode } from "@angular/core"
 import { Mutex } from 'async-mutex';
 import { MAP } from '../utils/NetworkData'
-import rateLimit from 'axios-rate-limit';
 
 const LOGTAG = "[ApiService]";
 
@@ -41,7 +40,7 @@ const cache = setupCache({
   maxAge: 6 * 60 * 1000, // 6 min cache time
   store: forageStore,
   readHeaders: false,
-  exclude: { query: false }
+  exclude: { query: false },
 });
 
 const SERVER_TIMEOUT = 25000
@@ -73,18 +72,18 @@ export class ApiService {
     this.updateNetworkConfig()
   }
 
-  private http =
-    //rateLimit(
-    axios.create({
+  private http = axios.create({
       timeout: SERVER_TIMEOUT,
-      adapter: cache.adapter,
-      /*headers: {
-        'Content-Type': 'application/json',
-        "Accept": "application/json",
-      },*/
-    }//),
-      //{ maxRequests: 50, perMilliseconds: 300000 } 
-    );
+      adapter: cache.adapter
+    }
+  );
+
+  invalidateCache() {
+    console.log("invalidating request cache")
+    // @ts-ignore
+    cache.store.clear()
+    this.storage.invalidateAllCache()
+  }
 
   async updateNetworkConfig() {
     this.networkConfig = this.storage.getNetworkPreferences()

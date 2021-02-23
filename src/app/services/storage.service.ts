@@ -146,6 +146,18 @@ export class StorageService extends CacheModule {
     await this.setItem("staking_share", value ? value.toString() : null)
   }
 
+
+  async setLastEpochRequestTime(time: number) {
+    await this.setObject("last_epoch_time", { ts: time })
+  }
+ 
+  async getLastEpochRequestTime() {
+    const result = await this.getObject("last_epoch_time")
+    if (!result || !result.ts) return Date.now()
+    return result.ts
+  }
+
+
   // --- Low level ---
 
   async setObject(key: string, value: any) {

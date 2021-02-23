@@ -23,6 +23,7 @@ import { ValidatorUtils, Validator, getDisplayName, SAVED } from '../../utils/Va
 import { ModalController } from '@ionic/angular';
 import OverviewController from '../../controllers/OverviewController';
 import { fromEvent, Subscription } from 'rxjs';
+import { ApiService } from 'src/app/services/api.service';
 
 @Component({
   selector: 'app-validatordetail',
@@ -42,8 +43,10 @@ export class ValidatordetailPage implements OnInit {
 
   private backbuttonSubscription: Subscription;
 
-  constructor(private validatorUtils: ValidatorUtils,
-    private modalCtrl: ModalController
+  constructor(
+    private validatorUtils: ValidatorUtils,
+    private modalCtrl: ModalController,
+    private api: ApiService
   ) { }
 
   setInput(validator: Validator) {

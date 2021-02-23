@@ -19,12 +19,13 @@
  */
 
 import { EpochResponse, PerformanceResponse, ValidatorResponse, AttestationPerformanceResponse } from '../requests/requests';
-import MathUtils, { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
+import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
 import Unit, { convertEthUnits } from '../utils/EthereumUnits'
 import BigNumber from "bignumber.js";
 import { Validator } from '../utils/ValidatorUtils';
 import { formatDate } from '@angular/common';
 import { getValidatorQueryString, ValidatorState } from '../utils/ValidatorUtils';
+import { ApiService } from '../services/api.service';
 
 export type OverviewData = {
     overallBalance: BigNumber
@@ -68,6 +69,8 @@ export type Description = {
 }
 
 export default class OverviewController {
+
+    constructor(private refreshCallback: () => void = null) {}
 
     proccessDashboard(
         validators: Validator[],
@@ -164,11 +167,11 @@ export default class OverviewController {
         const slashedCount = slashedValidators.length
 
         if (slashedCount > 0) {
-            return this.getSlashedState(activeValidatorCount, validatorCount, foreignValidator, slashedValidators[0].data, currentEpoch.epoch)
+            return this.getSlashedState(activeValidatorCount, validatorCount, foreignValidator, slashedValidators[0].data, currentEpoch)
         }
 
         if (activeValidatorCount == requiredValidatorsForOKState && activeValidatorCount != 0) {
-            return this.getOkState(activeValidatorCount, validatorCount, foreignValidator, activeValidators[0].data, currentEpoch.epoch)
+            return this.getOkState(activeValidatorCount, validatorCount, foreignValidator, activeValidators[0].data, currentEpoch)
         } else if (activeValidatorCount == requiredValidatorsForOKState && activeValidatorCount == 0) {
             return this.getExitedState(activeValidatorCount, validatorCount, foreignValidator)
         }
@@ -181,7 +184,7 @@ export default class OverviewController {
                 activeValidatorCount,
                 validatorCount,
                 awaitingActivation[0].data,
-                currentEpoch.epoch,
+                currentEpoch,
                 foreignValidator
             )
         }
@@ -191,7 +194,7 @@ export default class OverviewController {
                 activeValidatorCount,
                 validatorCount,
                 activationeligibility[0].data,
-                currentEpoch.epoch,
+                currentEpoch,
                 foreignValidator
             );
         }
@@ -203,7 +206,7 @@ export default class OverviewController {
         return foreignValidator ? foreignText : myText
     }
 
-    private getOkState(activeValidatorCount, validatorCount, foreignValidator, validatorResp: ValidatorResponse, currentEpoch): DashboardStatus {
+    private getOkState(activeValidatorCount, validatorCount, foreignValidator, validatorResp: ValidatorResponse, currentEpoch: EpochResponse): DashboardStatus {
         const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
 
         return {
@@ -220,10 +223,10 @@ export default class OverviewController {
         }
     }
 
-    private getExitingDescription(validatorResp: ValidatorResponse, currentEpoch): Description {
+    private getExitingDescription(validatorResp: ValidatorResponse, currentEpoch: EpochResponse): Description {
         if (!validatorResp.exitepoch) return { extendedDescriptionPre: null, extendedDescription: null }
 
-        const exitDiff = validatorResp.exitepoch - currentEpoch
+        const exitDiff = validatorResp.exitepoch - currentEpoch.epoch
         const isExiting = exitDiff >= 0 && exitDiff < 6480 // ~ 1 month
         const exitingDate = isExiting ? this.getEpochDate(validatorResp.exitepoch, currentEpoch) : null
 
@@ -233,7 +236,7 @@ export default class OverviewController {
         }
     }
 
-    private getSlashedState(activeValidatorCount, validatorCount, foreignValidator, validatorResp: ValidatorResponse, currentEpoch): DashboardStatus {
+    private getSlashedState(activeValidatorCount, validatorCount, foreignValidator, validatorResp: ValidatorResponse, currentEpoch: EpochResponse): DashboardStatus {
         const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
 
         const pre = activeValidatorCount > 0 ? "Some" : "All"
@@ -251,7 +254,7 @@ export default class OverviewController {
         }
     }
 
-    private getAwaitingActivationState(activeValidatorCount, validatorCount, awaitingActivation: ValidatorResponse, currentEpoch, foreignValidator): DashboardStatus {
+    private getAwaitingActivationState(activeValidatorCount, validatorCount, awaitingActivation: ValidatorResponse, currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
         const pre = activeValidatorCount > 0 ? "Some" : "All"
         return {
             icon: "timer-outline",
@@ -267,7 +270,7 @@ export default class OverviewController {
         }
     }
 
-    private getEligbableActivationState(activeValidatorCount, validatorCount, eligbleState: ValidatorResponse, currentEpoch, foreignValidator): DashboardStatus {
+    private getEligbableActivationState(activeValidatorCount, validatorCount, eligbleState: ValidatorResponse, currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
         const pre = activeValidatorCount > 0 ? "Some" : "All"
         return {
             icon: "timer-outline",
@@ -315,13 +318,18 @@ export default class OverviewController {
         }
     }
 
-    private getEpochDate(activationEpoch, currentEpoch) {
-        const diff = activationEpoch - currentEpoch
-        if (diff < 0) return null
+    private getEpochDate(activationEpoch, currentEpoch: EpochResponse) {
+        const diff = activationEpoch - currentEpoch.epoch
+        if (diff <= 0) {
+            if(this.refreshCallback) this.refreshCallback()
+            return null
+        }
 
-        var date = new Date();
-        date.setSeconds(diff * 6.4 * 60);
+        var date = new Date(currentEpoch.lastCachedTimestamp);
 
+        const inEpochOffset = (32 - currentEpoch.scheduledblocks) * 12 // block time 12s
+
+        date.setSeconds(diff * 6.4 * 60 - inEpochOffset);
 
         var timeString = formatDate(date, "medium", "en-US")
         return timeString
