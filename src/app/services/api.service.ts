@@ -109,7 +109,7 @@ export class ApiService {
     }
   }
 
-  private async refreshToken() {
+  async refreshToken() {
     const user = await this.storage.getAuthUser()
     if (!user || !user.refreshToken) {
       console.warn("No refreshtoken, cannot refresh token")
@@ -124,7 +124,7 @@ export class ApiService {
     console.log("Refresh token", result, resp)
     if (!result || result.length <= 0 || !result[0].access_token) {
       console.warn("could not refresh token", result)
-      return
+      return null
     }
 
     user.accessToken = result[0].access_token
@@ -272,13 +272,14 @@ export class ApiService {
     return permanentDevMode && permanentDevMode.enabled
   }
 
-  getAllTestNetNames() {
+  async getAllTestNetNames() {
+    const debug = await this.isDebugMode()
     const re: string[][] = []
 
     for (let entry of MAP) {
       if (entry.key == "main") continue;
       if (!entry.active) continue;
-      if (entry.onlyDebug && !this.debug) continue;
+      if (entry.onlyDebug && !debug) continue;
       re.push([this.capitalize(entry.key) + " (Testnet)", entry.key])
     }
     return re

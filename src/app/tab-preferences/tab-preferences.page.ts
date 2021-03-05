@@ -39,6 +39,8 @@ import { Platform } from '@ionic/angular';
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import { LicencesPage } from '../pages/licences/licences.page';
+import { MerchantUtils } from '../utils/MerchantUtils';
+import { SubscribePage } from '../pages/subscribe/subscribe.page';
 
 const { Device } = Plugins;
 const { Browser } = Plugins;
@@ -104,7 +106,8 @@ export class Tab3Page {
     private firebaseUtils: FirebaseUtils,
     public platform: Platform,
     private alerts: AlertService,
-    private sync: SyncService
+    private sync: SyncService,
+    public merchant: MerchantUtils
   ) { }
 
   ngOnInit() {
@@ -119,7 +122,9 @@ export class Tab3Page {
     this.theme.isWinterEnabled().then((result) => this.snowing = result)
 
     this.allCurrencies = this.getAllCurrencies()
-    this.allTestNetworks = this.api.getAllTestNetNames()
+    this.api.getAllTestNetNames().then(result => {
+      this.allTestNetworks = result
+    })
 
     Device.getInfo().then((result) => this.appVersion = result.appVersion)
 
@@ -473,6 +478,14 @@ export class Tab3Page {
     });
 
     await alert.present();
+  }
+
+  async openUpgrades() {
+    const modal = await this.modalController.create({
+      component: SubscribePage,
+      cssClass: 'my-custom-class',
+    });
+    return await modal.present();
   }
 
   async openFAQ() {

@@ -28,6 +28,7 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { PipesModule } from './pipes/pipes.module'
+import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 
 @NgModule({
   declarations: [AppComponent],
@@ -35,7 +36,8 @@ import { PipesModule } from './pipes/pipes.module'
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, PipesModule],
   providers: [
     SplashScreen,
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    InAppPurchase2
   ],
   bootstrap: [AppComponent]
 })

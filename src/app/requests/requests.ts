@@ -295,6 +295,33 @@ export class SetMobileSettingsRequest extends APIRequest<MobileSettingsResponse>
   }
 }
 
+export interface SubscriptionTransaction {
+  id: string,
+  receipt: string,
+  type: string
+}
+
+export interface SubscriptionData {
+  currency: string,
+  id: string,
+  priceMicros: number,
+  transaction: SubscriptionTransaction,
+  valid: boolean
+}
+
+export class PostMobileSubscription extends APIRequest<MobileSettingsResponse> {
+  resource = "user/subscription/register";
+  method = Method.POST;
+  requiresAuth = true
+  ignoreFails = true
+
+  constructor(subscriptionData: SubscriptionData) {
+    super()
+    this.postData = subscriptionData
+  }
+
+}
+
 export class GetMobileSettingsRequest extends APIRequest<MobileSettingsResponse> {
   resource = "user/mobile/settings";
   method = Method.GET;
