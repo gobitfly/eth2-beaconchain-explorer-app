@@ -43,6 +43,7 @@ export default class Unit {
     public static AUDETH = new Unit("A$", new BigNumber("683.65"), 2, "ETH-AUD", "Australian Dollar")
     public static CADETH = new Unit("C$", new BigNumber("651.02"), 2, "ETH-CAD", "Canadian Dollar")
     public static CHFETH = new Unit("CHF", new BigNumber("455.55"), 2, "ETH-CHF", "Swiss Franc")
+    public static MXNETH = new Unit("MXN", new BigNumber("455.55"), 2, "ETH-MXN", "Mexican Peso")
     public static BTCETH = new Unit("₿", new BigNumber("455.55"), 6, "ETH-BTC", "Bitcoin") // coinbase endpoit: invalid currency :/ workaroung in unit converter
 
 
@@ -79,7 +80,8 @@ export const MAPPING = new Map([
     ["AUD", Unit.AUDETH],
     ["CAD", Unit.CADETH],
     ["CHF", Unit.CHFETH],
-    ["BTC", Unit.BTCETH]
+    ["MXN", Unit.MXNETH],
+    ["BTC", Unit.BTCETH],
 ])
 
 export function convertEthUnits(value: BigNumber, from: Unit, to: Unit): BigNumber {
