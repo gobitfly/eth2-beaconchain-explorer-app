@@ -1,0 +1,60 @@
+@import "../../../theme/variables.scss";
+
+ion-segment-button {
+  color: white;
+
+  font-family: "Varela";
+  font-size: 0.75em;
+  --indicator-height: 0px !important;
+  text-transform: none !important;
+  --ripple-color: transparent !important;
+  //transition: color 0.15s ease;
+  opacity: 0.65;
+}
+
+ion-segment {
+  background-color: var(--ion-toolbar-background);
+}
+
+.card {
+  background-color: var(--background-color) !important;
+
+  margin-bottom: 14px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.card-header {
+  margin-bottom: 8px;
+}
+
+.segment-button-checked {
+  opacity: 1;
+}
+
+.loading-spinner {
+  margin-top: 55px;
+  margin-bottom: 10px;
+}
+
+.loading-container {
+  height: 100%;
+}
+
+.center {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.top-bar {
+  padding-bottom: 0px !important;
+  margin-bottom: 14px !important;
+}
+
+.top-bar ion-label {
+  font-weight: normal;
+  color: var(--ion-text-color-lighter);
+  margin-left: 5px;
+}

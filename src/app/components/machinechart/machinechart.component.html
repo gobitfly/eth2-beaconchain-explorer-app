@@ -1,0 +1,30 @@
+<div>
+  <ion-card-header class="card-header" *ngIf="title">
+    <ion-card-title>
+      <ion-label>
+        {{ title }}
+        <div class="circle online" *ngIf="icon == 'online'" style="float: right"></div>
+        <div class="circle offline" *ngIf="icon == 'offline'" style="float: right"></div>
+      </ion-label>
+
+    </ion-card-title>
+    <ion-card-subtitle>
+
+      <span style="float: left" *ngIf="subtitleLeft">{{ subtitleLeft }}</span>
+      <span style="float: right" *ngIf="subtitleRight">{{ subtitleRight }}</span>
+    </ion-card-subtitle>
+  </ion-card-header>
+
+  <div *ngIf="!chartData || chartData.length <= 0 || chartError" style="width:100%; height:280px;">
+    <div class="nothingfound">
+      <ion-icon name="telescope-outline"></ion-icon>
+      <ion-label>Not enough data to display. </ion-label><br />
+      <ion-label>Check back later.</ion-label>
+    </div>
+
+  </div>
+
+  <div *ngIf="chartData && chartData.length > 0" [hidden]="chartError" id="machinechart_{{ id }}_{{ hashCode(key) }}"
+    style="width:100%; height:300px;"></div>
+
+</div>

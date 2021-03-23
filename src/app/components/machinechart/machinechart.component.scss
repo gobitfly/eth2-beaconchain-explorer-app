@@ -1,0 +1,36 @@
+@import "../../../theme/variables.scss";
+
+.nothingfound ion-icon {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  padding-bottom: 12px;
+  font-size: 55px;
+  color: var(--ion-text-color-lighter);
+}
+
+.nothingfound {
+  text-align: center;
+  padding: 50px;
+  margin-left: 6%;
+  margin-right: 6%;
+  margin-top: 45px;
+  color: var(--ion-text-color-lighter);
+}
+
+.circle {
+  margin-top: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  opacity: 0.85;
+}
+
+.offline {
+  background-color: var(--ion-color-danger);
+}
+
+.online {
+  background-color: var(--ion-color-success);
+}

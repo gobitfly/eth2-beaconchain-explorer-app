@@ -1,0 +1,73 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title (click)="easterEgg()">Machines</ion-title>
+  </ion-toolbar>
+  <ion-segment [(ngModel)]="selectedChart" mode="md" scrollable="true">
+    <ion-segment-button value="cpu" [disabled]="scrolling"
+      [class]="selectedChart == 'cpu' ? 'segment-button-checked' : ''">
+      <ion-label>CPU</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="memory" [disabled]="scrolling">
+      <ion-label [class]="selectedChart == 'memory' ? 'segment-button-checked' : ''">Memory</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="sync" [disabled]="scrolling"
+      [class]="selectedChart == 'sync' ? 'segment-button-checked' : ''">
+      <ion-label>Sync</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+</ion-header>
+
+<ion-content [fullscreen]="true" [scrollEvents]="true" (ionScrollStart)="onScrollStarted()"
+  (ionScrollEnd)="onScrollEnded()">
+
+  <ion-item class="top-bar">
+    <ion-label i18n="Search Results">Last {{ this.selectedTimeFrame }}</ion-label>
+    <ion-icon slot="end" name="time-outline" (click)="openTimeSelection()"></ion-icon>
+  </ion-item>
+
+  <div *ngIf="this.data && showData">
+    <div *ngFor="let machine of data | keyvalue" class="card" (click)="openMachineDetail(machine.key)">
+
+      <app-machinechart priority="true" [title]="machine.key" [subtitleLeft]="machine.value | delegate: clientFormatter"
+        [subtitleRight]="machine.value.formattedDate | date:'short'"
+        [icon]="machine.value | delegate: onlineStateDelegate" [key]="machine.key"
+        [chartData]="machine.value | delegate: cpuDelegate" [hidden]="selectedChart != 'cpu'">
+      </app-machinechart>
+
+      <app-machinechart [title]="machine.key" [subtitleLeft]="machine.value | delegate: clientFormatter"
+        [subtitleRight]="machine.value.formattedDate | date:'short'"
+        [icon]="machine.value | delegate: onlineStateDelegate" [key]="machine.key"
+        [chartData]="machine.value | delegate: memoryDelegate" [hidden]="selectedChart != 'memory'">
+      </app-machinechart>
+
+      <app-machinechart [title]="machine.key" [subtitleLeft]="machine.value | delegate: clientFormatter"
+        [subtitleRight]="machine.value.formattedDate | date:'short'"
+        [icon]="machine.value | delegate: onlineStateDelegate" [key]="machine.key"
+        [chartData]="machine.value | delegate: syncDelegate" [hidden]="selectedChart != 'sync'">
+      </app-machinechart>
+
+    </div>
+  </div>
+
+  <div *ngIf="this.data && !showData">
+    <div class="nothingfound">
+      <ion-icon name="pulse-outline"></ion-icon>
+      <ion-label>Machine Monitoring</ion-label><br />
+      <ion-label>Monitor your staking machine on the go.</ion-label>
+      <br /><br />
+      <ion-label>Setup for Lighthouse</ion-label>
+      <ol style="text-align: start;">
+        <li>Login in to beaconcha.in and head to settings</li>
+        <li>Copy your API key</li>
+        <li>Run lighthouse with the --monitoring flag and pass your API key</li>
+        <li>Log into this app to see your machines</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="container loading-container" *ngIf="!this.data">
+    <div class="center">
+      <ion-spinner class="status-icon loading-spinner"></ion-spinner>
+    </div>
+  </div>
+</ion-content>
