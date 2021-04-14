@@ -94,8 +94,6 @@ export const MAP: ApiNetwork[] = [
         active: true,
         genesisTs: 1605009608 // Arbitrary, doesnt matter on invalid connection
     },
-
- 
 ]
 
 export function findConfigForKey(key: string): ApiNetwork {

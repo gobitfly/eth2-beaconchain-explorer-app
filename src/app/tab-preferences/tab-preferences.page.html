@@ -109,6 +109,60 @@
     </ion-item>
 
     <ion-item lines="none">
+<<<<<<< Updated upstream
+=======
+      <ion-icon slot="start" name="color-palette-outline"></ion-icon>
+      <ion-label>
+        Widget Theme
+      </ion-label>
+      <ion-select value="" [(ngModel)]="widgetThemeColor" (ionChange)="changeWidgetTheme()" interface="popover"
+        [disabled]="themeColorLock" *ngIf="currentPlan != 'standard'">
+        <ion-select-option value="">
+          Default
+        </ion-select-option>
+        <ion-select-option value="teal">
+          Teal
+        </ion-select-option>
+        <ion-select-option value="green">
+          Green
+        </ion-select-option>
+        <ion-select-option value="cyan">
+          Cyan
+        </ion-select-option>
+        <ion-select-option value="purple">
+          Purple
+        </ion-select-option>
+        <ion-select-option value="sun">
+          Sun
+        </ion-select-option>
+        <ion-select-option value="indigo">
+          Indigo
+        </ion-select-option>
+        <ion-select-option value="pink">
+          Pink
+        </ion-select-option>
+        <ion-select-option value="red">
+          Red
+        </ion-select-option>
+        <ion-select-option value="orange">
+          Orange
+        </ion-select-option>
+        <ion-select-option value="bronce">
+          Bronce
+        </ion-select-option>
+        <ion-select-option value="gold">
+          Gold
+        </ion-select-option>
+        <ion-select-option value="metal">
+          Metal
+        </ion-select-option>
+      </ion-select>
+      <ion-icon slot="end" name="lock-closed-outline" *ngIf="currentPlan == 'standard'" (click)="openUpgrades()">
+      </ion-icon>
+    </ion-item>
+
+    <ion-item lines="none">
+>>>>>>> Stashed changes
       <ion-icon slot="start" name="wallet-outline"></ion-icon>
       <ion-label i18n="Settings configure display currency">Display Currency</ion-label>
       <ion-select value="ETHER" [(ngModel)]="this.unit.pref" (ionChange)="changeCurrency()" interface="popover"
