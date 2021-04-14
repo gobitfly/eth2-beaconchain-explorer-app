@@ -29,4 +29,23 @@
         <item name="android:navigationBarColor">#29283a</item>
 
     </style>
+
+    <style name="Widget">
+        <item name="widgetBackground">@color/widgetBackgroundDark</item>
+        <item name="widgetBackground2">@color/widgetBackgroundDark2</item>
+        <item name="android:textColor">@color/widgetTextDark</item>
+        <item name="descriptionTextColor">@color/widgetDescriptionDark</item>
+        <item name="statusColor">@color/widgetStatusDark</item>
+        <item name="switchColor">@color/widgetSwitchColorDark</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.Dark">
+        <item name="widgetBackground">@color/widgetBackgroundDark</item>
+        <item name="widgetBackground2">@color/widgetBackgroundDark2</item>
+        <item name="android:textColor">@color/widgetTextDark</item>
+        <item name="descriptionTextColor">@color/widgetDescriptionDark</item>
+        <item name="switchColor">@color/widgetSwitchColorDark</item>
+        <item name="statusColor">@color/widgetStatusDark</item>
+    </style>
 </resources>

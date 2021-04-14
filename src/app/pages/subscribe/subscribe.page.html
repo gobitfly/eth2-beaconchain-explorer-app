@@ -5,35 +5,170 @@
         <ion-icon size="large" name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Upgrade</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-slides pager="false" [options]="slideOpts">
+<ion-content [scrollEvents]="true" (ionScroll)="onScroll($event)">
+  <ion-list class="status">
+    <div lines="none" class="status-container">
 
-        <ion-slide >
-          <h2>Hi</h2>
+      <ion-slides pager="false">
+        <ion-slide>
+
+          <div class="slide-container">
+            <ion-icon class="status-icon" name="ribbon-outline" [ngStyle]="{'opacity': currentY | fadeoutpipe: 75 }">
+            </ion-icon>
+            <br />
+            <ion-label class="subtitle" [ngStyle]="{'opacity': currentY | fadeoutpipe: 120 }">Support open source.
+            </ion-label><br />
+            <ion-label class="subtitle" [ngStyle]="{'opacity': currentY | fadeoutpipe: 140 }">Unlock additional
+              features.</ion-label>
+          </div>
+
         </ion-slide>
 
-        <ion-slide >
-          <h2>Ho</h2>
-        </ion-slide>
-    
-</ion-slides>
+      </ion-slides>
 
-<ul>
-  <li>300 Validators</li>
-  <li>10 Beacon nodes monitoring</li>
-  <li>Monitor history for 30 days</li>
-  <li>Monitor notifications</li>
-  <li>Get upcoming premium features for free</li>
-</ul>
+    </div>
+  </ion-list>
 
-<div class="detail-container">
+  <div class="packages" *ngIf="merchant.PACKAGES.length > 1">
+    <div *ngFor="let package of merchant.PACKAGES;" class="package" (click)="selectedPackage = package"
+      [class]="selectedPackage == package ? 'packages-selected' : ''">
+      <div class="slide-container package-inner">
+        <ion-label class="pkg-name">{{ package.name }}</ion-label>
+        <br />
+        <ion-label>{{ package.price }} / m</ion-label>
+      </div>
+    </div>
 
-  <ion-button>Subscribe for 24.99$ / month</ion-button>
-</div>
+  </div>
+
+  <ion-list class="first-item-group">
+    <ion-item lines="none">
+
+      <ion-label>
+        Mainnet Validators
+      </ion-label>
+      <ion-label class="value">
+        {{ selectedPackage.maxValidators }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Testnet Validators
+      </ion-label>
+      <ion-label class="value">
+        {{ selectedPackage.maxTestnetValidators }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Beaconnodes
+      </ion-label>
+      <ion-label class="value">
+        {{ selectedPackage.maxBeaconNodes }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Device Monitoring
+      </ion-label>
+      <ion-label class="value">
+        last {{ selectedPackage.deviceMonitoringHours < 24 ? selectedPackage.deviceMonitoringHours : selectedPackage.deviceMonitoringHours / 24 }} {{ selectedPackage.deviceMonitoringHours < 24 ? "hours" : "days" }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Device Monitoring Alerts
+      </ion-label>
+      <ion-label class="value">
+        <ion-icon name="checkmark-outline" *ngIf="selectedPackage.deviceMonitorAlerts"></ion-icon>
+        <ion-icon name="close-outline" *ngIf="!selectedPackage.deviceMonitorAlerts"></ion-icon>
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        No Ads
+      </ion-label>
+      <ion-label class="value">
+        <ion-icon name="checkmark-outline" *ngIf="selectedPackage.noAds"></ion-icon>
+        <ion-icon name="close-outline" *ngIf="!selectedPackage.noAds"></ion-icon>
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Custom Themes
+      </ion-label>
+      <ion-label class="value">
+        <ion-icon name="checkmark-outline" *ngIf="selectedPackage.customTheme"></ion-icon>
+        <ion-icon name="close-outline" *ngIf="!selectedPackage.customTheme"></ion-icon>
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Widgets (coming soon)
+      </ion-label>
+      <ion-label class="value">
+        <ion-icon name="checkmark-outline" *ngIf="selectedPackage.widgets"></ion-icon>
+        <ion-icon name="close-outline" *ngIf="!selectedPackage.widgets"></ion-icon>
+      </ion-label>
+
+    </ion-item>
+
+
+    <ion-item lines="none">
+
+      <ion-label>
+        Support us & Client teams
+
+      </ion-label>
+
+      <ion-label class="value">
+        <ion-icon name="checkmark-outline" *ngIf="selectedPackage.supportUs"></ion-icon>
+        <ion-icon name="close-outline" *ngIf="!selectedPackage.supportUs"></ion-icon>
+      </ion-label>
+
+    </ion-item>
+    <span class="hint">25% will go to your selected ETH2 client when using device monitoring.</span>
+
+  </ion-list>
+
+
+  <div class="detail-container" *ngIf="selectedPackage.purchaseKey != null">
+    <ion-label class="link" (click)="trial()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Start with a
+      10 day free trial.</ion-label>
+
+    <div>
+      <ion-button (click)="purchase()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Subscribe for {{
+        selectedPackage.price }} / month</ion-button>
+      <ion-button *ngIf="activeUserPackageName == selectedPackage.purchaseKey" disabled>You own this package
+      </ion-button>
+    </div>
+
+    <ion-label class="grey-link" (click)="restore()">Restore purchase</ion-label>
+  </div>
 
 
 </ion-content>

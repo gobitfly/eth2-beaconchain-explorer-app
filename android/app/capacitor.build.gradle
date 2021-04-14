@@ -10,6 +10,7 @@ android {
 apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
     implementation project(':byteowls-capacitor-oauth2')
+    //implementation project(':capacitor-community-admob')
     implementation project(':capacitor-navigationbarnx')
     implementation "com.android.billingclient:billing:3.0.0"
 }

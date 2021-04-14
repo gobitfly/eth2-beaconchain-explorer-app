@@ -70,8 +70,9 @@ export class ValidatorSyncUtils {
             return
         }
 
-        const newValidators = await this.validator.getRemoteValidatorInfo(newValidatorIndizes)
-
+        const newValidators = await this.validator.getRemoteValidatorInfo(newValidatorIndizes).catch((err) => { return null })
+        if (newValidators == null) return 
+        
         this.validator.convertToValidatorModelsAndSaveLocal(true, newValidators)
     }
 

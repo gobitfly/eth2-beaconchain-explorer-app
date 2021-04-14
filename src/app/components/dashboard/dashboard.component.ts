@@ -242,11 +242,11 @@ export class DashboardComponent implements OnInit {
         const middleOfDay = new Date(endTs)
         middleOfDay.setHours(0)
         var dayIncome = endDayBalance - balance[i][1];
-        if (dayIncome > 31) {
-          dayIncome - this.data.effectiveBalance.toNumber();
+        while(dayIncome > 32) {
+          dayIncome = dayIncome - 32;
         }
 
-        let color = dayIncome < 0 ? "#ff835c" : "#7cb5ec";
+        let color = dayIncome < 0 ? "#ff835c" : "var(--chart-default)";
 
         income[count] = { x: middleOfDay.getTime(), y: dayIncome, color: color };
 
@@ -291,7 +291,7 @@ export class DashboardComponent implements OnInit {
       title: {
         text: '' //Balance History for all Validators
       },
-      colors: ["#7cb5ec", "#ff835c", "#e4a354", "#2b908f", "#f45b5b", "#91e8e1"],
+      colors: ["var(--chart-default)", "#ff835c", "#e4a354", "#2b908f", "#f45b5b", "#91e8e1"],
       xAxis: {
         lineWidth: 0,
         tickColor: '#e5e1e1',
@@ -329,7 +329,7 @@ export class DashboardComponent implements OnInit {
       series: [
         {
           name: 'Proposed',
-          color: '#7cb5ec',
+          color: 'var(--chart-default)',
           data: proposed,
           pointWidth: 25,
         },

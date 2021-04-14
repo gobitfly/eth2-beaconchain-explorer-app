@@ -27,15 +27,76 @@ import { AlertService, PURCHASEUTILS } from '../services/alert.service';
 import { ApiService } from '../services/api.service';
 import { StorageService } from '../services/storage.service';
 
+import { Plugins } from '@capacitor/core';
+const { SplashScreen } = Plugins;
+
 const PRODUCT_STANDARD = 'standard';
-const PRODUCT_WHALE = 'whale';
-const PRODUCT_JELLYFISH = 'jellyfish';
-const PRODUCT_SEAHORSE = 'seahorse';
+const MAX_PRODUCT = 'whale';
 
 @Injectable({
   providedIn: "root",
 })
 export class MerchantUtils {
+
+  PACKAGES: Package[] = [
+    {
+      name: "Free",
+      price: "$0.00",
+      maxValidators: 100,
+      maxTestnetValidators: 100,
+      maxBeaconNodes: 1,
+      deviceMonitoringHours: 3,
+      deviceMonitorAlerts: false,
+      noAds: false,
+      widgets: false,
+      customTheme: false,
+      supportUs: false,
+      purchaseKey: null
+    },
+    {
+      name: "Plankton",
+      price: "$1.99",
+      maxValidators: 100,
+      maxTestnetValidators: 100,
+      maxBeaconNodes: 1,
+      deviceMonitoringHours: 30 * 24,
+      deviceMonitorAlerts: true,
+      noAds: true,
+      widgets: false,
+      customTheme: false,
+      supportUs: true,
+      purchaseKey: "plankton"
+    },
+    {
+      name: "Goldfish",
+      price: "$4.99",
+      maxValidators: 100,
+      maxTestnetValidators: 100,
+      maxBeaconNodes: 5,
+      deviceMonitoringHours: 30 * 24,
+      deviceMonitorAlerts: true,
+      noAds: true,
+      widgets: true,
+      customTheme: true,
+      supportUs: true,
+      purchaseKey: "goldfish"
+    },
+    {
+      name: "Whale",
+      price: "$19.99",
+      maxValidators: 300,
+      maxTestnetValidators: 300,
+      maxBeaconNodes: 10,
+      deviceMonitoringHours: 30 * 24,
+      deviceMonitorAlerts: true,
+      noAds: true,
+      widgets: true,
+      customTheme: true,
+      supportUs: true,
+      purchaseKey: "whale"
+    }
+  ]
+
   products: IAPProducts[] = [];
   currentPlan = PRODUCT_STANDARD; // use getCurrentPlanConfirmed instead
 
@@ -46,6 +107,10 @@ export class MerchantUtils {
     private platform: Platform,
     private storage: StorageService
   ) {
+    if (!this.platform.is("ios") && !this.platform.is("android")) {
+      console.log("merchant is not supported on this platform")
+      return
+    }
     this.initProducts()
     this.initCustomValidator()
     this.setupListeners()
@@ -83,8 +148,18 @@ export class MerchantUtils {
 
       await this.refreshToken()
 
+      this.alertService.confirmDialog("Upgrade successfull", "App requires a restart. Do you want to restart it now?", "Restart App", () => {
+        this.restartApp()
+      })
+
       callback(result)
     };
+  }
+
+  restartApp() {
+    SplashScreen.show()
+    window.location.reload()
+
   }
 
   private async refreshToken() {
@@ -115,28 +190,32 @@ export class MerchantUtils {
   }
 
   private initProducts() {
-    this.store.register({
-      id: PRODUCT_WHALE,
-      type: this.store.PAID_SUBSCRIPTION,
-    });
-
-    this.store.register({
-      id: PRODUCT_JELLYFISH,
-      type: this.store.PAID_SUBSCRIPTION,
-    });
-
-    this.store.register({
-      id: PRODUCT_SEAHORSE,
-      type: this.store.PAID_SUBSCRIPTION,
-    });
+    for (var i = 0; i < this.PACKAGES.length; i++){
+      if (this.PACKAGES[i].purchaseKey) {
+        this.store.register({
+          id: this.PACKAGES[i].purchaseKey,
+          type: this.store.PAID_SUBSCRIPTION,
+        });
+      }
+    }
 
     this.store.refresh();
+  }
+
+  private updatePrice(id, price) {
+    for (var i = 0; i < this.PACKAGES.length; i++) {
+      if(this.PACKAGES[i].purchaseKey == id) this.PACKAGES[i].price = price
+    }
   }
 
   private setupListeners() {
     // General query to all products
     this.store
       .when("product")
+      .loaded((p: IAPProduct) => {
+        console.log("product remote", p)
+        this.updatePrice(p.id, p.price)
+      })
       .approved((p: IAPProduct) => {
         // Handle the product deliverable
         this.currentPlan = p.id;
@@ -155,11 +234,15 @@ export class MerchantUtils {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  manageSubscriptions() {
+    this.store.manageSubscriptions()
+  }
+
   async restore() {
     // Reasoning is, that subscriptions are linked with user accounts
     // in order to restore a purchase, log in to the same account. If already logged in,
     // try refreshing the token
-    
+
     await this.refreshToken()
     //this.store.refresh();
   }
@@ -195,6 +278,35 @@ export class MerchantUtils {
     }
     return PRODUCT_STANDARD
   }
+
+  findProduct(name: string): Package {
+    for (var i = 0; i < this.PACKAGES.length; i++){
+      const current = this.PACKAGES[i]
+      if (current.purchaseKey == name) {
+        return current
+      }
+    }
+    return null
+  }
+
+  async getCurrentPlanMaxValidator(): Promise<number> {
+    const currentPlan = await this.getCurrentPlanConfirmed()
+    const currentProduct = this.findProduct(currentPlan)
+    if (currentProduct == null) return 100
+
+    const notMainnet = await this.api.isNotMainnet()
+    if (notMainnet) return currentProduct.maxTestnetValidators
+    return currentProduct.maxValidators
+  }
+
+  async getHighestPackageValidator(): Promise<number> {
+    const currentProduct = this.findProduct(MAX_PRODUCT)
+    if (currentProduct == null) return 100
+
+    const notMainnet = await this.api.isNotMainnet()
+    if (notMainnet) return currentProduct.maxTestnetValidators
+    return currentProduct.maxValidators
+  }
 }
 
 interface ClaimParts {
@@ -204,4 +316,19 @@ interface ClaimParts {
   package: string
   exp: number,
   iss: string
+}
+
+export interface Package {
+  name: string,
+  price: string,
+  maxValidators: number,
+  maxTestnetValidators: number,
+  maxBeaconNodes: number,
+  deviceMonitoringHours: number,
+  deviceMonitorAlerts: boolean,
+  noAds: boolean,
+  widgets: boolean,
+  customTheme: boolean,
+  supportUs: boolean,
+  purchaseKey: string
 }

@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { SubscribePageRoutingModule } from './subscribe-routing.module';
 
 import { SubscribePage } from './subscribe.page';
+import { PipesModule } from '../../pipes/pipes.module'
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    SubscribePageRoutingModule
+    SubscribePageRoutingModule,
+    PipesModule
   ],
   declarations: [SubscribePage]
 })

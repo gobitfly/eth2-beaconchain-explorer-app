@@ -91,6 +91,11 @@ export class UnitconvService {
       this.lastPrice = unit.value
     }
 
+    if (! (await this.storage.getBooleanSetting("UPDATED_CURRENCY_INTEROP", false))) {
+      this.storage.setBooleanSetting("UPDATED_CURRENCY_INTEROP", true)
+      this.save()
+    }
+
     this.updatePriceData()
   }
 
@@ -154,6 +159,7 @@ export class UnitconvService {
 
   save() {
     if (this.triggeredChange) return
-    this.storage.setObject(STORAGE_KEY, { prefered: this.pref })
+    const unit = this.getCurrentPrefAsUnit()
+    this.storage.setObject(STORAGE_KEY, { prefered: this.pref, coinbaseSpot: unit.coinbaseSpot, symbol: unit.display, rounding: unit.rounding })
   }
 }

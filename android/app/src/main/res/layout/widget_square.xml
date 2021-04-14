@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="155dp"
+        android:layout_height="155dp"
+        android:layout_gravity="center"
+
+        android:adjustViewBounds="true"
+        android:background="@drawable/widget_bg_square"
+        android:orientation="vertical"
+        android:theme="@style/Widget">
+
+        <LinearLayout
+            android:id="@+id/widget"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/img_state"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:src="@drawable/ic_notification"
+                app:srcCompat="@drawable/ic_notification" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/currenyPair"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="18dp"
+                android:layout_marginTop="18dp"
+                android:gravity="bottom"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txt_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="2dp"
+                    android:text="-"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:id="@+id/btnSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingEnd="18dp"
+                    android:paddingBottom="18dp">
+
+                    <TextView
+                        android:id="@+id/txt_description"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Last 24h"
+                        android:textColor="?attr/descriptionTextColor"
+                        android:textSize="13sp"
+                        android:textStyle="normal" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:orientation="horizontal">
+
+                        <ImageView
+
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+
+                            android:foregroundGravity="right|center"
+
+                            android:src="@drawable/ic_baseline_wifi_protected_setup_24"
+                            app:srcCompat="@drawable/ic_baseline_wifi_protected_setup_24" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</FrameLayout>

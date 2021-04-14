@@ -48,6 +48,7 @@ const STORAGE_KEY = "theme"
 export default class ThemeUtils {
 
     userPreference: Theme
+    currentThemeColor: string = ""
     private lock: Promise<void | ThemeStorage>
 
     private snowFlakes
@@ -74,11 +75,12 @@ export default class ThemeUtils {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
         if (preferenceDarkMode) {
             this.userPreference = preferenceDarkMode.theme
+            this.currentThemeColor = preferenceDarkMode.themeColor
         } else {
             this.userPreference = prefersDark.matches ? Theme.DARK : Theme.LIGHT
         }
 
-        this.toggle(this.userPreference == Theme.DARK, false)
+        this.toggle(this.userPreference == Theme.DARK, false, this.currentThemeColor)
 
         if (this.isSilvester()) {
             setTimeout(
@@ -89,12 +91,18 @@ export default class ThemeUtils {
         }
     }
 
-    async toggle(darkModeEnabled: boolean, setColorHandler: boolean = true) {
+    undoColor(themeColor: string = this.currentThemeColor) {
+        if(themeColor && themeColor != "") document.body.classList.remove(themeColor);
+    }
+
+    async toggle(darkModeEnabled: boolean, setColorHandler: boolean = true, themeColor: string = this.currentThemeColor) {
         document.body.classList.toggle('dark', darkModeEnabled);
+        if(themeColor && themeColor != "") document.body.classList.toggle(themeColor, true);
         if (setColorHandler) this.colorHandler()
         const themeString = darkModeEnabled ? Theme.DARK : Theme.LIGHT
-        this.storage.setObject(STORAGE_KEY, { theme: themeString })
+        this.storage.setObject(STORAGE_KEY, { theme: themeString, themeColor: themeColor })
         this.userPreference = themeString
+        this.currentThemeColor = themeColor
 
         this.toggleWinter(await this.isWinterEnabled(), false)
     }
@@ -153,13 +161,18 @@ export default class ThemeUtils {
         this.snowFlakes = this.winterSeason(this.userPreference == Theme.DARK)
     }
 
+    async getThemeColor() {
+        await this.lock;
+        return this.currentThemeColor
+    }
+
     async isDarkThemed() {
         await this.lock;
         return this.userPreference == Theme.DARK;
     }
 
     private async colorHandler() {
-        const color = "#2f2e42"
+        const color = getComputedStyle(document.body).getPropertyValue("--ion-toolbar-background")
         const isDarkThemed = await this.isDarkThemed()
         this.changeStatusBarColor(color, isDarkThemed)
         this.changeNavigationBarColor(isDarkThemed)
@@ -202,19 +215,19 @@ export default class ThemeUtils {
         })
     }
 
-    private shadeColor(color: string, percent: number): string {
-
+    private shadeColor(color_: string, percent: number): string {
+        const color = color_.trim()
         var R = parseInt(color.substring(1, 3), 16);
         var G = parseInt(color.substring(3, 5), 16);
         var B = parseInt(color.substring(5, 7), 16);
 
-        R = Math.round(R * (100 + percent) / 100);
-        G = Math.round(G * (100 + percent) / 100);
-        B = Math.round(B * (100 + percent) / 100);
+        R = Math.round(R * ((100 + percent) / 100));
+        G = Math.round(G * ((100 + percent) / 100));
+        B = Math.round(B * ((100 + percent) / 100));
 
-        R = (R < 255) ? R : 255;
-        G = (G < 255) ? G : 255;
-        B = (B < 255) ? B : 255;
+        R = (R < 255) ? R < 0 ? 0 : R : 255;
+        G = (G < 255) ? G < 0 ? 0 : G : 255;
+        B = (B < 255) ? B < 0 ? 0 : B : 255;
 
         const RR = ((R.toString(16).length == 1) ? "0" + R.toString(16) : R.toString(16));
         const GG = ((G.toString(16).length == 1) ? "0" + G.toString(16) : G.toString(16));

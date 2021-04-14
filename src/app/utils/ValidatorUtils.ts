@@ -227,7 +227,8 @@ export class ValidatorUtils extends CacheModule {
 
         const remoteUpdatesPromise = this.getRemoteValidatorInfo(
             validatorString
-        )
+        ).catch(err => { return null })
+        if(remoteUpdatesPromise == null) return null
 
         const epoch = await epochPromise
         const remoteUpdates = await remoteUpdatesPromise
@@ -458,7 +459,8 @@ export class ValidatorUtils extends CacheModule {
     }
 
     async searchValidators(search: string): Promise<Validator[]> {
-        const result = await this.getRemoteValidatorInfo(search)
+        const result = await this.getRemoteValidatorInfo(search).catch(err => { return null })
+        if(result == null) return []
         const temp = this.convertToValidatorModel({ synced: false, storage: MEMORY, validatorResponse: result })
         await this.updateValidatorStates(temp)
         return temp
@@ -466,6 +468,7 @@ export class ValidatorUtils extends CacheModule {
 
     async searchValidatorsViaETH1(search: string, enforceMax: number = -1): Promise<Validator[]> {
         const result = await this.getRemoteValidatorViaETH1(search, enforceMax)
+        if(result == null) return []
         const temp = this.convertToValidatorModel({ synced: false, storage: MEMORY, validatorResponse: result })
         await this.updateValidatorStates(temp)
         return temp
@@ -478,7 +481,6 @@ export class ValidatorUtils extends CacheModule {
             return validator.name
         }
     }
-
 }
 
 export function getValidatorQueryString(validators: any[], getParamMaxLimit: number, maxValLimit: number = -1) { // Validator

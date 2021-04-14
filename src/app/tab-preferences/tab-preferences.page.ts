@@ -39,8 +39,8 @@ import { Platform } from '@ionic/angular';
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import { LicencesPage } from '../pages/licences/licences.page';
-import { MerchantUtils } from '../utils/MerchantUtils';
 import { SubscribePage } from '../pages/subscribe/subscribe.page';
+import { MerchantUtils } from '../utils/MerchantUtils';
 
 const { Device } = Plugins;
 const { Browser } = Plugins;
@@ -93,6 +93,9 @@ export class Tab3Page {
 
   stakingShare = null
 
+  themeColor: string
+  currentPlan: string
+
   constructor(
     private api: ApiService,
     private oauth: OAuthUtils,
@@ -107,12 +110,13 @@ export class Tab3Page {
     public platform: Platform,
     private alerts: AlertService,
     private sync: SyncService,
-    public merchant: MerchantUtils
+    private merchant: MerchantUtils
   ) { }
 
   ngOnInit() {
     this.notifyInitialized = false
     this.theme.isDarkThemed().then((result) => this.darkMode = result)
+    this.theme.getThemeColor().then((result) => this.themeColor = result)
 
     this.updateUtils.getETH1Client().then((result) => this.eth1client = result)
     this.updateUtils.getETH2Client().then((result) => this.eth2client = result)
@@ -130,6 +134,12 @@ export class Tab3Page {
 
     this.storage.getStakingShare().then((result) => this.stakingShare = result)
 
+    this.merchant.getCurrentPlanConfirmed().then((result) => {
+      // TODO: uncomment below to enforce
+      //this.currentPlan = result
+      this.currentPlan = "debug"
+    })
+
     this.fadeIn = "fade-in"
     setTimeout(() => {
       this.fadeIn = null
@@ -141,6 +151,17 @@ export class Tab3Page {
   private changeToggleSafely(func: () => void) {
     this.lockedToggle = true;
     func()
+  }
+
+  themeColorLock = false
+  changeThemeColor() {
+    this.themeColorLock = true;
+    this.theme.undoColor()
+    setTimeout(() => {
+      this.theme.toggle(this.darkMode, true, this.themeColor)
+      this.themeColorLock = false;
+    }, 250)
+    
   }
 
   ionViewWillEnter() {
@@ -508,6 +529,9 @@ export class Tab3Page {
     this.sync.syncAllSettings()
   }
 
+  manageSubs() {
+    this.merchant.manageSubscriptions()
+  }
 
   async partialStake() {
     const validatorCount = await this.validatorUtils.localValidatorCount()
@@ -607,6 +631,9 @@ export class Tab3Page {
     )
   }
 
+  restartApp() {
+    this.merchant.restartApp()
+  }
 
   toggleSnow() {
     this.theme.toggleWinter(this.snowing)

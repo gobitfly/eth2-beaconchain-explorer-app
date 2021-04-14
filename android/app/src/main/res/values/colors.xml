@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widgetBackgroundDark">#171e26</color>
+    <color name="widgetBackgroundDark2">#1c242e</color>
+    <color name="widgetTextDark">#FFFFFF</color>
+    <color name="widgetDescriptionDark">#AAFFFFFF</color>
+    <color name="widgetSwitchColorDark">#AAFFFFFF</color>
+    <color name="widgetStatusDark">#2dd36f</color>
+</resources>

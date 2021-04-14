@@ -151,7 +151,7 @@ export default class OverviewController {
 
 
     getAPR(effectiveBalance, performance) {
-        return new BigNumber(performance * 52 * 100 / effectiveBalance).decimalPlaces(1).toNumber()
+        return new BigNumber(performance * 5214 / effectiveBalance).decimalPlaces(1).toNumber()
     }
 
     getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {

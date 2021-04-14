@@ -34,6 +34,19 @@ export const MAP: ApiNetwork[] = [
         genesisTs: 1606824023
     },
 
+
+    {
+        key: "prater",
+        protocol: "https",
+        host: "beaconcha.in",
+        net: "prater.",
+        endpoint: "/api/",
+        version: "v1",
+        onlyDebug: false,
+        active: true,
+        genesisTs: 1614588812
+    },
+
     {
         key: "pyrmont",
         protocol: "https",
@@ -47,42 +60,6 @@ export const MAP: ApiNetwork[] = [
     },
 
     {
-        key: "medalla",
-        protocol: "https",
-        host: "beaconcha.in",
-        net: "medalla.",
-        endpoint: "/api/",
-        version: "v1",
-        onlyDebug: false,
-        active: true,
-        genesisTs: 1596546008
-    },
-
-    {
-        key: "zinken",
-        protocol: "https",
-        host: "beaconcha.in",
-        net: "zinken.",
-        endpoint: "/api/",
-        version: "v1",
-        onlyDebug: false,
-        active: true,
-        genesisTs: 1602504000
-    },
-
-    {
-        key: "toledo",
-        protocol: "https",
-        host: "beaconcha.in",
-        net: "toledo.",
-        endpoint: "/api/",
-        version: "v1",
-        onlyDebug: false,
-        active: true,
-        genesisTs: 1605009608
-    },
-
-    {
         key: "local dev",
         protocol: "http",
         host: "192.168.0.124:3333",
@@ -93,7 +70,19 @@ export const MAP: ApiNetwork[] = [
         active: true,
         genesisTs: 1605009608 // Arbitrary, doesnt matter on local
     },
-    
+
+  /*  {
+        key: "local dev office",
+        protocol: "http",
+        host: "192.168.103.224:3333",
+        net: "",
+        endpoint: "/api/",
+        version: "v1",
+        onlyDebug: true,
+        active: true,
+        genesisTs: 1605009608 // Arbitrary, doesnt matter on local
+    },*/
+
     {
         key: "invalid (no connection)",
         protocol: "http",
@@ -106,17 +95,7 @@ export const MAP: ApiNetwork[] = [
         genesisTs: 1605009608 // Arbitrary, doesnt matter on invalid connection
     },
 
-    {
-        key: "testing 2",
-        protocol: "http",
-        host: "34.68.171.198",
-        net: "",
-        endpoint: "/api/",
-        version: "v1",
-        onlyDebug: true,
-        active: true,
-        genesisTs: 1605009608 // Arbitrary, doesnt matter on invalid connection
-    },
+ 
 ]
 
 export function findConfigForKey(key: string): ApiNetwork {

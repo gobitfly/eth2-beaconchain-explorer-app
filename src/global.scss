@@ -118,6 +118,11 @@ h3 {
   --font-family: "Varela";
 }
 
+ion-modal {
+  --width: 100% !important;
+  --height: 100% !important;
+}
+
 ion-toolbar ion-title {
   --color: var(--x-toolbar-title-color);
 
@@ -131,6 +136,12 @@ ion-toolbar ion-title {
   font-weight: 400;
   font-family: "Varela";
   font-size: 1.4em;
+}
+
+ion-card {
+  background-color: var(--background-color) !important;
+  --box-shadow: none;
+  box-shadow: none !important;
 }
 
 .highcharts-background {

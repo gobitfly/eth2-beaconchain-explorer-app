@@ -45,6 +45,19 @@ export class AlertService {
     await alert.present();
   }
 
+  async showSelect(title: string, inputs: any[], callback: (data) => void) {
+    const alert = await this.alertController.create({
+      header: title,
+      inputs: inputs,
+      buttons: [{
+        text: "OK",
+        handler: callback
+      }]
+    });
+
+    await alert.present();
+  }
+
   async showInfo(title: string, message: string) {
     const alert = await this.alertController.create({
       header: title,
