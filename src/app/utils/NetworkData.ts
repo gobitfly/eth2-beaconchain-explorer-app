@@ -35,6 +35,18 @@ export const MAP: ApiNetwork[] = [
     },
 
     {
+        key: "prater",
+        protocol: "https",
+        host: "beaconcha.in",
+        net: "prater.",
+        endpoint: "/api/",
+        version: "v1",
+        onlyDebug: false,
+        active: true,
+        genesisTs: 1614588812
+    },
+    
+    {
         key: "pyrmont",
         protocol: "https",
         host: "beaconcha.in",
