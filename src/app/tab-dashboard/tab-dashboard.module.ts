@@ -28,7 +28,7 @@ import { OfflineComponentModule } from '../components/offline/offline.module';
 import { HelpComponentModule } from '../components/help/help.module';
 import { Tab1PageRoutingModule } from './tab-dashboard-routing.module';
 import { PipesModule } from '../pipes/pipes.module'
-import { AdsenseModule } from 'ng2-adsense';
+//import { AdsenseModule } from 'ng2-adsense';
 
 @NgModule({
   imports: [
@@ -40,9 +40,9 @@ import { AdsenseModule } from 'ng2-adsense';
     Tab1PageRoutingModule,
     HelpComponentModule,
     PipesModule,
-    AdsenseModule.forRoot({
+    /*AdsenseModule.forRoot({
       adClient: 'ca-pub-7702781910716874'
-    })
+    })*/
   ],
   declarations: [Tab1Page]
 })
