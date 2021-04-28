@@ -28,6 +28,7 @@ import { ApiNetwork } from '../models/StorageTypes';
 import { isDevMode } from "@angular/core"
 import { Mutex } from 'async-mutex';
 import { MAP } from '../utils/NetworkData'
+import { AlertService } from './alert.service';
 
 const LOGTAG = "[ApiService]";
 
@@ -62,7 +63,9 @@ export class ApiService {
 
   public lastRefreshed = 0 // only updated by calls that have the updatesLastRefreshState flag enabled
 
-  constructor(private storage: StorageService) {
+  constructor(
+    private storage: StorageService
+  ) {
     this.isDebugMode().then((result) => {
       this.debug = result
       this.disableLogging()
@@ -125,6 +128,12 @@ export class ApiService {
     if (!result || result.length <= 0 || !result[0].access_token) {
       console.warn("could not refresh token", result)
       return null
+
+      /*if (result && result[0]) {
+        this.alertService.showInfo("Login Expired", "Please log back in to receive further notifications.")
+        this.storage.setAuthUser(null)
+      }
+      return*/
     }
 
     user.accessToken = result[0].access_token

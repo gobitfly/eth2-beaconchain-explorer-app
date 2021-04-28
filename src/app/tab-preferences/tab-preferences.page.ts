@@ -94,10 +94,7 @@ export class Tab3Page {
   stakingShare = null
 
   themeColor: string
-<<<<<<< Updated upstream
-=======
   widgetThemeColor: string
->>>>>>> Stashed changes
   currentPlan: string
 
   constructor(
@@ -157,13 +154,10 @@ export class Tab3Page {
     func()
   }
 
-<<<<<<< Updated upstream
-=======
   changeWidgetTheme() {
     
   }
 
->>>>>>> Stashed changes
   themeColorLock = false
   changeThemeColor() {
     this.themeColorLock = true;

@@ -5,6 +5,7 @@ import { MachineDetailPage } from '../machine-detail/machine-detail.page';
 import MachineController, { ProcessedStats, StatsResponse } from '../../controllers/MachineController'
 import { runCommandLine } from 'cordova-res';
 import { AlertService } from 'src/app/services/alert.service';
+import { GetMyMachinesRequest } from 'src/app/requests/requests';
 
 const OFFLINE_THRESHOLD = 5 * 60 * 1000 // 5 minutes
 
@@ -108,19 +109,19 @@ export class MachinesPage extends MachineController implements OnInit {
     })
   }
 
-  getAndProcessData() {
-    const data = this.mockStatsResponse()
+  async getAndProcessData() {
+    const data = await this.getData() // this.mockStatsResponse()  // 
+    console.log("machine data", data)
     if (data == null) {
       this.data = []
       return
     }
     this.data = this.combineByMachineName(
       this.filterMachines(data.validator),
-      this.filterMachines(data.slasher),
       this.filterMachines(data.node),
       this.filterMachines(data.system)
     )
-
+    console.log("aggregated data", this.data)
 
     this.showData = Object.keys(this.data).length > 0
 
@@ -177,6 +178,13 @@ export class MachinesPage extends MachineController implements OnInit {
     window.open('https://www.youtube.com/watch?v=lt-udg9zQSE', '_system', 'location=yes');
   }
 
+  private async getData(): Promise<StatsResponse> {
+    const request = new GetMyMachinesRequest()
+    const response = await this.api.execute(request)
+    const result = request.parse(response)
+    return result[0]
+  }
+
   private mockStatsResponse(): StatsResponse {
 
     return JSON.parse(`{
@@ -188,8 +196,6 @@ export class MachinesPage extends MachineController implements OnInit {
                   "cpu_process_seconds_total": 4,
                   "machine": "Manu",
                   "memory_process_bytes": 354321,
-                  "sync_eth1_fallback_configured": true,
-                  "sync_eth1_fallback_connected": false,
                   "sync_eth2_fallback_configured": false,
                   "sync_eth2_fallback_connected": false,
                   "timestamp": 16154603000,
@@ -202,8 +208,6 @@ export class MachinesPage extends MachineController implements OnInit {
                 "cpu_process_seconds_total": 15,
                 "machine": "Manu",
                 "memory_process_bytes": 454321,
-                "sync_eth1_fallback_configured": true,
-                "sync_eth1_fallback_connected": false,
                 "sync_eth2_fallback_configured": false,
                 "sync_eth2_fallback_connected": false,
                 "timestamp": 161546063000,
@@ -216,8 +220,6 @@ export class MachinesPage extends MachineController implements OnInit {
               "cpu_process_seconds_total": 38,
               "machine": "Manu",
               "memory_process_bytes": 154321,
-              "sync_eth1_fallback_configured": true,
-              "sync_eth1_fallback_connected": false,
               "sync_eth2_fallback_configured": false,
               "sync_eth2_fallback_connected": false,
               "timestamp": 161546123000,
@@ -230,8 +232,6 @@ export class MachinesPage extends MachineController implements OnInit {
             "cpu_process_seconds_total": 89,
             "machine": "Manu",
             "memory_process_bytes": 654321,
-            "sync_eth1_fallback_configured": true,
-            "sync_eth1_fallback_connected": false,
             "sync_eth2_fallback_configured": false,
             "sync_eth2_fallback_connected": false,
             "timestamp": 161546183000,
@@ -245,8 +245,6 @@ export class MachinesPage extends MachineController implements OnInit {
             "cpu_process_seconds_total": 160,
             "machine": "Manu",
             "memory_process_bytes": 454321,
-            "sync_eth1_fallback_configured": true,
-            "sync_eth1_fallback_connected": false,
             "sync_eth2_fallback_configured": false,
             "sync_eth2_fallback_connected": false,
             "timestamp": 161546243000,
@@ -254,64 +252,7 @@ export class MachinesPage extends MachineController implements OnInit {
             "validator_total": 3
         }
           ],
-          "slasher": [
-            {
-              "client_name": "lighthouse",
-              "client_version": "1.1.2",
-              "cpu_process_seconds_total": 9,
-              "machine": "Manu",
-              "memory_process_bytes": 354321,
-              "sync_eth1_fallback_configured": true,
-              "sync_eth1_fallback_connected": false,
-              "sync_eth2_fallback_configured": false,
-              "sync_eth2_fallback_connected": false,
-              "timestamp": 16154603000,
-              "validator_active": 2,
-              "validator_total": 3
-          },
-          {
-            "client_name": "lighthouse",
-            "client_version": "1.1.2",
-            "cpu_process_seconds_total": 14,
-            "machine": "Manu",
-            "memory_process_bytes": 254321,
-            "sync_eth1_fallback_configured": true,
-            "sync_eth1_fallback_connected": false,
-            "sync_eth2_fallback_configured": false,
-            "sync_eth2_fallback_connected": false,
-            "timestamp": 161546063000,
-            "validator_active": 2,
-            "validator_total": 3
-        },
-        {
-          "client_name": "lighthouse",
-          "client_version": "1.1.2",
-          "cpu_process_seconds_total": 28,
-          "machine": "Manu",
-          "memory_process_bytes": 554321,
-          "sync_eth1_fallback_configured": true,
-          "sync_eth1_fallback_connected": false,
-          "sync_eth2_fallback_configured": false,
-          "sync_eth2_fallback_connected": false,
-          "timestamp": 161546123000,
-          "validator_active": 2,
-          "validator_total": 3
-      },
-      {
-        "client_name": "lighthouse",
-        "client_version": "1.1.2",
-        "cpu_process_seconds_total": 49,
-        "machine": "Peter",
-        "memory_process_bytes": 454321,
-        "sync_eth1_fallback_configured": true,
-        "sync_eth1_fallback_connected": false,
-        "sync_eth2_fallback_configured": false,
-        "sync_eth2_fallback_connected": false,
-
-        "validator_active": 2,
-        "validator_total": 3
-    }
-          ],
+         
           "node": [
             {
               "client_name": "lighthouse",

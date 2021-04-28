@@ -42,7 +42,7 @@ class WebAPI(network: Network) {
 
     companion object {
         const val VALIDATOR_KEY = "{validators}"
-        const val ENDPOINT = "validator/$VALIDATOR_KEY/widget" //http://213.229.37.18:16903/api/v1/validator
+        const val ENDPOINT = "/validator/$VALIDATOR_KEY/widget"
 
         const val CURRENCY_KEY = "{currency}"
         const val COINBASE_ENPOINT = "https://api.coinbase.com/v2/prices/$CURRENCY_KEY/spot"

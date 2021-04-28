@@ -48,17 +48,6 @@ export default class MachineController {
             )
         }
 
-        if (current && current.slasher) {
-            chartData.push(
-                {
-                    name: 'Memory: Slasher',
-                    color: '#3335FF',
-                    data: this.timeAxisChanges(current.slasher, (value) => { return value.memory_process_bytes }),
-                    pointWidth: 25,
-                }
-            )
-        }
-
         if (current && current.system) {
             chartData.push(
                 {
@@ -82,10 +71,11 @@ export default class MachineController {
                 {
                     name: 'CPU: Validator',
                     color: '#7cb5ec',
-                    data: this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }),
+                    data: this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }, true),
                     pointWidth: 25,
                 }
             )
+           
         }
 
         if (current && current.node) {
@@ -93,18 +83,7 @@ export default class MachineController {
                 {
                     name: 'CPU: Node',
                     color: '#Dcb5ec',
-                    data: this.timeAxisChanges(current.node, (value) => { return value.cpu_process_seconds_total }),
-                    pointWidth: 25,
-                }
-            )
-        }
-
-        if (current && current.slasher) {
-            chartData.push(
-                {
-                    name: 'CPU: Slasher',
-                    color: '#3335FF',
-                    data: this.timeAxisChanges(current.slasher, (value) => { return value.cpu_process_seconds_total }),
+                    data: this.timeAxisChanges(current.node, (value) => { return value.cpu_process_seconds_total }, true),
                     pointWidth: 25,
                 }
             )
@@ -115,7 +94,7 @@ export default class MachineController {
                 {
                     name: 'CPU: System',
                     color: '#3FF5ec',
-                    data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }),
+                    data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }, true),
                     pointWidth: 25,
                 }
             )
@@ -178,32 +157,43 @@ export default class MachineController {
 
     // --- Data helper functions ---
 
-    public timeAxisChanges(data: StatsBase[], delegateValue: (value) => number, accumilative: boolean = true) {
+    public timeAxisChanges(data: StatsBase[], delegateValue: (value) => number, accumilative: boolean = false) {
         var result = []
         var summedUp = 0
+        var lastValue = 0
         data.forEach((value) => {
             const current = delegateValue(value)
+            if (accumilative && current > summedUp) summedUp = 0
+            if (accumilative) console.log("accu", summedUp, lastValue, current)
+            
+            const temp = accumilative ? summedUp - current : current
             result.push([
                 value.timestamp,
-                current - summedUp
+                temp > 0 ? temp: 0
             ])
-            if (accumilative) summedUp += current
+
+            lastValue = current
+            if (accumilative) {
+                
+                summedUp = lastValue
+            }
+           
         })
         return result
     }
 
-    public combineByMachineName(validator: [], slasher: [], node: [], system: []) {
-        const allKeys = this.findAllKeys(validator, slasher, node, system)
+    public combineByMachineName(validator: [], node: [], system: []) {
+        const allKeys = this.findAllKeys(validator, node, system)
         var result: ProcessedStats[] = []
         for (var key in allKeys) {
-            const unixTime = this.findAnyData(validator[key], slasher[key], node[key], system[key], (value) => { return value.timestamp })
+            const unixTime = this.findAnyData(validator[key], node[key], system[key], (value) => { return value.timestamp })
+            console.log("unixTime", unixTime)
             result[key] = {
                 validator: validator[key],
-                slasher: slasher[key],
                 node: node[key],
                 system: system[key],
-                client: this.findAnyData(validator[key], slasher[key], node[key], system[key], (value) => { return value.client_name }),
-                clientVersion: this.findAnyData(validator[key], slasher[key], node[key], system[key], (value) => { return value.client_version }),
+                client: this.findAnyData(validator[key], node[key], system[key], (value) => { return value.client_name }),
+                clientVersion: this.findAnyData(validator[key], node[key], system[key], (value) => { return value.client_version }),
                 formattedDate: unixTime ? new Date(unixTime) : null,
                 status: "ONLINE"
             }
@@ -211,12 +201,11 @@ export default class MachineController {
         return result
     }
 
-    public findAnyData(validator: [], slasher: [], node: [], system: [], dataCallback: (value) => any) {
+    public findAnyData(validator: [], node: [], system: [], dataCallback: (value) => any) {
         const result1 = this.findAnyDataIn(validator, dataCallback)
-        const result2 = this.findAnyDataIn(slasher, dataCallback)
         const result3 = this.findAnyDataIn(node, dataCallback)
         const result4 = this.findAnyDataIn(system, dataCallback)
-        return result1 != null ? result1 : result2 != null ? result2 : result3 != null ? result3 : result4 != null ? result4 : null
+        return result1 != null ? result1 : result3 != null ? result3 : result4 != null ? result4 : null
     }
 
     public findAnyDataIn(current: [], dataCallback: (value) => string) {
@@ -228,10 +217,9 @@ export default class MachineController {
         return null
     }
 
-    public findAllKeys(validator: [], slasher: [], node: [], system: []) {
+    public findAllKeys(validator: [], node: [], system: []) {
         var result = []
         for (var key in validator) { result[key] = true }
-        for (var key in slasher) { result[key] = true }
         for (var key in node) { result[key] = true }
         for (var key in system) { result[key] = true }
         return result
@@ -277,15 +265,12 @@ export interface ProcessBase extends StatsBase {
     client_version: string,
     cpu_process_seconds_total: number,
     memory_process_bytes: number,
-    sync_eth1_fallback_configured: boolean,
-    sync_eth1_fallback_connected: boolean,
     sync_eth2_fallback_configured: boolean,
     sync_eth2_fallback_connected: boolean,
 }
 
 export interface StatsResponse {
     validator: StatsValidator[],
-    slasher: StatsSlasher[],
     node: StatsNode[],
     system: StatsSystem[]
 }
@@ -295,8 +280,6 @@ export interface StatsValidator extends ProcessBase {
     validator_total: number
 }
 
-export interface StatsSlasher extends ProcessBase { }
-
 export interface StatsNode extends ProcessBase {
     disk_beaconchain_bytes_total: number,
     network_libp2p_bytes_total_receive: number,
@@ -305,6 +288,8 @@ export interface StatsNode extends ProcessBase {
     sync_eth1_connected: boolean,
     sync_eth2_synced: boolean,
     sync_beacon_head_slot: number
+    sync_eth1_fallback_configured: boolean,
+    sync_eth1_fallback_connected: boolean,
 }
 
 export interface StatsSystem extends StatsBase {

@@ -171,7 +171,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Reads',
           color: '#7cb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_reads_total }),
+          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_reads_total }, true),
           pointWidth: 25,
         }
       )
@@ -179,7 +179,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Writes',
           color: '#Dcb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_writes_total }),
+          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_writes_total }, true),
           pointWidth: 25,
         }
       )
@@ -196,7 +196,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Receive',
           color: '#7cb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.network_node_bytes_total_receive }),
+          data: this.timeAxisChanges(current.system, (value) => { return value.network_node_bytes_total_receive }, true),
           pointWidth: 25,
         }
       )
@@ -204,7 +204,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Transmit',
           color: '#Dcb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.network_node_bytes_total_transmit }),
+          data: this.timeAxisChanges(current.system, (value) => { return value.network_node_bytes_total_transmit }, true),
           pointWidth: 25,
         }
       )
@@ -221,7 +221,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Total',
           color: '#7cb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }),
+          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }, true),
           pointWidth: 25,
         }
       )
@@ -229,7 +229,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'User',
           color: '#Dcb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_user_seconds_total }),
+          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_user_seconds_total }, true),
           pointWidth: 25,
         }
       )
@@ -237,7 +237,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'IO Wait',
           color: '#3335FF',
-          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_iowait_seconds_total }),
+          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_iowait_seconds_total }, true),
           pointWidth: 25,
         }
       )
@@ -245,7 +245,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Idle',
           color: '#3FF5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_idle_seconds_total }),
+          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_idle_seconds_total }, true),
           pointWidth: 25,
         }
       )

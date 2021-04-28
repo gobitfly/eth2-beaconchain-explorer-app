@@ -24,7 +24,7 @@ class UpdateWidgetWork(appContext: Context, workerParams: WorkerParameters) :
             val storage = StorageBridge(applicationContext)
             val api = WebAPI(storage.getNetwork())
 
-            val validators = storage.getUserValidators()!!
+            val validators = requireNotNull(storage.getUserValidators()) { "null user validators" }
             val currency = storage.getUserSelectedCurrency()
 
             val data = api.getWidgetJson(validators)

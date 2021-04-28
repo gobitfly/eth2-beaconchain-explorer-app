@@ -12,12 +12,14 @@ class StorageBridge(val context: Context) {
 
     fun getUserSelectedCurrency(): Currency? {
         val data = getJSONObject(PREFERED_UNIT) ?: return null
-        return Currency(
-                data.getString("prefered"),
-                data.getString("coinbaseSpot"),
-                data.getString("symbol"),
-                data.getInt("rounding"),
-        )
+        try {
+            return Currency(
+                    data.getString("prefered"),
+                    data.getString("coinbaseSpot"),
+                    data.getString("symbol"),
+                    data.getInt("rounding"),
+            )
+        } catch(e: Exception) { return null }
     }
 
     fun getNetwork(): Network {

@@ -26,6 +26,7 @@ import { CacheModule } from '../utils/CacheModule'
 import BigNumber from 'bignumber.js';
 
 const { Storage } = Plugins;
+const { StorageMirror } = Plugins;
 
 const AUTH_USER = "auth_user";
 const PREFERENCES = "network_preferences";
@@ -45,6 +46,7 @@ export class StorageService extends CacheModule {
 
   constructor() {
     super()
+    this.reflectiOSStorage()
   }
 
   // --- upper level helper ---
@@ -180,6 +182,19 @@ export class StorageService extends CacheModule {
       key: key,
       value: value,
     });
+    this.reflectiOSStorage()
+  }
+
+  // sigh
+  private reflectiOSStorage() {
+    try {
+      StorageMirror.reflect([
+        "CapacitorStorage.prefered_unit",
+        "CapacitorStorage.network_preferences"
+      ])
+    } catch (e) {
+      console.warn("StorageMirror exception", e)
+    }
   }
 
   async getItem(key: string): Promise<string | null> {
@@ -202,6 +217,7 @@ export class StorageService extends CacheModule {
   async remove(key: string) {
     this.invalidateCache(key)
     await Storage.remove({ key: key });
+    this.reflectiOSStorage()
   }
 
   async keys() {
@@ -212,6 +228,7 @@ export class StorageService extends CacheModule {
   async clear() {
     this.invalidateAllCache()
     await Storage.clear();
+    this.reflectiOSStorage()
   }
 
 }

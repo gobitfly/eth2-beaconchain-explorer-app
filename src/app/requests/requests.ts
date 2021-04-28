@@ -19,6 +19,7 @@
  */
 
 import BigNumber from "bignumber.js";
+import { StatsResponse } from '../controllers/MachineController'
 
 export enum Method {
   GET,
@@ -331,6 +332,12 @@ export class GetMobileSettingsRequest extends APIRequest<MobileSettingsResponse>
 
 export class GetMyValidatorsRequest extends APIRequest<MyValidatorResponse> {
   resource = "user/validator/saved";
+  method = Method.GET;
+  requiresAuth = true
+}
+
+export class GetMyMachinesRequest extends APIRequest<StatsResponse> {
+  resource = "user/stats";
   method = Method.GET;
   requiresAuth = true
 }

@@ -61,9 +61,9 @@ export class MachinechartComponent implements OnInit {
       colors: ["#7cb5ec", "#ff835c", "#e4a354", "#2b908f", "#f45b5b", "#91e8e1"],
       xAxis: {
         lineWidth: 0,
-        tickColor: '#e5e1e1',
+        tickColor: '#e5e1e1', 
         type: 'datetime',
-        range: 6 * 60 * 1000,
+    
       },
       yAxis: [
         {
