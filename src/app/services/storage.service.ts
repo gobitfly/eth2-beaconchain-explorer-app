@@ -188,10 +188,12 @@ export class StorageService extends CacheModule {
   // sigh
   private reflectiOSStorage() {
     try {
-      StorageMirror.reflect([
-        "CapacitorStorage.prefered_unit",
-        "CapacitorStorage.network_preferences"
-      ])
+      StorageMirror.reflect({
+        keys: [
+          "_cap_prefered_unit",
+          "_cap_network_preferences"
+        ]
+      })
     } catch (e) {
       console.warn("StorageMirror exception", e)
     }
