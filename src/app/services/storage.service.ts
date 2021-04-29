@@ -188,6 +188,7 @@ export class StorageService extends CacheModule {
   // sigh
   private reflectiOSStorage() {
     try {
+      // TODO: Theres's a new prefix in capacitor 3
       StorageMirror.reflect({
         keys: [
           "_cap_prefered_unit",
@@ -195,7 +196,8 @@ export class StorageService extends CacheModule {
           "_cap_validators_main",
           "_cap_validators_pyrmont",
           "_cap_validators_prater",
-          "_cap_validators_staging"
+          "_cap_validators_staging",
+          "_cap_auth_user"
         ]
       })
     } catch (e) {
