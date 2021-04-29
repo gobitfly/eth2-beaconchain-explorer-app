@@ -111,9 +111,14 @@ export class MerchantUtils {
       console.log("merchant is not supported on this platform")
       return
     }
-    this.initProducts()
-    this.initCustomValidator()
-    this.setupListeners()
+    
+    try {
+      this.initProducts()
+      this.initCustomValidator()
+      this.setupListeners()
+    } catch (e) {
+      console.warn("MerchantUtils can not be initialized", e)
+    }
   }
 
   private initCustomValidator() {
