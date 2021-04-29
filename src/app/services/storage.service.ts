@@ -191,7 +191,11 @@ export class StorageService extends CacheModule {
       StorageMirror.reflect({
         keys: [
           "_cap_prefered_unit",
-          "_cap_network_preferences"
+          "_cap_network_preferences",
+          "_cap_validators_main",
+          "_cap_validators_pyrmont",
+          "_cap_validators_prater",
+          "_cap_validators_staging"
         ]
       })
     } catch (e) {
