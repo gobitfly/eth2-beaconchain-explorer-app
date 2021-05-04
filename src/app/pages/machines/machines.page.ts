@@ -6,8 +6,11 @@ import MachineController, { ProcessedStats, StatsResponse } from '../../controll
 import { runCommandLine } from 'cordova-res';
 import { AlertService } from 'src/app/services/alert.service';
 import { GetMyMachinesRequest } from 'src/app/requests/requests';
+import { Plugins } from '@capacitor/core';
 
 const OFFLINE_THRESHOLD = 5 * 60 * 1000 // 5 minutes
+
+const { Browser } = Plugins;
 
 @Component({
   selector: 'app-machines',
@@ -176,6 +179,11 @@ export class MachinesPage extends MachineController implements OnInit {
     this.count++;
     if (this.count % 3 != 0) return;
     window.open('https://www.youtube.com/watch?v=lt-udg9zQSE', '_system', 'location=yes');
+  }
+
+ 
+  async openBrowser(link) {
+    await Browser.open({ url: link, toolbarColor: "#2f2e42" });
   }
 
   private async getData(): Promise<StatsResponse> {

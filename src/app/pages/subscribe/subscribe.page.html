@@ -151,14 +151,14 @@
       </ion-label>
 
     </ion-item>
-    <span class="hint">25% will go to your selected ETH2 client when using device monitoring.</span>
+    <span class="hint">20% will go to your selected ETH2 client when using device monitoring.</span>
 
   </ion-list>
 
 
   <div class="detail-container" *ngIf="selectedPackage.purchaseKey != null">
     <ion-label class="link" (click)="trial()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Start with a
-      10 day free trial.</ion-label>
+      14 day free trial.</ion-label>
 
     <div>
       <ion-button (click)="purchase()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Subscribe for {{
