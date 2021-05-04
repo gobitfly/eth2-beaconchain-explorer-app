@@ -147,7 +147,7 @@ export class MerchantUtils {
         const result = await this.registerPurchaseOnRemote(purchaseData)
         if (!result) {
           this.alertService.showError("Purchase Error", "We could not confirm your purchase. Please try again later or contact us if this problem persists.", PURCHASEUTILS + 3)
-          callback(result)
+          callback(true)
           return
         }
         loading.dismiss();
