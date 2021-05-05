@@ -340,6 +340,11 @@ export class GetMyMachinesRequest extends APIRequest<StatsResponse> {
   resource = "user/stats";
   method = Method.GET;
   requiresAuth = true
+
+  constructor(offset: number = 0, limit: number = 180) {
+    super()
+    this.resource += "/" + offset + "/" + limit
+  }
 }
 
 export class RemoveMyValidatorsRequest extends APIRequest<ApiTokenResponse> {

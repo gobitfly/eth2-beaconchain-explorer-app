@@ -94,7 +94,7 @@ export class Tab3Page {
   stakingShare = null
 
   themeColor: string
-  widgetThemeColor: string
+  //widgetThemeColor: string
   currentPlan: string
 
   constructor(
@@ -653,6 +653,16 @@ export class Tab3Page {
           name: 'token',
           type: 'text',
           placeholder: 'Access token'
+        },
+        {
+          name: 'refreshtoken',
+          type: 'text',
+          placeholder: 'Refresh token'
+        },
+        {
+          name: 'expires',
+          type: 'number',
+          placeholder: 'Expires in'
         }
       ],
       buttons: [
@@ -668,8 +678,8 @@ export class Tab3Page {
           handler: (alertData) => {
             this.storage.setAuthUser({
               accessToken: alertData.token,
-              refreshToken: "-",
-              expiresIn: Number.MAX_SAFE_INTEGER
+              refreshToken: alertData.refreshtoken,
+              expiresIn: alertData.expires
             })
           }
         }

@@ -24,6 +24,7 @@ import * as StorageTypes from "../models/StorageTypes";
 import { findConfigForKey } from '../utils/NetworkData';
 import { CacheModule } from '../utils/CacheModule'
 import BigNumber from 'bignumber.js';
+import { Platform } from '@ionic/angular';
 
 const { Storage } = Plugins;
 const { StorageMirror } = Plugins;
@@ -44,7 +45,7 @@ export const SETTING_NOTIFY_CLIENTUPDATE = "setting_notify_clientupdate"
 })
 export class StorageService extends CacheModule {
 
-  constructor() {
+  constructor(private platform: Platform) {
     super()
     this.reflectiOSStorage()
   }
@@ -188,6 +189,7 @@ export class StorageService extends CacheModule {
   // sigh
   private reflectiOSStorage() {
     try {
+      if (!this.platform.is("ios")) return;
       // TODO: Theres's a new prefix in capacitor 3
       StorageMirror.reflect({
         keys: [

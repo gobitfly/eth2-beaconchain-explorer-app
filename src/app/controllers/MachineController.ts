@@ -26,12 +26,12 @@ export default class MachineController {
     public doMemoryCharts(current): any[] {
         const chartData = []
 
-        if (current && current.validator) {
+        if (current && current.system) {
             chartData.push(
                 {
-                    name: 'Memory: Validator',
+                    name: 'Memory: System',
                     color: '#7cb5ec',
-                    data: this.timeAxisChanges(current.validator, (value) => { return value.memory_process_bytes }),
+                    data: this.timeAxisChanges(current.system, (value) => { return value.memory_node_bytes_total }),
                     pointWidth: 25,
                 }
             )
@@ -48,16 +48,15 @@ export default class MachineController {
             )
         }
 
-        if (current && current.system) {
+        if (current && current.validator) {
             chartData.push(
                 {
-                    name: 'Memory: System',
+                    name: 'Memory: Validator',
                     color: '#3FF5ec',
-                    data: this.timeAxisChanges(current.system, (value) => { return value.memory_node_bytes_total }),
+                    data: this.timeAxisChanges(current.validator, (value) => { return value.memory_process_bytes }),
                     pointWidth: 25,
                 }
             )
-
         }
 
         return chartData
@@ -75,7 +74,6 @@ export default class MachineController {
                     pointWidth: 25,
                 }
             )
-           
         }
 
         if (current && current.node) {
@@ -98,7 +96,6 @@ export default class MachineController {
                     pointWidth: 25,
                 }
             )
-
         }
 
         return chartData
@@ -111,8 +108,8 @@ export default class MachineController {
             chartData.push(
                 {
                     name: 'ETH1 Fallback',
-                    color: '#7cb5ec',
-                    data: this.timeAxisChanges(current.node, (value) => { return value.sync_eth1_fallback_connected }, false),
+                    color: '#ffcc9c',
+                    data: this.timeAxisChanges(current.node, (value) => { return value.sync_eth1_fallback_connected ? 1 : 0 }, false),
                     pointWidth: 25,
                 }
             )
@@ -123,7 +120,7 @@ export default class MachineController {
                 {
                     name: 'ETH2 Fallback',
                     color: '#Dcb5ec',
-                    data: this.timeAxisChanges(current.validator, (value) => { return value.sync_eth2_fallback_connected }, false),
+                    data: this.timeAxisChanges(current.validator, (value) => { return value.sync_eth2_fallback_connected ? 1 : 0 }, false),
                     pointWidth: 25,
                 }
             )
@@ -134,7 +131,7 @@ export default class MachineController {
                 {
                     name: 'ETH1 Connected',
                     color: '#3335FF',
-                    data: this.timeAxisChanges(current.node, (value) => { return value.sync_eth1_connected }, false),
+                    data: this.timeAxisChanges(current.node, (value) => { return value.sync_eth1_connected ? 1 : 0 }, false),
                     pointWidth: 25,
                 }
             )
@@ -145,7 +142,7 @@ export default class MachineController {
                 {
                     name: 'ETH2 Synced',
                     color: '#3FF5ec',
-                    data: this.timeAxisChanges(current.node, (value) => { return value.sync_eth2_synced }, false),
+                    data: this.timeAxisChanges(current.node, (value) => { return value.sync_eth2_synced ? 1 : 0 }, false), 
                     pointWidth: 25,
                 }
             )
@@ -157,21 +154,44 @@ export default class MachineController {
 
     // --- Data helper functions ---
 
+    timeAxisRelative(max: any[], current: any[], inverted: boolean = false) {
+        var result = []
+        if (max.length != current.length) {
+            console.warn("timeAxisRelative max and current array is differently sized")
+            return []
+        }
+
+        for (var i = 0; i < max.length; i++) {
+            let value = Math.round((current[i][1] / max[i][1]) * 1000) / 10
+            result.push([
+                max[i][0],
+                inverted ? 100 - value : value 
+            ])
+        }
+        return result
+    }
+
     public timeAxisChanges(data: StatsBase[], delegateValue: (value) => number, accumilative: boolean = false) {
         var result = []
         var summedUp = 0
         var lastValue = 0
+        var lastTimestamp = -1
         data.forEach((value) => {
             const current = delegateValue(value)
             if (accumilative && current > summedUp) summedUp = 0
-            if (accumilative) console.log("accu", summedUp, lastValue, current)
             
             const temp = accumilative ? summedUp - current : current
+
+            if (lastTimestamp != -1 && lastTimestamp - 24 * 60 * 60 * 1000 > value.timestamp) {
+                return result
+            }
+
             result.push([
                 value.timestamp,
                 temp > 0 ? temp: 0
             ])
 
+            lastTimestamp = value.timestamp
             lastValue = current
             if (accumilative) {
                 
@@ -187,7 +207,6 @@ export default class MachineController {
         var result: ProcessedStats[] = []
         for (var key in allKeys) {
             const unixTime = this.findAnyData(validator[key], node[key], system[key], (value) => { return value.timestamp })
-            console.log("unixTime", unixTime)
             result[key] = {
                 validator: validator[key],
                 node: node[key],
@@ -208,9 +227,9 @@ export default class MachineController {
         return result1 != null ? result1 : result3 != null ? result3 : result4 != null ? result4 : null
     }
 
-    public findAnyDataIn(current: [], dataCallback: (value) => string) {
+    public findAnyDataIn(current: any[], dataCallback: (value) => string) {
         if (!current || current.length <= 0) return null
-        const result = dataCallback(current[current.length - 1])
+        const result = dataCallback(current[0])
         if (result && result != "") {
             return result
         }

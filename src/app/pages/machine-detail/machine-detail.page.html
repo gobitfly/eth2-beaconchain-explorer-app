@@ -127,7 +127,7 @@
           </span>
         </ion-label>
         <ion-label class="value">
-          {{ uptime | date:'short' }}
+          {{ uptime | date:'MMM d, y, h:mm a' }}
         </ion-label>
 
       </ion-item>
@@ -178,11 +178,23 @@
       <ion-item lines="none">
         <ion-label>
           <span>
+            Status
+          </span>
+        </ion-label>
+        <ion-label class="value">
+          {{ stateSynced }}
+        </ion-label>
+
+      </ion-item>
+
+      <ion-item lines="none">
+        <ion-label>
+          <span>
             Last update
           </span>
         </ion-label>
         <ion-label class="value">
-          {{ data.formattedDate | date:'short' }}
+          {{ data.formattedDate | date:'MMM d, y, h:mm a' }}
         </ion-label>
 
       </ion-item>

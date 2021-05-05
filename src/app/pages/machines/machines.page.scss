@@ -67,3 +67,31 @@ ion-segment {
   margin-top: 45px;
   color: var(--ion-text-color-lighter);
 }
+
+.nothingfound .title {
+  font-size: 25px;
+}
+
+.nothingfound ion-icon {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+
+  font-size: 55px;
+  color: var(--ion-text-color-lighter);
+}
+
+ion-button {
+  --border-radius: 55px;
+  text-transform: none;
+  width: 70%;
+  margin-top: 15px;
+  margin-bottom: 25px;
+  font-weight: bold !important;
+  font-size: 1em !important;
+  height: 44px;
+
+  // font-family: "Varela";
+  // --font-family: "Varela";
+}

@@ -33,7 +33,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
   threadCount: number = 0
   uptime: number = 0
   os: string
-
+  stateSynced: String
 
   private backbuttonSubscription: Subscription;
   constructor(private modalCtrl: ModalController) {
@@ -48,11 +48,14 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
     if (this.data) {
       this.os = this.formatOS(this.getLastFrom(this.data.system, (array) => array.misc_os))
-      this.uptime = this.getLastFrom(this.data.system, (array) => array.misc_node_boot_ts_seconds)
+      this.uptime = this.getLastFrom(this.data.system, (array) => array.misc_node_boot_ts_seconds) * 1000
       this.threadCount = this.getLastFrom(this.data.system, (array) => array.cpu_threads)
       this.coreCount = this.getLastFrom(this.data.system, (array) => array.cpu_cores)
 
       this.headslot = this.getLastFrom(this.data.node, (array) => array.sync_beacon_head_slot)
+
+      let synced = this.getLastFrom(this.data.node, (array) => array.sync_eth2_synced)
+      this.stateSynced = synced ? "Synced" : "Syncing"
     }
 
   }
@@ -68,7 +71,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
   private getLastFrom(dataArray: any[], callbackValue: (array) => any): any {
     if (!dataArray || dataArray.length <= 0) return null
-    return callbackValue(dataArray[dataArray.length - 1])
+    return callbackValue(dataArray[0])
   }
 
   ngOnDestroy() {
@@ -170,7 +173,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
       chartData.push(
         {
           name: 'Reads',
-          color: '#7cb5ec',
+          color: '#Dcb5ec',
           data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_reads_total }, true),
           pointWidth: 25,
         }
@@ -178,7 +181,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
       chartData.push(
         {
           name: 'Writes',
-          color: '#Dcb5ec',
+          color: '#7cb5ec',
           data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_writes_total }, true),
           pointWidth: 25,
         }
@@ -216,12 +219,17 @@ export class MachineDetailPage extends MachineController implements OnInit {
   public doCPUSystemCharts(current): any[] {
     const chartData = []
 
+    let cpuSystemTotal = this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }, true)
+    let idle = this.timeAxisChanges(current.system, (value) => { return value.cpu_node_idle_seconds_total }, true)
+    let user = this.timeAxisChanges(current.system, (value) => { return value.cpu_node_user_seconds_total }, true)
+    let io = this.timeAxisChanges(current.system, (value) => { return value.cpu_node_iowait_seconds_total }, true)
+
     if (current && current.system) {
       chartData.push(
         {
-          name: 'Total',
+          name: 'Total Usage',
           color: '#7cb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }, true),
+          data: this.timeAxisRelative(cpuSystemTotal, idle, true),
           pointWidth: 25,
         }
       )
@@ -229,7 +237,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'User',
           color: '#Dcb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_user_seconds_total }, true),
+          data: this.timeAxisRelative(cpuSystemTotal, user, false),
           pointWidth: 25,
         }
       )
@@ -237,18 +245,18 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'IO Wait',
           color: '#3335FF',
-          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_iowait_seconds_total }, true),
+          data: this.timeAxisRelative(cpuSystemTotal, io, false),
           pointWidth: 25,
         }
       )
-      chartData.push(
+      /*chartData.push(
         {
           name: 'Idle',
           color: '#3FF5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_idle_seconds_total }, true),
+          data: idle,
           pointWidth: 25,
         }
-      )
+      )*/
     }
 
     return chartData
@@ -266,14 +274,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
           pointWidth: 25,
         }
       )
-      chartData.push(
-        {
-          name: 'Free',
-          color: '#Dcb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.memory_node_bytes_free }),
-          pointWidth: 25,
-        }
-      )
+
       chartData.push(
         {
           name: 'Cached',
@@ -287,6 +288,14 @@ export class MachineDetailPage extends MachineController implements OnInit {
           name: 'Buffer',
           color: '#3FF5ec',
           data: this.timeAxisChanges(current.system, (value) => { return value.memory_node_bytes_buffers }),
+          pointWidth: 25,
+        }
+      )
+      chartData.push(
+        {
+          name: 'Free',
+          color: '#Dcb5ec',
+          data: this.timeAxisChanges(current.system, (value) => { return value.memory_node_bytes_free }),
           pointWidth: 25,
         }
       )

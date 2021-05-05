@@ -58,7 +58,7 @@ export class MachinechartComponent implements OnInit {
       title: {
         text: '' //Balance History for all Validators
       },
-      colors: ["#7cb5ec", "#ff835c", "#e4a354", "#2b908f", "#f45b5b", "#91e8e1"],
+      colors: ["#ff835c", "#e4a354", "#2b908f", "#7cb5ec", "#f45b5b", "#91e8e1"],
       xAxis: {
         lineWidth: 0,
         tickColor: '#e5e1e1', 

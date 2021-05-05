@@ -68,6 +68,8 @@ export class MachinesPage extends MachineController implements OnInit {
   }
 
   openTimeSelection() {
+
+
     // TODO: only for premium users
     this.alertService.showSelect("Time", [
       {
@@ -101,19 +103,35 @@ export class MachinesPage extends MachineController implements OnInit {
         type: "radio"
       },
       {
-        name: "14timed",
+        name: "time",
         label: "14d",
         value: "14d",
         type: "radio"
       }
     ], (data) => {
-      console.log("select data", data)
-      this.selectedTimeFrame = data
+      if (data) {
+        if (data != this.selectedChart) {
+          this.selectedTimeFrame = data
+          this.getAndProcessData()
+        }
+      }
     })
   }
 
+  getTimeSelectionLimit(): number {
+    switch (this.selectedTimeFrame) {
+      case "3h": return 180
+      case "12h": return 720
+      case "24h": return 1440
+      case "2d": return 2880
+      case "7d": return 10080
+      case "14d": return 20160
+    }
+    return 180
+  }
+
   async getAndProcessData() {
-    const data = await this.getData() // this.mockStatsResponse()  // 
+    const data = await this.getData()
     console.log("machine data", data)
     if (data == null) {
       this.data = []
@@ -124,34 +142,8 @@ export class MachinesPage extends MachineController implements OnInit {
       this.filterMachines(data.node),
       this.filterMachines(data.system)
     )
-    console.log("aggregated data", this.data)
 
     this.showData = Object.keys(this.data).length > 0
-
-    /* const allKeys = Object.keys(this.data)
- 
-     for (let key of allKeys) {
-       const current = this.data[key]
-       this.doCPUCharts(key, current)
-       this.doMemoryCharts(key, current)
-       this.doSyncCharts(key, current)
-     }
-     
- 
-     
- 
-     setTimeout(() => {
-       console.log("all data", this.data)
-       const allKeys = Object.keys(this.data)
- 
-       for (let key of allKeys) {
-         const current = this.data[key]
-         this.doCPUCharts(key, current)
-         this.doMemoryCharts(key, current)
-         this.doSyncCharts(key, current)
-       }
-     }, 700); */
-
   }
 
   async openMachineDetail(key) {
@@ -187,186 +179,10 @@ export class MachinesPage extends MachineController implements OnInit {
   }
 
   private async getData(): Promise<StatsResponse> {
-    const request = new GetMyMachinesRequest()
+    const request = new GetMyMachinesRequest(0, this.getTimeSelectionLimit())
     const response = await this.api.execute(request)
     const result = request.parse(response)
     return result[0]
-  }
-
-  private mockStatsResponse(): StatsResponse {
-
-    return JSON.parse(`{
-
-          "validator": [
-              {
-                  "client_name": "lighthouse",
-                  "client_version": "1.1.2",
-                  "cpu_process_seconds_total": 4,
-                  "machine": "Manu",
-                  "memory_process_bytes": 354321,
-                  "sync_eth2_fallback_configured": false,
-                  "sync_eth2_fallback_connected": false,
-                  "timestamp": 16154603000,
-                  "validator_active": 2,
-                  "validator_total": 3
-              },
-              {
-                "client_name": "lighthouse",
-                "client_version": "1.1.2",
-                "cpu_process_seconds_total": 15,
-                "machine": "Manu",
-                "memory_process_bytes": 454321,
-                "sync_eth2_fallback_configured": false,
-                "sync_eth2_fallback_connected": false,
-                "timestamp": 161546063000,
-                "validator_active": 2,
-                "validator_total": 3
-            },
-            {
-              "client_name": "lighthouse",
-              "client_version": "1.1.2",
-              "cpu_process_seconds_total": 38,
-              "machine": "Manu",
-              "memory_process_bytes": 154321,
-              "sync_eth2_fallback_configured": false,
-              "sync_eth2_fallback_connected": false,
-              "timestamp": 161546123000,
-              "validator_active": 2,
-              "validator_total": 3
-          },
-          {
-            "client_name": "lighthouse",
-            "client_version": "1.1.2",
-            "cpu_process_seconds_total": 89,
-            "machine": "Manu",
-            "memory_process_bytes": 654321,
-            "sync_eth2_fallback_configured": false,
-            "sync_eth2_fallback_connected": false,
-            "timestamp": 161546183000,
-            "validator_active": 2,
-            "validator_total": 3
-        }
-        ,
-          {
-            "client_name": "lighthouse",
-            "client_version": "1.1.2",
-            "cpu_process_seconds_total": 160,
-            "machine": "Manu",
-            "memory_process_bytes": 454321,
-            "sync_eth2_fallback_configured": false,
-            "sync_eth2_fallback_connected": false,
-            "timestamp": 161546243000,
-            "validator_active": 2,
-            "validator_total": 3
-        }
-          ],
-         
-          "node": [
-            {
-              "client_name": "lighthouse",
-              "client_version": "1.1.2",
-              "cpu_process_seconds_total": 10,
-              "machine": "Manu",
-              "memory_process_bytes": 654321,
-              "sync_eth1_fallback_configured": true,
-              "sync_eth1_fallback_connected": false,
-              "sync_eth2_fallback_configured": false,
-              "sync_eth2_fallback_connected": false,
-              "timestamp": 16154603000,
-              "validator_active": 2,
-              "validator_total": 3,
-              "sync_eth1_connected": true,
-              "sync_eth2_synced": true,
-              "network_peers_connected": 52,
-              "sync_beacon_head_slot": 4444
-            },
-            {
-              "client_name": "lighthouse",
-              "client_version": "1.1.2",
-              "cpu_process_seconds_total": 80,
-              "machine": "Manu",
-              "memory_process_bytes": 654321,
-              "sync_eth1_fallback_configured": true,
-              "sync_eth1_fallback_connected": false,
-              "sync_eth2_fallback_configured": false,
-              "sync_eth2_fallback_connected": false,
-              "timestamp": 161546063000,
-              "validator_active": 2,
-              "validator_total": 3,
-              "sync_eth1_connected": true,
-              "sync_eth2_synced": false,
-              "network_peers_connected": 54,
-              "sync_beacon_head_slot": 4444
-          },
-          {
-            "client_name": "lighthouse",
-            "client_version": "1.1.2",
-            "cpu_process_seconds_total": 200,
-            "machine": "Manu",
-            "memory_process_bytes": 654321,
-            "sync_eth1_fallback_configured": true,
-            "sync_eth1_fallback_connected": false,
-            "sync_eth2_fallback_configured": false,
-            "sync_eth2_fallback_connected": false,
-            "timestamp": 161546123000,
-            "validator_active": 2,
-            "validator_total": 3,
-            "sync_eth1_connected": true,
-            "sync_eth2_synced": true,
-            "network_peers_connected": 52,
-            "sync_beacon_head_slot": 4445
-        }
-          ],
-          "system": [
-              {
-                  "cpu_cores": 2,
-                  "cpu_node_idle_seconds_total": 2547282,
-                  "cpu_node_iowait_seconds_total": 654394,
-                  "cpu_node_system_seconds_total": 200,
-                  "cpu_node_user_seconds_total": 200,
-                  "cpu_threads": 4,
-                  "disk_node_bytes_free": 7777770,
-                  "disk_node_bytes_total": 9999900,
-                  "disk_node_io_seconds": 231232132,
-                  "disk_node_reads_total": 929292,
-                  "disk_node_writes_total": 6666,
-                  "machine": "Manu",
-                  "memory_node_bytes_buffers": 99999,
-                  "memory_node_bytes_cached": 577777,
-                  "memory_node_bytes_free": 4545454,
-                  "memory_node_bytes_total": 798908,
-                  "misc_node_boot_ts_seconds": 999,
-                  "misc_os": "lin",
-                  "network_node_bytes_total_receive": 1222,
-                  "network_node_bytes_total_transmit": 1333,
-                  "timestamp": 16154603000
-              },
-              {
-                  "cpu_cores": 2,
-                  "cpu_node_idle_seconds_total": 2547282,
-                  "cpu_node_iowait_seconds_total": 654394,
-                  "cpu_node_system_seconds_total": 287,
-                  "cpu_node_user_seconds_total": 287,
-                  "cpu_threads": 4,
-                  "disk_node_bytes_free": 8777770,
-                  "disk_node_bytes_total": 10999900,
-                  "disk_node_io_seconds": 231232132,
-                  "disk_node_reads_total": 1229292,
-                  "disk_node_writes_total": 136666,
-                  "machine": "Manu",
-                  "memory_node_bytes_buffers": 99999,
-                  "memory_node_bytes_cached": 577777,
-                  "memory_node_bytes_free": 4545454,
-                  "memory_node_bytes_total": 798908,
-                  "misc_node_boot_ts_seconds": 999,
-                  "misc_os": "lin",
-                  "network_node_bytes_total_receive": 1444,
-                  "network_node_bytes_total_transmit": 1666,
-                  "timestamp": 161546063000
-              }
-          ]
-    
-  }`);
   }
 
 }
