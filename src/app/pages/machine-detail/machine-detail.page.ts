@@ -71,7 +71,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
   private getLastFrom(dataArray: any[], callbackValue: (array) => any): any {
     if (!dataArray || dataArray.length <= 0) return null
-    return callbackValue(dataArray[0])
+    return callbackValue(dataArray[dataArray.length - 1])
   }
 
   ngOnDestroy() {
@@ -104,6 +104,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
       )
     }
 
+    chartData.push(this.addBytesConfig())
+
     return chartData
   }
 
@@ -121,6 +123,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
       )
     }
 
+    chartData.push(this.addAbsoluteConfig())
+
     return chartData
   }
 
@@ -137,6 +141,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         }
       )
     }
+    chartData.push(this.addBytesConfig())
 
     return chartData
   }
@@ -163,6 +168,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
       )
     }
 
+    chartData.push(this.addAbsoluteConfig())
+
     return chartData
   }
 
@@ -188,18 +195,23 @@ export class MachineDetailPage extends MachineController implements OnInit {
       )
     }
 
+    chartData.push(this.addAbsoluteConfig())
+
     return chartData
   }
 
   public doNetworkCharts(current): any[] {
     const chartData = []
 
+    const lighthouseBitsBytesConvFix = current.client == "lighthouse" ? 8 : 1
+
     if (current && current.system) {
+      console.log("system", current.system)
       chartData.push(
         {
           name: 'Receive',
           color: '#7cb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.network_node_bytes_total_receive }, true),
+          data: this.timeAxisChanges(current.system, (value) => { return value.network_node_bytes_total_receive / lighthouseBitsBytesConvFix }, true),
           pointWidth: 25,
         }
       )
@@ -207,11 +219,13 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Transmit',
           color: '#Dcb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.network_node_bytes_total_transmit }, true),
+          data: this.timeAxisChanges(current.system, (value) => { return value.network_node_bytes_total_transmit/ lighthouseBitsBytesConvFix}, true),
           pointWidth: 25,
         }
       )
     }
+
+    chartData.push(this.addBytesConfig(true))
 
     return chartData
   }
@@ -259,6 +273,29 @@ export class MachineDetailPage extends MachineController implements OnInit {
       )*/
     }
 
+    chartData.push({
+      config: {
+          tooltip: {
+              style: {
+                  color: 'var(--text-color)',
+                  fontWeight: 'bold'
+                },
+              valueSuffix: "%"
+        },
+        yAxis: 
+          {
+          labels: {
+            x: -5,
+              formatter: function () {
+                return this.value + "%"
+              },
+  
+            }
+          }
+        ,
+      }
+  })
+
     return chartData
   }
 
@@ -300,6 +337,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
         }
       )
     }
+
+    chartData.push(this.addBytesConfig())
 
     return chartData
   }

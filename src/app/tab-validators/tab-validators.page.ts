@@ -239,12 +239,12 @@ export class Tab2Page {
         console.log("SET reachedMaxValidators to true")
         this.reachedMaxValidators = true
 
-        return await this.validatorUtils.searchValidatorsViaETH1(target, 99)
+        return await this.validatorUtils.searchValidatorsViaETH1(target, this.currentPackageMaxValidators -1)
       }
       return []
     })
  
-    this.items = await this.applyAttestationEffectiveness(temp, target)
+    this.items = temp// await this.applyAttestationEffectiveness(temp, target)
     Tab2Page.itemCount = this.items.length
   }
 

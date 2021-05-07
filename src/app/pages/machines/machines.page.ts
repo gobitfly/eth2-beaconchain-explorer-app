@@ -7,8 +7,9 @@ import { runCommandLine } from 'cordova-res';
 import { AlertService } from 'src/app/services/alert.service';
 import { GetMyMachinesRequest } from 'src/app/requests/requests';
 import { Plugins } from '@capacitor/core';
+import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 
-const OFFLINE_THRESHOLD = 5 * 60 * 1000 // 5 minutes
+const OFFLINE_THRESHOLD = 8 * 60 * 1000 
 
 const { Browser } = Plugins;
 
@@ -25,6 +26,8 @@ export class MachinesPage extends MachineController implements OnInit {
   showData = false
   selectedTimeFrame = "3h"
 
+  hasHistoryPremium = false;
+
   cpuDelegate = (data) => { return this.doCPUCharts(data) }
   memoryDelegate = (data) => { return this.doMemoryCharts(data) }
   syncDelegate = (data) => { return this.doSyncCharts(data) }
@@ -37,9 +40,14 @@ export class MachinesPage extends MachineController implements OnInit {
   constructor(
     private api: ApiService,
     private modalController: ModalController,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private merchant: MerchantUtils
   ) {
     super()
+
+    this.merchant.hasMachineHistoryPremium().then((result) => {
+      this.hasHistoryPremium = result
+    });
   }
 
   ngOnInit() {
@@ -68,7 +76,10 @@ export class MachinesPage extends MachineController implements OnInit {
   }
 
   openTimeSelection() {
-
+    if (!this.hasHistoryPremium) {
+      this.alertService.showInfo("Premium Feature", "For more machine history upgrade to a premium version.")
+      return
+    }
 
     // TODO: only for premium users
     this.alertService.showSelect("Time", [

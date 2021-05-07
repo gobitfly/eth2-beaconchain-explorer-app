@@ -132,7 +132,7 @@ export function highChartOptions(where) {
       plotOptions: {
 
         series: {
-          fillOpacity: 0.3,
+          fillOpacity: 0.1,
           marker: {
             enabled: false
           }

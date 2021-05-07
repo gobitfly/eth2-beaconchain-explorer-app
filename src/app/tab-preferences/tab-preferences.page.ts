@@ -137,8 +137,8 @@ export class Tab3Page {
 
     this.merchant.getCurrentPlanConfirmed().then((result) => {
       // TODO: uncomment below to enforce
-      //this.currentPlan = result
-      this.currentPlan = "debug"
+      this.currentPlan = result
+      //this.currentPlan = "debug"
     })
 
     this.fadeIn = "fade-in"

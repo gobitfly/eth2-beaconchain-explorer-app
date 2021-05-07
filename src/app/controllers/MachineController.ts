@@ -18,9 +18,95 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+const bytes = (function(){
+
+    var s = ['b', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
+        tempLabel = [], 
+        count;
+    
+    return function(bytes, label, isFirst, precision = 3) {
+        var e, value;
+        
+        if (bytes == 0) 
+            return 0;
+        
+        if( isFirst )
+            count = 0;
+        
+        e = Math.floor(Math.log(bytes) / Math.log(1024));
+        value = (bytes / Math.pow(1024, Math.floor(e))).toFixed(precision);
+
+        tempLabel[count] = value;        
+        if( count > 0 && Math.abs(tempLabel[count-1]-tempLabel[count])<0.0001 )
+            value = (bytes / Math.pow(1024, Math.floor(--e))).toFixed(precision);
+        
+        e = (e < 0) ? (-e) : e;
+        if (label) value += ' ' + s[e];
+        
+        count++;
+        return value;
+    }
+
+})();
+
+
 export default class MachineController {
 
     public chartErrors: boolean[] = []
+
+    public addBytesConfig(perS: boolean = false) {
+        return {
+            config: {
+                tooltip: {
+                    style: {
+                        color: 'var(--text-color)',
+                        fontWeight: 'bold'
+                      },
+                    pointFormatter: function () {
+                      var point = this;
+                      return '<span style="color:' + point.color + '">\u25CF</span> ' + point.series.name + ': <b>' + bytes(point.y, true, true) + (perS ? "/s" : "") + "</b>"
+                    }
+                },
+                yAxis: {
+                    
+                    labels: {
+                        x: -5,
+                        formatter: function() {
+                            return bytes(this.value, true, this.isFirst, 0) + (perS ? "/s" : "");
+                        }
+                    }
+                },
+            }
+        }
+    }
+
+    public addAbsoluteConfig() {
+        return {
+            config: {
+                tooltip: {
+                    style: {
+                        color: 'var(--text-color)',
+                        fontWeight: 'bold'
+                      },
+                    pointFormatter: function () {
+                      var point = this;
+                      return '<span style="color:' + point.color + '">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(0)  + "</b>"
+                    }
+                },
+                yAxis: 
+                    {
+                    labels: {
+                        x: -5,
+                        formatter: function () {
+                          return this.value
+                        },
+            
+                      }
+                    }
+                  ,
+            }
+        }
+    }
 
 
     public doMemoryCharts(current): any[] {
@@ -59,18 +145,25 @@ export default class MachineController {
             )
         }
 
+        chartData.push(this.addBytesConfig())
+
         return chartData
     }
 
     public doCPUCharts(current): any[] {
         const chartData = []
 
+        let cpuSystemTotal = this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }, true)
+        let cpuValidator = this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }, true)
+        let cpuNode = this.timeAxisChanges(current.node, (value) => { return value.cpu_process_seconds_total }, true)
+        
+
         if (current && current.validator) {
             chartData.push(
                 {
                     name: 'CPU: Validator',
                     color: '#7cb5ec',
-                    data: this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }, true),
+                    data: this.timeAxisRelative(cpuSystemTotal, cpuValidator, true), //this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }, true),
                     pointWidth: 25,
                 }
             )
@@ -81,13 +174,13 @@ export default class MachineController {
                 {
                     name: 'CPU: Node',
                     color: '#Dcb5ec',
-                    data: this.timeAxisChanges(current.node, (value) => { return value.cpu_process_seconds_total }, true),
+                    data: this.timeAxisRelative(cpuSystemTotal, cpuNode, true), //this.timeAxisChanges(current.node, (value) => { return value.cpu_process_seconds_total }, true),
                     pointWidth: 25,
                 }
             )
         }
 
-        if (current && current.system) {
+       /* if (current && current.system) {
             chartData.push(
                 {
                     name: 'CPU: System',
@@ -96,7 +189,34 @@ export default class MachineController {
                     pointWidth: 25,
                 }
             )
-        }
+        }*/
+
+        chartData.push({
+            config: {
+                tooltip: {
+                    style: {
+                        color: 'var(--text-color)',
+                        fontWeight: 'bold'
+                      },
+                    valueSuffix: "%"
+                },
+                yAxis: 
+                    {
+                     
+                    labels: {
+                        x: -5,
+                        formatter: function () {
+                          return this.value + "%"
+                        },
+            
+                      }
+                    }
+                  ,
+            }
+        })
+ /*
+
+    }*/
 
         return chartData
     }
@@ -120,7 +240,7 @@ export default class MachineController {
                 {
                     name: 'ETH2 Fallback',
                     color: '#Dcb5ec',
-                    data: this.timeAxisChanges(current.validator, (value) => { return value.sync_eth2_fallback_connected ? 1 : 0 }, false),
+                    data: this.timeAxisChanges(current.validator, (value) => { return value.sync_eth2_fallback_connected ? 1.1 : 0 }, false),
                     pointWidth: 25,
                 }
             )
@@ -131,7 +251,7 @@ export default class MachineController {
                 {
                     name: 'ETH1 Connected',
                     color: '#3335FF',
-                    data: this.timeAxisChanges(current.node, (value) => { return value.sync_eth1_connected ? 1 : 0 }, false),
+                    data: this.timeAxisChanges(current.node, (value) => { return value.sync_eth1_connected ? 1.2 : 0 }, false),
                     pointWidth: 25,
                 }
             )
@@ -142,12 +262,38 @@ export default class MachineController {
                 {
                     name: 'ETH2 Synced',
                     color: '#3FF5ec',
-                    data: this.timeAxisChanges(current.node, (value) => { return value.sync_eth2_synced ? 1 : 0 }, false), 
+                    data: this.timeAxisChanges(current.node, (value) => { return value.sync_eth2_synced ? 1.3 : 0 }, false), 
                     pointWidth: 25,
                 }
             )
-
         }
+
+        chartData.push({
+            config: {
+                tooltip: {
+                    style: {
+                        color: 'var(--text-color)',
+                        fontWeight: 'bold'
+                      },
+                    pointFormatter: function () {
+                      var point = this;
+                      return '<span style="color:' + point.color + '">\u25CF</span> ' + point.series.name + ': <b>' + (point.y ? "True" : "False") + "</b>"
+                    }
+                },
+                yAxis: 
+                    {
+                    labels: {
+                            x: -5,
+                        step: 1,
+                        formatter: function () {
+                          return this.value >= 1 ? "True" : "False"
+                        },
+            
+                      }
+                    }
+                  ,
+            }
+        })
 
         return chartData
     }
@@ -156,15 +302,34 @@ export default class MachineController {
 
     timeAxisRelative(max: any[], current: any[], inverted: boolean = false) {
         var result = []
-        if (max.length != current.length) {
+        /*if (max.length != current.length) {
             console.warn("timeAxisRelative max and current array is differently sized")
             return []
-        }
+        }*/
+
+        var maxOffset = 0
+        var currentOffest = 0
 
         for (var i = 0; i < max.length; i++) {
-            let value = Math.round((current[i][1] / max[i][1]) * 1000) / 10
+            if (current.length <= i + currentOffest) break;
+            if (max.length <= i + maxOffset) break;
+            var curV = current[i + currentOffest]
+            var maxV = max[i + maxOffset]
+
+            let drift = curV[0] - maxV[0]
+            if (drift > 60000) {
+                currentOffest++;
+                if (current.length <= i + currentOffest) break;
+                curV = current[i + currentOffest]
+            } else if (drift < 60000) {
+                maxOffset++
+                if (max.length <= i + maxOffset) break;
+                maxV = max[i + currentOffest];
+            }
+
+            let value = Math.round((curV[1] / maxV[1]) * 1000) / 10
             result.push([
-                max[i][0],
+                maxV[0],
                 inverted ? 100 - value : value 
             ])
         }
@@ -173,23 +338,25 @@ export default class MachineController {
 
     public timeAxisChanges(data: StatsBase[], delegateValue: (value) => number, accumilative: boolean = false) {
         var result = []
-        var summedUp = 0
+        var summedUp = -1
         var lastValue = 0
         var lastTimestamp = -1
         data.forEach((value) => {
             const current = delegateValue(value)
-            if (accumilative && current > summedUp) summedUp = 0
+            if (accumilative && current < summedUp) summedUp = 0
             
-            const temp = accumilative ? summedUp - current : current
+            const temp = accumilative ? current - summedUp : current
 
-            if (lastTimestamp != -1 && lastTimestamp - 24 * 60 * 60 * 1000 > value.timestamp) {
-                return result
+            if (lastTimestamp != -1 && lastTimestamp + 24 * 60 * 60 * 1000 < value.timestamp) {
+                result = []
             }
 
-            result.push([
-                value.timestamp,
-                temp > 0 ? temp: 0
-            ])
+            if (summedUp != -1 || !accumilative) {
+                result.push([
+                    value.timestamp,
+                    temp > 0 ? temp : 0
+                ])
+            }
 
             lastTimestamp = value.timestamp
             lastValue = current
@@ -202,17 +369,21 @@ export default class MachineController {
         return result
     }
 
-    public combineByMachineName(validator: [], node: [], system: []) {
+    public combineByMachineName(validator: any[], node: any[], system: any[]) {
         const allKeys = this.findAllKeys(validator, node, system)
         var result: ProcessedStats[] = []
         for (var key in allKeys) {
-            const unixTime = this.findAnyData(validator[key], node[key], system[key], (value) => { return value.timestamp })
+            let sortedVal = this.sortData(validator[key]) as StatsValidator[]
+            let sortedNode = this.sortData(node[key]) as StatsNode[]
+            let sortedSystem = this.sortData(system[key]) as StatsSystem[]
+
+            const unixTime = this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => { return value.timestamp })
             result[key] = {
-                validator: validator[key],
-                node: node[key],
-                system: system[key],
-                client: this.findAnyData(validator[key], node[key], system[key], (value) => { return value.client_name }),
-                clientVersion: this.findAnyData(validator[key], node[key], system[key], (value) => { return value.client_version }),
+                validator: sortedVal,
+                node: sortedNode,
+                system: sortedSystem,
+                client: this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => { return value.client_name }),
+                clientVersion: this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => { return value.client_version }),
                 formattedDate: unixTime ? new Date(unixTime) : null,
                 status: "ONLINE"
             }
@@ -220,7 +391,16 @@ export default class MachineController {
         return result
     }
 
-    public findAnyData(validator: [], node: [], system: [], dataCallback: (value) => any) {
+    public sortData<Type extends StatsBase>(array: Type[]): Type[] {
+        if(!array) return array
+        return array.sort((n1, n2) => {
+            if (n1.timestamp > n2.timestamp) return 1
+            if (n1.timestamp < n2.timestamp) return -1
+            return 0
+        })
+    }
+
+    public findAnyData(validator: any[], node: any[], system: any[], dataCallback: (value) => any) {
         const result1 = this.findAnyDataIn(validator, dataCallback)
         const result3 = this.findAnyDataIn(node, dataCallback)
         const result4 = this.findAnyDataIn(system, dataCallback)
@@ -229,14 +409,14 @@ export default class MachineController {
 
     public findAnyDataIn(current: any[], dataCallback: (value) => string) {
         if (!current || current.length <= 0) return null
-        const result = dataCallback(current[0])
+        const result = dataCallback(current[current.length - 1])
         if (result && result != "") {
             return result
         }
         return null
     }
 
-    public findAllKeys(validator: [], node: [], system: []) {
+    public findAllKeys(validator: any[], node: any[], system: any[]) {
         var result = []
         for (var key in validator) { result[key] = true }
         for (var key in node) { result[key] = true }
@@ -244,8 +424,8 @@ export default class MachineController {
         return result
     }
 
-    public filterMachines(data: StatsBase[]) {
-        var result: [] = []
+    public filterMachines<Type extends StatsBase> (data: Type[]): Type[] {
+        var result: Type[] = []
         for (let i = 0; i < data.length; i++) {
             if (result[data[i].machine] == null) {
                 result[data[i].machine] = []

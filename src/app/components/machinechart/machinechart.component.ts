@@ -40,17 +40,26 @@ export class MachinechartComponent implements OnInit {
       } catch (e) {
         this.chartError = true
       }
-    }, 500 + priorityDelay)
+    }, 400 + priorityDelay)
 
   }
 
   public doChart(key, type = "", data) {
     const id = 'machinechart_' + type + "_" + this.hashCode(key)
 
-    // @ts-ignore     ¯\_(ツ)_/¯
-    const chart = Highstock.stockChart(id, {
+    var overrideConfig = {}
+    if (data[data.length - 1].hasOwnProperty("config")) {
+      overrideConfig = data[data.length - 1].config
+      data.pop()
+    }
+
+    const baseConfig = {
       chart: {
-        type: 'area'
+        type: 'area',
+        marginLeft: 0,
+        marginRight: 0,
+        spacingLeft: 0,
+        spacingRight: 0
       },
       legend: {
         enabled: true
@@ -63,17 +72,19 @@ export class MachinechartComponent implements OnInit {
         lineWidth: 0,
         tickColor: '#e5e1e1', 
         type: 'datetime',
-    
+        minPadding: 0,
+        maxPadding: 0
       },
-      yAxis: [
-        {
-          title: {
-            text: ''
-          },
+      yAxis: {
           allowDecimals: false,
-          opposite: false
+          opposite: false,
+          minPadding: 0,
+          maxPadding: 0,
+        labels: {
+          x: -5,
+          }
         }
-      ],
+      ,
       tooltip: {
         style: {
           color: 'var(--text-color)',
@@ -94,7 +105,11 @@ export class MachinechartComponent implements OnInit {
       navigator: {
         enabled: false
       }
-    })
+    }
+    const mergedConfig = Object.assign(baseConfig, overrideConfig);
+
+    // @ts-ignore     ¯\_(ツ)_/¯
+    const chart = Highstock.stockChart(id, mergedConfig)
 
   }
 

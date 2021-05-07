@@ -297,6 +297,11 @@ export class MerchantUtils {
     return null
   }
 
+  async hasMachineHistoryPremium() {
+    const currentPlan = await this.getCurrentPlanConfirmed()
+    return currentPlan != PRODUCT_STANDARD && currentPlan != ""
+  }
+
   async getCurrentPlanMaxValidator(): Promise<number> {
     const currentPlan = await this.getCurrentPlanConfirmed()
     const currentProduct = this.findProduct(currentPlan)
