@@ -52,11 +52,11 @@
                 android:resource="@xml/widgetinfo_long" />
         </receiver>
 
-        <receiver android:name="in.beaconcha.mobile.utils.BootReceiver">
+       <!-- <receiver android:name="in.beaconcha.mobile.utils.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
-        </receiver>
+        </receiver> -->
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -73,7 +73,6 @@
 
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <!-- Network API -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

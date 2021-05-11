@@ -20,9 +20,7 @@
             </ion-icon>
             <br />
             <ion-label class="subtitle" [ngStyle]="{'opacity': currentY | fadeoutpipe: 120 }">Support open source.
-            </ion-label><br />
-            <ion-label class="subtitle" [ngStyle]="{'opacity': currentY | fadeoutpipe: 140 }">Unlock additional
-              features.</ion-label>
+            </ion-label>
           </div>
 
         </ion-slide>
@@ -92,14 +90,15 @@
     <ion-item lines="none">
 
       <ion-label>
-        Device Monitoring Alerts
+        Monitoring Alerts*
       </ion-label>
       <ion-label class="value">
-        <ion-icon name="checkmark-outline" *ngIf="selectedPackage.deviceMonitorAlerts"></ion-icon>
-        <ion-icon name="close-outline" *ngIf="!selectedPackage.deviceMonitorAlerts"></ion-icon>
+        <ion-icon class="check" name="checkmark-outline" *ngIf="selectedPackage.deviceMonitorAlerts"></ion-icon>
+        <ion-icon class="nocheck" name="close-outline" *ngIf="!selectedPackage.deviceMonitorAlerts"></ion-icon>
       </ion-label>
 
-    </ion-item>
+    </ion-item> 
+    <span class="hint">Coming soon.</span>
 
     <ion-item lines="none">
 
@@ -107,8 +106,8 @@
         No Ads
       </ion-label>
       <ion-label class="value">
-        <ion-icon name="checkmark-outline" *ngIf="selectedPackage.noAds"></ion-icon>
-        <ion-icon name="close-outline" *ngIf="!selectedPackage.noAds"></ion-icon>
+        <ion-icon class="check" name="checkmark-outline" *ngIf="selectedPackage.noAds"></ion-icon>
+        <ion-icon class="nocheck" name="close-outline" *ngIf="!selectedPackage.noAds"></ion-icon>
       </ion-label>
 
     </ion-item>
@@ -119,8 +118,8 @@
         Custom Themes
       </ion-label>
       <ion-label class="value">
-        <ion-icon name="checkmark-outline" *ngIf="selectedPackage.customTheme"></ion-icon>
-        <ion-icon name="close-outline" *ngIf="!selectedPackage.customTheme"></ion-icon>
+        <ion-icon class="check" class="check" name="checkmark-outline" *ngIf="selectedPackage.customTheme"></ion-icon>
+        <ion-icon class="nocheck" class="nocheck" name="close-outline" *ngIf="!selectedPackage.customTheme"></ion-icon>
       </ion-label>
 
     </ion-item>
@@ -128,33 +127,32 @@
     <ion-item lines="none">
 
       <ion-label>
-        Widgets (coming soon)
+        Widgets 
       </ion-label>
       <ion-label class="value">
-        <ion-icon name="checkmark-outline" *ngIf="selectedPackage.widgets"></ion-icon>
-        <ion-icon name="close-outline" *ngIf="!selectedPackage.widgets"></ion-icon>
+        <ion-icon class="check" name="checkmark-outline" *ngIf="selectedPackage.widgets"></ion-icon>
+        <ion-icon class="nocheck" name="close-outline" *ngIf="!selectedPackage.widgets"></ion-icon>
       </ion-label>
 
     </ion-item>
-
+    <span class="hint" *ngIf="!isiOS">Requires iOS 14 or newer.</span>
 
     <ion-item lines="none">
 
       <ion-label>
-        Support us & Client teams
+        Support us
 
       </ion-label>
 
       <ion-label class="value">
-        <ion-icon name="checkmark-outline" *ngIf="selectedPackage.supportUs"></ion-icon>
-        <ion-icon name="close-outline" *ngIf="!selectedPackage.supportUs"></ion-icon>
+        <ion-icon class="check" name="checkmark-outline" *ngIf="selectedPackage.supportUs"></ion-icon>
+        <ion-icon class="nocheck" name="close-outline" *ngIf="!selectedPackage.supportUs"></ion-icon>
       </ion-label>
 
     </ion-item>
-    <span class="hint">20% will go to your selected ETH2 client when using device monitoring.</span>
+    <span class="hint">20% will be shared with your selected ETH2 client when using device monitoring.</span>
 
   </ion-list>
-
 
   <div class="detail-container" *ngIf="selectedPackage.purchaseKey != null">
     <ion-label class="link" (click)="trial()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Start with a

@@ -340,6 +340,7 @@ export class GetMyMachinesRequest extends APIRequest<StatsResponse> {
   resource = "user/stats";
   method = Method.GET;
   requiresAuth = true
+  ignoreFails = true
 
   constructor(offset: number = 0, limit: number = 180) {
     super()
@@ -473,7 +474,7 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
 
   options = {
     cache: {
-      maxAge: 2 * 60 * 60 * 1000,
+      maxAge: 1 * 60 * 60 * 1000,
     }
   }
 

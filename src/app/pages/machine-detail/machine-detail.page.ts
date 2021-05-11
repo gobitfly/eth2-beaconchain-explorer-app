@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { fromEvent, Subscription } from 'rxjs';
-import MachineController, { ProcessedStats, StatsResponse } from '../../controllers/MachineController'
+import MachineController, { ProcessedStats, StatsResponse, bytes, FallbackConfigurations } from '../../controllers/MachineController'
 
 @Component({
   selector: 'app-machine-detail',
@@ -12,6 +12,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
   @Input() key: string
   @Input() data: ProcessedStats
+  @Input() timeframe: number
+  @Input() selectedTab = "cpu"
 
   cpuDelegate = (data) => { return this.doCPUCharts(data) }
   cpuSystemDelegate = (data) => { return this.doCPUSystemCharts(data) }
@@ -26,7 +28,6 @@ export class MachineDetailPage extends MachineController implements OnInit {
   validatorDelegate = (data) => { return this.doValidatorChart(data) }
 
   scrolling: boolean = false
-  selectedTab = "cpu"
 
   headslot: number = 0
   coreCount: number = 0
@@ -34,6 +35,28 @@ export class MachineDetailPage extends MachineController implements OnInit {
   uptime: number = 0
   os: string
   stateSynced: String
+  fallbacks: FallbackConfigurations
+
+  validatorLabelActive: string = ""
+  validatorLabelTotal: string = ""
+  diskLabel: string = ""
+  beaconchainLabel: string = ""
+  peerLabel: string = ""
+  networkLabelRx: string = ""
+  networkLabelTx: string = ""
+  memoryLabelFree: string = ""
+  memoryLabelTotal: string = ""
+  memoryProcessLabelNode: string = ""
+  memoryProcessLabelVal: string = ""
+  cpuProcessLabelNode: string = ""
+  cpuProcessLabelVal: string = ""
+  cpuLabelTotal: string = ""
+  diskUsageLabelReads: string = ""
+  diskUsageLabelWrites: string = ""
+
+  syncAttention: string = null
+  syncLabelState: string = ""
+  syncLabelEth1Connected: string = ""
 
   private backbuttonSubscription: Subscription;
   constructor(private modalCtrl: ModalController) {
@@ -41,6 +64,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
   }
 
   ngOnInit() {
+    this.selectionTimeFrame = this.timeframe
     const event = fromEvent(document, 'backbutton');
     this.backbuttonSubscription = event.subscribe(async () => {
       this.modalCtrl.dismiss();
@@ -56,9 +80,49 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
       let synced = this.getLastFrom(this.data.node, (array) => array.sync_eth2_synced)
       this.stateSynced = synced ? "Synced" : "Syncing"
+
+      this.validatorLabelActive = "Active: " + this.getLastFrom(this.data.validator, (array) => array.validator_active)
+      this.validatorLabelTotal = "Total: " + this.getLastFrom(this.data.validator, (array) => array.validator_total)
+
+      this.diskLabel = "Free Space: " + bytes(this.getLastFrom(this.data.system, (array) => array.disk_node_bytes_free), true, true, 3)
+      this.beaconchainLabel = "Size: " + bytes(this.getLastFrom(this.data.node, (array) => array.disk_beaconchain_bytes_total), true, true, 3)
+    
+      this.peerLabel = "Peers: " + this.getLastFrom(this.data.node, (array) => array.network_peers_connected)
+    
+      this.networkLabelRx = "Receive: " + bytes(this.getLastFrom(this.data.system, (array) => array.network_node_bytes_total_receive / 60, true), true, true, 2) + "/s"
+      this.networkLabelTx = "Transmit: " +  bytes(this.getLastFrom(this.data.system, (array) => array.network_node_bytes_total_transmit / 60, true), true, true, 2)+"/s"
+    
+      this.memoryLabelFree = "Free: " + bytes(this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_free), true, true, 1)
+      this.memoryLabelTotal = "Total: " + bytes(this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_total), true, true, 1)
+   
+      this.memoryProcessLabelNode = "Node: " + bytes(this.getLastFrom(this.data.node, (array) => array.memory_process_bytes), true, true, 2)
+      this.memoryProcessLabelVal = "Validator: " + bytes(this.getLastFrom(this.data.validator, (array) => array.memory_process_bytes), true, true, 2)
+    
+      this.cpuProcessLabelNode = "Node: " + ((this.getLastFrom(this.data.node, (array) => array.cpu_process_seconds_total, true) /
+        this.getLastFrom(this.data.system, (array) => array.cpu_node_system_seconds_total, true)) * 100).toFixed(1) + "%"
+      this.cpuProcessLabelVal = "Validator: " + ((this.getLastFrom(this.data.validator, (array) => array.cpu_process_seconds_total, true) /
+        this.getLastFrom(this.data.system, (array) => array.cpu_node_system_seconds_total, true))  * 100).toFixed(1)  + "%"
+      
+      this.cpuLabelTotal = "Current usage: " + (100 - (this.getLastFrom(this.data.system, (array) => array.cpu_node_idle_seconds_total, true) /
+      this.getLastFrom(this.data.system, (array) => array.cpu_node_system_seconds_total, true)) * 100).toFixed(1) + "%"
+    
+      this.diskUsageLabelReads = "Reads: " + this.getLastFrom(this.data.system, (array) => array.disk_node_reads_total, true)
+      this.diskUsageLabelWrites = "Writes: " + this.getLastFrom(this.data.system, (array) => array.disk_node_writes_total, true)
+    
+      let eth1Connected = this.getLastFrom(this.data.node, (array) => array.sync_eth1_connected)
+      this.syncLabelEth1Connected = eth1Connected ? "ETH1 Connected" : "ETH1 Offline"
+
+      let fulylSynced =  this.getLastFrom(this.data.node, (array) => array.sync_eth2_synced)
+      this.syncLabelState = fulylSynced ? "Synced" : "Syncing..."
+
+      this.syncAttention = this.getSyncAttention(this.data)
+
+      this.fallbacks = this.getFallbackConfigurations(this.data)
     }
 
   }
+
+ 
 
   private formatOS(os: string) {
     switch (os) {
@@ -69,10 +133,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
     }
   }
 
-  private getLastFrom(dataArray: any[], callbackValue: (array) => any): any {
-    if (!dataArray || dataArray.length <= 0) return null
-    return callbackValue(dataArray[dataArray.length - 1])
-  }
+
 
   ngOnDestroy() {
     this.backbuttonSubscription.unsubscribe();
@@ -168,7 +229,16 @@ export class MachineDetailPage extends MachineController implements OnInit {
       )
     }
 
-    chartData.push(this.addAbsoluteConfig())
+    let absolute = this.addAbsoluteConfig()
+    let special = {
+      config: {
+        yAxis: {
+          allowDecimals: false
+        }
+      }
+    }
+    const mergedConfig = Object.assign(absolute, special);
+    chartData.push(mergedConfig)
 
     return chartData
   }
@@ -203,15 +273,16 @@ export class MachineDetailPage extends MachineController implements OnInit {
   public doNetworkCharts(current): any[] {
     const chartData = []
 
-    const lighthouseBitsBytesConvFix = current.client == "lighthouse" ? 8 : 1
-
     if (current && current.system) {
       console.log("system", current.system)
       chartData.push(
         {
           name: 'Receive',
           color: '#7cb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.network_node_bytes_total_receive / lighthouseBitsBytesConvFix }, true),
+          data: this.timeAxisChanges(current.system, (value, timeDiff) => {
+            let secondsDiff = (timeDiff / 1000)
+            return value.network_node_bytes_total_receive / 60 
+          }, true),
           pointWidth: 25,
         }
       )
@@ -219,7 +290,10 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Transmit',
           color: '#Dcb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.network_node_bytes_total_transmit/ lighthouseBitsBytesConvFix}, true),
+          data: this.timeAxisChanges(current.system, (value, timeDiff) => {
+            let secondsDiff = (timeDiff / 1000)
+            return value.network_node_bytes_total_transmit / 60
+          }, true),
           pointWidth: 25,
         }
       )

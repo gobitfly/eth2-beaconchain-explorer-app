@@ -49,10 +49,10 @@ export class AppComponent {
 
       this.setAndroidBackButtonBehavior();
 
-      AdMob.initialize({
+     /* AdMob.initialize({
         requestTrackingAuthorization: false,
         testingDevices: []
-      });
+      });*/
     });
   }
 

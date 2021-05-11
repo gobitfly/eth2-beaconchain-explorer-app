@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const bytes = (function(){
+export const bytes = (function(){
 
     var s = ['b', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
         tempLabel = [], 
@@ -53,6 +53,7 @@ const bytes = (function(){
 export default class MachineController {
 
     public chartErrors: boolean[] = []
+    selectionTimeFrame: number = 180
 
     public addBytesConfig(perS: boolean = false) {
         return {
@@ -126,7 +127,7 @@ export default class MachineController {
         if (current && current.node) {
             chartData.push(
                 {
-                    name: 'Memory: Node',
+                    name: 'Memory: Beaconnode',
                     color: '#Dcb5ec',
                     data: this.timeAxisChanges(current.node, (value) => { return value.memory_process_bytes }),
                     pointWidth: 25,
@@ -153,28 +154,29 @@ export default class MachineController {
     public doCPUCharts(current): any[] {
         const chartData = []
 
+        if (!current || !current.system) return chartData
+
         let cpuSystemTotal = this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }, true)
-        let cpuValidator = this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }, true)
-        let cpuNode = this.timeAxisChanges(current.node, (value) => { return value.cpu_process_seconds_total }, true)
-        
 
         if (current && current.validator) {
+            let cpuValidator = this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }, true)
             chartData.push(
                 {
                     name: 'CPU: Validator',
                     color: '#7cb5ec',
-                    data: this.timeAxisRelative(cpuSystemTotal, cpuValidator, true), //this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }, true),
+                    data: this.timeAxisRelative(cpuSystemTotal, cpuValidator, false), //this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }, true),
                     pointWidth: 25,
                 }
             )
         }
 
         if (current && current.node) {
+            let cpuNode = this.timeAxisChanges(current.node, (value) => { return value.cpu_process_seconds_total }, true)
             chartData.push(
                 {
-                    name: 'CPU: Node',
+                    name: 'CPU: Beaconnode',
                     color: '#Dcb5ec',
-                    data: this.timeAxisRelative(cpuSystemTotal, cpuNode, true), //this.timeAxisChanges(current.node, (value) => { return value.cpu_process_seconds_total }, true),
+                    data: this.timeAxisRelative(cpuSystemTotal, cpuNode, false), //this.timeAxisChanges(current.node, (value) => { return value.cpu_process_seconds_total }, true),
                     pointWidth: 25,
                 }
             )
@@ -221,10 +223,35 @@ export default class MachineController {
         return chartData
     }
 
+    public getFallbackConfigurations(data: ProcessedStats): FallbackConfigurations {
+        if (!data) {
+            return {
+                eth1Configured: false,
+                eth2Configured: false
+            }
+        }
+        let isLighthouse = data.client == "lighthouse"
+        /*
+            TODO:
+            Workaround Lighthouse: lighthouse sync_eth2_fallback_connected & sync_eth1_fallback_connected
+            are currently reflecting the sync_eth2_fallback_configured flag. This is a known issue,
+            we are excluding this sync attention data
+        */
+
+        let eth2FallbackConfigured = this.getLastFrom(data.node, (array) => array.sync_eth2_fallback_configured)
+        let eth1FallbackConfigured = this.getLastFrom(data.node, (array) => array.sync_eth1_fallback_configured)
+        return {
+            eth1Configured: eth1FallbackConfigured && !isLighthouse,
+            eth2Configured: eth2FallbackConfigured && !isLighthouse
+        }
+    }
+
     public doSyncCharts(current): any[] {
         const chartData = []
 
-        if (current && current.node) {
+        let fallbacks = this.getFallbackConfigurations(current)
+         
+        if (current && current.node && fallbacks.eth1Configured) {
             chartData.push(
                 {
                     name: 'ETH1 Fallback',
@@ -235,7 +262,7 @@ export default class MachineController {
             )
         }
 
-        if (current && current.validator) {
+        if (current && current.validator && fallbacks.eth2Configured) {
             chartData.push(
                 {
                     name: 'ETH2 Fallback',
@@ -281,7 +308,8 @@ export default class MachineController {
                     }
                 },
                 yAxis: 
-                    {
+                {
+                    allowDecimals: false,
                     labels: {
                             x: -5,
                         step: 1,
@@ -298,13 +326,43 @@ export default class MachineController {
         return chartData
     }
 
+    protected getSyncAttention(data: ProcessedStats): string {
+        let synced = this.getLastFrom(data.node, (array) => array.sync_eth2_synced)
+        let eth1Connected = this.getLastFrom(data.node, (array) => array.sync_eth1_connected)
+
+        let fallbacksConfigured = this.getFallbackConfigurations(data)
+        let eth2Fallback = this.getLastFrom(data.node, (array) => array.sync_eth2_fallback_connected)
+        let eth1Fallback = this.getLastFrom(data.node, (array) => array.sync_eth1_fallback_connected)
+
+        if (!eth1Connected) {
+            return "No ETH1 connection, make sure you have configured an ETH1 endpoint and it is currently active and synced."
+        } else if (eth2Fallback && fallbacksConfigured.eth2Configured) {
+            return "Main ETH2 node is not reachable, you are currently connected via a fallback connection."
+        } else if (eth1Fallback && fallbacksConfigured.eth1Configured) {
+            return "Main ETH1 is not reachable, you are currently connected via a fallback connection."
+        } else if (!synced) {
+            return "Your beaconnode is currently syncing. It might take some time to get fully synced."
+        }
+        return null
+    }
+
+    protected getLastFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false): any {
+        if (!dataArray || dataArray.length <= 0) return null
+        if (isDiffPair) {
+            if (dataArray.length <= 2) return null
+            return callbackValue(dataArray[dataArray.length - 1]) - callbackValue(dataArray[dataArray.length - 2])
+        } else {
+            return callbackValue(dataArray[dataArray.length - 1])
+        }
+    }
+
     // --- Data helper functions ---
 
     timeAxisRelative(max: any[], current: any[], inverted: boolean = false) {
         var result = []
         /*if (max.length != current.length) {
             console.warn("timeAxisRelative max and current array is differently sized")
-            return []
+            return [] 
         }*/
 
         var maxOffset = 0
@@ -316,39 +374,56 @@ export default class MachineController {
             var curV = current[i + currentOffest]
             var maxV = max[i + maxOffset]
 
-            let drift = curV[0] - maxV[0]
-            if (drift > 60000) {
+           /* let drift = curV[0] - maxV[0]
+            if (drift > 65000 && maxV[1] != 0) {
+                maxOffset++
+                if (max.length <= i + maxOffset) break;
+                maxV = max[i + maxOffset];
+            } else if (drift < 65000 && maxV[1] != 0) {
                 currentOffest++;
                 if (current.length <= i + currentOffest) break;
                 curV = current[i + currentOffest]
-            } else if (drift < 60000) {
-                maxOffset++
-                if (max.length <= i + maxOffset) break;
-                maxV = max[i + currentOffest];
-            }
+            }*/
 
-            let value = Math.round((curV[1] / maxV[1]) * 1000) / 10
+            let tempValue = maxV[1] == 0 ? 0 : Math.round((curV[1] / maxV[1]) * 1000) / 10
+            let value = inverted ? Math.round((100 - tempValue) * 10) / 10 : tempValue 
             result.push([
                 maxV[0],
-                inverted ? 100 - value : value 
+                maxV[1] == 0 ? 0 : value
             ])
         }
         return result
     }
 
-    public timeAxisChanges(data: StatsBase[], delegateValue: (value) => number, accumilative: boolean = false) {
+    public timeAxisChanges(data: StatsBase[], delegateValue: (value, timeDiff?) => number, accumilative: boolean = false) {
         var result = []
         var summedUp = -1
         var lastValue = 0
         var lastTimestamp = -1
         data.forEach((value) => {
-            const current = delegateValue(value)
+            const current = delegateValue(value, value.timestamp - lastTimestamp)
             if (accumilative && current < summedUp) summedUp = 0
             
             const temp = accumilative ? current - summedUp : current
 
-            if (lastTimestamp != -1 && lastTimestamp + 24 * 60 * 60 * 1000 < value.timestamp) {
+            if (lastTimestamp != -1 && lastTimestamp + this.selectionTimeFrame * 60 * 1000 < value.timestamp) {
+                console.log("shorting selection: ", this.selectionTimeFrame)
                 result = []
+            } else {
+                
+                if (lastTimestamp != -1 && lastTimestamp + 45 * 60 * 1000 < value.timestamp) {
+                    console.log("filling empty plots with zeros: ", lastTimestamp, value.timestamp)
+
+                    result.push([
+                        lastTimestamp + 1000000,
+                        0
+                    ])
+
+                    result.push([
+                        value.timestamp - 1000000,
+                        0
+                    ])
+                }
             }
 
             if (summedUp != -1 || !accumilative) {
@@ -388,8 +463,10 @@ export default class MachineController {
                 status: "ONLINE"
             }
         }
+        
         return result
     }
+
 
     public sortData<Type extends StatsBase>(array: Type[]): Type[] {
         if(!array) return array
@@ -511,4 +588,9 @@ export interface StatsSystem extends StatsBase {
     misc_os: string,
     network_node_bytes_total_receive: number,
     network_node_bytes_total_transmit: number,
+}
+
+export interface FallbackConfigurations {
+    eth1Configured: boolean,
+    eth2Configured: boolean
 }

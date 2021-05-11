@@ -16,6 +16,7 @@ export class MachinechartComponent implements OnInit {
   @Input() subtitleRight?: string
   @Input() icon?: string
   @Input() priority: boolean = false
+  @Input() clickAction = () => { }
 
   @Input() chartData: [] = []
   @Input() key: string
@@ -24,6 +25,10 @@ export class MachinechartComponent implements OnInit {
   chartError: boolean = false
 
   constructor() { }
+
+  doClick() {
+    this.clickAction()
+  }
 
   ngOnInit() {
     highChartOptions(Highstock)
@@ -73,7 +78,8 @@ export class MachinechartComponent implements OnInit {
         tickColor: '#e5e1e1', 
         type: 'datetime',
         minPadding: 0,
-        maxPadding: 0
+        maxPadding: 0,
+        ordinal: false
       },
       yAxis: {
           allowDecimals: false,

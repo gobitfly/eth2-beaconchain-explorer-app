@@ -137,3 +137,11 @@ ion-toolbar ion-button {
   font-style: italic;
   line-height: 1em !important;
 }
+
+.check {
+  color: var(--status-ok);
+}
+
+.nocheck {
+  color: var(--status-danger);
+}

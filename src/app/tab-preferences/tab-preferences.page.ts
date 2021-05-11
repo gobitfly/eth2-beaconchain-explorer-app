@@ -169,6 +169,35 @@ export class Tab3Page {
     
   }
 
+  widgetSetupInfo() {
+    if (this.currentPlan == 'standard' || this.currentPlan == 'plankton') {
+      this.openUpgrades()
+    }
+
+    var tutorialText = "MISSINGNO"
+    if (this.platform.is("ios")) {
+      tutorialText =
+        "1. Go to your homescreen<br/>" +
+        "2. Hold down on an empty space<br/>" +
+        "3. On the top right corner, click the + symbol<br/>" +
+        "4. Scroll down and select Beaconchain Dashboard and chose your widget<br/>" +
+        "<br/>You can configure your widget by holding down on the widget.<br/><br/>" +
+        "Widgets are only available on iOS 14 or newer<br/><br/>" +
+        "If you just purchased a premium package and the widget does not show any data, try deleting it and adding the widget again."
+    } else {
+      tutorialText = "1. Go to your homescreen<br/>" +
+        "2. Hold down on an empty space<br/>" +
+        "3. Click on 'Widgets'<br/>" +
+        "4. Scroll down and select Beaconchain Dashboard and chose your widget<br/><br/>" +
+        "If you just purchased a premium package and the widget does not show any data, try deleting it and adding the widget again."
+    }
+
+    this.alerts.showInfo(
+      "Widget Setup",
+      tutorialText
+    )
+  }
+
   ionViewWillEnter() {
     this.storage.getAuthUser().then((result) => this.authUser = result)
     this.debug = this.api.debug

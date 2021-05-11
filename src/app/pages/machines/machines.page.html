@@ -20,29 +20,36 @@
 <ion-content [fullscreen]="true" [scrollEvents]="true" (ionScrollStart)="onScrollStarted()"
   (ionScrollEnd)="onScrollEnded()">
 
-  <ion-item class="top-bar" *ngIf="!this.data || showData">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-item class="top-bar" *ngIf="!this.data || showData" (click)="openTimeSelection()">
     <ion-label i18n="Search Results">Last {{ this.selectedTimeFrame }}</ion-label>
-    <ion-icon slot="end" name="time-outline" (click)="openTimeSelection()"></ion-icon>
+    <ion-icon slot="end" name="time-outline"></ion-icon>
   </ion-item>
 
   <div *ngIf="this.data && showData">
-    <div *ngFor="let machine of data | keyvalue" class="card" (click)="openMachineDetail(machine.key)">
+    <div *ngFor="let machine of data | keyvalue" class="card" >
 
       <app-machinechart priority="true" [title]="machine.key" [subtitleLeft]="machine.value | delegate: clientFormatter"
         [subtitleRight]="machine.value.formattedDate | date:'short'"
         [icon]="machine.value | delegate: onlineStateDelegate" [key]="machine.key"
+        [clickAction]="machine.key | delegate: machineClickDelegate"
         [chartData]="machine.value | delegate: cpuDelegate" [hidden]="selectedChart != 'cpu'">
       </app-machinechart>
 
       <app-machinechart [title]="machine.key" [subtitleLeft]="machine.value | delegate: clientFormatter"
         [subtitleRight]="machine.value.formattedDate | date:'short'"
         [icon]="machine.value | delegate: onlineStateDelegate" [key]="machine.key"
+        [clickAction]="machine.key | delegate: machineClickDelegate"
         [chartData]="machine.value | delegate: memoryDelegate" [hidden]="selectedChart != 'memory'">
       </app-machinechart>
 
       <app-machinechart [title]="machine.key" [subtitleLeft]="machine.value | delegate: clientFormatter"
         [subtitleRight]="machine.value.formattedDate | date:'short'"
         [icon]="machine.value | delegate: onlineStateDelegate" [key]="machine.key"
+        [clickAction]="machine.key | delegate: machineClickDelegate"
         [chartData]="machine.value | delegate: syncDelegate" [hidden]="selectedChart != 'sync'">
       </app-machinechart>
 
@@ -54,13 +61,14 @@
       <ion-icon name="pulse-outline"></ion-icon><br/>
       <ion-label><strong class="title">Machine Monitoring</strong></ion-label><br /><br />
 
-      <ion-label>Is a new feature in collaboration with eth2 client teams that allows you to monitor your system on the go.</ion-label>
+      <ion-label>Monitor your eth2 staking machines on the go.</ion-label>
       <br /><br />
-     <ion-button (click)="openBrowser('https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node')">How to setup</ion-button>
+      <ion-button (click)="login()" [hidden]="loggedIn">Login</ion-button>
+     <ion-button [disabled]="!loggedIn" (click)="openBrowser('https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node')">Setup Monitoring</ion-button>
     </div>
   </div>
 
-  <div class="container loading-container" *ngIf="!this.data">
+  <div class="container loading-container" *ngIf="!this.data" >
     <div class="center">
       <ion-spinner class="status-icon loading-spinner"></ion-spinner>
     </div>

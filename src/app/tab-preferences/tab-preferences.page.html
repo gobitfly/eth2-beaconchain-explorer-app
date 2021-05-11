@@ -28,13 +28,15 @@
 
 <ion-content [fullscreen]="true" [class]="fadeIn">
 
-  <ion-list>
-    <ion-item lines="none" class="premium" (click)="openUpgrades()">
+  <ion-list (click)="openUpgrades()">
+    <ion-item lines="none" class="premium" >
       <ion-icon slot="start" name="rocket-outline"></ion-icon>
       <ion-label>Upgrade to Premium</ion-label>
       <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
     </ion-item>
-    <span class="hint">Premium supports up to 300 validators and more.</span>
+    <span class="hint">Premium supports up to 300 validators, Widgets, Themes and more.</span>
+
+    
   </ion-list>
 
   <ion-list-header>
@@ -57,56 +59,6 @@
       <ion-toggle id="themeToggle" [(ngModel)]="darkMode" (ionChange)="darkModeToggle()" slot="end"></ion-toggle>
     </ion-item>
 
-    <ion-item lines="none">
-      <ion-icon slot="start" name="color-palette-outline"></ion-icon>
-      <ion-label>
-        Theme Color
-      </ion-label>
-      <ion-select value="" [(ngModel)]="themeColor" (ionChange)="changeThemeColor()" interface="popover"
-        [disabled]="themeColorLock" *ngIf="currentPlan != 'standard'">
-        <ion-select-option value="">
-          Default
-        </ion-select-option>
-        <ion-select-option value="teal">
-          Teal
-        </ion-select-option>
-        <ion-select-option value="green">
-          Green
-        </ion-select-option>
-        <ion-select-option value="cyan">
-          Cyan
-        </ion-select-option>
-        <ion-select-option value="purple">
-          Purple
-        </ion-select-option>
-        <ion-select-option value="sun">
-          Sun
-        </ion-select-option>
-        <ion-select-option value="indigo">
-          Indigo
-        </ion-select-option>
-        <ion-select-option value="pink">
-          Pink
-        </ion-select-option>
-        <ion-select-option value="red">
-          Red
-        </ion-select-option>
-        <ion-select-option value="orange">
-          Orange
-        </ion-select-option>
-        <ion-select-option value="bronce">
-          Bronce
-        </ion-select-option>
-        <ion-select-option value="gold">
-          Gold
-        </ion-select-option>
-        <ion-select-option value="metal">
-          Metal
-        </ion-select-option>
-      </ion-select>
-      <ion-icon slot="end" name="lock-closed-outline" *ngIf="currentPlan == 'standard'" (click)="openUpgrades()">
-      </ion-icon>
-    </ion-item>
 
    <!-- <ion-item lines="none">
       <ion-icon slot="start" name="color-palette-outline"></ion-icon>
@@ -170,6 +122,74 @@
       </ion-select>
       <ion-spinner slot="end" class="status-icon loading-spinner" *ngIf="overrideDisplayCurrency != null"></ion-spinner>
     </ion-item>
+  </ion-list>
+
+  <ion-list-header>
+    <ion-label>Premium</ion-label>
+  </ion-list-header>
+
+  <ion-list>
+
+    <ion-item lines="none">
+      <ion-icon slot="start" name="color-palette-outline"></ion-icon>
+      <ion-label>
+        Theme Color
+      </ion-label>
+      <ion-select value="" [(ngModel)]="themeColor" (ionChange)="changeThemeColor()" interface="popover"
+        [disabled]="themeColorLock" *ngIf="currentPlan != 'standard'">
+        <ion-select-option value="">
+          Default
+        </ion-select-option>
+        <ion-select-option value="teal">
+          Teal
+        </ion-select-option>
+        <ion-select-option value="green">
+          Green
+        </ion-select-option>
+        <ion-select-option value="cyan">
+          Cyan
+        </ion-select-option>
+        <ion-select-option value="purple">
+          Purple
+        </ion-select-option>
+        <ion-select-option value="sun">
+          Sun
+        </ion-select-option>
+        <ion-select-option value="indigo">
+          Indigo
+        </ion-select-option>
+        <ion-select-option value="pink">
+          Pink
+        </ion-select-option>
+        <ion-select-option value="red">
+          Red
+        </ion-select-option>
+        <ion-select-option value="orange">
+          Orange
+        </ion-select-option>
+        <ion-select-option value="bronce">
+          Bronce
+        </ion-select-option>
+        <ion-select-option value="gold">
+          Gold
+        </ion-select-option>
+        <ion-select-option value="metal">
+          Metal
+        </ion-select-option>
+      </ion-select>
+      <ion-icon slot="end" name="lock-closed-outline" *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'" (click)="openUpgrades()">
+      </ion-icon>
+    </ion-item>
+
+    <ion-item lines="none"(click)="widgetSetupInfo()">
+
+      <ion-icon slot="start" name="shapes-outline">
+      </ion-icon>
+      <ion-label>Widgets</ion-label>
+      <ion-icon slot="end" name="lock-closed-outline" *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'"></ion-icon>
+      <ion-icon slot="end"  name="information-circle-outline" *ngIf="currentPlan != 'standard' && currentPlan != 'plankton'"></ion-icon>
+    </ion-item>
+
   </ion-list>
 
   <ion-list-header>

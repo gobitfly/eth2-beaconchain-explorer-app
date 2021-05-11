@@ -32,5 +32,29 @@ ion-segment {
 }
 
 .data-container {
-  padding-top: 7px;
+
 }
+
+.sync-alert {
+  color: var(--ion-color-warning-shade) !important;
+  --color: var(--ion-color-warning-shade) !important;
+}
+
+.sync-alert-container {
+  padding-top: 0px !important;
+  margin-top: 0px !important;
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+  margin-left: 0px !important;
+  margin-right: 0px !important;
+}
+
+.alert-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.alert-text {
+  color: var(--ion-text-color) !important;
+}
+

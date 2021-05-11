@@ -30,6 +30,8 @@ import { StorageService } from '../services/storage.service';
 import { Plugins } from '@capacitor/core';
 const { SplashScreen } = Plugins;
 
+const FIRST_PURCHASE_RETRY = "first_purchase_retry"
+
 const PRODUCT_STANDARD = 'standard';
 const MAX_PRODUCT = 'whale';
 
@@ -72,7 +74,7 @@ export class MerchantUtils {
       price: "$4.99",
       maxValidators: 100,
       maxTestnetValidators: 100,
-      maxBeaconNodes: 5,
+      maxBeaconNodes: 2,
       deviceMonitoringHours: 30 * 24,
       deviceMonitorAlerts: true,
       noAds: true,
@@ -123,6 +125,10 @@ export class MerchantUtils {
 
   private initCustomValidator() {
     this.store.validator = async (product: IAPProduct, callback) => {
+      let firstRetry = await this.storage.getBooleanSetting(FIRST_PURCHASE_RETRY + product.id, true)
+      this.storage.setBooleanSetting(FIRST_PURCHASE_RETRY + product.id, false)
+
+
       console.log("purchase made, product info", product)
 
       const isIOS = this.platform.is("ios")
@@ -139,7 +145,7 @@ export class MerchantUtils {
       }
 
       const result = await this.registerPurchaseOnRemote(purchaseData)
-      if (!result) {
+      if (!result && firstRetry) {
         console.log("registering receipt at remote failed, scheduling retry")
         const loading = await this.alertService.presentLoading("This can take a minute")
         loading.present();
@@ -148,17 +154,21 @@ export class MerchantUtils {
         if (!result) {
           this.alertService.showError("Purchase Error", "We could not confirm your purchase. Please try again later or contact us if this problem persists.", PURCHASEUTILS + 3)
           loading.dismiss();
+          if(!firstRetry) this.store.autoFinishTransactions = true
           callback(true)
           return
         }
         loading.dismiss();
       }
 
-      await this.refreshToken()
+      if(firstRetry || result) await this.refreshToken()
 
-      this.alertService.confirmDialog("Upgrade successfull", "App requires a restart. Do you want to restart it now?", "Restart App", () => {
-        this.restartApp()
-      })
+      if (result) {
+        this.alertService.confirmDialog("Upgrade successfull", "App requires a restart. Do you want to restart it now?", "Restart App", () => {
+          this.api.invalidateCache()
+          this.restartApp()
+        })
+      }
 
       callback(result)
     };
@@ -229,7 +239,6 @@ export class MerchantUtils {
         this.currentPlan = p.id;
 
         //this.ref.detectChanges();
-
         return p.verify();
       })
       .verified((p: IAPProduct) => p.finish())

@@ -1,10 +1,14 @@
 <div>
-  <ion-card-header class="card-header" *ngIf="title">
+  <ion-card-header class="card-header" *ngIf="title" (click)="doClick()">
     <ion-card-title>
       <ion-label>
+       
+        <div class="circle online" *ngIf="icon == 'online'" style="float: left; margin-right: 10px;"></div>
+        <div class="circle offline" *ngIf="icon == 'offline'" style="float: left; margin-right: 10px;"></div>
+        <div class="circle attention" *ngIf="icon == 'attention'" style="float: left; margin-right: 10px;"></div>
         {{ title }}
-        <div class="circle online" *ngIf="icon == 'online'" style="float: right"></div>
-        <div class="circle offline" *ngIf="icon == 'offline'" style="float: right"></div>
+
+        <ion-icon name="pulse-outline" style="float: right;" *ngIf="icon" class="more-icon"></ion-icon>
       </ion-label>
 
     </ion-card-title>
@@ -25,6 +29,6 @@
   </div>
 
   <div *ngIf="chartData && chartData.length > 0" [hidden]="chartError" id="machinechart_{{ id }}_{{ hashCode(key) }}"
-    style="width:100%; height:300px;"></div>
+    style="width:100%; height:300px; margin-bottom: 10px;"></div>
 
 </div>

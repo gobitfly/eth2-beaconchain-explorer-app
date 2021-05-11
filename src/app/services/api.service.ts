@@ -31,14 +31,15 @@ import { MAP } from '../utils/NetworkData'
 import { AlertService } from './alert.service';
 
 const LOGTAG = "[ApiService]";
+var cacheKey = "api-cache"
 
 const forageStore = localforage.createInstance({
   driver: [localforage.INDEXEDDB, localforage.LOCALSTORAGE],
-  name: "api-cache",
+  name: cacheKey,
 });
 
 const cache = setupCache({
-  maxAge: 6 * 60 * 1000, // 6 min cache time
+  maxAge: 5 * 60 * 1000, // 5 min cache time
   store: forageStore,
   readHeaders: false,
   exclude: { query: false },
@@ -69,7 +70,7 @@ export class ApiService {
     this.isDebugMode().then((result) => {
       this.debug = result
       this.disableLogging()
-    })
+    }) 
 
     this.registerLogMiddleware()
     this.updateNetworkConfig()
@@ -81,10 +82,15 @@ export class ApiService {
     }
   );
 
+  mayInvalidateOnFaultyConnectionState() {
+    if(!this.connectionStateOK) this.invalidateCache()
+  }
+
   invalidateCache() {
     console.log("invalidating request cache")
     // @ts-ignore
     cache.store.clear()
+    forageStore.clear()
     this.storage.invalidateAllCache()
   }
 
@@ -164,20 +170,23 @@ export class ApiService {
     return test
   }
 
+
   async execute(request: APIRequest<any>) {
     var options = request.options
 
-    if (request.requiresAuth) {
+   // if (request.requiresAuth) {
 
       const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
-      if (!authHeader) {
-        console.info("User is not logged in, skipping request", request)
-        return
+      if (authHeader) {
+
+        const headers = { ...options.headers, ...authHeader }
+
+        options.headers = headers;
       }
+   // }
 
-      const headers = { ...options.headers, ...authHeader }
-
-      options.headers = headers;
+    if (!this.connectionStateOK) {
+      options.clearCacheEntry = true
     }
 
     await this.lockOrWait(request.resource)

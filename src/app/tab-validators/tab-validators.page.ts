@@ -269,6 +269,7 @@ export class Tab2Page {
 
   async doRefresh(event) {
     await this.refresh().catch(() => {
+      this.api.mayInvalidateOnFaultyConnectionState()
       event.target.complete();
     })
     event.target.complete();

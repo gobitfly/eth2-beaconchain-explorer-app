@@ -44,7 +44,7 @@ public class MainActivity extends BridgeActivity {
             // Ex: add(TotallyAwesomePlugin.class);
         }});
 
-        startWidgetService();
+       // startWidgetService();
     }
 
     private void startWidgetService() {

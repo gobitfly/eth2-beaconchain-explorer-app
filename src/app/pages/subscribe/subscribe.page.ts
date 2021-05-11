@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, Platform } from '@ionic/angular';
 import { fromEvent, Subscription } from 'rxjs';
 import { StorageService } from 'src/app/services/storage.service';
 import { MerchantUtils, Package } from 'src/app/utils/MerchantUtils';
@@ -20,15 +20,17 @@ export class SubscribePage implements OnInit {
   currentY = 0
 
   private backbuttonSubscription: Subscription;
-  selectedPackage: Package = this.merchant.PACKAGES[1]
+  selectedPackage: Package = this.merchant.PACKAGES[2]
   activeUserPackageName = "standard"
+  isiOS = false
 
   constructor(
     private modalCtrl: ModalController,
     public merchant: MerchantUtils,
     private storage: StorageService,
     private oauth: OAuthUtils,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private platform: Platform
   ) { }
 
   ngOnInit() {
@@ -40,6 +42,8 @@ export class SubscribePage implements OnInit {
     this.merchant.getCurrentPlanConfirmed().then((result) => {
       this.activeUserPackageName = result
     });
+
+    this.isiOS = this.platform.is("ios")
   }
 
   onScroll($event) {
