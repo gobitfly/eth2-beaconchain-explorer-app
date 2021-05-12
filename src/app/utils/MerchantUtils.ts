@@ -126,6 +126,10 @@ export class MerchantUtils {
   private initCustomValidator() {
     this.store.validator = async (product: IAPProduct, callback) => {
 
+      if (this.restorePurchase) {
+        this.restorePurchase = false
+        await this.confirmPurchaseOnRemote(product)
+      }
       callback(true)
     };
   }
@@ -196,10 +200,6 @@ export class MerchantUtils {
         // Handle the product deliverable
         this.currentPlan = p.id;
 
-        if (this.restorePurchase) {
-          this.restorePurchase = false
-          this.confirmPurchaseOnRemote(p)
-        }
 
         //this.ref.detectChanges();
         return p.verify();
@@ -227,8 +227,12 @@ export class MerchantUtils {
   purchase(product: string) {
     this.store.order(product).then(
       async (product) => {
-       this.confirmPurchaseOnRemote(product)
-        
+       this.restorePurchase = true
+       const loading = await this.alertService.presentLoading("");
+       loading.present();
+       setTimeout(() => {
+         loading.dismiss();
+       }, 1500);
       },
       (e) => {
         this.alertService.showError(
