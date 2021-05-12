@@ -145,3 +145,13 @@ ion-toolbar ion-button {
 .nocheck {
   color: var(--status-danger);
 }
+
+// Makes the iOS top bounce in our primary color
+// and the bottom bounce in main themes color
+ion-content {
+  --background: linear-gradient(
+    0deg,
+    var(--ion-background-color) 60%,
+    var(--ion-toolbar-background) 40%
+  );
+}
