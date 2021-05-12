@@ -125,52 +125,8 @@ export class MerchantUtils {
 
   private initCustomValidator() {
     this.store.validator = async (product: IAPProduct, callback) => {
-      let firstRetry = await this.storage.getBooleanSetting(FIRST_PURCHASE_RETRY + product.id, true)
-      this.storage.setBooleanSetting(FIRST_PURCHASE_RETRY + product.id, false)
 
-
-      console.log("purchase made, product info", product)
-
-      const isIOS = this.platform.is("ios")
-      const purchaseData = {
-        currency: product.currency,
-        id: product.id,
-        priceMicros: product.priceMicros,
-        valid: product.valid,
-        transaction: {
-          id: product.id,
-          receipt: isIOS ? product.transaction.appStoreReceipt : product.transaction.purchaseToken,
-          type: product.transaction.type
-        }
-      }
-
-      const result = await this.registerPurchaseOnRemote(purchaseData)
-      if (!result && firstRetry) {
-        console.log("registering receipt at remote failed, scheduling retry")
-        const loading = await this.alertService.presentLoading("This can take a minute")
-        loading.present();
-        await this.sleep(35000)
-        const result = await this.registerPurchaseOnRemote(purchaseData)
-        if (!result) {
-          this.alertService.showError("Purchase Error", "We could not confirm your purchase. Please try again later or contact us if this problem persists.", PURCHASEUTILS + 3)
-          loading.dismiss();
-          if(!firstRetry) this.store.autoFinishTransactions = true
-          callback(true)
-          return
-        }
-        loading.dismiss();
-      }
-
-      if(firstRetry || result) await this.refreshToken()
-
-      if (result) {
-        this.alertService.confirmDialog("Upgrade successfull", "App requires a restart. Do you want to restart it now?", "Restart App", () => {
-          this.api.invalidateCache()
-          this.restartApp()
-        })
-      }
-
-      callback(result)
+      callback(true)
     };
   }
 
@@ -226,6 +182,8 @@ export class MerchantUtils {
     }
   }
 
+  private restorePurchase = false
+
   private setupListeners() {
     // General query to all products
     this.store
@@ -237,6 +195,11 @@ export class MerchantUtils {
       .approved((p: IAPProduct) => {
         // Handle the product deliverable
         this.currentPlan = p.id;
+
+        if (this.restorePurchase) {
+          this.restorePurchase = false
+          this.confirmPurchaseOnRemote(p)
+        }
 
         //this.ref.detectChanges();
         return p.verify();
@@ -256,22 +219,16 @@ export class MerchantUtils {
   }
 
   async restore() {
-    // Reasoning is, that subscriptions are linked with user accounts
-    // in order to restore a purchase, log in to the same account. If already logged in,
-    // try refreshing the token
-
-    await this.refreshToken()
-    //this.store.refresh();
+    this.restorePurchase = true
+    //await this.refreshToken()
+    this.store.refresh();
   }
 
   purchase(product: string) {
     this.store.order(product).then(
-      async (p) => {
-        const loading = await this.alertService.presentLoading("");
-        loading.present();
-        setTimeout(() => {
-          loading.dismiss();
-        }, 1500);
+      async (product) => {
+       this.confirmPurchaseOnRemote(product)
+        
       },
       (e) => {
         this.alertService.showError(
@@ -283,6 +240,53 @@ export class MerchantUtils {
         this.currentPlan = PRODUCT_STANDARD
       }
     );
+  }
+
+  private async confirmPurchaseOnRemote(product) {
+    console.log("purchase made, product info", product)
+  
+        const isIOS = this.platform.is("ios")
+        const purchaseData = {
+          currency: product.currency,
+          id: product.id,
+          priceMicros: product.priceMicros,
+          valid: product.valid,
+          transaction: {
+            id: product.id,
+            receipt: isIOS ? product.transaction.appStoreReceipt : product.transaction.purchaseToken,
+            type: product.transaction.type
+          }
+        }
+  
+        const result = await this.registerPurchaseOnRemote(purchaseData)
+        if (!result) {
+          console.log("registering receipt at remote failed, scheduling retry")
+          const loading = await this.alertService.presentLoading("This can take a minute")
+          loading.present();
+          await this.sleep(35000)
+          const result = await this.registerPurchaseOnRemote(purchaseData)
+          if (!result) {
+            this.alertService.showError("Purchase Error", "We could not confirm your purchase. Please try again later or contact us if this problem persists.", PURCHASEUTILS + 3)
+            loading.dismiss();
+            return
+          }
+          loading.dismiss();
+        }
+  
+        if(result) await this.refreshToken()
+  
+        if (result) {
+          this.alertService.confirmDialog("Upgrade successfull", "App requires a restart. Do you want to restart it now?", "Restart App", () => {
+            this.api.invalidateCache()
+            this.restartApp()
+          })
+        } else {
+          this.alertService.showError(
+            "Purchase failed",
+            `Failed to make purchase, please try again later.`,
+            PURCHASEUTILS + 4
+          );
+        }
   }
 
   async getCurrentPlanConfirmed(): Promise<string> {
