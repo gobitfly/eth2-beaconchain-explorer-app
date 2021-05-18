@@ -172,6 +172,7 @@ export class Tab3Page {
   widgetSetupInfo() {
     if (this.currentPlan == 'standard' || this.currentPlan == 'plankton') {
       this.openUpgrades()
+      return;
     }
 
     var tutorialText = "MISSINGNO"

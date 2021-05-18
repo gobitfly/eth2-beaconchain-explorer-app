@@ -24,6 +24,7 @@ import { Injectable } from '@angular/core';
 import { EpochRequest, EpochResponse, PerformanceRequest, RemoveMyValidatorsRequest, NotificationSubsRequest, PerformanceResponse, AttestationPerformanceRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse } from '../requests/requests';
 import { AlertService, VALIDATORUTILS } from '../services/alert.service';
 import { CacheModule } from './CacheModule';
+import { MerchantUtils } from './MerchantUtils';
 
 export const SAVED = 0 // stored locally
 export const MEMORY = 1 // Search results etc
@@ -66,6 +67,7 @@ export class ValidatorUtils extends CacheModule {
         private api: ApiService,
         private storage: StorageService,
         private alerts: AlertService,
+        private merchantUtils: MerchantUtils
     ) {
         super("vu") // initialize cache module with vu prefix
     }
@@ -179,7 +181,7 @@ export class ValidatorUtils extends CacheModule {
         const storageKey = await this.getStorageKey()
         const local = await this.getMap(storageKey)
 
-        const validatorString = getValidatorQueryString([...local.values()], 2000, 99)
+        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator())
 
         const cachePerformanceKey = await this.getCachedPerformanceKey()
         const cached = this.getMultipleCached(cachePerformanceKey, validatorString.split(","))
@@ -198,7 +200,7 @@ export class ValidatorUtils extends CacheModule {
         const storageKey = await this.getStorageKey()
         const local = await this.getMap(storageKey)
 
-        const validatorString = getValidatorQueryString([...local.values()], 2000, 99)
+        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator())
 
         const cacheAttestationKey = await this.getCachedAttestationKey()
         const cached = this.getMultipleCached(cacheAttestationKey, validatorString.split(","))
@@ -217,7 +219,7 @@ export class ValidatorUtils extends CacheModule {
         const storageKey = await this.getStorageKey()
         const local = await this.getMapWithoutDeleted(storageKey)
         const epochPromise = this.getRemoteCurrentEpoch()
-        const validatorString = getValidatorQueryString([...local.values()], 2000, 99)
+        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator())
 
         const cached = this.getMultipleCached(allMyKeyBare, validatorString.split(","))
         if (cached != null) {

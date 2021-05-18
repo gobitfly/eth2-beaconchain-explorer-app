@@ -35,7 +35,7 @@ ion-content {
 }
 
 .first-item-group {
-  margin-top: 6px;
+  padding-top: 6px;
 }
 
 ion-toolbar {
@@ -139,11 +139,11 @@ ion-toolbar ion-button {
 }
 
 .check {
-  color: var(--status-ok);
+  color: var(--ion-color-success);
 }
 
 .nocheck {
-  color: var(--status-danger);
+  color: var(--ion-color-danger);
 }
 
 // Makes the iOS top bounce in our primary color

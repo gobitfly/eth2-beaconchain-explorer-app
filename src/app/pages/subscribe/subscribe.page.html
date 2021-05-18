@@ -1,14 +1,17 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="closeModal()">
-        <ion-icon size="large" name="close-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+  
 </ion-header>
 
 <ion-content [scrollEvents]="true" (ionScroll)="onScroll($event)">
+
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button size="large" (click)="closeModal()">
+        <ion-icon size="large" name="close-outline" ></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
   <ion-list class="status">
     <div lines="none" class="status-container">
 

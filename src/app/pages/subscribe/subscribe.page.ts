@@ -58,16 +58,29 @@ export class SubscribePage implements OnInit {
     this.modalCtrl.dismiss();
   }
 
+  async continuePurchaseIntern() {
+    const isPremium = await this.merchant.hasMachineHistoryPremium()
+    if (isPremium) {
+      const packageName = capitalize(await this.merchant.getCurrentPlanConfirmed())
+      this.alertService.confirmDialog("Already Premium", "You already own the " + packageName + " package, are you sure that you want to continue with your purchase?", "Yes", () => {
+        this.merchant.purchase(this.selectedPackage.purchaseKey)
+      })
+      return
+    }
+    this.merchant.purchase(this.selectedPackage.purchaseKey)
+  }
+
   async purchaseIntern() {
     const loggedIn = await this.storage.isLoggedIn()
-    if (loggedIn) this.merchant.purchase(this.selectedPackage.purchaseKey)
-    else {
+    if (!loggedIn) {
       this.alertService.confirmDialog("Login", "You need to login to your beaconcha.in account first. Continue?", "Login", () => {
         this.oauth.login().then(async () => {
           const loggedIn = await this.storage.isLoggedIn()
-          if (loggedIn) this.merchant.purchase(this.selectedPackage.purchaseKey)
+          if (loggedIn) this.continuePurchaseIntern()
         })
       })
+    } else {
+      this.continuePurchaseIntern()
     }
   }
 
@@ -102,3 +115,7 @@ export class SubscribePage implements OnInit {
 
 }
 
+const capitalize = (s) => {
+  if (typeof s !== 'string') return ''
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}

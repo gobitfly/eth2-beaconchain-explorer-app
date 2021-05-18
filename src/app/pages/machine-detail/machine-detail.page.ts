@@ -251,7 +251,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Reads',
           color: '#Dcb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_reads_total }, true),
+          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_reads_total / 60 }, true),
           pointWidth: 25,
         }
       )
@@ -259,13 +259,13 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Writes',
           color: '#7cb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_writes_total }, true),
+          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_writes_total / 60 }, true),
           pointWidth: 25,
         }
       )
     }
 
-    chartData.push(this.addAbsoluteConfig())
+    chartData.push(this.addAbsoluteConfig(" iops"))
 
     return chartData
   }

@@ -81,7 +81,7 @@ export default class MachineController {
         }
     }
 
-    public addAbsoluteConfig() {
+    public addAbsoluteConfig(postFix = "") {
         return {
             config: {
                 tooltip: {
@@ -91,7 +91,7 @@ export default class MachineController {
                       },
                     pointFormatter: function () {
                       var point = this;
-                      return '<span style="color:' + point.color + '">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(0)  + "</b>"
+                      return '<span style="color:' + point.color + '">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(0) + postFix + "</b>"
                     }
                 },
                 yAxis: 
@@ -404,7 +404,7 @@ export default class MachineController {
             const current = delegateValue(value, value.timestamp - lastTimestamp)
             if (accumilative && current < summedUp) summedUp = 0
             
-            const temp = accumilative ? current - summedUp : current
+            const temp = accumilative ? Math.round((current - summedUp) * 100) / 100 : current
 
             if (lastTimestamp != -1 && lastTimestamp + this.selectionTimeFrame * 60 * 1000 < value.timestamp) {
                 console.log("shorting selection: ", this.selectionTimeFrame)

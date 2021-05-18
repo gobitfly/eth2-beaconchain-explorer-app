@@ -86,8 +86,8 @@ export class MerchantUtils {
     {
       name: "Whale",
       price: "$19.99",
-      maxValidators: 300,
-      maxTestnetValidators: 300,
+      maxValidators: 280,
+      maxTestnetValidators: 280,
       maxBeaconNodes: 10,
       deviceMonitoringHours: 30 * 24,
       deviceMonitorAlerts: true,
@@ -262,11 +262,13 @@ export class MerchantUtils {
           }
         }
   
+        const loading = await this.alertService.presentLoading("Confirming, this might take a couple seconds")
+        loading.present();
+    
         const result = await this.registerPurchaseOnRemote(purchaseData)
         if (!result) {
           console.log("registering receipt at remote failed, scheduling retry")
-          const loading = await this.alertService.presentLoading("This can take a minute")
-          loading.present();
+          
           await this.sleep(35000)
           const result = await this.registerPurchaseOnRemote(purchaseData)
           if (!result) {
@@ -277,7 +279,9 @@ export class MerchantUtils {
           loading.dismiss();
         }
   
-        if(result) await this.refreshToken()
+        if (result) await this.refreshToken()
+    
+        loading.dismiss();
   
         if (result) {
           this.alertService.confirmDialog("Upgrade successfull", "App requires a restart. Do you want to restart it now?", "Restart App", () => {
@@ -291,6 +295,13 @@ export class MerchantUtils {
             PURCHASEUTILS + 4
           );
         }
+  }
+
+  restartDialogLogin() {
+    this.alertService.confirmDialog("Login successfull", "App requires a restart to unlock all your premium features. Do you want to restart it now?", "Restart App", () => {
+      this.api.invalidateCache()
+      this.restartApp()
+    })
   }
 
   async getCurrentPlanConfirmed(): Promise<string> {
