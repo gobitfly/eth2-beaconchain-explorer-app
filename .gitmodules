@@ -1,0 +1,3 @@
+[submodule "android/app/src/main/java/in/beaconcha/mobile/widget"]
+	path = android/app/src/main/java/in/beaconcha/mobile/widget
+	url = git@gitlab.com:manuelbitfly/app-android-widget.git
