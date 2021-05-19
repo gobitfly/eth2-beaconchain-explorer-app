@@ -303,7 +303,7 @@ export class ApiService {
     return re
   }
 
-  private capitalize(text) {
+  capitalize(text) {
     return text.charAt(0).toUpperCase() + text.slice(1)
   }
 

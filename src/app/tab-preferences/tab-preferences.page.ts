@@ -40,7 +40,7 @@ import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import { LicencesPage } from '../pages/licences/licences.page';
 import { SubscribePage } from '../pages/subscribe/subscribe.page';
-import { MerchantUtils } from '../utils/MerchantUtils';
+import { MerchantUtils, PRODUCT_STANDARD } from '../utils/MerchantUtils';
 
 const { Device } = Plugins;
 const { Browser } = Plugins;
@@ -97,6 +97,8 @@ export class Tab3Page {
   //widgetThemeColor: string
   currentPlan: string
 
+  premiumLabel: string = ""
+
   constructor(
     private api: ApiService,
     private oauth: OAuthUtils,
@@ -136,9 +138,11 @@ export class Tab3Page {
     this.storage.getStakingShare().then((result) => this.stakingShare = result)
 
     this.merchant.getCurrentPlanConfirmed().then((result) => {
-      // TODO: uncomment below to enforce
       this.currentPlan = result
-      //this.currentPlan = "debug"
+      if (this.currentPlan != PRODUCT_STANDARD) {
+        this.premiumLabel = " - " + this.api.capitalize(this.currentPlan)
+      }
+
     })
 
     this.fadeIn = "fade-in"

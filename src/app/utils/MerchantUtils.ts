@@ -32,7 +32,7 @@ const { SplashScreen } = Plugins;
 
 const FIRST_PURCHASE_RETRY = "first_purchase_retry"
 
-const PRODUCT_STANDARD = 'standard';
+export const PRODUCT_STANDARD = 'standard';
 const MAX_PRODUCT = 'whale';
 
 @Injectable({
@@ -137,10 +137,9 @@ export class MerchantUtils {
   restartApp() {
     SplashScreen.show()
     window.location.reload()
-
   }
 
-  private async refreshToken() {
+  async refreshToken() {
     const refreshSuccess = await this.api.refreshToken() != null
     if (!refreshSuccess) {
       console.log("refreshing token after purchase failed, scheduling retry")

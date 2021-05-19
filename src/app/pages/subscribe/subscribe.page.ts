@@ -97,6 +97,16 @@ export class SubscribePage implements OnInit {
     if (!loggedIn) {
       await this.oauth.login()
     } else {
+      await this.merchant.refreshToken()
+      const currentPackage = await this.merchant.getCurrentPlanConfirmed()
+      if (currentPackage != "standard") {
+        Toast.show({
+          text: 'Purchase restored'
+        })
+        this.closeModal()
+        return
+      }
+
       await this.merchant.restore()
     }
 
