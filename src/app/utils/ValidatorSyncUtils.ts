@@ -94,7 +94,9 @@ export class ValidatorSyncUtils {
         if (lastTimeAdded && (!lastTimeUpSynced || lastTimeAdded.timestamp > lastTimeUpSynced.timestamp)) {
             this.upSyncLastTry = Date.now()
             const success = await this.syncUp(syncNotificationsForNewValidators)
-            if (success) this.storage.setObject(LAST_TIME_UPSYNCED_KEY, { timestamp: Date.now() })
+            if (success) {
+                this.storage.setObject(LAST_TIME_UPSYNCED_KEY, { timestamp: Date.now() })
+            }
         }
     }
 

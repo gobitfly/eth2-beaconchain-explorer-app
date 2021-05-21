@@ -47,7 +47,7 @@ const { Browser } = Plugins;
 const { Toast } = Plugins;
 
 const LOCK_KEY = "first_time_push_v6"
-const LOCKED_STATE = "locked"
+const LOCKED_STATE = "locked_v2"
 
 @Component({
   selector: 'app-tab3',
@@ -254,7 +254,7 @@ export class Tab3Page {
       this.disableToggleLock()
     }
 
-    setTimeout(() => this.firstTimePushAllNotificationSettings(), 200)
+    setTimeout(() => this.firstTimePushAllNotificationSettings(), 500)
   }
 
   private disableToggleLock() {
@@ -676,6 +676,13 @@ export class Tab3Page {
 
   toggleSnow() {
     this.theme.toggleWinter(this.snowing)
+  }
+
+  clearStorage() {
+    this.storage.clear()
+    Toast.show({
+      text: 'Storage cleared'
+    });
   }
 
   async changeAccessToken() {

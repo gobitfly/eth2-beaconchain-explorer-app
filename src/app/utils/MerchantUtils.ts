@@ -219,7 +219,6 @@ export class MerchantUtils {
 
   async restore() {
     this.restorePurchase = true
-    //await this.refreshToken()
     this.store.refresh();
   }
 
