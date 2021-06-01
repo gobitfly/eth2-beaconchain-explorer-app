@@ -22,13 +22,12 @@ import { Injectable } from '@angular/core';
 import axios, { AxiosResponse } from "axios";
 import { APIRequest, Method, RefreshTokenRequest } from "../requests/requests";
 import localforage from "localforage";
-import { IAxiosCacheAdapterOptions, setupCache } from "axios-cache-adapter";
+import { setupCache } from "axios-cache-adapter";
 import { StorageService } from './storage.service';
 import { ApiNetwork } from '../models/StorageTypes';
 import { isDevMode } from "@angular/core"
 import { Mutex } from 'async-mutex';
 import { MAP } from '../utils/NetworkData'
-import { AlertService } from './alert.service';
 
 const LOGTAG = "[ApiService]";
 var cacheKey = "api-cache"
@@ -110,7 +109,22 @@ export class ApiService {
     if (!isTokenRefreshCall && user.expiresIn <= Date.now() - (SERVER_TIMEOUT + 1000)) { // grace window, should be higher than allowed server timeout
       console.log("Token expired, refreshing...", user.expiresIn)
       user = await this.refreshToken()
-      if (!user || !user.accessToken) return null
+      if (!user || !user.accessToken) {
+        
+        // logout logic if token can not be refreshed again within an 12 hour window
+        const markForLogout = await this.storage.getItem("mark_for_logout")
+        const markForLogoutInt = parseInt(markForLogout)
+        if (!isNaN(markForLogoutInt) && markForLogoutInt + 12 * 60 * 1000 < Date.now()) {
+          console.log("[auto-logout] mark_for_logout reached, logout user")
+          this.storage.setItem("mark_for_logout", null)
+          this.storage.setAuthUser(null)
+        } else if(isNaN(markForLogoutInt) ){
+          console.log("[auto-logout] mark_for_logout set")
+          this.storage.setItem("mark_for_logout", Date.now() + "")
+        }
+
+        return null
+      }
     }
 
     return {
@@ -127,7 +141,7 @@ export class ApiService {
 
     const now = Date.now()
     const req = new RefreshTokenRequest(user.refreshToken)
-    const resp = await this.execute(req)
+    const resp = await this.execute(req).catch(_ => { return null })
     const result = req.parse(resp)
 
     console.log("Refresh token", result, resp)
