@@ -22,7 +22,7 @@ import { Injectable } from '@angular/core';
 import axios, { AxiosResponse } from "axios";
 import { APIRequest, Method, RefreshTokenRequest } from "../requests/requests";
 import localforage from "localforage";
-import { IAxiosCacheAdapterOptions, setupCache } from "axios-cache-adapter";
+import { setupCache } from "axios-cache-adapter";
 import { StorageService } from './storage.service';
 import { ApiNetwork } from '../models/StorageTypes';
 import { isDevMode } from "@angular/core"
@@ -30,14 +30,15 @@ import { Mutex } from 'async-mutex';
 import { MAP } from '../utils/NetworkData'
 
 const LOGTAG = "[ApiService]";
+var cacheKey = "api-cache"
 
 const forageStore = localforage.createInstance({
   driver: [localforage.INDEXEDDB, localforage.LOCALSTORAGE],
-  name: "api-cache",
+  name: cacheKey,
 });
 
 const cache = setupCache({
-  maxAge: 6 * 60 * 1000, // 6 min cache time
+  maxAge: 5 * 60 * 1000, // 5 min cache time
   store: forageStore,
   readHeaders: false,
   exclude: { query: false },
@@ -62,11 +63,13 @@ export class ApiService {
 
   public lastRefreshed = 0 // only updated by calls that have the updatesLastRefreshState flag enabled
 
-  constructor(private storage: StorageService) {
+  constructor(
+    private storage: StorageService
+  ) {
     this.isDebugMode().then((result) => {
       this.debug = result
       this.disableLogging()
-    })
+    }) 
 
     this.registerLogMiddleware()
     this.updateNetworkConfig()
@@ -78,10 +81,15 @@ export class ApiService {
     }
   );
 
+  mayInvalidateOnFaultyConnectionState() {
+    if(!this.connectionStateOK) this.invalidateCache()
+  }
+
   invalidateCache() {
     console.log("invalidating request cache")
     // @ts-ignore
     cache.store.clear()
+    forageStore.clear()
     this.storage.invalidateAllCache()
   }
 
@@ -101,7 +109,22 @@ export class ApiService {
     if (!isTokenRefreshCall && user.expiresIn <= Date.now() - (SERVER_TIMEOUT + 1000)) { // grace window, should be higher than allowed server timeout
       console.log("Token expired, refreshing...", user.expiresIn)
       user = await this.refreshToken()
-      if (!user || !user.accessToken) return null
+      if (!user || !user.accessToken) {
+        
+        // logout logic if token can not be refreshed again within an 12 hour window
+        const markForLogout = await this.storage.getItem("mark_for_logout")
+        const markForLogoutInt = parseInt(markForLogout)
+        if (!isNaN(markForLogoutInt) && markForLogoutInt + 12 * 60 * 1000 < Date.now()) {
+          console.log("[auto-logout] mark_for_logout reached, logout user")
+          this.storage.setItem("mark_for_logout", null)
+          this.storage.setAuthUser(null)
+        } else if(isNaN(markForLogoutInt) ){
+          console.log("[auto-logout] mark_for_logout set")
+          this.storage.setItem("mark_for_logout", Date.now() + "")
+        }
+
+        return null
+      }
     }
 
     return {
@@ -109,7 +132,7 @@ export class ApiService {
     }
   }
 
-  private async refreshToken() {
+  async refreshToken() {
     const user = await this.storage.getAuthUser()
     if (!user || !user.refreshToken) {
       console.warn("No refreshtoken, cannot refresh token")
@@ -118,13 +141,19 @@ export class ApiService {
 
     const now = Date.now()
     const req = new RefreshTokenRequest(user.refreshToken)
-    const resp = await this.execute(req)
+    const resp = await this.execute(req).catch(_ => { return null })
     const result = req.parse(resp)
 
     console.log("Refresh token", result, resp)
     if (!result || result.length <= 0 || !result[0].access_token) {
       console.warn("could not refresh token", result)
-      return
+      return null
+
+      /*if (result && result[0]) {
+        this.alertService.showInfo("Login Expired", "Please log back in to receive further notifications.")
+        this.storage.setAuthUser(null)
+      }
+      return*/
     }
 
     user.accessToken = result[0].access_token
@@ -155,20 +184,23 @@ export class ApiService {
     return test
   }
 
+
   async execute(request: APIRequest<any>) {
     var options = request.options
 
-    if (request.requiresAuth) {
+   // if (request.requiresAuth) {
 
       const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
-      if (!authHeader) {
-        console.info("User is not logged in, skipping request", request)
-        return
+      if (authHeader) {
+
+        const headers = { ...options.headers, ...authHeader }
+
+        options.headers = headers;
       }
+   // }
 
-      const headers = { ...options.headers, ...authHeader }
-
-      options.headers = headers;
+    if (!this.connectionStateOK) {
+      options.clearCacheEntry = true
     }
 
     await this.lockOrWait(request.resource)
@@ -272,19 +304,20 @@ export class ApiService {
     return permanentDevMode && permanentDevMode.enabled
   }
 
-  getAllTestNetNames() {
+  async getAllTestNetNames() {
+    const debug = await this.isDebugMode()
     const re: string[][] = []
 
     for (let entry of MAP) {
       if (entry.key == "main") continue;
       if (!entry.active) continue;
-      if (entry.onlyDebug && !this.debug) continue;
+      if (entry.onlyDebug && !debug) continue;
       re.push([this.capitalize(entry.key) + " (Testnet)", entry.key])
     }
     return re
   }
 
-  private capitalize(text) {
+  capitalize(text) {
     return text.charAt(0).toUpperCase() + text.slice(1)
   }
 

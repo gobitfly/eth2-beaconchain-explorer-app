@@ -117,6 +117,11 @@
 }
 
 body {
+  --status-ok: var(--ion-color-success);
+  --status-warn: var(--ion-color-warning);
+  --status-danger: var(--ion-color-danger);
+  --status-secondary: var(--ion-color-secondary);
+
   --x-toolbar-title-color: #fff;
 
   --ion-border-color: #f2f2f2;
@@ -139,6 +144,7 @@ body {
   --ion-tab-button-color: rgba(0, 0, 0, 0.64);
 
   --x-update-messages-background: #343347;
+  --x-update-messages-background-selected: #64637a;
   --x-first-item-group-margin-top: 0px;
 
   --x-alert-primary: #2f2e42;
@@ -147,6 +153,9 @@ body {
   --tooltip-textcolor: #444444;
 
   --segment-primary: #000000;
+
+  --chart-default: #7cb5ec;
+  
 }
 
 body.dark {
@@ -216,6 +225,13 @@ body.dark {
   --ion-tab-button-color-selected: #fff;
   --ion-tab-button-color: rgba(255, 255, 255, 0.64);
 
+  --status-ok: var(--ion-color-success) !important;;
+  --status-warn: var(--ion-color-warning) !important;;
+  --status-danger: var(--ion-color-danger) !important;;
+  --status-secondary: var(--ion-color-secondary) !important;
+
+  --chart-default: #7cb5ec;
+
   // Highchart
   --background-color: #000000;
   --text-color: #ffffff;
@@ -230,7 +246,8 @@ body.dark {
 
   --ion-text-color-lighter: #f2f2f2;
 
-  --x-update-messages-background: #0e0e0e;
+  --x-update-messages-background: #0e0e0e !important;
+  --x-update-messages-background-selected: #222222 !important;
   --x-first-item-group-margin-top: 12px;
 
   --ion-background-color: #000000; //121212
@@ -264,7 +281,7 @@ body.dark {
 
   --ion-item-background: #000000;
 
-  --ion-toolbar-background: #000;
+  --ion-toolbar-background: #000 !important;
 
   --ion-tab-bar-background: #000; //0f0f0f
 
@@ -289,3 +306,260 @@ body.dark {
   --mask-fill-color: #fff;
   --x-alert-primary: #fff;
 }
+
+body.teal {
+  --ion-color-primary: #26a69a;
+  --ion-color-primary-rgb: 38, 166, 154;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #26a69a; //2f2e42
+  --x-alert-primary: #26a69a;
+  --ion-color-success: #26a69a;
+  --chart-default: #26a69a;
+  --x-update-messages-background: #21887e;
+  --x-update-messages-background-selected: #4eaca2;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+}
+
+body.green {
+  --ion-color-primary: #43a047;
+  --ion-color-primary-rgb: 67, 160, 71;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #43a047; //2f2e42
+  --x-alert-primary: #43a047;
+  --ion-color-success: #43a047;
+  --chart-default: #43a047;
+  --x-update-messages-background: #2b8830;
+  --x-update-messages-background-selected: #5ba85f;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+}
+
+body.cyan {
+  --ion-color-primary: #00acc1;
+  --ion-color-primary-rgb: 0, 172, 193;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #00acc1; //2f2e42
+  --x-alert-primary: #00acc1;
+  --ion-color-success: #00acc1;
+  --chart-default: #00acc1;
+  --x-update-messages-background: #00899b;
+  --x-update-messages-background-selected: #0ecee7;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+}
+
+body.purple {
+  --ion-color-primary: #7b1fa2;
+  --ion-color-primary-rgb: 123, 31, 162;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #7b1fa2; //2f2e42
+  --x-alert-primary: #7b1fa2;
+  --ion-color-success: #7b1fa2;
+  --chart-default: #7b1fa2;
+  --x-update-messages-background: #611183;
+  --x-update-messages-background-selected: #9239b8;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+}
+
+body.sun {
+  --ion-color-primary: #fbc02d;
+  --ion-color-primary-rgb: 251, 192, 45;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #fbc02d; //2f2e42
+  --x-alert-primary: #fbc02d;
+  --ion-color-success: #fbc02d;
+  --chart-default: #fbc02d;
+  --x-update-messages-background: #daa319;
+  --x-update-messages-background-selected: #fccc55;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+}
+
+body.indigo {
+  --ion-color-primary: #303f9f;
+  --ion-color-primary-rgb: 48, 63, 159;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #303f9f; //2f2e42
+  --x-alert-primary: #303f9f;
+  --ion-color-success: #303f9f;
+  --chart-default: #303f9f;
+  --x-update-messages-background: #1e2d8b;
+  --x-update-messages-background-selected: #4b59b4;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+
+}
+
+body.pink {
+  --ion-color-primary: #f50057;
+  --ion-color-primary-rgb: 245, 0, 87;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #f50057; //2f2e42
+  --x-alert-primary: #f50057;
+  --ion-color-success: #f50057;
+  --chart-default: #f50057;
+  --x-update-messages-background: #ce0048;
+  --x-update-messages-background-selected: #fd2570;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+}
+
+body.metal {
+  --ion-color-primary: #607d8b;
+  --ion-color-primary-rgb: 96, 125, 139;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #607d8b; //2f2e42
+  --x-alert-primary: #607d8b;
+  --ion-color-success: #607d8b;
+  --chart-default: #607d8b;
+  --x-update-messages-background: #4a6877;
+  --x-update-messages-background-selected: #7c929c;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+  
+}
+
+body.bronce {
+  --ion-color-primary: #8d6e63;
+  --ion-color-primary-rgb: 141, 110, 99;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #8d6e63; //2f2e42
+  --x-alert-primary: #8d6e63;
+  --ion-color-success: #8d6e63;
+  --chart-default: #8d6e63;
+  --x-update-messages-background: #7e5d51;
+  --x-update-messages-background-selected: #a5877d;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+}
+
+body.gold {
+  --ion-color-primary: #FFD700;
+  --ion-color-primary-rgb: 255, 215, 0;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #FFD700; //2f2e42
+  --x-alert-primary: #FFD700;
+  --ion-color-success: #FFD700;
+  --chart-default: #FFD700;
+  --x-update-messages-background: #e4c201;
+  --x-update-messages-background-selected: #ffe031;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+}
+
+body.red {
+  --ion-color-primary: #f44336;
+  --ion-color-primary-rgb: 244, 67, 54;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #f44336; //2f2e42
+  --x-alert-primary: #f44336;
+  --ion-color-success: #f44336;
+  --chart-default: #f44336;
+  --x-update-messages-background: #dd2f22;
+  --x-update-messages-background-selected: #fa685d;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+}
+
+body.orange {
+  --ion-color-primary: #ff5722;
+  --ion-color-primary-rgb: 255, 87, 34;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --ion-toolbar-background: #ff5722; //2f2e42
+  --x-alert-primary: #ff5722;
+  --ion-color-success: #ff5722;
+  --chart-default: #ff5722;
+  --x-update-messages-background: #dd3e0e;
+  --x-update-messages-background-selected: #ff7349;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+}
+
+
+

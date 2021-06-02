@@ -24,8 +24,10 @@ import * as StorageTypes from "../models/StorageTypes";
 import { findConfigForKey } from '../utils/NetworkData';
 import { CacheModule } from '../utils/CacheModule'
 import BigNumber from 'bignumber.js';
+import { Platform } from '@ionic/angular';
 
 const { Storage } = Plugins;
+const { StorageMirror } = Plugins;
 
 const AUTH_USER = "auth_user";
 const PREFERENCES = "network_preferences";
@@ -43,8 +45,9 @@ export const SETTING_NOTIFY_CLIENTUPDATE = "setting_notify_clientupdate"
 })
 export class StorageService extends CacheModule {
 
-  constructor() {
+  constructor(private platform: Platform) {
     super()
+    this.reflectiOSStorage()
   }
 
   // --- upper level helper ---
@@ -180,6 +183,28 @@ export class StorageService extends CacheModule {
       key: key,
       value: value,
     });
+    this.reflectiOSStorage()
+  }
+
+  // sigh
+  private reflectiOSStorage() {
+    try {
+      if (!this.platform.is("ios")) return;
+      // TODO: Theres's a new prefix in capacitor 3
+      StorageMirror.reflect({
+        keys: [
+          "_cap_prefered_unit",
+          "_cap_network_preferences",
+          "_cap_validators_main",
+          "_cap_validators_pyrmont",
+          "_cap_validators_prater",
+          "_cap_validators_staging",
+          "_cap_auth_user"
+        ]
+      })
+    } catch (e) {
+      console.warn("StorageMirror exception", e)
+    }
   }
 
   async getItem(key: string): Promise<string | null> {
@@ -202,6 +227,7 @@ export class StorageService extends CacheModule {
   async remove(key: string) {
     this.invalidateCache(key)
     await Storage.remove({ key: key });
+    this.reflectiOSStorage()
   }
 
   async keys() {
@@ -212,6 +238,7 @@ export class StorageService extends CacheModule {
   async clear() {
     this.invalidateAllCache()
     await Storage.clear();
+    this.reflectiOSStorage()
   }
 
 }

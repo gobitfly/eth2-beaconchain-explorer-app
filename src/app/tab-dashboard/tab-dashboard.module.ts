@@ -38,7 +38,7 @@ import { PipesModule } from '../pipes/pipes.module'
     OfflineComponentModule,
     Tab1PageRoutingModule,
     HelpComponentModule,
-    PipesModule
+    PipesModule,
   ],
   declarations: [Tab1Page]
 })

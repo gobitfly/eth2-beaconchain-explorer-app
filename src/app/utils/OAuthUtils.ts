@@ -28,6 +28,7 @@ import FirebaseUtils from './FirebaseUtils';
 import { ValidatorUtils } from './ValidatorUtils';
 import { LoadingController } from '@ionic/angular';
 import { SyncService } from '../services/sync.service';
+import { MerchantUtils } from "./MerchantUtils";
 
 const { Toast } = Plugins;
 
@@ -42,7 +43,8 @@ export class OAuthUtils {
     private firebaseUtils: FirebaseUtils,
     private validatorUtils: ValidatorUtils,
     private loadingController: LoadingController,
-    private sync: SyncService
+    private sync: SyncService,
+    private merchantUtils: MerchantUtils
   ) {
     registerWebPlugin(OAuth2Client);
   }
@@ -62,7 +64,7 @@ export class OAuthUtils {
         const expiresIn = Date.now() + (10 * 60 * 1000)
 
         console.log("successfull", accessToken, refreshToken, expiresIn)
-        this.storage.setAuthUser({
+        await this.storage.setAuthUser({
           accessToken: accessToken,
           refreshToken: refreshToken,
           expiresIn: expiresIn
@@ -72,10 +74,16 @@ export class OAuthUtils {
         await this.firebaseUtils.pushLastTokenUpstream(true)
         await this.sync.fullSync()
 
-        Toast.show({
-          text: "Welcome!"
-        })
+        let isPremium = await this.merchantUtils.hasMachineHistoryPremium()
+
         loadingScreen.dismiss()
+        if (isPremium) {
+          this.merchantUtils.restartDialogLogin()
+        } else {
+          Toast.show({
+            text: "Welcome!"
+          })
+        }
 
         return true
       })

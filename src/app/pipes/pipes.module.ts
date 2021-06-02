@@ -26,6 +26,7 @@ import { PercentageabsPipe } from './percentageabs.pipe';
 import { FadeoutpipePipe } from './fadeoutpipe.pipe';
 import { TimeagoModule, TimeagoFormatter } from 'ngx-timeago';
 import { CustomTimeAgoFormatter } from '../utils/CustomTimeAgoFormatter'
+import { DelegatorPipe } from './delegater.pipi';
 
 @NgModule({
   imports: [
@@ -37,13 +38,15 @@ import { CustomTimeAgoFormatter } from '../utils/CustomTimeAgoFormatter'
     McurrencyPipe,
     ValuestylePipe,
     PercentageabsPipe,
-    FadeoutpipePipe
+    FadeoutpipePipe,
+    DelegatorPipe
   ],
   exports: [
     McurrencyPipe,
     ValuestylePipe,
     PercentageabsPipe,
     FadeoutpipePipe,
+    DelegatorPipe,
     TimeagoModule
   ]
 })

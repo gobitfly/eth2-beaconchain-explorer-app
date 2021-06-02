@@ -24,6 +24,7 @@ import { ModalController, Platform } from '@ionic/angular';
 import ThemeUtils from './utils/ThemeUtils';
 import { Plugins } from '@capacitor/core';
 const { SplashScreen } = Plugins;
+const { AdMob } = Plugins;
 
 @Component({
   selector: 'app-root',
@@ -47,6 +48,11 @@ export class AppComponent {
       }); // just initialize the theme service
 
       this.setAndroidBackButtonBehavior();
+
+     /* AdMob.initialize({
+        requestTrackingAuthorization: false,
+        testingDevices: []
+      });*/
     });
   }
 

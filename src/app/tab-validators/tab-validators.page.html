@@ -48,16 +48,22 @@
       *ngIf="isLoggedIn && !searchResultMode && this.items && items.length >= 1"></ion-icon>
   </ion-item>
 
-  <app-message title="Current max limit is 100" icon="warning-outline" iconStyle="warn" msgTitle="Sorry"
-    msgText="Currently this app does not support more than 100 validators. Reach out to us and let us know if that's something you'd be interested in."
-    *ngIf="(items && items.length >= 99) || reachedMaxValidators">
+  <app-message title="Upgrade for more validators." icon="rocket-outline" iconStyle="genesis" 
+   (click)="upgrade()"
+    *ngIf="(items && items.length >= currentPackageMaxValidators) || reachedMaxValidators">
   </app-message>
+
+  <app-text-ad location="validator" style="margin-top:10px;" *ngIf="items && items.length > 0 && !loading"></app-text-ad>     
 
   <ion-virtual-scroll [items]="items" approxItemHeight="160px" [itemHeight]="itemHeightFn"
     *ngIf="items && items.length > 0 && !loading">
-    <div *virtualItem="let item">
+    
+    
+    <div *virtualItem="let item; let idx = index;"> 
       <app-validator [validator]="item" (click)="presentModal(item)"></app-validator>
+     
     </div>
+    
   </ion-virtual-scroll>
 
   <div class="nothingfound" *ngIf="items && items.length <= 0 && searchResultMode && !loading">

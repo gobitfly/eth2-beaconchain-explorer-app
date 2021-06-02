@@ -140,7 +140,7 @@ export default class OverviewController {
             performance365d: performance365d.multipliedBy(sharePercentage),
             dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator),
             lazyLoadChart: true,
-            lazyChartValidators: getValidatorQueryString(validators, 2000, 99),
+            lazyChartValidators: getValidatorQueryString(validators, 2000, 280), // TODO remove hardcoded val
             foreignValidator: foreignValidator,
             foreignValidatorItem: foreignValidator ? validators[0] : null,
             effectiveBalance: effectiveBalance,
@@ -151,7 +151,7 @@ export default class OverviewController {
 
 
     getAPR(effectiveBalance, performance) {
-        return new BigNumber(performance * 52 * 100 / effectiveBalance).decimalPlaces(1).toNumber()
+        return new BigNumber(performance * 5214 / effectiveBalance).decimalPlaces(1).toNumber()
     }
 
     getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {

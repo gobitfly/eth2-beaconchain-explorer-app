@@ -26,7 +26,7 @@ export function highChartOptions(where) {
       credits: {
         enabled: true,
         href: 'https://beaconcha.in',
-        text: 'beaconcha.in',
+        text: '',
         style: {
           color: 'var(--body-color)'
         },
@@ -54,7 +54,7 @@ export function highChartOptions(where) {
         },
         backgroundColor: 'var(--bg-color)'
       },
-      colors: ["#7cb5ec", "#90ed7d", "#f7a35c", "#8085e9", "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"],
+      colors: ["var(--chart-default)", "#90ed7d", "#f7a35c", "#8085e9", "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"],
       legend: {
         enabled: true,
         layout: 'horizontal',
@@ -130,7 +130,9 @@ export function highChartOptions(where) {
       },
 
       plotOptions: {
+
         series: {
+          fillOpacity: 0.1,
           marker: {
             enabled: false
           }

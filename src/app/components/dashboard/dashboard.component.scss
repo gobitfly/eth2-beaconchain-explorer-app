@@ -78,19 +78,19 @@ ion-segment-button {
 }
 
 .ok {
-  color: var(--ion-color-success);
+  color: var(--status-ok);
 }
 
 .warn {
-  color: var(--ion-color-warning);
+  color: var(--status-warn);
 }
 
 .err {
-  color: var(--ion-color-danger);
+  color: var(--status-danger);
 }
 
 .waiting {
-  color: var(--ion-color-secondary);
+  color: var(--status-secondary);
 }
 
 .status-text {
@@ -153,4 +153,28 @@ ion-item {
 
 .loading-container {
   height: 100%;
+}
+
+.grid-cell {
+  width: 50%;
+  float: left;
+  margin-bottom: 7px;
+  margin-top: 7px;
+}
+
+.left {
+  text-align: start !important;
+}
+
+.right {
+  text-align: end !important;
+}
+
+.income-title {
+  font-size: 0.97em;
+  //color: var(--ion-text-color-lighter);
+}
+
+.grid {
+  width: 100%;
 }

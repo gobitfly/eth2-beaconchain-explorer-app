@@ -37,6 +37,14 @@ const routes: Routes = [
   {
     path: 'licences',
     loadChildren: () => import('./pages/licences/licences.module').then(m => m.LicencesPageModule)
+  },
+  {
+    path: 'subscribe',
+    loadChildren: () => import('./pages/subscribe/subscribe.module').then( m => m.SubscribePageModule)
+  },
+  {
+    path: 'machine-detail',
+    loadChildren: () => import('./pages/machine-detail/machine-detail.module').then( m => m.MachineDetailPageModule)
   }
 ];
 @NgModule({

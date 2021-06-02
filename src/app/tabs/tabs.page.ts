@@ -23,6 +23,7 @@ import { ApiService } from '../services/api.service';
 import { StorageService } from '../services/storage.service';
 import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
+import { MerchantUtils } from '../utils/MerchantUtils';
 
 @Component({
   selector: 'app-tabs',
@@ -35,7 +36,8 @@ export class TabsPage {
     private firebaseUtils: FirebaseUtils,
     private sync: SyncService,
     private storage: StorageService,
-    private api: ApiService
+    private api: ApiService,
+    private merchant: MerchantUtils
   ) { }
 
   ionViewDidEnter() {

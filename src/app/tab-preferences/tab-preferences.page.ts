@@ -39,13 +39,15 @@ import { Platform } from '@ionic/angular';
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import { LicencesPage } from '../pages/licences/licences.page';
+import { SubscribePage } from '../pages/subscribe/subscribe.page';
+import { MerchantUtils, PRODUCT_STANDARD } from '../utils/MerchantUtils';
 
 const { Device } = Plugins;
 const { Browser } = Plugins;
 const { Toast } = Plugins;
 
 const LOCK_KEY = "first_time_push_v6"
-const LOCKED_STATE = "locked"
+const LOCKED_STATE = "locked_v2"
 
 @Component({
   selector: 'app-tab3',
@@ -91,6 +93,12 @@ export class Tab3Page {
 
   stakingShare = null
 
+  themeColor: string
+  //widgetThemeColor: string
+  currentPlan: string
+
+  premiumLabel: string = ""
+
   constructor(
     private api: ApiService,
     private oauth: OAuthUtils,
@@ -104,12 +112,14 @@ export class Tab3Page {
     private firebaseUtils: FirebaseUtils,
     public platform: Platform,
     private alerts: AlertService,
-    private sync: SyncService
+    private sync: SyncService,
+    private merchant: MerchantUtils
   ) { }
 
   ngOnInit() {
     this.notifyInitialized = false
     this.theme.isDarkThemed().then((result) => this.darkMode = result)
+    this.theme.getThemeColor().then((result) => this.themeColor = result)
 
     this.updateUtils.getETH1Client().then((result) => this.eth1client = result)
     this.updateUtils.getETH2Client().then((result) => this.eth2client = result)
@@ -119,11 +129,21 @@ export class Tab3Page {
     this.theme.isWinterEnabled().then((result) => this.snowing = result)
 
     this.allCurrencies = this.getAllCurrencies()
-    this.allTestNetworks = this.api.getAllTestNetNames()
+    this.api.getAllTestNetNames().then(result => {
+      this.allTestNetworks = result
+    })
 
     Device.getInfo().then((result) => this.appVersion = result.appVersion)
 
     this.storage.getStakingShare().then((result) => this.stakingShare = result)
+
+    this.merchant.getCurrentPlanConfirmed().then((result) => {
+      this.currentPlan = result
+      if (this.currentPlan != PRODUCT_STANDARD) {
+        this.premiumLabel = " - " + this.api.capitalize(this.currentPlan)
+      }
+
+    })
 
     this.fadeIn = "fade-in"
     setTimeout(() => {
@@ -136,6 +156,51 @@ export class Tab3Page {
   private changeToggleSafely(func: () => void) {
     this.lockedToggle = true;
     func()
+  }
+
+  changeWidgetTheme() {
+    
+  }
+
+  themeColorLock = false
+  changeThemeColor() {
+    this.themeColorLock = true;
+    this.theme.undoColor()
+    setTimeout(() => {
+      this.theme.toggle(this.darkMode, true, this.themeColor)
+      this.themeColorLock = false;
+    }, 250)
+    
+  }
+
+  widgetSetupInfo() {
+    if (this.currentPlan == 'standard' || this.currentPlan == 'plankton') {
+      this.openUpgrades()
+      return;
+    }
+
+    var tutorialText = "MISSINGNO"
+    if (this.platform.is("ios")) {
+      tutorialText =
+        "1. Go to your homescreen<br/>" +
+        "2. Hold down on an empty space<br/>" +
+        "3. On the top right corner, click the + symbol<br/>" +
+        "4. Scroll down and select Beaconchain Dashboard and chose your widget<br/>" +
+        "<br/>You can configure your widget by holding down on the widget.<br/><br/>" +
+        "Widgets are only available on iOS 14 or newer<br/><br/>" +
+        "If you just purchased a premium package and the widget does not show any data, try deleting it and adding the widget again."
+    } else {
+      tutorialText = "1. Go to your homescreen<br/>" +
+        "2. Hold down on an empty space<br/>" +
+        "3. Click on 'Widgets'<br/>" +
+        "4. Scroll down and select Beaconchain Dashboard and chose your widget<br/><br/>" +
+        "If you just purchased a premium package and the widget does not show any data, try deleting it and adding the widget again."
+    }
+
+    this.alerts.showInfo(
+      "Widget Setup",
+      tutorialText
+    )
   }
 
   ionViewWillEnter() {
@@ -189,7 +254,7 @@ export class Tab3Page {
       this.disableToggleLock()
     }
 
-    setTimeout(() => this.firstTimePushAllNotificationSettings(), 200)
+    setTimeout(() => this.firstTimePushAllNotificationSettings(), 500)
   }
 
   private disableToggleLock() {
@@ -475,6 +540,14 @@ export class Tab3Page {
     await alert.present();
   }
 
+  async openUpgrades() {
+    const modal = await this.modalController.create({
+      component: SubscribePage,
+      cssClass: 'my-custom-class',
+    });
+    return await modal.present();
+  }
+
   async openFAQ() {
     const modal = await this.modalController.create({
       component: HelppagePage,
@@ -495,6 +568,9 @@ export class Tab3Page {
     this.sync.syncAllSettings()
   }
 
+  manageSubs() {
+    this.merchant.manageSubscriptions()
+  }
 
   async partialStake() {
     const validatorCount = await this.validatorUtils.localValidatorCount()
@@ -594,9 +670,19 @@ export class Tab3Page {
     )
   }
 
+  restartApp() {
+    this.merchant.restartApp()
+  }
 
   toggleSnow() {
     this.theme.toggleWinter(this.snowing)
+  }
+
+  clearStorage() {
+    this.storage.clear()
+    Toast.show({
+      text: 'Storage cleared'
+    });
   }
 
   async changeAccessToken() {
@@ -608,6 +694,16 @@ export class Tab3Page {
           name: 'token',
           type: 'text',
           placeholder: 'Access token'
+        },
+        {
+          name: 'refreshtoken',
+          type: 'text',
+          placeholder: 'Refresh token'
+        },
+        {
+          name: 'expires',
+          type: 'number',
+          placeholder: 'Expires in'
         }
       ],
       buttons: [
@@ -623,8 +719,8 @@ export class Tab3Page {
           handler: (alertData) => {
             this.storage.setAuthUser({
               accessToken: alertData.token,
-              refreshToken: "-",
-              expiresIn: Number.MAX_SAFE_INTEGER
+              refreshToken: alertData.refreshtoken,
+              expiresIn: alertData.expires
             })
           }
         }

@@ -28,6 +28,8 @@ import { ValidatorComponentModule } from '../components/validator/validator.modu
 import { OfflineComponentModule } from '../components/offline/offline.module';
 import { Tab2PageRoutingModule } from './tab-validators-routing.module';
 import { MessageComponentModule } from '../components/message/message.module';
+import { TextAdComponentModule } from '../components/text-ad/text-ad.module';
+
 @NgModule({
   imports: [
     IonicModule,
@@ -36,7 +38,8 @@ import { MessageComponentModule } from '../components/message/message.module';
     ValidatorComponentModule,
     OfflineComponentModule,
     Tab2PageRoutingModule,
-    MessageComponentModule
+    MessageComponentModule,
+    TextAdComponentModule
   ],
   declarations: [Tab2Page]
 })

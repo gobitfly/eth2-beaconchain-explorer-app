@@ -120,6 +120,7 @@ export class Tab1Page {
 
   async doRefresh(event) {
     await this.refresh().catch(() => {
+      this.api.mayInvalidateOnFaultyConnectionState()
       event.target.complete();
     })
     event.target.complete();

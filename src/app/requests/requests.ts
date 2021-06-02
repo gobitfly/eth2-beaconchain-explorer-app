@@ -19,6 +19,7 @@
  */
 
 import BigNumber from "bignumber.js";
+import { StatsResponse } from '../controllers/MachineController'
 
 export enum Method {
   GET,
@@ -174,6 +175,19 @@ export interface BalanceHistoryResponse {
   validatorindex: number
 }
 
+export interface CoinzillaAdResponse {
+  title: string,
+  img: string,
+  thumbnail: string
+  description: string
+  description_short: string
+  cta_button: string
+  website: string
+  name: string
+  url: string
+  impressionUrl: string
+}
+
 // ------------- Reqests -------------
 
 export class ValidatorRequest extends APIRequest<ValidatorResponse>  {
@@ -295,6 +309,33 @@ export class SetMobileSettingsRequest extends APIRequest<MobileSettingsResponse>
   }
 }
 
+export interface SubscriptionTransaction {
+  id: string,
+  receipt: string,
+  type: string
+}
+
+export interface SubscriptionData {
+  currency: string,
+  id: string,
+  priceMicros: number,
+  transaction: SubscriptionTransaction,
+  valid: boolean
+}
+
+export class PostMobileSubscription extends APIRequest<MobileSettingsResponse> {
+  resource = "user/subscription/register";
+  method = Method.POST;
+  requiresAuth = true
+  ignoreFails = true
+
+  constructor(subscriptionData: SubscriptionData) {
+    super()
+    this.postData = subscriptionData
+  }
+
+}
+
 export class GetMobileSettingsRequest extends APIRequest<MobileSettingsResponse> {
   resource = "user/mobile/settings";
   method = Method.GET;
@@ -306,6 +347,18 @@ export class GetMyValidatorsRequest extends APIRequest<MyValidatorResponse> {
   resource = "user/validator/saved";
   method = Method.GET;
   requiresAuth = true
+}
+
+export class GetMyMachinesRequest extends APIRequest<StatsResponse> {
+  resource = "user/stats";
+  method = Method.GET;
+  requiresAuth = true
+  ignoreFails = true
+
+  constructor(offset: number = 0, limit: number = 180) {
+    super()
+    this.resource += "/" + offset + "/" + limit
+  }
 }
 
 export class RemoveMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
@@ -425,6 +478,37 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 
 // ------------ Special external api requests -----------------
 
+export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
+  endPoint = "https://request-global.czilladx.com"
+
+  resource = "/serve/native-app.php?z=";
+  method = Method.GET;
+  ignoreFails = true
+
+  options = {
+    cache: {
+      maxAge: 4 * 60 * 1000,
+    }
+  }
+
+
+  parse(response: any): CoinzillaAdResponse[] {
+    if (!this.wasSuccessfull(response, false) || !response.data.ad) {
+      return []
+    }
+
+    return [response.data.ad];
+  }
+
+  constructor(tracker: string) {
+    super()
+    this.resource += tracker
+  }
+
+}
+
+
+
 export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse> {
   endPoint = "https://api.coinbase.com"
 
@@ -434,7 +518,7 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
 
   options = {
     cache: {
-      maxAge: 2 * 60 * 60 * 1000,
+      maxAge: 1 * 60 * 60 * 1000,
     }
   }
 

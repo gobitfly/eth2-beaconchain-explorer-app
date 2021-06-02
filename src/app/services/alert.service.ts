@@ -23,6 +23,7 @@ import { AlertController, LoadingController } from '@ionic/angular';
 
 export const SETTINGS_PAGE = 100
 export const VALIDATORUTILS = 140
+export const PURCHASEUTILS = 150
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +40,19 @@ export class AlertService {
       header: title,
       message: message + "<br/>Code: " + code,
       buttons: ["OK"]
+    });
+
+    await alert.present();
+  }
+
+  async showSelect(title: string, inputs: any[], callback: (data) => void) {
+    const alert = await this.alertController.create({
+      header: title,
+      inputs: inputs,
+      buttons: [{
+        text: "OK",
+        handler: callback
+      }]
     });
 
     await alert.present();
