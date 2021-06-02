@@ -222,12 +222,13 @@ export class MerchantUtils {
     this.store.refresh();
   }
 
-  purchase(product: string) {
+  async purchase(product: string) {
+    const loading = await this.alertService.presentLoading("");
+    loading.present();
     this.store.order(product).then(
       async (product) => {
        this.restorePurchase = true
-       const loading = await this.alertService.presentLoading("");
-       loading.present();
+      
        setTimeout(() => {
          loading.dismiss();
        }, 1500);
