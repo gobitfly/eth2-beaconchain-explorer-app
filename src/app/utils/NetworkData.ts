@@ -33,8 +33,7 @@ export const MAP: ApiNetwork[] = [
         active: true,
         genesisTs: 1606824023
     },
-
-
+  
     {
         key: "prater",
         protocol: "https",
