@@ -234,6 +234,7 @@ export class MerchantUtils {
        }, 1500);
       },
       (e) => {
+        loading.dismiss();
         this.alertService.showError(
           "Purchase failed",
           `Failed to purchase: ${e}`,
