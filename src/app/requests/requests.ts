@@ -175,6 +175,19 @@ export interface BalanceHistoryResponse {
   validatorindex: number
 }
 
+export interface CoinzillaAdResponse {
+  title: string,
+  img: string,
+  thumbnail: string
+  description: string
+  description_short: string
+  cta_button: string
+  website: string
+  name: string
+  url: string
+  impressionUrl: string
+}
+
 // ------------- Reqests -------------
 
 export class ValidatorRequest extends APIRequest<ValidatorResponse>  {
@@ -464,6 +477,37 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 }
 
 // ------------ Special external api requests -----------------
+
+export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
+  endPoint = "https://request-global.czilladx.com"
+
+  resource = "/serve/native-app.php?z=";
+  method = Method.GET;
+  ignoreFails = true
+
+  options = {
+    cache: {
+      maxAge: 4 * 60 * 1000,
+    }
+  }
+
+
+  parse(response: any): CoinzillaAdResponse[] {
+    if (!this.wasSuccessfull(response, false) || !response.data.ad) {
+      return []
+    }
+
+    return [response.data.ad];
+  }
+
+  constructor(tracker: string) {
+    super()
+    this.resource += tracker
+  }
+
+}
+
+
 
 export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse> {
   endPoint = "https://api.coinbase.com"

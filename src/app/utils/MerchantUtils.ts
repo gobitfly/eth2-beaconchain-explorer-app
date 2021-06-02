@@ -323,6 +323,11 @@ export class MerchantUtils {
     return null
   }
 
+  async hasAdFree() {
+    const currentPlan = await this.getCurrentPlanConfirmed()
+    return currentPlan != PRODUCT_STANDARD && currentPlan != ""
+  }
+
   async hasMachineHistoryPremium() {
     const currentPlan = await this.getCurrentPlanConfirmed()
     return currentPlan != PRODUCT_STANDARD && currentPlan != ""

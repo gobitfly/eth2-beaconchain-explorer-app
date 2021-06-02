@@ -1,6 +1,6 @@
 {
   "name": "beaconchain-dashboard",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "Bitfly GmbH",
   "homepage": "https://beaconcha.in",
   "scripts": {
@@ -48,7 +48,6 @@
     "localforage": "^1.9.0",
     "localforage-memoryStorageDriver": "^0.9.2",
     "magic-snowflakes": "^4.1.6",
-    "ng2-adsense": "^9.1.0",
     "ng2-tooltip-directive": "^2.9.22",
     "ngx-timeago": "^2.0.0",
     "rxjs": "~6.5.5",

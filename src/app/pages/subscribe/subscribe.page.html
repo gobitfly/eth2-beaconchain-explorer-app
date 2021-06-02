@@ -90,7 +90,7 @@
     <ion-item lines="none">
 
       <ion-label>
-        Monitoring Alerts*
+        Monitoring Alerts *¹
       </ion-label>
       <ion-label class="value">
         <ion-icon class="check" name="checkmark-outline" *ngIf="selectedPackage.deviceMonitorAlerts"></ion-icon>
@@ -98,7 +98,7 @@
       </ion-label>
 
     </ion-item> 
-    <span class="hint">Coming soon.</span>
+   
 
     <ion-item lines="none">
 
@@ -140,7 +140,7 @@
     <ion-item lines="none">
 
       <ion-label>
-        Support us
+        Support us *²
 
       </ion-label>
 
@@ -150,7 +150,7 @@
       </ion-label>
 
     </ion-item>
-    <span class="hint">20% will be shared with your selected ETH2 client when using device monitoring.</span>
+   
 
   </ion-list>
 
@@ -166,7 +166,12 @@
     </div>
 
     <ion-label class="grey-link" (click)="restore()">Restore purchase</ion-label>
+    <br/><br/>
+
+    <span class="hint">*¹ Feature coming soon.</span><br/><br/>
+    <span class="hint">*² 20% will be shared with your selected ETH2 client when using device monitoring.</span>
   </div>
 
+  
 
 </ion-content>

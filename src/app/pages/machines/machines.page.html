@@ -25,11 +25,15 @@
   </ion-refresher>
 
   <ion-item class="top-bar" *ngIf="!this.data || showData" (click)="openTimeSelection()">
-    <ion-label i18n="Search Results">Last {{ this.selectedTimeFrame }}</ion-label>
+    <ion-label>Last {{ this.selectedTimeFrame }}</ion-label>
     <ion-icon slot="end" name="time-outline"></ion-icon>
   </ion-item>
 
   <div *ngIf="this.data && showData">
+    <div style="margin-top:0px; margin-bottom:10px;" *ngIf="!hasHistoryPremium">
+      <app-text-ad location="machines"></app-text-ad>  
+    </div>
+    
     <div *ngFor="let machine of data | keyvalue" class="card" >
 
       <app-machinechart priority="true" [title]="machine.key" [subtitleLeft]="machine.value | delegate: clientFormatter"
