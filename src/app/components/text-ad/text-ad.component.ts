@@ -28,9 +28,7 @@ export class TextAdComponent implements OnInit {
   constructor(
     private animationCtrl: AnimationController,
     private adUtils: AdUtils
-  ) {
-
-  }
+  ) { }
 
   ngOnInit() {
 
@@ -39,9 +37,8 @@ export class TextAdComponent implements OnInit {
       if (!this.ad) return
       this.text = this.ad.title
       this.sendImpression()
+
       setTimeout(() => {
-
-
         this.animateTitleChange()
       }, DELAY_SPEED + 1000)
     })
