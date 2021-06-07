@@ -10,6 +10,7 @@ import { MachineDetailPage } from './machine-detail.page';
 import { TooltipModule } from 'ng2-tooltip-directive';
 import { PipesModule } from '../../pipes/pipes.module'
 import { MachineChartComponentModule } from 'src/app/components/machinechart/machinechart.module';
+import { MessageComponentModule } from 'src/app/components/message/message.module';
 
 @NgModule({
   imports: [
@@ -19,7 +20,8 @@ import { MachineChartComponentModule } from 'src/app/components/machinechart/mac
     MachineDetailPageRoutingModule,
     TooltipModule,
     PipesModule,
-    MachineChartComponentModule
+    MachineChartComponentModule,
+    MessageComponentModule
   ],
   declarations: [MachineDetailPage]
 })

@@ -37,6 +37,12 @@
 <ion-content [fullscreen]="true" [scrollEvents]="true" (ionScrollStart)="onScrollStarted()"
   (ionScrollEnd)="onScrollEnded()">
 
+  <app-message title="Experimental Prysm Support" icon="flask-outline" iconStyle="genesis" 
+    msgTitle="Experimental"
+    msgText="The current version of Prysm doesn't fully support the monitoring feature quite yet.<br/><br/>Some metrics might not be available. Prysm will improve the monitoring support in a future version. "
+    *ngIf="isBuggyPrismVersion">
+  </app-message>
+
   <div id="cpu" [hidden]="selectedTab != 'cpu'" class="data-container">
     <app-machinechart [hidden]="selectedTab != 'cpu'" title="CPU Processes" [key]="key" priority="true"
       [chartData]="data | delegate: cpuDelegate"
@@ -126,7 +132,7 @@
           CPU Cores
         </ion-label>
         <ion-label class="value">
-          {{ coreCount }}
+          {{ coreCount ? coreCount : "-" }}
         </ion-label>
 
       </ion-item>
@@ -137,7 +143,7 @@
           CPU Threads
         </ion-label>
         <ion-label class="value">
-          {{ threadCount }}
+          {{ threadCount ? threadCount : "-" }}
         </ion-label>
 
       </ion-item>

@@ -32,7 +32,6 @@ import ThemeUtils from 'src/app/utils/ThemeUtils';
 import { highChartOptions } from 'src/app/utils/HighchartOptions';
 import { StorageService } from 'src/app/services/storage.service';
 import confetti from 'canvas-confetti';
-import { NumberSymbol } from '@angular/common';
 const { Browser } = Plugins;
 
 @Component({

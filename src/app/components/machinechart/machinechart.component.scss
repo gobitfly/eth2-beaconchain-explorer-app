@@ -8,15 +8,21 @@
   padding-bottom: 12px;
   font-size: 55px;
   color: var(--ion-text-color-lighter);
+
 }
 
 .nothingfound {
   text-align: center;
   padding: 50px;
+
+  padding-top: 45px;
+  color: var(--ion-text-color-lighter);
+  background-color: var(--background-color);
+}
+
+.nothingfound ion-label {
   margin-left: 6%;
   margin-right: 6%;
-  margin-top: 45px;
-  color: var(--ion-text-color-lighter);
 }
 
 .circle {
