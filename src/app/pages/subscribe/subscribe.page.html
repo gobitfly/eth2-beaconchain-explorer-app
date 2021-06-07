@@ -127,7 +127,7 @@
     <ion-item lines="none">
 
       <ion-label>
-        Widgets 
+        Widgets <span *ngIf="isiOS">*³</span>
       </ion-label>
       <ion-label class="value">
         <ion-icon class="check" name="checkmark-outline" *ngIf="selectedPackage.widgets"></ion-icon>
@@ -135,7 +135,7 @@
       </ion-label>
 
     </ion-item>
-    <span class="hint" *ngIf="isiOS">Requires iOS 14 or newer.</span>
+   
 
     <ion-item lines="none">
 
@@ -169,7 +169,8 @@
     <br/><br/>
 
     <span class="hint">*¹ Feature coming soon.</span><br/><br/>
-    <span class="hint">*² 20% will be shared with your selected ETH2 client when using device monitoring.</span>
+    <span class="hint">*² 20% will be shared with your selected ETH2 client when using device monitoring.</span><br/><br/>
+    <span class="hint" *ngIf="isiOS">*³ Requires iOS 14 or newer.</span>
   </div>
 
   

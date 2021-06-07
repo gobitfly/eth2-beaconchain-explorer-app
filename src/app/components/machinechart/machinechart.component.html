@@ -20,12 +20,17 @@
   </ion-card-header>
 
   <div *ngIf="!chartData || chartData.length <= 0 || chartError" style="width:100%; height:280px;">
-    <div class="nothingfound">
+    <div class="nothingfound" *ngIf="!specificError">
       <ion-icon name="telescope-outline"></ion-icon>
       <ion-label>Not enough data to display. </ion-label><br />
       <ion-label>Check back later.</ion-label>
     </div>
 
+    <div class="nothingfound" *ngIf="specificError == 'system_missing'">
+      <ion-icon name="bandage-outline"></ion-icon>
+      <ion-label>Missing system data.</ion-label><br />
+      <ion-label style="font-size: 13px;">Monitoring might not be configured correctly or your client does not support it.</ion-label>
+    </div>
   </div>
 
   <div *ngIf="chartData && chartData.length > 0" [hidden]="chartError" id="machinechart_{{ id }}_{{ hashCode(key) }}"

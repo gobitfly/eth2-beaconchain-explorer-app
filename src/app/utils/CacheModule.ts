@@ -51,13 +51,17 @@ export class CacheModule {
         return temp.data
     }
 
-    protected cacheMultiple(prefix: string, keys: string[], data: any[]) {
-        if (keys.length != data.length) {
-            console.log("[CacheModule] keys and data have different sizes, ignore cache attempt", keys, data)
+    protected cacheMultiple(prefix: string, data: any[]) {
+        if (!data || data.length <= 0) {
+            console.log("[CacheModule] ignore cache attempt of empty data set", data)
             return
         }
-        for (var i = 0; i < keys.length; i++) {
-            this.putCache(prefix + keys[i], data[i])
+        for (var i = 0; i < data.length; i++) {
+            const current = data[i]
+            const index = current.hasOwnProperty("validatorindex") ? data[i].validatorindex :
+                current.hasOwnProperty("index") ? data[i].index : console.error("[CacheModule] can not store cache entry - no index")
+            if(!index) return
+            this.putCache(prefix + index, current)
         }
     }
 

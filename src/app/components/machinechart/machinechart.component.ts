@@ -23,6 +23,7 @@ export class MachinechartComponent implements OnInit {
 
   id: string = ""
   chartError: boolean = false
+  specificError: string = null
 
   constructor() { }
 
@@ -39,6 +40,12 @@ export class MachinechartComponent implements OnInit {
 
     setTimeout(() => {
       try {
+        // @ts-ignore
+        if (this.chartData && this.chartData.length == 1 && this.chartData[0] == "system_missing") {
+          this.specificError = "system_missing"
+          this.chartError = true
+          return
+        }
         this.doChart(this.key, this.id, this.chartData)
         //@ts-ignore
         this.chartError = this.chartData.length <= 0 || this.chartData[0].data.length <= 1

@@ -33,6 +33,8 @@ export class MachinesPage extends MachineController implements OnInit {
   hasHistoryPremium = false;
   loggedIn = false
 
+  orderedKeys: String[] = []
+
   cpuDelegate = (data) => { return this.doCPUCharts(data) }
   memoryDelegate = (data) => { return this.doMemoryCharts(data) }
   syncDelegate = (data) => { return this.doSyncCharts(data) }
@@ -191,8 +193,36 @@ export class MachinesPage extends MachineController implements OnInit {
       this.filterMachines(data.node),
       this.filterMachines(data.system)
     )
-
+    this.orderedKeys = this.getOrderedKeys(this.data)
     this.showData = Object.keys(this.data).length > 0
+  }
+
+  private getOrderedKeys(data: ProcessedStats[]): string[] {
+    var online = []
+    var attention = []
+    var offline = []
+
+    for (var key in data) {
+      const it = data[key]
+      const status = this.getOnlineState(it)
+      if (status == 'online') {
+        online.push(key)
+      } else if(status == 'offline'){
+        offline.push(key)
+      } else {
+        attention.push(key)
+      }
+    }
+    
+    // sorting arrays
+    online.sort((a, b) => a.localeCompare(b))
+    attention.sort((a, b) => a.localeCompare(b))
+    offline.sort((a, b) => a.localeCompare(b))
+
+    // concating keys
+    const result = online.concat(attention).concat(offline)
+
+    return result
   }
 
   async openMachineDetail(key) {

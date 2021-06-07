@@ -52,7 +52,6 @@ export const bytes = (function(){
 
 export default class MachineController {
 
-    public chartErrors: boolean[] = []
     selectionTimeFrame: number = 180
 
     public addBytesConfig(perS: boolean = false) {
@@ -154,7 +153,8 @@ export default class MachineController {
     public doCPUCharts(current): any[] {
         const chartData = []
 
-        if (!current || !current.system) return chartData
+        if (!current) return chartData
+        if (!current.system) return ["system_missing"] 
 
         let cpuSystemTotal = this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }, true)
 

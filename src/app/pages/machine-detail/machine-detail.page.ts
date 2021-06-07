@@ -58,6 +58,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
   syncLabelState: string = ""
   syncLabelEth1Connected: string = ""
 
+  isBuggyPrismVersion = false
+
   private backbuttonSubscription: Subscription;
   constructor(private modalCtrl: ModalController) {
     super()
@@ -118,11 +120,11 @@ export class MachineDetailPage extends MachineController implements OnInit {
       this.syncAttention = this.getSyncAttention(this.data)
 
       this.fallbacks = this.getFallbackConfigurations(this.data)
+
+      this.isBuggyPrismVersion = this.data.client == "prysm" && (!this.data.system || this.data.system.length <= 2 || this.data.system[0].cpu_cores == 0)
     }
 
   }
-
- 
 
   private formatOS(os: string) {
     switch (os) {
@@ -132,8 +134,6 @@ export class MachineDetailPage extends MachineController implements OnInit {
       default: return "Unknown"
     }
   }
-
-
 
   ngOnDestroy() {
     this.backbuttonSubscription.unsubscribe();
@@ -192,6 +192,9 @@ export class MachineDetailPage extends MachineController implements OnInit {
   public doDiskCharts(current): any[] {
     const chartData = []
 
+    if (!current) return chartData;
+    if (!current.system) return ["system_missing"] 
+
     if (current && current.system) {
       chartData.push(
         {
@@ -246,6 +249,9 @@ export class MachineDetailPage extends MachineController implements OnInit {
   public doDiskIoUsageCharts(current): any[] {
     const chartData = []
 
+    if (!current) return chartData;
+    if (!current.system) return ["system_missing"] 
+
     if (current && current.system) {
       chartData.push(
         {
@@ -272,6 +278,9 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
   public doNetworkCharts(current): any[] {
     const chartData = []
+
+    if (!current) return chartData;
+    if (!current.system) return ["system_missing"] 
 
     if (current && current.system) {
       console.log("system", current.system)
@@ -306,6 +315,9 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
   public doCPUSystemCharts(current): any[] {
     const chartData = []
+
+    if (!current) return chartData;
+    if (!current.system) return ["system_missing"] 
 
     let cpuSystemTotal = this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }, true)
     let idle = this.timeAxisChanges(current.system, (value) => { return value.cpu_node_idle_seconds_total }, true)
@@ -375,6 +387,9 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
   public doMemorySystemCharts(current): any[] {
     const chartData = []
+
+    if (!current) return chartData;
+    if (!current.system) return ["system_missing"] 
 
     if (current && current.system) {
       chartData.push(
