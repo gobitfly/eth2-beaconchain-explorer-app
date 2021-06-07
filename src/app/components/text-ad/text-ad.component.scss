@@ -18,8 +18,8 @@
 @import "../../../theme/variables.scss";
 
 .ad-container {
-    padding-left: 35px;
-    padding-right: 35px;
+    padding-left: 25px;
+    padding-right: 25px;
 
     margin-top: 13px;
     padding-bottom: 10px;
@@ -40,7 +40,8 @@
     display: flex;
 
     width: 70%;
-    min-height: 60px;   
+    height: 65px; 
+    max-height: 65px;  
 }
 
 .logo {
@@ -55,8 +56,10 @@
 .ad-img {
     position: absolute;
     margin-top: 4px;
-    
+    margin-left: 4px;
 }
+
+
 
 ion-badge {
     top: 8px;

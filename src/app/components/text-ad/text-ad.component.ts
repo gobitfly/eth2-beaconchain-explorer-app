@@ -69,11 +69,14 @@ export class TextAdComponent implements OnInit {
       this.currentDisplay = (this.currentDisplay + 1) % 3
       if (this.currentDisplay == 0) {
         this.text = this.ad.title
+        this.titleContainer.nativeElement.style.fontSize = this.calculateTextSize(this.text)
         DELAY_SPEED = 7500
       } else if (this.currentDisplay == 1) {
         this.text = this.ad.description_short
+        this.titleContainer.nativeElement.style.fontSize = this.calculateTextSize(this.text)
       } else {
         this.text = this.ad.description
+        this.titleContainer.nativeElement.style.fontSize = this.calculateTextSize(this.text)
       }
 
       this.inAnimation.play()
@@ -83,6 +86,14 @@ export class TextAdComponent implements OnInit {
       }, DELAY_SPEED)
 
     }, TRANSITION_SPEED)
+  }
+
+  private calculateTextSize(text: string) {
+    if (text && text.length > 70) {
+      if (text.length > 110) return "13px"
+      return "14px"
+    }
+    return "16px"
   }
 
   openAd() {
