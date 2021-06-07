@@ -32,6 +32,7 @@ import ThemeUtils from 'src/app/utils/ThemeUtils';
 import { highChartOptions } from 'src/app/utils/HighchartOptions';
 import { StorageService } from 'src/app/services/storage.service';
 import confetti from 'canvas-confetti';
+import { NumberSymbol } from '@angular/common';
 const { Browser } = Plugins;
 
 @Component({
@@ -69,6 +70,7 @@ export class DashboardComponent implements OnInit {
   firstCelebrate = true
 
   doneLoading = false
+  proposals: Proposals = null
 
   constructor(
     public unit: UnitconvService,
@@ -165,6 +167,11 @@ export class DashboardComponent implements OnInit {
       else if (d[1] == 2) missed.push([d[0] * 1000, 1])
       else if (d[1] == 3) orphaned.push([d[0] * 1000, 1])
     })
+
+    this.proposals = {
+      good: proposed.length,
+      bad: missed.length + orphaned.length
+    }
 
     this.checkForFirstProposal(proposed)
 
@@ -296,7 +303,7 @@ export class DashboardComponent implements OnInit {
         lineWidth: 0,
         tickColor: '#e5e1e1',
         type: 'datetime',
-        range: 7 * 24 * 60 * 60 * 1000,
+        range: 60 * 24 * 60 * 60 * 1000,
       },
       yAxis: [
         {
@@ -331,19 +338,19 @@ export class DashboardComponent implements OnInit {
           name: 'Proposed',
           color: 'var(--chart-default)',
           data: proposed,
-          pointWidth: 25,
+          pointWidth: 5,
         },
         {
           name: 'Missed',
           color: '#ff835c',
           data: missed,
-          pointWidth: 25,
+          pointWidth: 5,
         },
         {
           name: 'Orphaned',
           color: '#e4a354',
           data: orphaned,
-          pointWidth: 25,
+          pointWidth: 5,
         }
       ],
       rangeSelector: {
@@ -460,4 +467,9 @@ function timeToEpoch(genesisTs, ts) {
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
+}
+
+interface Proposals {
+  good: number
+  bad: number
 }

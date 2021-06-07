@@ -192,6 +192,21 @@
 
     </ion-item>
 
+    <ion-item lines="none" *ngIf="proposals">
+
+      <ion-label>
+        <span
+          tooltip="Amount of valid or invalid (oprhaned or missed) block proposals."
+          placement="right" trigger="click" hideDelayAfterClick="5000">
+          Proposals
+        </span>
+      </ion-label>
+      <ion-label class="value">
+        <span class="ok">{{ proposals.good }}</span> /  <span class="err">{{ proposals.bad }}</span>
+      </ion-label>
+
+    </ion-item>
+
     <ion-item lines="none" *ngIf="data.foreignValidator">
 
       <ion-label>
