@@ -191,7 +191,7 @@ export class ValidatorUtils extends CacheModule {
             validatorString
         )
 
-        this.cacheMultiple(cachePerformanceKey, validatorString.split(","), remoteUpdates)
+        this.cacheMultiple(cachePerformanceKey, remoteUpdates)
 
         return remoteUpdates
     }
@@ -210,7 +210,7 @@ export class ValidatorUtils extends CacheModule {
             validatorString
         )
 
-        this.cacheMultiple(cacheAttestationKey, validatorString.split(","), remoteUpdates)
+        this.cacheMultiple(cacheAttestationKey, remoteUpdates)
         return remoteUpdates
     }
 
@@ -248,7 +248,7 @@ export class ValidatorUtils extends CacheModule {
 
         const result = [...local.values()]
 
-        this.cacheMultiple(allMyKeyBare, validatorString.split(","), result)
+        this.cacheMultiple(allMyKeyBare, result)
 
         return result
     }
@@ -391,7 +391,7 @@ export class ValidatorUtils extends CacheModule {
         const request = new PerformanceRequest(args)
         const response = await this.api.execute(request)
         const result = request.parse(response)
-        this.cacheMultiple(cachePerformanceKey, args, result)
+        this.cacheMultiple(cachePerformanceKey, result)
         return result
     }
 
@@ -405,7 +405,7 @@ export class ValidatorUtils extends CacheModule {
         const request = new AttestationPerformanceRequest(args)
         const response = await this.api.execute(request)
         const result = request.parse(response)
-        this.cacheMultiple(cacheAttestationKey, args, result)
+        this.cacheMultiple(cacheAttestationKey, result)
         return result
     }
 
