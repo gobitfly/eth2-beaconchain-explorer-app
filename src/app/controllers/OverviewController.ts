@@ -102,6 +102,9 @@ export default class OverviewController {
         if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
         const effectiveBalance = sumBigInt(validators, cur => cur.data.effectivebalance);
+        const effectiveBalanceActive = sumBigInt(validators, cur => {
+            return cur.data.activationepoch <= currentEpoch.epoch ? cur.data.effectivebalance : new BigNumber(0)
+        });
 
         const effectiveBalanceInEth = convertEthUnits(effectiveBalance, Unit.GWEI, Unit.ETHER)
         const sharePercentage = share ? share.dividedBy(effectiveBalanceInEth).decimalPlaces(4) : new BigNumber(1)
@@ -145,7 +148,7 @@ export default class OverviewController {
             foreignValidatorItem: foreignValidator ? validators[0] : null,
             effectiveBalance: effectiveBalance,
             currentEpoch: currentEpoch,
-            apr: this.getAPR(effectiveBalance, performance7d)
+            apr: this.getAPR(effectiveBalanceActive, performance7d)
         } as OverviewData;
     }
 
