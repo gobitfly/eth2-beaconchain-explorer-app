@@ -273,7 +273,7 @@ export class DasboardDataRequest extends APIRequest<any> {
   /**
    * @param validator Index or PubKey
    */
-  constructor(data: ('balance' | 'proposals'), ...validator: any) {
+  constructor(data: ('balances' | 'proposals'), ...validator: any) {
     super()
     this.resource += data + "?validators=" + validator.join().replace(/\s/g, "");
   }
