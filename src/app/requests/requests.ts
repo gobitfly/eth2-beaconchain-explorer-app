@@ -65,6 +65,7 @@ export abstract class APIRequest<T> {
     headers: {
       'Content-Type': 'application/json',
       "Accept": "application/json",
+      "User-Agent": "Beaconcha.in Dashboard"
     }
   }
 
@@ -542,6 +543,11 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
   options = {
     cache: {
       maxAge: 4 * 60 * 60 * 1000,
+    },
+    headers: {
+      'Content-Type': 'application/json',
+      "Accept": "application/json",
+      "User-Agent": "Beaconcha.in Dashboard"
     }
   }
 

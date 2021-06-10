@@ -188,8 +188,7 @@ export class ApiService {
   async execute(request: APIRequest<any>) {
     var options = request.options
 
-   // if (request.requiresAuth) {
-
+    if (request.endPoint == "default") {
       const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
       if (authHeader) {
 
@@ -197,7 +196,7 @@ export class ApiService {
 
         options.headers = headers;
       }
-   // }
+    }
 
     if (!this.connectionStateOK) {
       options.clearCacheEntry = true
