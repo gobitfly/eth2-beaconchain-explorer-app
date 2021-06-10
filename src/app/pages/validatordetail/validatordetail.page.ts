@@ -43,6 +43,8 @@ export class ValidatordetailPage implements OnInit {
 
   private backbuttonSubscription: Subscription;
 
+  scrolling: boolean = false
+
   constructor(
     private validatorUtils: ValidatorUtils,
     private modalCtrl: ModalController,
@@ -68,6 +70,14 @@ export class ValidatordetailPage implements OnInit {
 
   onScroll($event) {
     this.currentY = $event.detail.currentY
+  }
+
+  onScrollStarted() {
+    this.scrolling = true
+  }
+
+  onScrollEnded() {
+    this.scrolling = false
   }
 
   ngOnDestroy() {

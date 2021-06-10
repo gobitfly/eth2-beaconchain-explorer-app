@@ -258,7 +258,7 @@ export class DashboardComponent implements OnInit {
         lineWidth: 0,
         tickColor: '#e5e1e1',
         type: 'datetime',
-        range: 60 * 24 * 60 * 60 * 1000,
+        range: 32 * 24 * 60 * 60 * 1000,
       },
       yAxis: [
         {
@@ -315,7 +315,7 @@ export class DashboardComponent implements OnInit {
         enabled: false
       },
       navigator: {
-        enabled: false
+        enabled: true
       }
     })
   }
@@ -336,7 +336,7 @@ export class DashboardComponent implements OnInit {
         enabled: false
       },
       navigator: {
-        enabled: false
+        enabled: true
       },
       chart: {
         type: 'column',
@@ -382,7 +382,7 @@ export class DashboardComponent implements OnInit {
       ],
       series: [
         {
-          pointWidth: 6,
+      
           name: 'Income',
           data: income
         }
