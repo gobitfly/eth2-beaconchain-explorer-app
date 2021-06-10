@@ -65,6 +65,7 @@ export abstract class APIRequest<T> {
     headers: {
       'Content-Type': 'application/json',
       "Accept": "application/json",
+      "User-Agent": "Beaconcha.in Dashboard"
     }
   }
 
@@ -273,7 +274,7 @@ export class DasboardDataRequest extends APIRequest<any> {
   /**
    * @param validator Index or PubKey
    */
-  constructor(data: ('balance' | 'proposals'), ...validator: any) {
+  constructor(data: ('balances' | 'proposals'), ...validator: any) {
     super()
     this.resource += data + "?validators=" + validator.join().replace(/\s/g, "");
   }
@@ -542,6 +543,11 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
   options = {
     cache: {
       maxAge: 4 * 60 * 60 * 1000,
+    },
+    headers: {
+      'Content-Type': 'application/json',
+      "Accept": "application/json",
+      "User-Agent": "Beaconcha.in Dashboard"
     }
   }
 

@@ -127,7 +127,7 @@ export class DashboardComponent implements OnInit {
     this.finalizationIssue = new BigNumber(currentEpoch.globalparticipationrate).isLessThan("0.664") && currentEpoch.epoch > 7
   }
 
-  async getChartData(data: ('balance' | 'proposals')) {
+  async getChartData(data: ('balances' | 'proposals')) {
     if (!this.data || !this.data.lazyChartValidators) return null
     const chartReq = new DasboardDataRequest(data, this.data.lazyChartValidators)
     const response = await this.api.execute(chartReq).catch((error) => { return null })
@@ -199,7 +199,7 @@ export class DashboardComponent implements OnInit {
   }
 
   async drawBalanceChart() {
-    this.chartData = await this.getChartData("balance")
+    this.chartData = await this.getChartData("balances")
 
     if (!this.chartData || this.chartData.length <= 3) {
       this.chartError = true;
@@ -208,63 +208,19 @@ export class DashboardComponent implements OnInit {
     }
 
     this.chartError = false;
-
-    var balance = new Array(this.chartData.length)
-    var effectiveBalance = new Array(this.chartData.length)
-    var validatorCount = new Array(this.chartData.length)
-    var utilization = new Array(this.chartData.length)
-    for (var i = 0; i < this.chartData.length; i++) {
-      var res = this.chartData[i]
-      validatorCount[i] = [res[0], res[1]]
-      balance[i] = [res[0], res[2]]
-      effectiveBalance[i] = [res[0], res[3]]
-      utilization[i] = [res[0], res[3] / (res[1] * 32)]
-    }
-
-    this.utilizationAvg = this.averageUtilization(utilization)
     setTimeout(() => { this.doneLoading = true }, 50)
 
 
-    this.createBalanceChart(this.calculateIncomeData(balance))
+    this.createBalanceChart(this.calculateIncomeData(this.chartData))
   }
 
 
   private calculateIncomeData(balance) {
-    var income = new Array(14);
-    var lastDay = -1;
-    var count = 0;
-    var endDayBalance = 0;
-    var endTs = 0;
-    for (var i = balance.length - 1; i >= 0; i--) {
-      let tsDate = new Date(balance[i][0]);
-      let day = tsDate.getDate()
-      if (lastDay == -1) {
-        endTs = balance[i][0];
-        endDayBalance = balance[i][1];
-        lastDay = day;
-      }
-
-      if (lastDay != day) {
-        const middleOfDay = new Date(endTs)
-        middleOfDay.setHours(0)
-        var dayIncome = endDayBalance - balance[i][1];
-        while(dayIncome > 32) {
-          dayIncome = dayIncome - 32;
-        }
-
-        let color = dayIncome < 0 ? "#ff835c" : "var(--chart-default)";
-
-        income[count] = { x: middleOfDay.getTime(), y: dayIncome, color: color };
-
-        endTs = balance[i][0];
-        endDayBalance = balance[i][1];
-        lastDay = day;
-        count++;
-      }
-      if (count >= 14) break;
-
+    var income = [];
+    for (var i = 0; i < balance.length; i++) {
+        let color = balance[i].y < 0 ? "#ff835c" : "var(--chart-default)";
+        income.push({ x: balance[i].x, y: balance[i].y, color: color })
     }
-    income[count] = [endTs + 24 * 3600 * 1000, 0];
     return income;
   }
 
@@ -302,7 +258,7 @@ export class DashboardComponent implements OnInit {
         lineWidth: 0,
         tickColor: '#e5e1e1',
         type: 'datetime',
-        range: 60 * 24 * 60 * 60 * 1000,
+        range: 32 * 24 * 60 * 60 * 1000,
       },
       yAxis: [
         {
@@ -359,7 +315,7 @@ export class DashboardComponent implements OnInit {
         enabled: false
       },
       navigator: {
-        enabled: false
+        enabled: true
       }
     })
   }
@@ -380,7 +336,7 @@ export class DashboardComponent implements OnInit {
         enabled: false
       },
       navigator: {
-        enabled: false
+        enabled: true
       },
       chart: {
         type: 'column',
@@ -393,10 +349,10 @@ export class DashboardComponent implements OnInit {
       },
       xAxis: {
 
-        tickInterval: 24 * 3600 * 1000,
+       // tickInterval: 24 * 3600 * 1000,
         //tickmarkPlacement: 'on',
 
-        range: 9 * 24 * 60 * 60 * 1000,
+        range: 32 * 24 * 60 * 60 * 1000,
         type: 'datetime',
       },
       tooltip: {
@@ -407,7 +363,7 @@ export class DashboardComponent implements OnInit {
         formatter: (tooltip) => {
           const value = new BigNumber(tooltip.chart.hoverPoint.y);
 
-          return `Income: ${value.toFormat(6)} Ether<br/><span style="font-size:11px;">${this.unit.convertToPref(value, "ETHER")}</span>`
+          return `Income: ${value.toFormat(6)} Ether<br/><span style="font-size:11px;">${this.unit.convertToPref(value, "ETHER")}</span><br/><br/><span style="font-size:11px;">${ new Date(tooltip.chart.hoverPoint.x).toLocaleString()}</span>`
         }
       },
       yAxis: [
@@ -426,7 +382,7 @@ export class DashboardComponent implements OnInit {
       ],
       series: [
         {
-          pointWidth: 25,
+      
           name: 'Income',
           data: income
         }

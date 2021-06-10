@@ -43,7 +43,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" [scrollEvents]="true"
-(ionScroll)="onScroll($event)">
+(ionScroll)="onScroll($event)" (ionScrollStart)="onScrollStarted()" (ionScrollEnd)="onScrollEnded()">
   
-  <app-validator-dashboard [data]="data" [currentY]="currentY"></app-validator-dashboard>
+  <app-validator-dashboard [data]="data" [currentY]="currentY" [scrolling]="scrolling"></app-validator-dashboard>
 </ion-content>

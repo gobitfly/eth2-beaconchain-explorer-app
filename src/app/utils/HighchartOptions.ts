@@ -118,14 +118,18 @@ export function highChartOptions(where) {
       },
       navigator: {
         enabled: true,
-        maskFill: 'var(--mask-fill-color)',
+        height: 25,
+
         outlineColor: 'var(--border-color)',
         handles: {
-          backgroundColor: 'var(--bg-color-nav)',
+       
           borderColor: 'var(--transparent-font-color)',
         },
         xAxis: {
           gridLineColor: 'var(--border-color)',
+          labels: {
+            formatter: function () { }
+          }
         },
       },
 

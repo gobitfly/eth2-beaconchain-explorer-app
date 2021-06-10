@@ -155,6 +155,8 @@ body {
   --segment-primary: #000000;
 
   --chart-default: #7cb5ec;
+
+
   
 }
 
@@ -242,8 +244,6 @@ body.dark {
   --bg-color-nav: #ffffff;
 
   --primary: #fff;
-  --mask-fill-color: #fff;
-
   --ion-text-color-lighter: #f2f2f2;
 
   --x-update-messages-background: #0e0e0e !important;
@@ -303,7 +303,7 @@ body.dark {
   --font-color: #ffffff;
   --bg-color-nav: #ffffff;
   --primary: #fff;
-  --mask-fill-color: #fff;
+  //--mask-fill-color: #222;
   --x-alert-primary: #fff;
 }
 
