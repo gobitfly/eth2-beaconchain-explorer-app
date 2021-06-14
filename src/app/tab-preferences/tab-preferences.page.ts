@@ -100,20 +100,20 @@ export class Tab3Page {
   premiumLabel: string = ""
 
   constructor(
-    private api: ApiService,
-    private oauth: OAuthUtils,
+    protected api: ApiService,
+    protected oauth: OAuthUtils,
     public theme: ThemeUtils,
     public unit: UnitconvService,
-    private storage: StorageService,
-    private updateUtils: ClientUpdateUtils,
-    private validatorUtils: ValidatorUtils,
-    private modalController: ModalController,
-    private alertController: AlertController,
-    private firebaseUtils: FirebaseUtils,
+    protected storage: StorageService,
+    protected updateUtils: ClientUpdateUtils,
+    protected validatorUtils: ValidatorUtils,
+    protected modalController: ModalController,
+    protected alertController: AlertController,
+    protected firebaseUtils: FirebaseUtils,
     public platform: Platform,
-    private alerts: AlertService,
-    private sync: SyncService,
-    private merchant: MerchantUtils
+    protected alerts: AlertService,
+    protected sync: SyncService,
+    protected merchant: MerchantUtils
   ) { }
 
   ngOnInit() {
@@ -152,8 +152,8 @@ export class Tab3Page {
   }
 
   // changes a toggle without triggering onChange
-  private lockedToggle = true;
-  private changeToggleSafely(func: () => void) {
+  protected lockedToggle = true;
+  protected changeToggleSafely(func: () => void) {
     this.lockedToggle = true;
     func()
   }
@@ -257,7 +257,7 @@ export class Tab3Page {
     setTimeout(() => this.firstTimePushAllNotificationSettings(), 500)
   }
 
-  private disableToggleLock() {
+  protected disableToggleLock() {
     setTimeout(() => {
       this.lockedToggle = false
     }, 300)
@@ -628,106 +628,8 @@ export class Tab3Page {
     await alert.present();
   }
 
-
-  // --- Development methods ---
-
-  clearSyncQueue() {
-    this.sync.developDeleteQueue()
-    Toast.show({
-      text: 'Queue cleared'
-    });
-  }
-
-  forceSync() {
-    this.sync.fullSync()
-  }
-
-  updateFirebaseToken() {
-    this.firebaseUtils.pushLastTokenUpstream(true)
-  }
-
-  permanentDevMode() {
-    this.storage.setObject("dev_mode", { enabled: true })
-    Toast.show({
-      text: 'Permanent dev mode enabled'
-    });
-  }
-
-  triggerToggleTest() {
-    this.toggleTest = true
-  }
-
-  toggleTest = false
-  toggleTestChange() {
-    if (this.lockedToggle) {
-      this.lockedToggle = false
-      return;
-    }
-    setTimeout(() => this.changeToggleSafely(() => { this.toggleTest = false }), 500)
-    setTimeout(() =>
-      this.alerts.showInfo("Success", "Toggle test was successfull if this alert only appears once and toggle returns to disabled"),
-      650
-    )
-  }
-
-  restartApp() {
-    this.merchant.restartApp()
-  }
-
   toggleSnow() {
     this.theme.toggleWinter(this.snowing)
-  }
-
-  clearStorage() {
-    this.storage.clear()
-    Toast.show({
-      text: 'Storage cleared'
-    });
-  }
-
-  async changeAccessToken() {
-    const alert = await this.alertController.create({
-      cssClass: 'my-custom-class',
-      header: 'Access Token',
-      inputs: [
-        {
-          name: 'token',
-          type: 'text',
-          placeholder: 'Access token'
-        },
-        {
-          name: 'refreshtoken',
-          type: 'text',
-          placeholder: 'Refresh token'
-        },
-        {
-          name: 'expires',
-          type: 'number',
-          placeholder: 'Expires in'
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'secondary',
-          handler: () => {
-
-          }
-        }, {
-          text: 'Ok',
-          handler: (alertData) => {
-            this.storage.setAuthUser({
-              accessToken: alertData.token,
-              refreshToken: alertData.refreshtoken,
-              expiresIn: alertData.expires
-            })
-          }
-        }
-      ]
-    });
-
-    await alert.present();
   }
 
 }
