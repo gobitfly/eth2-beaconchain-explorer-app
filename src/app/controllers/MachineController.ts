@@ -436,12 +436,12 @@ export default class MachineController {
                     console.log("filling empty plots with zeros: ", lastTimestamp, value.timestamp)
 
                     result.push([
-                        lastTimestamp + 10000,
+                        lastTimestamp + 100000,
                         0
                     ])
 
                     result.push([
-                        value.timestamp - 10000,
+                        value.timestamp - 100000,
                         0
                     ])
 
