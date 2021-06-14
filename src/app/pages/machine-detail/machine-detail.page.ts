@@ -91,8 +91,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
     
       this.peerLabel = "Peers: " + this.getLastFrom(this.data.node, (array) => array.network_peers_connected)
     
-      this.networkLabelRx = "Receive: " + bytes(this.getLastFrom(this.data.system, (array) => array.network_node_bytes_total_receive / 60, true), true, true, 2) + "/s"
-      this.networkLabelTx = "Transmit: " +  bytes(this.getLastFrom(this.data.system, (array) => array.network_node_bytes_total_transmit / 60, true), true, true, 2)+"/s"
+      this.networkLabelRx = "Receive: " + bytes(this.getAvgFrom(this.data.system, (array) => array.network_node_bytes_total_receive / 60, true), true, true, 2) + "/s"
+      this.networkLabelTx = "Transmit: " +  bytes(this.getAvgFrom(this.data.system, (array) => array.network_node_bytes_total_transmit / 60, true), true, true, 2)+"/s"
     
       this.memoryLabelFree = "Free: " + bytes(this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_free), true, true, 1)
       this.memoryLabelTotal = "Total: " + bytes(this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_total), true, true, 1)
@@ -108,8 +108,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
       this.cpuLabelTotal = "Current usage: " + (100 - (this.getLastFrom(this.data.system, (array) => array.cpu_node_idle_seconds_total, true) /
       this.getLastFrom(this.data.system, (array) => array.cpu_node_system_seconds_total, true)) * 100).toFixed(1) + "%"
     
-      this.diskUsageLabelReads = "Reads: " + this.getLastFrom(this.data.system, (array) => array.disk_node_reads_total, true)
-      this.diskUsageLabelWrites = "Writes: " + this.getLastFrom(this.data.system, (array) => array.disk_node_writes_total, true)
+      this.diskUsageLabelReads = "Reads: " + Math.round(this.getAvgFrom(this.data.system, (array) => array.disk_node_reads_total / 60, true)) + " iops"
+      this.diskUsageLabelWrites = "Writes: " + Math.round(this.getAvgFrom(this.data.system, (array) => array.disk_node_writes_total / 60, true)) + " iops"
     
       let eth1Connected = this.getLastFrom(this.data.node, (array) => array.sync_eth1_connected)
       this.syncLabelEth1Connected = eth1Connected ? "ETH1 Connected" : "ETH1 Offline"

@@ -346,6 +346,26 @@ export default class MachineController {
         return null
     }
 
+    protected getAvgFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false, depth = 100): any {
+        if (!dataArray) return null
+        const length = Math.min(dataArray.length, depth)
+        if (length <= 0) return null
+
+        if (isDiffPair && length <= 2) return null
+        
+        var erg = 0
+
+        for (var i = 1; i < length; i++) {
+            if (isDiffPair) {
+                erg += callbackValue(dataArray[dataArray.length - i]) - callbackValue(dataArray[dataArray.length - (i+1)])
+            } else {
+                erg += callbackValue(dataArray[dataArray.length - i])
+            }
+        }
+
+        return Math.round((erg / length) * 100) / 100
+    }
+
     protected getLastFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false): any {
         if (!dataArray || dataArray.length <= 0) return null
         if (isDiffPair) {
@@ -409,20 +429,23 @@ export default class MachineController {
             if (lastTimestamp != -1 && lastTimestamp + this.selectionTimeFrame * 60 * 1000 < value.timestamp) {
                 console.log("shorting selection: ", this.selectionTimeFrame)
                 result = []
+                summedUp = -1
             } else {
                 
                 if (lastTimestamp != -1 && lastTimestamp + 45 * 60 * 1000 < value.timestamp) {
                     console.log("filling empty plots with zeros: ", lastTimestamp, value.timestamp)
 
                     result.push([
-                        lastTimestamp + 1000000,
+                        lastTimestamp + 10000,
                         0
                     ])
 
                     result.push([
-                        value.timestamp - 1000000,
+                        value.timestamp - 10000,
                         0
                     ])
+
+                    summedUp = -1
                 }
             }
 
