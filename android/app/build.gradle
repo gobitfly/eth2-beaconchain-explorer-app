@@ -12,9 +12,9 @@ android {
         applicationId "in.beaconcha.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 34
+        versionCode 35
 
-        versionName "2.1.0"
+        versionName "2.1.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

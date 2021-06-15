@@ -371,9 +371,10 @@ export default class MachineController {
 
     protected getAvgFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false, depth = 10): any {
         let data = this.getLastN(dataArray, callbackValue, isDiffPair, depth)
-
+        
         let erg = data.reduce((sum, cur) => sum + cur)
-        return Math.round((erg / depth) * 100) / 100
+       
+        return Math.round((erg / (depth -1)) * 100) / 100
     }
 
     protected getAvgRelativeFrom(data1LastN: any[], data2LastN: any[], callback: (val1, val2) => any) {
