@@ -164,7 +164,7 @@ export default class MachineController {
                 {
                     name: 'CPU: Validator',
                     color: '#7cb5ec',
-                    data: this.timeAxisRelative(cpuSystemTotal, cpuValidator, false), //this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }, true),
+                    data: this.timeAxisRelative(cpuSystemTotal, cpuValidator, false, 100), //this.timeAxisChanges(current.validator, (value) => { return value.cpu_process_seconds_total }, true),
                     pointWidth: 25,
                 }
             )
@@ -200,7 +200,10 @@ export default class MachineController {
                         color: 'var(--text-color)',
                         fontWeight: 'bold'
                       },
-                    valueSuffix: "%"
+                    pointFormatter: function () {
+                      var point = this;
+                      return '<span style="color:' + point.color + '">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(2) + "%" + "</b>"
+                    }
                 },
                 yAxis: 
                     {
@@ -346,24 +349,47 @@ export default class MachineController {
         return null
     }
 
-    protected getAvgFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false, depth = 100): any {
+    protected getLastN(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false, depth = 10) {
+        var erg = []
         if (!dataArray) return null
         const length = Math.min(dataArray.length, depth)
         if (length <= 0) return null
 
         if (isDiffPair && length <= 2) return null
         
-        var erg = 0
-
         for (var i = 1; i < length; i++) {
             if (isDiffPair) {
-                erg += callbackValue(dataArray[dataArray.length - i]) - callbackValue(dataArray[dataArray.length - (i+1)])
+                erg[i-1] = callbackValue(dataArray[dataArray.length - i]) - callbackValue(dataArray[dataArray.length - (i+1)])
             } else {
-                erg += callbackValue(dataArray[dataArray.length - i])
+                erg[i-1] = callbackValue(dataArray[dataArray.length - i])
             }
         }
 
-        return Math.round((erg / length) * 100) / 100
+        return erg
+    }
+
+
+    protected getAvgFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false, depth = 10): any {
+        let data = this.getLastN(dataArray, callbackValue, isDiffPair, depth)
+        
+        let erg = data.reduce((sum, cur) => sum + cur)
+       
+        return Math.round((erg / (depth -1)) * 100) / 100
+    }
+
+    protected getAvgRelativeFrom(data1LastN: any[], data2LastN: any[], callback: (val1, val2) => any) {
+        const length = Math.min(data1LastN.length, data2LastN.length)
+        
+
+        var erg = 0
+        for (var i = 0; i < length; i++){
+            let second = data2LastN[i]
+            if (second == 0) continue;
+            erg += callback(data1LastN[i], second)
+        }
+
+        console.log("getAvgRelativeFrom",  Math.round((erg / length) * 10000) / 10000)
+        return Math.round((erg / length) * 10000) / 10000
     }
 
     protected getLastFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false): any {
@@ -378,7 +404,20 @@ export default class MachineController {
 
     // --- Data helper functions ---
 
-    timeAxisRelative(max: any[], current: any[], inverted: boolean = false) {
+    getGapSize(dataSet: StatsBase[]) {
+        return Math.abs(dataSet[dataSet.length - 2].row - dataSet[dataSet.length - 1].row)
+    }
+
+    normalizeTimeframeNumber(dataSet: StatsBase[]): number {
+        let gapSize = this.getGapSize(dataSet)
+
+        if(gapSize >= 5) return 5 * 60
+        if(gapSize >= 4) return 4 * 60
+        if(gapSize >= 3) return 3 * 60
+        return 60
+    }
+
+    timeAxisRelative(max: any[], current: any[], inverted: boolean = false, rounding = 10) {
         var result = []
         /*if (max.length != current.length) {
             console.warn("timeAxisRelative max and current array is differently sized")
@@ -405,7 +444,7 @@ export default class MachineController {
                 curV = current[i + currentOffest]
             }*/
 
-            let tempValue = maxV[1] == 0 ? 0 : Math.round((curV[1] / maxV[1]) * 1000) / 10
+            let tempValue = maxV[1] == 0 ? 0 : Math.round((curV[1] / maxV[1]) * (100 * rounding)) / rounding
             let value = inverted ? Math.round((100 - tempValue) * 10) / 10 : tempValue 
             result.push([
                 maxV[0],
@@ -434,14 +473,15 @@ export default class MachineController {
                 
                 if (lastTimestamp != -1 && lastTimestamp + 45 * 60 * 1000 < value.timestamp) {
                     console.log("filling empty plots with zeros: ", lastTimestamp, value.timestamp)
+                    const gapPositionOffset = this.getGapPositionOffset(lastTimestamp, value.timestamp)
 
                     result.push([
-                        lastTimestamp + 100000,
+                        lastTimestamp + gapPositionOffset,
                         0
                     ])
 
                     result.push([
-                        value.timestamp - 100000,
+                        value.timestamp - gapPositionOffset,
                         0
                     ])
 
@@ -465,6 +505,11 @@ export default class MachineController {
            
         })
         return result
+    }
+
+    getGapPositionOffset(lastTime: number, currentTime: number): number {
+        let difference = Math.abs(currentTime - lastTime)
+        return difference / 25 // 4%
     }
 
     public combineByMachineName(validator: any[], node: any[], system: any[]) {
@@ -557,6 +602,7 @@ export interface ProcessedStats extends StatsResponse {
 export interface StatsBase {
     machine: string,
     timestamp: number
+    row: number
 }
 
 export interface ProcessBase extends StatsBase {

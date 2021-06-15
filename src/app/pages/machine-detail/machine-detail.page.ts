@@ -60,6 +60,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
   isBuggyPrismVersion = false
 
+  magicGapNumber = 60
+
   private backbuttonSubscription: Subscription;
   constructor(private modalCtrl: ModalController) {
     super()
@@ -73,6 +75,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
     });
 
     if (this.data) {
+      this.magicGapNumber = this.normalizeTimeframeNumber(this.data.system)
       this.os = this.formatOS(this.getLastFrom(this.data.system, (array) => array.misc_os))
       this.uptime = this.getLastFrom(this.data.system, (array) => array.misc_node_boot_ts_seconds) * 1000
       this.threadCount = this.getLastFrom(this.data.system, (array) => array.cpu_threads)
@@ -91,8 +94,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
     
       this.peerLabel = "Peers: " + this.getLastFrom(this.data.node, (array) => array.network_peers_connected)
     
-      this.networkLabelRx = "Receive: " + bytes(this.getAvgFrom(this.data.system, (array) => array.network_node_bytes_total_receive / 60, true), true, true, 2) + "/s"
-      this.networkLabelTx = "Transmit: " +  bytes(this.getAvgFrom(this.data.system, (array) => array.network_node_bytes_total_transmit / 60, true), true, true, 2)+"/s"
+      this.networkLabelRx = "Receive: " + bytes(this.getAvgFrom(this.data.system, (array) => array.network_node_bytes_total_receive / this.magicGapNumber, true), true, true, 2) + "/s"
+      this.networkLabelTx = "Transmit: " +  bytes(this.getAvgFrom(this.data.system, (array) => array.network_node_bytes_total_transmit / this.magicGapNumber, true), true, true, 2)+"/s"
     
       this.memoryLabelFree = "Free: " + bytes(this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_free), true, true, 1)
       this.memoryLabelTotal = "Total: " + bytes(this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_total), true, true, 1)
@@ -100,16 +103,29 @@ export class MachineDetailPage extends MachineController implements OnInit {
       this.memoryProcessLabelNode = "Node: " + bytes(this.getLastFrom(this.data.node, (array) => array.memory_process_bytes), true, true, 2)
       this.memoryProcessLabelVal = "Validator: " + bytes(this.getLastFrom(this.data.validator, (array) => array.memory_process_bytes), true, true, 2)
     
-      this.cpuProcessLabelNode = "Node: " + ((this.getLastFrom(this.data.node, (array) => array.cpu_process_seconds_total, true) /
-        this.getLastFrom(this.data.system, (array) => array.cpu_node_system_seconds_total, true)) * 100).toFixed(1) + "%"
-      this.cpuProcessLabelVal = "Validator: " + ((this.getLastFrom(this.data.validator, (array) => array.cpu_process_seconds_total, true) /
-        this.getLastFrom(this.data.system, (array) => array.cpu_node_system_seconds_total, true))  * 100).toFixed(1)  + "%"
+      this.cpuProcessLabelNode = "Node: " +
+        (this.getAvgRelativeFrom(
+          this.getLastN(this.data.node, (array) => array.cpu_process_seconds_total, true),
+          this.getLastN(this.data.system, (array) => array.cpu_node_system_seconds_total, true),
+          (val1, val2) => { return val1 / val2 }
+        ) * 100).toFixed(1) + "%"
       
-      this.cpuLabelTotal = "Current usage: " + (100 - (this.getLastFrom(this.data.system, (array) => array.cpu_node_idle_seconds_total, true) /
-      this.getLastFrom(this.data.system, (array) => array.cpu_node_system_seconds_total, true)) * 100).toFixed(1) + "%"
-    
-      this.diskUsageLabelReads = "Reads: " + Math.round(this.getAvgFrom(this.data.system, (array) => array.disk_node_reads_total / 60, true)) + " iops"
-      this.diskUsageLabelWrites = "Writes: " + Math.round(this.getAvgFrom(this.data.system, (array) => array.disk_node_writes_total / 60, true)) + " iops"
+        this.cpuProcessLabelVal = "Validator: " +
+        (this.getAvgRelativeFrom(
+          this.getLastN(this.data.validator, (array) => array.cpu_process_seconds_total, true, 180),
+          this.getLastN(this.data.system, (array) => array.cpu_node_system_seconds_total, true, 180),
+          (val1, val2) => { return val1 / val2 }
+        ) * 100).toFixed(2) + "%"
+      
+      this.cpuLabelTotal = "Current usage: " +
+          (100.0 - (this.getAvgRelativeFrom(
+          this.getLastN(this.data.system, (array) => array.cpu_node_idle_seconds_total, true),
+          this.getLastN(this.data.system, (array) => array.cpu_node_system_seconds_total, true),
+          (val1, val2) => { return val1 / val2 }
+        ) * 100)).toFixed(1) + "%"
+      
+      this.diskUsageLabelReads = "Reads: " + Math.round(this.getAvgFrom(this.data.system, (array) => array.disk_node_reads_total / this.magicGapNumber, true)) + " iops"
+      this.diskUsageLabelWrites = "Writes: " + Math.round(this.getAvgFrom(this.data.system, (array) => array.disk_node_writes_total / this.magicGapNumber, true)) + " iops"
     
       let eth1Connected = this.getLastFrom(this.data.node, (array) => array.sync_eth1_connected)
       this.syncLabelEth1Connected = eth1Connected ? "ETH1 Connected" : "ETH1 Offline"
@@ -257,7 +273,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Reads',
           color: '#Dcb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_reads_total / 60 }, true),
+          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_reads_total / this.magicGapNumber }, true),
           pointWidth: 25,
         }
       )
@@ -265,7 +281,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'Writes',
           color: '#7cb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_writes_total / 60 }, true),
+          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_writes_total / this.magicGapNumber }, true),
           pointWidth: 25,
         }
       )
@@ -290,7 +306,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
           color: '#7cb5ec',
           data: this.timeAxisChanges(current.system, (value, timeDiff) => {
             let secondsDiff = (timeDiff / 1000)
-            return value.network_node_bytes_total_receive / 60 
+            return value.network_node_bytes_total_receive / this.magicGapNumber
           }, true),
           pointWidth: 25,
         }
@@ -301,7 +317,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
           color: '#Dcb5ec',
           data: this.timeAxisChanges(current.system, (value, timeDiff) => {
             let secondsDiff = (timeDiff / 1000)
-            return value.network_node_bytes_total_transmit / 60
+            return value.network_node_bytes_total_transmit / this.magicGapNumber
           }, true),
           pointWidth: 25,
         }
@@ -345,7 +361,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
         {
           name: 'IO Wait',
           color: '#3335FF',
-          data: this.timeAxisRelative(cpuSystemTotal, io, false),
+          data: this.timeAxisRelative(cpuSystemTotal, io, false, 100),
           pointWidth: 25,
         }
       )
@@ -361,12 +377,15 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
     chartData.push({
       config: {
-          tooltip: {
-              style: {
-                  color: 'var(--text-color)',
-                  fontWeight: 'bold'
-                },
-              valueSuffix: "%"
+        tooltip: {
+          style: {
+            color: 'var(--text-color)',
+            fontWeight: 'bold'
+          },
+          pointFormatter: function () {
+            var point = this;
+            return '<span style="color:' + point.color + '">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(2) + "%" + "</b>"
+          }
         },
         yAxis: 
           {
