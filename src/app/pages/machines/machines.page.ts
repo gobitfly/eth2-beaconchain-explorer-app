@@ -101,7 +101,7 @@ export class MachinesPage extends MachineController implements OnInit {
     const diff = now - data.formattedDate.getTime()
     if (diff > OFFLINE_THRESHOLD) return "offline"
 
-    if (this.getSyncAttention(data) != null) {
+    if (this.getAnyAttention(data) != null) {
       return "attention"
     }
     return "online"
@@ -227,6 +227,7 @@ export class MachinesPage extends MachineController implements OnInit {
 
   async openMachineDetail(key) {
     let attention = this.getSyncAttention(this.data[key])
+    let diskAttention = this.getDiskAttention(this.data[key])
 
     const modal = await this.modalController.create({
       component: MachineDetailPage,
@@ -235,7 +236,7 @@ export class MachinesPage extends MachineController implements OnInit {
         'data': this.data[key],
         'key': key,
         'timeframe': this.selectionTimeFrame,
-        'selectedTab': attention ? "sync" : "cpu"
+        'selectedTab': attention ? "sync" : diskAttention ? "disk" : "cpu"
       }
     });
     return await modal.present();

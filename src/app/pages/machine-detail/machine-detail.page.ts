@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { fromEvent, Subscription } from 'rxjs';
-import MachineController, { ProcessedStats, StatsResponse, bytes, FallbackConfigurations } from '../../controllers/MachineController'
+import MachineController, { ProcessedStats, bytes, FallbackConfigurations } from '../../controllers/MachineController'
 
 @Component({
   selector: 'app-machine-detail',
@@ -40,6 +40,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
   validatorLabelActive: string = ""
   validatorLabelTotal: string = ""
   diskLabel: string = ""
+  diskFullEst: number = 0
   beaconchainLabel: string = ""
   peerLabel: string = ""
   networkLabelRx: string = ""
@@ -55,6 +56,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
   diskUsageLabelWrites: string = ""
 
   syncAttention: string = null
+  diskAttention: string = null
   syncLabelState: string = ""
   syncLabelEth1Connected: string = ""
 
@@ -134,6 +136,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
       this.syncLabelState = fulylSynced ? "Synced" : "Syncing..."
 
       this.syncAttention = this.getSyncAttention(this.data)
+      this.diskAttention = this.getDiskAttention(this.data)
 
       this.fallbacks = this.getFallbackConfigurations(this.data)
 
@@ -209,14 +212,16 @@ export class MachineDetailPage extends MachineController implements OnInit {
     const chartData = []
 
     if (!current) return chartData;
-    if (!current.system) return ["system_missing"] 
+    if (!current.system) return ["system_missing"]
 
     if (current && current.system) {
+      const data = this.timeAxisChanges(current.system, (value) => { return value.disk_node_bytes_free }, false)
+      this.diskFullEst = this.getDiskFullTimeEstimate(data)
       chartData.push(
         {
           name: 'Free Space',
           color: '#7cb5ec',
-          data: this.timeAxisChanges(current.system, (value) => { return value.disk_node_bytes_free }, false),
+          data: data,
           pointWidth: 25,
         }
       )
@@ -451,5 +456,11 @@ export class MachineDetailPage extends MachineController implements OnInit {
     return chartData
   }
 
+  getDiskFullTimeEstimate(data: any[]): number {
+    const amount = data[data.length - 1][1] - data[0][1]
+    const tsDiff = Math.abs(data[data.length - 1][0] - data[0][0])
+    if(amount > 0) return 0 
+    return Date.now() + (data[0][1] / Math.abs(amount)) * tsDiff
+  }
 
 }

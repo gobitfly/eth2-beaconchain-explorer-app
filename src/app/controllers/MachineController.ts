@@ -329,6 +329,23 @@ export default class MachineController {
         return chartData
     }
 
+    getAnyAttention(data: ProcessedStats) {
+        let sync = this.getSyncAttention(data)
+        if (sync) return sync
+        return this.getDiskAttention(data)
+    }
+
+    protected getDiskAttention(data: ProcessedStats): string {
+        if(!data || !data.system) return null
+        let freePercentage = this.getLastFrom(data.system, (array) => array.disk_node_bytes_free / array.disk_node_bytes_total)
+
+        if (freePercentage < 0.1) {
+            return "Your disk is almost full. There's less than 10% free space available."
+        }
+        
+        return null
+    }
+
     protected getSyncAttention(data: ProcessedStats): string {
         let synced = this.getLastFrom(data.node, (array) => array.sync_eth2_synced)
         let eth1Connected = this.getLastFrom(data.node, (array) => array.sync_eth1_connected)
