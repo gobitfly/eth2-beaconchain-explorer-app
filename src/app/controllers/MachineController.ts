@@ -354,7 +354,9 @@ export default class MachineController {
         let eth2Fallback = this.getLastFrom(data.node, (array) => array.sync_eth2_fallback_connected)
         let eth1Fallback = this.getLastFrom(data.node, (array) => array.sync_eth1_fallback_connected)
 
-        if (!eth1Connected) {
+        if (!data.node) {
+            return "No beaconnode data found. If you wish to track this data, make sure to configure metric tracking on your beaconnode machine too. <a target='_blank' href='https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node'>Learn more here</a>."
+        } else if (!eth1Connected) {
             return "No ETH1 connection, make sure you have configured an ETH1 endpoint and it is currently active and synced."
         } else if (eth2Fallback && fallbacksConfigured.eth2Configured) {
             return "Main ETH2 node is not reachable, you are currently connected via a fallback connection."
@@ -362,6 +364,8 @@ export default class MachineController {
             return "Main ETH1 is not reachable, you are currently connected via a fallback connection."
         } else if (!synced) {
             return "Your beaconnode is currently syncing. It might take some time to get fully synced."
+        } else if (!data.validator) {
+            return "No validator data found. If you wish to track this data, make sure to configure metric tracking on your validator machine too. <a target='_blank' href='https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node'>Learn more here</a>."
         }
         return null
     }
@@ -395,9 +399,9 @@ export default class MachineController {
     }
 
     protected getAvgRelativeFrom(data1LastN: any[], data2LastN: any[], callback: (val1, val2) => any) {
+        if(!data1LastN || ! data2LastN) return null
         const length = Math.min(data1LastN.length, data2LastN.length)
         
-
         var erg = 0
         for (var i = 0; i < length; i++){
             let second = data2LastN[i]
