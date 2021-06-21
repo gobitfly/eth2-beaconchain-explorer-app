@@ -188,12 +188,16 @@ export class ApiService {
   async execute(request: APIRequest<any>) {
     var options = request.options
 
-    if (request.endPoint == "default") {
+    // second is special case for notifications
+    // notifications are rescheduled if response is != 200
+    // but user can switch network in the mean time, so we need to reapply the network
+    // the user was currently on, when they set the notification toggle
+    // hence the additional request.requiresAuth
+    if (request.endPoint == "default" || request.requiresAuth) {
       const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
+
       if (authHeader) {
-
         const headers = { ...options.headers, ...authHeader }
-
         options.headers = headers;
       }
     }
