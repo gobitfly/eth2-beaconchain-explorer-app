@@ -45,6 +45,10 @@ const routes: Routes = [
   {
     path: 'machine-detail',
     loadChildren: () => import('./pages/machine-detail/machine-detail.module').then( m => m.MachineDetailPageModule)
+  },
+  {
+    path: 'dev',
+    loadChildren: () => import('./pages/dev/dev.module').then( m => m.DevPageModule)
   }
 ];
 @NgModule({
