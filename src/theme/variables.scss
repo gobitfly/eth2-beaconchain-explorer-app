@@ -62,6 +62,10 @@
   --ion-color-tertiary-shade: #4854e0;
   --ion-color-tertiary-tint: #6370ff;
 
+  --traffic-light-green: #2dd36f;
+  --traffic-light-orange: #e0ac08;
+  --traffic-light-red: #eb445a;
+
   /** success **/
   --ion-color-success: #2dd36f;
   --ion-color-success-rgb: 45, 211, 111;
@@ -360,6 +364,7 @@ body.cyan {
   --ion-toolbar-background: #00acc1; //2f2e42
   --x-alert-primary: #00acc1;
   --ion-color-success: #00acc1;
+  --ion-color-danger: #c12700;
   --chart-default: #00acc1;
   --x-update-messages-background: #00899b;
   --x-update-messages-background-selected: #0ecee7;
@@ -381,6 +386,7 @@ body.purple {
   --ion-toolbar-background: #7b1fa2; //2f2e42
   --x-alert-primary: #7b1fa2;
   --ion-color-success: #7b1fa2;
+  --ion-color-danger: #a21f1f;
   --chart-default: #7b1fa2;
   --x-update-messages-background: #611183;
   --x-update-messages-background-selected: #9239b8;
@@ -402,6 +408,7 @@ body.sun {
   --ion-toolbar-background: #fbc02d; //2f2e42
   --x-alert-primary: #fbc02d;
   --ion-color-success: #fbc02d;
+  --ion-color-danger: #fb5d2d;
   --chart-default: #fbc02d;
   --x-update-messages-background: #daa319;
   --x-update-messages-background-selected: #fccc55;
@@ -445,6 +452,7 @@ body.pink {
   --ion-toolbar-background: #f50057; //2f2e42
   --x-alert-primary: #f50057;
   --ion-color-success: #f50057;
+  --ion-color-danger: #c22014;
   --chart-default: #f50057;
   --x-update-messages-background: #ce0048;
   --x-update-messages-background-selected: #fd2570;
@@ -466,6 +474,7 @@ body.metal {
   --ion-toolbar-background: #607d8b; //2f2e42
   --x-alert-primary: #607d8b;
   --ion-color-success: #607d8b;
+  --ion-color-danger: #8b6072;
   --chart-default: #607d8b;
   --x-update-messages-background: #4a6877;
   --x-update-messages-background-selected: #7c929c;
@@ -488,6 +497,7 @@ body.bronce {
   --ion-toolbar-background: #8d6e63; //2f2e42
   --x-alert-primary: #8d6e63;
   --ion-color-success: #8d6e63;
+  --ion-color-danger: #c45c5c;
   --chart-default: #8d6e63;
   --x-update-messages-background: #7e5d51;
   --x-update-messages-background-selected: #a5877d;
@@ -503,12 +513,13 @@ body.gold {
   --ion-color-primary-rgb: 255, 215, 0;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-shade: #e96112;
   --ion-color-primary-tint: #0e0b0a;
 
   --ion-toolbar-background: #FFD700; //2f2e42
   --x-alert-primary: #FFD700;
   --ion-color-success: #FFD700;
+  --ion-color-danger: #ff9900;
   --chart-default: #FFD700;
   --x-update-messages-background: #e4c201;
   --x-update-messages-background-selected: #ffe031;
@@ -530,6 +541,7 @@ body.red {
   --ion-toolbar-background: #f44336; //2f2e42
   --x-alert-primary: #f44336;
   --ion-color-success: #f44336;
+  --ion-color-danger: #691c15;
   --chart-default: #f44336;
   --x-update-messages-background: #dd2f22;
   --x-update-messages-background-selected: #fa685d;
@@ -551,6 +563,7 @@ body.orange {
   --ion-toolbar-background: #ff5722; //2f2e42
   --x-alert-primary: #ff5722;
   --ion-color-success: #ff5722;
+  --ion-color-danger: #ac0b00;
   --chart-default: #ff5722;
   --x-update-messages-background: #dd3e0e;
   --x-update-messages-background-selected: #ff7349;

@@ -202,7 +202,7 @@
         </span>
       </ion-label>
       <ion-label class="value">
-        <span class="ok">{{ proposals.good }}</span> /  <span class="err">{{ proposals.bad }}</span>
+        <span class="ok-proposals">{{ proposals.good }}</span> /  <span [class]="proposals.bad == 0 ? '' : 'err-proposals'">{{ proposals.bad }}</span>
       </ion-label>
 
     </ion-item>

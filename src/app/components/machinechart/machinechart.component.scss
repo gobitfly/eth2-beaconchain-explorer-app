@@ -34,15 +34,15 @@
 }
 
 .offline {
-  background-color: var(--ion-color-danger);
+  background-color: var(--traffic-light-red);
 }
 
 .attention {
-  background-color: var(--ion-color-warning-shade);
+  background-color: var(--traffic-light-orange);
 }
 
 .online {
-  background-color: var(--ion-color-success);
+  background-color: var(--traffic-light-green);
 }
 
 ion-card-header {
