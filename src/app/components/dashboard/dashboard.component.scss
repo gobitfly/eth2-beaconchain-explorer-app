@@ -93,6 +93,14 @@ ion-segment-button {
   color: var(--status-secondary);
 }
 
+.ok-proposals {
+  color: var(--ion-color-success);
+}
+
+.err-proposals {
+  color: var(--ion-color-danger);
+}
+
 .status-text {
   margin-top: 15px;
   padding-bottom: 7px;

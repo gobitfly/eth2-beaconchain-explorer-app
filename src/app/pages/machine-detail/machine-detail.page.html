@@ -5,7 +5,7 @@
         <ion-icon size="large" name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>{{ key }}</ion-title>
+    <ion-title>{{ key ? key : 'Machine' }}</ion-title>
   </ion-toolbar>
   <ion-segment [(ngModel)]="selectedTab" mode="md" scrollable="true">
     <ion-segment-button value="cpu" [disabled]="scrolling"
@@ -89,7 +89,7 @@
       </ion-card-header>
     
       <ion-card-content>
-        <ion-label class="alert-text" >{{ diskAttention }}</ion-label>
+        <ion-label class="alert-text">{{ diskAttention }}</ion-label>
       </ion-card-content>
     </ion-card>
 
