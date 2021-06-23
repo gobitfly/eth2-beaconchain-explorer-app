@@ -44,6 +44,10 @@ export default class Unit {
     public static CADETH = new Unit("C$", new BigNumber("651.02"), 2, "ETH-CAD", "Canadian Dollar")
     public static CHFETH = new Unit("CHF", new BigNumber("455.55"), 2, "ETH-CHF", "Swiss Franc")
     public static MXNETH = new Unit("MXN", new BigNumber("455.55"), 2, "ETH-MXN", "Mexican Peso")
+    public static ZARETH = new Unit("R", new BigNumber("455.55"), 2, "ETH-ZAR", "South African Rand")
+    public static CNYETH = new Unit("元", new BigNumber("455.55"), 2, "ETH-CNY", "Renminbi")
+    public static HKDETH = new Unit("HK$", new BigNumber("455.55"), 2, "ETH-HKD", "Hong Kong Dollar")
+    public static NZDETH = new Unit("NZ$", new BigNumber("455.55"), 2, "ETH-NZD", "New Zealand Dollar")
     public static BTCETH = new Unit("₿", new BigNumber("455.55"), 6, "ETH-BTC", "Bitcoin") // coinbase endpoit: invalid currency :/ workaroung in unit converter
 
 
@@ -81,6 +85,12 @@ export const MAPPING = new Map([
     ["CAD", Unit.CADETH],
     ["CHF", Unit.CHFETH],
     ["MXN", Unit.MXNETH],
+    ["ZAR", Unit.ZARETH],
+    ["HKD", Unit.HKDETH],
+    ["CNY", Unit.CNYETH],
+    ["NZD", Unit.NZDETH],
+    
+    
     ["BTC", Unit.BTCETH],
 ])
 
