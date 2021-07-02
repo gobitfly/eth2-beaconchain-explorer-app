@@ -24,6 +24,7 @@ import { StorageService } from '../services/storage.service';
 import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
 import { MerchantUtils } from '../utils/MerchantUtils';
+import ThemeUtils from '../utils/ThemeUtils';
 
 @Component({
   selector: 'app-tabs',
@@ -37,7 +38,8 @@ export class TabsPage {
     private sync: SyncService,
     private storage: StorageService,
     private api: ApiService,
-    private merchant: MerchantUtils
+    private merchant: MerchantUtils,
+    private theme: ThemeUtils
   ) { }
 
   ionViewDidEnter() {
@@ -65,6 +67,14 @@ export class TabsPage {
       const net = (await this.api.networkConfig).net
       this.storage.getNotificationTogglePreferences(net) // preloading toggle settings
     }, 350)
+
+    // Validate licence and reset theme accordingly
+    setTimeout(() => { this.validateTheming() }, 600)
+  }
+
+  private async validateTheming() {
+    const hasTheming = await this.merchant.hasPremiumTheming()
+    if(!hasTheming) { this.theme.resetTheming() }
   }
 
   private hackyIonicPreloads() {

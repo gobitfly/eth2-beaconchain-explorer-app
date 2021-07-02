@@ -39,6 +39,11 @@ export const SETTING_NOTIFY_PROPOSAL_SUBMITTED = "setting_notify_proposalsubmitt
 export const SETTING_NOTIFY_PROPOSAL_MISSED = "setting_notify_proposalsmissed"
 export const SETTING_NOTIFY_ATTESTATION_MISSED = "setting_notify_attestationsmissed"
 export const SETTING_NOTIFY_CLIENTUPDATE = "setting_notify_clientupdate"
+export const SETTING_NOTIFY_MACHINE_OFFLINE = "setting_notify_machineoffline"
+export const SETTING_NOTIFY_HDD_WARN = "setting_notify_hddwarn"
+export const SETTING_NOTIFY_CPU_WARN = "setting_notify_cpuwarn"
+
+export const DEBUG_SETTING_OVERRIDE_PACKAGE = "debug_setting_override_package"
 
 @Injectable({
   providedIn: 'root'
@@ -51,6 +56,7 @@ export class StorageService extends CacheModule {
   }
 
   // --- upper level helper ---
+
 
   async getAuthUser(): Promise<StorageTypes.AuthUser> {
     return this.getObject(AUTH_USER);
@@ -94,13 +100,9 @@ export class StorageService extends CacheModule {
   }
 
   async getNotificationTogglePreferences(network: string): Promise<NotificationToggles> {
-    const cached = this.getCache(network + "toggle_preferences")
-    if (!cached) {
-      const notificationtoggles = await this.loadPreferencesToggles(network)
-      this.putCache(network + "toggle_preferences", notificationtoggles)
-      return notificationtoggles
-    }
-    return cached;
+    const notificationtoggles = await this.loadPreferencesToggles(network)
+    this.putCache(network + "toggle_preferences", notificationtoggles)
+    return notificationtoggles
   }
 
   async loadPreferencesToggles(network: string): Promise<NotificationToggles> {
@@ -110,6 +112,9 @@ export class StorageService extends CacheModule {
     const notifyProposalsSubmitted = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_SUBMITTED)
     const notifyProposalsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_MISSED)
     const notifyAttestationsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_ATTESTATION_MISSED)
+    const notifyMachineOffline = await this.getBooleanSetting(SETTING_NOTIFY_MACHINE_OFFLINE, false)
+    const notifyMachineHddWarn = await this.getBooleanSetting(SETTING_NOTIFY_HDD_WARN, false)
+    const notifyMachineCpuWarn = await this.getBooleanSetting(SETTING_NOTIFY_CPU_WARN, false)
 
     const notifyLocal = await this.getBooleanSetting(network + SETTING_NOTIFY, null)
     return {
@@ -119,20 +124,32 @@ export class StorageService extends CacheModule {
       notifyClientUpdate: notifyClientUpdate,
       notifyProposalsSubmitted: notifyProposalsSubmitted,
       notifyProposalsMissed: notifyProposalsMissed,
-      notifyAttestationsMissed: notifyAttestationsMissed
+      notifyAttestationsMissed: notifyAttestationsMissed,
+      notifyMachineOffline: notifyMachineOffline,
+      notifyMachineHddWarn: notifyMachineHddWarn,
+      notifyMachineCpuWarn: notifyMachineCpuWarn
     }
   }
 
   setBooleanSetting(key, value) {
-    this.setObject(key, { value: value })
+    this.setSetting(key, value)
   }
 
   getBooleanSetting(key: string, defaultV: boolean = true) {
+    return this.getSetting(key, defaultV)
+  }
+
+  setSetting(key, value) {
+    this.setObject(key, { value: value })
+  }
+
+  getSetting(key: string, defaultV: any = 0) {
     return this.getObject(key).then((result) => {
       if (result) return result.value
       return defaultV
     })
   }
+
 
   async isSubscribedTo(event): Promise<boolean> {
     const notify = await this.getBooleanSetting(SETTING_NOTIFY)
@@ -279,4 +296,7 @@ interface NotificationToggles {
   notifyProposalsSubmitted: boolean;
   notifyProposalsMissed: boolean;
   notifyAttestationsMissed: boolean;
+  notifyMachineOffline: boolean;
+  notifyMachineHddWarn: boolean;
+  notifyMachineCpuWarn: boolean;
 }

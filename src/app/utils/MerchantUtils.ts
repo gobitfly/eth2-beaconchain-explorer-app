@@ -25,7 +25,7 @@ import { Platform } from '@ionic/angular';
 import { PostMobileSubscription, SubscriptionData } from '../requests/requests';
 import { AlertService, PURCHASEUTILS } from '../services/alert.service';
 import { ApiService } from '../services/api.service';
-import { StorageService } from '../services/storage.service';
+import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from '../services/storage.service';
 
 import { Plugins } from '@capacitor/core';
 const { SplashScreen } = Plugins;
@@ -305,6 +305,13 @@ export class MerchantUtils {
   }
 
   async getCurrentPlanConfirmed(): Promise<string> {
+    if (this.api.debug) {
+      const debugPackage = await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, "default")
+      if (debugPackage != "default") {
+        return debugPackage
+      }
+    }
+    
     const authUser = await this.storage.getAuthUser()
     if (!authUser || !authUser.accessToken) return PRODUCT_STANDARD
     const jwtParts = authUser.accessToken.split(".")
@@ -325,14 +332,26 @@ export class MerchantUtils {
     return null
   }
 
-  async hasAdFree() {
+  private async isNotFreeTier() {
     const currentPlan = await this.getCurrentPlanConfirmed()
     return currentPlan != PRODUCT_STANDARD && currentPlan != ""
   }
 
-  async hasMachineHistoryPremium() {
+  async hasPremiumTheming() {
     const currentPlan = await this.getCurrentPlanConfirmed()
-    return currentPlan != PRODUCT_STANDARD && currentPlan != ""
+    return currentPlan != PRODUCT_STANDARD && currentPlan != "" && currentPlan != "plankton"
+  }
+
+  async hasCustomizeableNotifications() {
+    return await this.isNotFreeTier()
+  }
+
+  async hasAdFree() {
+    return await this.isNotFreeTier()
+  }
+
+  async hasMachineHistoryPremium() {
+    return await this.isNotFreeTier()
   }
 
   async getCurrentPlanMaxValidator(): Promise<number> {
@@ -353,6 +372,7 @@ export class MerchantUtils {
     if (notMainnet) return currentProduct.maxTestnetValidators
     return currentProduct.maxValidators
   }
+  
 }
 
 interface ClaimParts {

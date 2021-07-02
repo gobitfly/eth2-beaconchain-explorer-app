@@ -18,39 +18,18 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const bytes = (function(){
+import { Injectable } from "@angular/core";
+import { HDD_THRESHOLD } from "../pages/notifications/notifications.page";
+import { StorageService } from "../services/storage.service";
 
-    var s = ['b', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
-        tempLabel = [], 
-        count;
-    
-    return function(bytes, label, isFirst, precision = 3) {
-        var e, value;
-        
-        if (bytes == 0) 
-            return 0;
-        
-        if( isFirst )
-            count = 0;
-        
-        e = Math.floor(Math.log(bytes) / Math.log(1024));
-        value = (bytes / Math.pow(1024, Math.floor(e))).toFixed(precision);
-
-        tempLabel[count] = value;        
-        if( count > 0 && Math.abs(tempLabel[count-1]-tempLabel[count])<0.0001 )
-            value = (bytes / Math.pow(1024, Math.floor(--e))).toFixed(precision);
-        
-        e = (e < 0) ? (-e) : e;
-        if (label) value += ' ' + s[e];
-        
-        count++;
-        return value;
-    }
-
-})();
+const OFFLINE_THRESHOLD = 8 * 60 * 1000
 
 
 export default class MachineController {
+
+    constructor(private store: StorageService) {
+        
+    }
 
     selectionTimeFrame: number = 180
 
@@ -329,22 +308,40 @@ export default class MachineController {
         return chartData
     }
 
-    getAnyAttention(data: ProcessedStats) {
-        let sync = this.getSyncAttention(data)
-        if (sync) return sync
-        return this.getDiskAttention(data)
+    isBuggyPrysmVersion(data: ProcessedStats): boolean {
+        return data.client == "prysm" && (!data.system || data.system.length <= 2 || data.system[0].cpu_cores == 0)
     }
 
-    protected getDiskAttention(data: ProcessedStats): string {
+    async getAnyAttention(data: ProcessedStats) {
+        let sync = this.getSyncAttention(data)
+        if (sync) return sync
+        return await this.getDiskAttention(data)
+    }
+
+    protected async getDiskAttention(data: ProcessedStats): Promise<string> {
         if(!data || !data.system) return null
         let freePercentage = this.getLastFrom(data.system, (array) => array.disk_node_bytes_free / array.disk_node_bytes_total)
+        const threshold = 100 -(await this.store.getSetting(HDD_THRESHOLD, 90))
+        console.log("HDD threshold", threshold)
 
-        if (freePercentage < 0.1) {
-            return "Your disk is almost full. There's less than 10% free space available."
+        if (freePercentage < threshold/100) {
+            return "Your disk is almost full. There's less than " + threshold + "% free space available."
         }
         
         return null
     }
+
+    async getOnlineState(data: ProcessedStats) {
+        if (!data || !data.formattedDate) return "offline";
+        const now = Date.now()
+        const diff = now - data.formattedDate.getTime()
+        if (diff > OFFLINE_THRESHOLD) return "offline"
+    
+        if (await this.getAnyAttention(data) != null) {
+          return "attention"
+        }
+        return "online"
+      }
 
     protected getSyncAttention(data: ProcessedStats): string {
         let synced = this.getLastFrom(data.node, (array) => array.sync_eth2_synced)
@@ -392,6 +389,7 @@ export default class MachineController {
 
     protected getAvgFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false, depth = 10): any {
         let data = this.getLastN(dataArray, callbackValue, isDiffPair, depth)
+        if (!data) return null
         
         let erg = data.reduce((sum, cur) => sum + cur)
        
@@ -612,6 +610,36 @@ export default class MachineController {
     }
 }
 
+export const bytes = (function(){
+
+    var s = ['b', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
+        tempLabel = [], 
+        count;
+    
+    return function(bytes, label, isFirst, precision = 3) {
+        var e, value;
+        
+        if (bytes == 0) 
+            return 0;
+        
+        if( isFirst )
+            count = 0;
+        
+        e = Math.floor(Math.log(bytes) / Math.log(1024));
+        value = (bytes / Math.pow(1024, Math.floor(e))).toFixed(precision);
+
+        tempLabel[count] = value;        
+        if( count > 0 && Math.abs(tempLabel[count-1]-tempLabel[count])<0.0001 )
+            value = (bytes / Math.pow(1024, Math.floor(--e))).toFixed(precision);
+        
+        e = (e < 0) ? (-e) : e;
+        if (label) value += ' ' + s[e];
+        
+        count++;
+        return value;
+    }
+
+})();
 
 export interface ProcessedStats extends StatsResponse {
     client: string,

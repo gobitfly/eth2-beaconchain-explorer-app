@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-back-button></ion-back-button>
+        <ion-back-button defaultHref="/tabs/preferences"></ion-back-button>
       </ion-buttons>
     <ion-title>Dev</ion-title>
   </ion-toolbar>
@@ -46,6 +46,30 @@
       <ion-label>Make dev mode permanent</ion-label>
     </ion-item>
 
+    <ion-item lines="none">
+      <ion-icon slot="start" name="bug-outline"></ion-icon>
+      <ion-label>
+        Override Premium
+      </ion-label>
+      <ion-select value="" [(ngModel)]="packageOverride" (ionChange)="changePackage()" interface="popover">
+        <ion-select-option value="default">
+          Use real package
+        </ion-select-option>
+        <ion-select-option value="standard">
+          standard
+        </ion-select-option>
+        <ion-select-option value="plankton">
+          plankton
+        </ion-select-option>
+        <ion-select-option value="goldfish">
+          Goldfish
+        </ion-select-option>
+        <ion-select-option value="whale">
+          Whale
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
     <ion-item lines="none" (click)="restartApp()">
       <ion-icon slot="start" name="bug-outline"></ion-icon>
       <ion-label>Restart App</ion-label>
@@ -58,4 +82,12 @@
 
 
   </ion-list>
+
+  <ion-list-header>
+    <ion-label>Firebase Token:</ion-label>
+  </ion-list-header>
+  <p>{{ firebaseToken }}</p>
+
+  <br/>
+
 </ion-content>

@@ -1,0 +1,24 @@
+@import "../../../theme/variables.scss";
+
+
+.range {
+
+   margin-left: 50px !important;
+}
+
+.range-locked {
+    padding-left: 1px !important;
+    margin-left: 0px !important;
+ }
+
+ .pseudo-disabled {
+     opacity: 0.3 !important;
+ }
+
+ion-note {
+    
+    color: var(--text-color);
+    font-size: 15px;
+    font-weight: bold;
+}
+

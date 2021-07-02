@@ -136,7 +136,7 @@
         Theme Color
       </ion-label>
       <ion-select value="" [(ngModel)]="themeColor" (ionChange)="changeThemeColor()" interface="popover"
-        [disabled]="themeColorLock" *ngIf="currentPlan != 'standard'">
+        [disabled]="themeColorLock" *ngIf="currentPlan != 'standard' && currentPlan != 'plankton'">
         <ion-select-option value="">
           Default
         </ion-select-option>
@@ -212,68 +212,13 @@
       </ion-label>
     </ion-item>
 
-    <ion-item lines="none" [disabled]="!authUser || blocked || !notifyInitialized">
+    <ion-item lines="none" [disabled]="!authUser || blocked" [routerLink]="['/notifications']">
       <ion-icon slot="start" name="notifications-outline"></ion-icon>
-      <ion-label i18n="Settings validator notifications">
-        Validator Notifications
-      </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notify" (ionChange)="notifyToggle()" slot="end"></ion-toggle>
+      <ion-label>Notification Preferences</ion-label>
+      <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
     </ion-item>
 
-    <ion-item lines="none" [disabled]="!authUser || !notify || blocked || !notifyInitialized">
-      <ion-icon slot="start" name="chevron-down-circle-outline"></ion-icon>
-      <ion-label i18n="Settings balance decreased notification">
-        Balance Decreased
-      </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyDecreased"
-        (ionChange)="notifyEventToggle('validator_balance_decreased')" slot="end"></ion-toggle>
-    </ion-item>
-
-    <ion-item lines="none" [disabled]="!authUser || !notify || blocked || !notifyInitialized">
-      <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-      <ion-label i18n="Settings validator slashed notifications">
-        Validator Slashed
-      </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifySlashed"
-        (ionChange)="notifyEventToggle('validator_got_slashed')" slot="end"></ion-toggle>
-    </ion-item>
-
-
-    <ion-item lines="none" [disabled]="!authUser || !notify || blocked || !notifyInitialized">
-      <ion-icon slot="start" name="information-circle-outline"></ion-icon>
-      <ion-label i18n="Settings validator submitted proposals">
-        Submitted Proposals
-      </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyProposalsSubmitted"
-        (ionChange)="notifyEventToggle('validator_proposal_submitted')" slot="end"></ion-toggle>
-    </ion-item>
-
-    <ion-item lines="none" [disabled]="!authUser || !notify || blocked || !notifyInitialized">
-      <ion-icon slot="start" name="remove-circle-outline"></ion-icon>
-      <ion-label i18n="Settings validator missed proposals">
-        Missed Proposals
-      </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyProposalsMissed"
-        (ionChange)="notifyEventToggle('validator_proposal_missed')" slot="end"></ion-toggle>
-    </ion-item>
-
-    <ion-item lines="none" [disabled]="!authUser || !notify || blocked || !notifyInitialized">
-      <ion-icon slot="start" name="remove-circle-outline"></ion-icon>
-      <ion-label i18n="Settings validator missed proposals">
-        Missed Attestations
-      </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyAttestationsMissed"
-        (ionChange)="notifyEventToggle('validator_attestation_missed')" slot="end"></ion-toggle>
-    </ion-item>
-
-    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
-      <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
-      <ion-label i18n="Setting client update notifications">
-        Client Updates
-      </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyClientUpdate" (ionChange)="notifyClientUpdates()"
-        slot="end"></ion-toggle>
-    </ion-item>
+   
   </ion-list>
 
   <ion-list-header>
@@ -353,9 +298,13 @@
       <ion-label>Manage Subscriptions</ion-label>
     </ion-item>
 
-    <ion-item lines="none" (click)="logout()" [disabled]="!authUser">
+    <ion-item lines="none" (click)="logout()" *ngIf="authUser">
       <ion-icon slot="start" name="log-out-outline"></ion-icon>
       <ion-label i18n="Settings logout">Logout</ion-label>
+    </ion-item>
+    <ion-item lines="none" (click)="openOAuth()" *ngIf="!authUser">
+      <ion-icon slot="start" name="log-in-outline"></ion-icon>
+      <ion-label i18n="Settings logout">Login</ion-label>
     </ion-item>
   </ion-list>
 
@@ -383,7 +332,7 @@
     </ion-item>
 
     <ion-item lines="none" [routerLink]="['/dev']" *ngIf="debug">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
+      <ion-icon slot="end" name="bug-outline"></ion-icon>
       <ion-label>Dev</ion-label>
     </ion-item>
   </ion-list>
