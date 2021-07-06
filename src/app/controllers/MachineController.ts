@@ -421,17 +421,25 @@ export default class MachineController {
 
     // --- Data helper functions ---
 
+    getTimeDiff(dataSet: StatsBase[], startIndex, endIndex) {
+        return Math.abs(dataSet[startIndex].timestamp - dataSet[endIndex].timestamp)
+    }
+
     getGapSize(dataSet: StatsBase[]) {
-        return Math.abs(dataSet[dataSet.length - 2].row - dataSet[dataSet.length - 1].row)
+        if(!dataSet || dataSet.length == 0) return 60000
+        let temp = this.getTimeDiff(dataSet, dataSet.length - 2, dataSet.length - 1)
+
+        if (isNaN(temp) || temp < 30000) temp = this.getTimeDiff(dataSet, 0, 1)
+        if (isNaN(temp) || temp < 30000) temp = Math.abs(dataSet[0][0] - dataSet[1][0])
+        if (isNaN(temp) || temp < 30000) temp =  Math.abs(dataSet[dataSet.length - 2][0] - dataSet[dataSet.length - 1][0])
+        
+        if (isNaN(temp) || temp < 30000) temp = 60000
+        return temp
     }
 
     normalizeTimeframeNumber(dataSet: StatsBase[]): number {
-        let gapSize = this.getGapSize(dataSet)
-
-        if(gapSize >= 5) return 5 * 60
-        if(gapSize >= 4) return 4 * 60
-        if(gapSize >= 3) return 3 * 60
-        return 60
+        let gapSize = Math.round(this.getGapSize(dataSet) / 1000)
+        return gapSize
     }
 
     timeAxisRelative(max: any[], current: any[], inverted: boolean = false, rounding = 10) {
