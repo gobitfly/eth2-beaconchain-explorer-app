@@ -98,7 +98,10 @@ export class MachineDetailPage extends MachineController implements OnInit {
       this.validatorLabelActive = "Active: " + this.getLastFrom(this.data.validator, (array) => array.validator_active)
       this.validatorLabelTotal = "Total: " + this.getLastFrom(this.data.validator, (array) => array.validator_total)
 
-      this.diskLabel = "Free Space: " + bytes(this.getLastFrom(this.data.system, (array) => array.disk_node_bytes_free), true, true, 3)
+      const lastFreeBytes = this.getLastFrom(this.data.system, (array) => array.disk_node_bytes_free)
+      const totalBytes = this.getLastFrom(this.data.system, (array) => array.disk_node_bytes_total)
+      const percent = Math.round(lastFreeBytes * 1000 / totalBytes) / 10;
+      this.diskLabel = "Free: " + bytes(lastFreeBytes, true, true, 1)  + " - " + percent + "%"
       this.beaconchainLabel = "Size: " + bytes(this.getLastFrom(this.data.node, (array) => array.disk_beaconchain_bytes_total), true, true, 3)
     
       this.peerLabel = "Peers: " + this.getLastFrom(this.data.node, (array) => array.network_peers_connected)

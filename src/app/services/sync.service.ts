@@ -28,6 +28,8 @@ import { ValidatorSyncUtils } from '../utils/ValidatorSyncUtils';
 
 const NOTIFY_SYNCCHANGE = "notify_syncchange_"
 
+const MAX_SERVER_BUNDLE_SIZE = 100
+
 interface SyncChanged {
   lastChanged: number,
   lastSynced: number,
@@ -312,7 +314,7 @@ export class SyncService {
     for (var i = 0; i < bundles.length; i++) {
       let bundle = bundles[i]
       while (bundle.bundles.length) {
-        let splice = bundle.bundles.splice(0,24)
+        let splice = bundle.bundles.splice(0,MAX_SERVER_BUNDLE_SIZE) 
         let success = await this.postNotifyBundle(bundle.subscribe, splice, bundle.network)
         if (success) this.lastNotifySync = Date.now()
         
