@@ -106,8 +106,9 @@ export default class MachineUtils {
         let machineNames = this.getAllMachineNamesFrom(result)
         console.log(LOGTAG + " machine names", machineNames)
 
-        let success = await this.registerNewRemotesForSync(machineNames)
-        console.log(LOGTAG + " registerNewRemotesForSync", success)
+        this.registerNewRemotesForSync(machineNames).then((result) => {
+            console.log(LOGTAG + " registerNewRemotesForSync", result)
+        })
 
         // Storing all machine names if 
         // Used for notification syncing

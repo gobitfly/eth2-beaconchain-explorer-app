@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { highChartOptions } from 'src/app/utils/HighchartOptions';
 import * as HighCharts from 'highcharts';
 import * as Highstock from "highcharts/highstock";
@@ -8,6 +8,7 @@ import * as Highstock from "highcharts/highstock";
   selector: 'app-machinechart',
   templateUrl: './machinechart.component.html',
   styleUrls: ['./machinechart.component.scss'],
+
 })
 export class MachinechartComponent implements OnInit {
 
@@ -31,29 +32,38 @@ export class MachinechartComponent implements OnInit {
     this.clickAction()
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if(changes['chartData']){
+      this.updateCharts()
+    }
+  }
+
+  private updateCharts() {
+     // just so we don't load everything at the same time
+     const priorityDelay = this.priority ? 0 : 80 + Math.random() * 200
+
+     setTimeout(() => {
+       try {
+         // @ts-ignore
+         if (this.chartData && this.chartData.length == 1 && this.chartData[0] == "system_missing") {
+           this.specificError = "system_missing"
+           this.chartError = true
+           return
+         }
+         this.doChart(this.key, this.id, this.chartData)
+         //@ts-ignore
+         this.chartError = this.chartData.length <= 0 || this.chartData[0].data.length <= 1
+       } catch (e) {
+         this.chartError = true
+       }
+     }, 400 + priorityDelay)
+  }
+
   ngOnInit() {
     highChartOptions(Highstock)
     this.id = makeid(6)
 
-    // just so we don't load everything at the same time
-    const priorityDelay = this.priority ? 0 : 80 + Math.random() * 200
-
-    setTimeout(() => {
-      try {
-        // @ts-ignore
-        if (this.chartData && this.chartData.length == 1 && this.chartData[0] == "system_missing") {
-          this.specificError = "system_missing"
-          this.chartError = true
-          return
-        }
-        this.doChart(this.key, this.id, this.chartData)
-        //@ts-ignore
-        this.chartError = this.chartData.length <= 0 || this.chartData[0].data.length <= 1
-      } catch (e) {
-        this.chartError = true
-      }
-    }, 400 + priorityDelay)
-
+    this.updateCharts()
   }
 
   public doChart(key, type = "", data) {

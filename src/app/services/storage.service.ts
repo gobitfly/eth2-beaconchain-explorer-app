@@ -43,6 +43,9 @@ export const SETTING_NOTIFY_MACHINE_OFFLINE = "setting_notify_machineoffline"
 export const SETTING_NOTIFY_HDD_WARN = "setting_notify_hddwarn"
 export const SETTING_NOTIFY_CPU_WARN = "setting_notify_cpuwarn"
 
+export const CPU_THRESHOLD = "cpu_usage_threshold"
+export const HDD_THRESHOLD = "hdd_usage_threshold"
+
 export const DEBUG_SETTING_OVERRIDE_PACKAGE = "debug_setting_override_package"
 
 @Injectable({

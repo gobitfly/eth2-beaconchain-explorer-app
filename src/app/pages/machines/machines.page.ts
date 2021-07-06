@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import {  ModalController } from '@ionic/angular';
 import { MachineDetailPage } from '../machine-detail/machine-detail.page';
 import MachineController, { ProcessedStats } from '../../controllers/MachineController'
@@ -44,7 +44,8 @@ export class MachinesPage extends MachineController implements OnInit {
     private validatorUtils: ValidatorUtils,
     private storage: StorageService,
     private oauthUtils: OAuthUtils,
-    private machineUtils: MachineUtils
+    private machineUtils: MachineUtils,
+    private ref: ChangeDetectorRef
   ) {
     super(storage)
   }
@@ -62,10 +63,11 @@ export class MachinesPage extends MachineController implements OnInit {
   }
 
   async doRefresh(event) {
-    this.getAndProcessData()
+    await this.getAndProcessData()
     setTimeout(() => {
       event.target.complete();
-    }, 1000)
+      this.ref.detectChanges();
+    }, 500)
   }
 
   ionViewWillEnter() {
@@ -170,6 +172,7 @@ export class MachinesPage extends MachineController implements OnInit {
       this.data = []
       this.orderedKeys = []
       this.showData = false
+      return
     }
 
     this.data = await this.machineUtils.getAndProcessData(this.getTimeSelectionLimit())

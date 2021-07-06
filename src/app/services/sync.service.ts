@@ -316,8 +316,8 @@ export class SyncService {
         let success = await this.postNotifyBundle(bundle.subscribe, splice, bundle.network)
         if (success) this.lastNotifySync = Date.now()
         
-        for (var i = 0; i < splice.length; i++){
-          await splice[i].onComplete(success)
+        for (var j = 0; j < splice.length; j++){
+          await splice[j].onComplete(success)
         }
       }
     }

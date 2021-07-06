@@ -541,7 +541,7 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
 
   options = {
     cache: {
-      maxAge: 1 * 60 * 60 * 1000,
+      maxAge: 20 * 60 * 1000,
     }
   }
 

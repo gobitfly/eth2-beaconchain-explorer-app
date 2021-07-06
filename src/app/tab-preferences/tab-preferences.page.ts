@@ -132,6 +132,7 @@ export class Tab3Page {
       }
 
     })
+    this.notificationBase.disableToggleLock()
 
     this.fadeIn = "fade-in"
     setTimeout(() => {

@@ -39,7 +39,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
   fallbacks: FallbackConfigurations = {
     eth1Configured: false,
     eth2Configured: false
-}
+  }
 
   validatorLabelActive: string = ""
   validatorLabelTotal: string = ""

@@ -8,11 +8,9 @@
 </ion-header>
 
 <ion-content>
-
-
   <ion-list-header>
-    <ion-label *ngIf="network == 'main'">General</ion-label>
-    <ion-label *ngIf="network != 'main'">General ({{ network }})</ion-label>
+    <ion-label *ngIf="network == 'Main'">General</ion-label>
+    <ion-label *ngIf="network != 'Main'">General » {{ network }}</ion-label>
   </ion-list-header>
 
   <ion-list>
@@ -157,14 +155,13 @@
     </ion-range>
     <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="cpuThreshold" _ngcontent-ves-c134="" min="10" max="99" step="1" ng-reflect-min="10" ng-reflect-max="99" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="90" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="90"></ion-range>
 
-
     <ion-note slot="end">≥ {{ cpuThreshold }} %</ion-note>
-    
-
 </ion-item>
 
 
-
+<div class="filler"></div>
 
 </ion-list>
+
+
 </ion-content>

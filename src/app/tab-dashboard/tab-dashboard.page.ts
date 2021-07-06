@@ -25,6 +25,7 @@ import OverviewController, { OverviewData } from '../controllers/OverviewControl
 import ClientUpdateUtils from '../utils/ClientUpdateUtils';
 import { Plugins, AppState } from '@capacitor/core';
 import { StorageService } from '../services/storage.service';
+import { UnitconvService } from '../services/unitconv.service';
 const { App } = Plugins;
 
 @Component({
@@ -44,7 +45,8 @@ export class Tab1Page {
     private validatorUtils: ValidatorUtils,
     public api: ApiService,
     public updates: ClientUpdateUtils,
-    private storage: StorageService
+    private storage: StorageService,
+    private unitConv: UnitconvService
   ) {
     this.validatorUtils.registerListener(() => {
       this.refresh()
@@ -123,6 +125,7 @@ export class Tab1Page {
       this.api.mayInvalidateOnFaultyConnectionState()
       event.target.complete();
     })
+    await this.unitConv.updatePriceData()
     event.target.complete();
   }
 

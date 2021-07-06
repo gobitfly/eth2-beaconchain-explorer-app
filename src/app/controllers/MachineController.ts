@@ -18,9 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from "@angular/core";
-import { HDD_THRESHOLD } from "../pages/notifications/notifications.page";
-import { StorageService } from "../services/storage.service";
+import { HDD_THRESHOLD, StorageService } from "../services/storage.service";
 
 const OFFLINE_THRESHOLD = 8 * 60 * 1000
 
@@ -442,26 +440,36 @@ export default class MachineController {
             console.warn("timeAxisRelative max and current array is differently sized")
             return [] 
         }*/
+        const gapSize = this.normalizeTimeframeNumber(max)
 
         var maxOffset = 0
         var currentOffest = 0
 
-        for (var i = 0; i < max.length; i++) {
-            if (current.length <= i + currentOffest) break;
-            if (max.length <= i + maxOffset) break;
-            var curV = current[i + currentOffest]
-            var maxV = max[i + maxOffset]
+        while (true) {
+            if (current.length <= currentOffest) break;
+            if (max.length <=  maxOffset) break;
+            var curV = current[currentOffest]
+            var maxV = max[maxOffset]
 
-           /* let drift = curV[0] - maxV[0]
-            if (drift > 65000 && maxV[1] != 0) {
+            let drift = curV[0] - maxV[0]
+
+            if (drift > gapSize * 1500) {
                 maxOffset++
-                if (max.length <= i + maxOffset) break;
-                maxV = max[i + maxOffset];
-            } else if (drift < 65000 && maxV[1] != 0) {
+
+                if (drift > gapSize * 3000 ) {
+                    result.push([maxV[0], 0])
+                }
+  
+                continue;
+            } else if (drift < gapSize * -1500) {
                 currentOffest++;
-                if (current.length <= i + currentOffest) break;
-                curV = current[i + currentOffest]
-            }*/
+                
+                if (drift < gapSize * -3000 ) {
+                    result.push([curV[0], 0])
+                }
+
+                continue;
+            }
 
             let tempValue = maxV[1] == 0 ? 0 : Math.round((curV[1] / maxV[1]) * (100 * rounding)) / rounding
             let value = inverted ? Math.round((100 - tempValue) * 10) / 10 : tempValue 
@@ -469,6 +477,9 @@ export default class MachineController {
                 maxV[0],
                 maxV[1] == 0 ? 0 : value
             ])
+
+            maxOffset++
+            currentOffest++
         }
         return result
     }
@@ -492,27 +503,23 @@ export default class MachineController {
                 
                 if (lastTimestamp != -1 && lastTimestamp + 45 * 60 * 1000 < value.timestamp) {
                     console.log("filling empty plots with zeros: ", lastTimestamp, value.timestamp)
-                    const gapPositionOffset = this.getGapPositionOffset(lastTimestamp, value.timestamp)
 
-                    result.push([
-                        lastTimestamp + gapPositionOffset,
-                        0
-                    ])
-
-                    result.push([
-                        value.timestamp - gapPositionOffset,
-                        0
-                    ])
+                    this.fillWithZeros(result, lastTimestamp, value.timestamp)
 
                     summedUp = -1
                 }
             }
 
             if (summedUp != -1 || !accumilative) {
-                result.push([
-                    value.timestamp,
-                    temp > 0 ? temp : 0
-                ])
+                if (!accumilative || summedUp * 25 > temp) {
+                    result.push([
+                        value.timestamp,
+                        temp > 0 ? temp : 0
+                    ])
+                } else {
+                    summedUp = temp
+                }
+                
             }
 
             lastTimestamp = value.timestamp
@@ -526,9 +533,15 @@ export default class MachineController {
         return result
     }
 
-    getGapPositionOffset(lastTime: number, currentTime: number): number {
-        let difference = Math.abs(currentTime - lastTime)
-        return difference / 25 // 4%
+    fillWithZeros(array: any[], from: number, to: number): any[] {
+        const interval = 60000
+        for (var i: number = from + interval; i < to - interval; i += interval){
+            array.push([
+                i,
+                0
+            ])
+        }
+        return array
     }
 
     public combineByMachineName(validator: any[], node: any[], system: any[]) {
