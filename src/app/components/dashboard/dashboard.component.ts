@@ -86,14 +86,10 @@ export class DashboardComponent implements OnInit {
         this.chartError = false
         this.chartData = null
         this.doneLoading = this.data != null
-        if (this.data != null) {
-          if (this.fadeIn == "invisible") {
-            this.fadeIn = "fade-in"
-            setTimeout(() => {
-              this.fadeIn = null
-            }, 1500)
-          }
-        }
+          this.fadeIn = "fade-in"
+          setTimeout(() => {
+            this.fadeIn = null
+          }, 1500)
 
         this.drawBalanceChart()
         this.drawProposalChart()

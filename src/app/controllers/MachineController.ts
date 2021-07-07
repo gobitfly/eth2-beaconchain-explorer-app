@@ -463,19 +463,9 @@ export default class MachineController {
 
             if (drift > gapSize * 1500) {
                 maxOffset++
-
-                if (drift > gapSize * 3000 ) {
-                    result.push([maxV[0], 0])
-                }
-  
                 continue;
             } else if (drift < gapSize * -1500) {
                 currentOffest++;
-                
-                if (drift < gapSize * -3000 ) {
-                    result.push([curV[0], 0])
-                }
-
                 continue;
             }
 

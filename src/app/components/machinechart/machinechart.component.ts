@@ -62,8 +62,6 @@ export class MachinechartComponent implements OnInit {
   ngOnInit() {
     highChartOptions(Highstock)
     this.id = makeid(6)
-
-    this.updateCharts()
   }
 
   public doChart(key, type = "", data) {

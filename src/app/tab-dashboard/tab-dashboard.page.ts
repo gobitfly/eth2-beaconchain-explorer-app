@@ -121,8 +121,11 @@ export class Tab1Page {
   }
 
   async doRefresh(event) {
+    const old =  Object.assign({}, this.overallData);
+    this.overallData = null
     await this.refresh().catch(() => {
       this.api.mayInvalidateOnFaultyConnectionState()
+      this.overallData = old
       event.target.complete();
     })
     await this.unitConv.updatePriceData()

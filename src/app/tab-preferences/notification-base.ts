@@ -74,6 +74,7 @@ export class NotificationBase implements OnInit {
     return true
   }
 
+  remoteNotifyLoadedOnce = false
   public async loadNotifyToggles() {
     const net = (await this.api.networkConfig).net
     
@@ -114,11 +115,14 @@ export class NotificationBase implements OnInit {
 
     this.notifyInitialized = true;
 
-    const remoteNofiy = await this.getRemoteNotificationSetting(preferences.notify)
-    if (remoteNofiy != this.notify) {
-      this.lockedToggle = true
-      this.notify = remoteNofiy
-      this.disableToggleLock()
+    if (!this.remoteNotifyLoadedOnce) {
+      const remoteNofiy = await this.getRemoteNotificationSetting(preferences.notify)
+      if (remoteNofiy != this.notify) {
+        this.lockedToggle = true
+        this.notify = remoteNofiy
+        this.disableToggleLock()
+      }
+      this.remoteNotifyLoadedOnce = true
     }
 
     setTimeout(() => this.firstTimePushAllNotificationSettings(), 500)
@@ -137,16 +141,22 @@ export class NotificationBase implements OnInit {
       return
     }
 
-    if (await this.api.isNotMainnet()) {
+    if (this.notify == false) {
       this.notifyAttestationsMissed = this.notify
       this.notifyDecreased = this.notify
       this.notifyProposalsMissed = this.notify
       this.notifyProposalsSubmitted = this.notify
       this.notifySlashed = this.notify
+      this.notifyClientUpdate = this.notify
+      this.notifyMachineCpuLoad = this.notify
+      this.notifyMachineDiskFull = this.notify
+      this.notifyMachineOffline = this.notify
+    }
 
-      const net = (await this.api.networkConfig).net
-      this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
-    } else {
+    const net = (await this.api.networkConfig).net
+    this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
+    
+    if(! (await this.api.isNotMainnet())){
       this.sync.changeGeneralNotify(this.notify)
     }
 

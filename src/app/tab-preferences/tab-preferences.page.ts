@@ -75,8 +75,6 @@ export class Tab3Page {
 
   debug = false
 
-  blocked = false
-
   snowing: boolean
 
   stakingShare = null
