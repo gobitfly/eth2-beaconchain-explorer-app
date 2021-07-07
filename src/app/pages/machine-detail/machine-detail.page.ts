@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { fromEvent, Subscription } from 'rxjs';
+import { StorageService } from 'src/app/services/storage.service';
 import MachineController, { ProcessedStats, bytes, FallbackConfigurations } from '../../controllers/MachineController'
 
 @Component({
@@ -35,7 +36,10 @@ export class MachineDetailPage extends MachineController implements OnInit {
   uptime: number = 0
   os: string
   stateSynced: String
-  fallbacks: FallbackConfigurations
+  fallbacks: FallbackConfigurations = {
+    eth1Configured: false,
+    eth2Configured: false
+  }
 
   validatorLabelActive: string = ""
   validatorLabelTotal: string = ""
@@ -65,11 +69,14 @@ export class MachineDetailPage extends MachineController implements OnInit {
   magicGapNumber = 60
 
   private backbuttonSubscription: Subscription;
-  constructor(private modalCtrl: ModalController) {
-    super()
+
+
+  constructor(private modalCtrl: ModalController,
+    storage: StorageService) {
+    super(storage)
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.selectionTimeFrame = this.timeframe
     const event = fromEvent(document, 'backbutton');
     this.backbuttonSubscription = event.subscribe(async () => {
@@ -91,7 +98,10 @@ export class MachineDetailPage extends MachineController implements OnInit {
       this.validatorLabelActive = "Active: " + this.getLastFrom(this.data.validator, (array) => array.validator_active)
       this.validatorLabelTotal = "Total: " + this.getLastFrom(this.data.validator, (array) => array.validator_total)
 
-      this.diskLabel = "Free Space: " + bytes(this.getLastFrom(this.data.system, (array) => array.disk_node_bytes_free), true, true, 3)
+      const lastFreeBytes = this.getLastFrom(this.data.system, (array) => array.disk_node_bytes_free)
+      const totalBytes = this.getLastFrom(this.data.system, (array) => array.disk_node_bytes_total)
+      const percent = Math.round(lastFreeBytes * 1000 / totalBytes) / 10;
+      this.diskLabel = "Free: " + bytes(lastFreeBytes, true, true, 1)  + " - " + percent + "%"
       this.beaconchainLabel = "Size: " + bytes(this.getLastFrom(this.data.node, (array) => array.disk_beaconchain_bytes_total), true, true, 3)
     
       this.peerLabel = "Peers: " + this.getLastFrom(this.data.node, (array) => array.network_peers_connected)
@@ -136,11 +146,12 @@ export class MachineDetailPage extends MachineController implements OnInit {
       this.syncLabelState = fulylSynced ? "Synced" : "Syncing..."
 
       this.syncAttention = this.getSyncAttention(this.data)
-      this.diskAttention = this.getDiskAttention(this.data)
+      this.diskAttention = await this.getDiskAttention(this.data)
 
       this.fallbacks = this.getFallbackConfigurations(this.data)
 
-      this.isBuggyPrismVersion = this.data.client == "prysm" && (!this.data.system || this.data.system.length <= 2 || this.data.system[0].cpu_cores == 0)
+      this.isBuggyPrismVersion = this.isBuggyPrysmVersion(this.data)
+      
     }
 
   }

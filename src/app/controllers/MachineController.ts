@@ -18,39 +18,16 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const bytes = (function(){
+import { HDD_THRESHOLD, StorageService } from "../services/storage.service";
 
-    var s = ['b', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
-        tempLabel = [], 
-        count;
-    
-    return function(bytes, label, isFirst, precision = 3) {
-        var e, value;
-        
-        if (bytes == 0) 
-            return 0;
-        
-        if( isFirst )
-            count = 0;
-        
-        e = Math.floor(Math.log(bytes) / Math.log(1024));
-        value = (bytes / Math.pow(1024, Math.floor(e))).toFixed(precision);
-
-        tempLabel[count] = value;        
-        if( count > 0 && Math.abs(tempLabel[count-1]-tempLabel[count])<0.0001 )
-            value = (bytes / Math.pow(1024, Math.floor(--e))).toFixed(precision);
-        
-        e = (e < 0) ? (-e) : e;
-        if (label) value += ' ' + s[e];
-        
-        count++;
-        return value;
-    }
-
-})();
+const OFFLINE_THRESHOLD = 8 * 60 * 1000
 
 
 export default class MachineController {
+
+    constructor(private store: StorageService) {
+        
+    }
 
     selectionTimeFrame: number = 180
 
@@ -329,22 +306,40 @@ export default class MachineController {
         return chartData
     }
 
-    getAnyAttention(data: ProcessedStats) {
-        let sync = this.getSyncAttention(data)
-        if (sync) return sync
-        return this.getDiskAttention(data)
+    isBuggyPrysmVersion(data: ProcessedStats): boolean {
+        return data.client == "prysm" && (!data.system || data.system.length <= 2 || data.system[0].cpu_cores == 0)
     }
 
-    protected getDiskAttention(data: ProcessedStats): string {
+    async getAnyAttention(data: ProcessedStats) {
+        let sync = this.getSyncAttention(data)
+        if (sync) return sync
+        return await this.getDiskAttention(data)
+    }
+
+    protected async getDiskAttention(data: ProcessedStats): Promise<string> {
         if(!data || !data.system) return null
         let freePercentage = this.getLastFrom(data.system, (array) => array.disk_node_bytes_free / array.disk_node_bytes_total)
+        const threshold = 100 -(await this.store.getSetting(HDD_THRESHOLD, 90))
+        console.log("HDD threshold", threshold)
 
-        if (freePercentage < 0.1) {
-            return "Your disk is almost full. There's less than 10% free space available."
+        if (freePercentage < threshold/100) {
+            return "Your disk is almost full. There's less than " + threshold + "% free space available."
         }
         
         return null
     }
+
+    async getOnlineState(data: ProcessedStats) {
+        if (!data || !data.formattedDate) return "offline";
+        const now = Date.now()
+        const diff = now - data.formattedDate.getTime()
+        if (diff > OFFLINE_THRESHOLD) return "offline"
+    
+        if (await this.getAnyAttention(data) != null) {
+          return "attention"
+        }
+        return "online"
+      }
 
     protected getSyncAttention(data: ProcessedStats): string {
         let synced = this.getLastFrom(data.node, (array) => array.sync_eth2_synced)
@@ -392,6 +387,7 @@ export default class MachineController {
 
     protected getAvgFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false, depth = 10): any {
         let data = this.getLastN(dataArray, callbackValue, isDiffPair, depth)
+        if (!data) return null
         
         let erg = data.reduce((sum, cur) => sum + cur)
        
@@ -425,17 +421,25 @@ export default class MachineController {
 
     // --- Data helper functions ---
 
+    getTimeDiff(dataSet: StatsBase[], startIndex, endIndex) {
+        return Math.abs(dataSet[startIndex].timestamp - dataSet[endIndex].timestamp)
+    }
+
     getGapSize(dataSet: StatsBase[]) {
-        return Math.abs(dataSet[dataSet.length - 2].row - dataSet[dataSet.length - 1].row)
+        if(!dataSet || dataSet.length == 0) return 60000
+        let temp = this.getTimeDiff(dataSet, dataSet.length - 2, dataSet.length - 1)
+
+        if (isNaN(temp) || temp < 30000) temp = this.getTimeDiff(dataSet, 0, 1)
+        if (isNaN(temp) || temp < 30000) temp = Math.abs(dataSet[0][0] - dataSet[1][0])
+        if (isNaN(temp) || temp < 30000) temp =  Math.abs(dataSet[dataSet.length - 2][0] - dataSet[dataSet.length - 1][0])
+        
+        if (isNaN(temp) || temp < 30000) temp = 60000
+        return temp
     }
 
     normalizeTimeframeNumber(dataSet: StatsBase[]): number {
-        let gapSize = this.getGapSize(dataSet)
-
-        if(gapSize >= 5) return 5 * 60
-        if(gapSize >= 4) return 4 * 60
-        if(gapSize >= 3) return 3 * 60
-        return 60
+        let gapSize = Math.round(this.getGapSize(dataSet) / 1000)
+        return gapSize
     }
 
     timeAxisRelative(max: any[], current: any[], inverted: boolean = false, rounding = 10) {
@@ -444,26 +448,26 @@ export default class MachineController {
             console.warn("timeAxisRelative max and current array is differently sized")
             return [] 
         }*/
+        const gapSize = this.normalizeTimeframeNumber(max)
 
         var maxOffset = 0
         var currentOffest = 0
 
-        for (var i = 0; i < max.length; i++) {
-            if (current.length <= i + currentOffest) break;
-            if (max.length <= i + maxOffset) break;
-            var curV = current[i + currentOffest]
-            var maxV = max[i + maxOffset]
+        while (true) {
+            if (current.length <= currentOffest) break;
+            if (max.length <=  maxOffset) break;
+            var curV = current[currentOffest]
+            var maxV = max[maxOffset]
 
-           /* let drift = curV[0] - maxV[0]
-            if (drift > 65000 && maxV[1] != 0) {
+            let drift = curV[0] - maxV[0]
+
+            if (drift > gapSize * 1500) {
                 maxOffset++
-                if (max.length <= i + maxOffset) break;
-                maxV = max[i + maxOffset];
-            } else if (drift < 65000 && maxV[1] != 0) {
+                continue;
+            } else if (drift < gapSize * -1500) {
                 currentOffest++;
-                if (current.length <= i + currentOffest) break;
-                curV = current[i + currentOffest]
-            }*/
+                continue;
+            }
 
             let tempValue = maxV[1] == 0 ? 0 : Math.round((curV[1] / maxV[1]) * (100 * rounding)) / rounding
             let value = inverted ? Math.round((100 - tempValue) * 10) / 10 : tempValue 
@@ -471,6 +475,9 @@ export default class MachineController {
                 maxV[0],
                 maxV[1] == 0 ? 0 : value
             ])
+
+            maxOffset++
+            currentOffest++
         }
         return result
     }
@@ -494,27 +501,23 @@ export default class MachineController {
                 
                 if (lastTimestamp != -1 && lastTimestamp + 45 * 60 * 1000 < value.timestamp) {
                     console.log("filling empty plots with zeros: ", lastTimestamp, value.timestamp)
-                    const gapPositionOffset = this.getGapPositionOffset(lastTimestamp, value.timestamp)
 
-                    result.push([
-                        lastTimestamp + gapPositionOffset,
-                        0
-                    ])
-
-                    result.push([
-                        value.timestamp - gapPositionOffset,
-                        0
-                    ])
+                    this.fillWithZeros(result, lastTimestamp, value.timestamp)
 
                     summedUp = -1
                 }
             }
 
             if (summedUp != -1 || !accumilative) {
-                result.push([
-                    value.timestamp,
-                    temp > 0 ? temp : 0
-                ])
+                if (!accumilative || summedUp * 25 > temp) {
+                    result.push([
+                        value.timestamp,
+                        temp > 0 ? temp : 0
+                    ])
+                } else {
+                    summedUp = temp
+                }
+                
             }
 
             lastTimestamp = value.timestamp
@@ -528,9 +531,15 @@ export default class MachineController {
         return result
     }
 
-    getGapPositionOffset(lastTime: number, currentTime: number): number {
-        let difference = Math.abs(currentTime - lastTime)
-        return difference / 25 // 4%
+    fillWithZeros(array: any[], from: number, to: number): any[] {
+        const interval = 60000
+        for (var i: number = from + interval; i < to - interval; i += interval){
+            array.push([
+                i,
+                0
+            ])
+        }
+        return array
     }
 
     public combineByMachineName(validator: any[], node: any[], system: any[]) {
@@ -612,6 +621,36 @@ export default class MachineController {
     }
 }
 
+export const bytes = (function(){
+
+    var s = ['b', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
+        tempLabel = [], 
+        count;
+    
+    return function(bytes, label, isFirst, precision = 3) {
+        var e, value;
+        
+        if (bytes == 0) 
+            return 0;
+        
+        if( isFirst )
+            count = 0;
+        
+        e = Math.floor(Math.log(bytes) / Math.log(1024));
+        value = (bytes / Math.pow(1024, Math.floor(e))).toFixed(precision);
+
+        tempLabel[count] = value;        
+        if( count > 0 && Math.abs(tempLabel[count-1]-tempLabel[count])<0.0001 )
+            value = (bytes / Math.pow(1024, Math.floor(--e))).toFixed(precision);
+        
+        e = (e < 0) ? (-e) : e;
+        if (label) value += ' ' + s[e];
+        
+        count++;
+        return value;
+    }
+
+})();
 
 export interface ProcessedStats extends StatsResponse {
     client: string,

@@ -432,6 +432,30 @@ export class NotificationSubsRequest extends APIRequest<ApiTokenResponse> {
   }
 }
 
+export interface BundleSub {
+  event_name: string
+  event_filter: string
+  event_threshold: number
+}
+
+export class NotificationBundleSubsRequest extends APIRequest<ApiTokenResponse> {
+  private subscribe = "subscribe"
+  private unsubscribe = "unsubscribe"
+
+  resource = "user/notifications/bundled/";
+  method = Method.POST;
+  requiresAuth = true
+  postData: any = {}
+  ignoreFails = true
+
+  constructor(enabled: boolean, data: BundleSub[]) {
+    super()
+    this.resource += (enabled ? this.subscribe : this.unsubscribe)
+    this.postData = data
+  }
+}
+
+
 export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
   resource = "user/token";
   method = Method.POST;
@@ -508,8 +532,6 @@ export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
 
 }
 
-
-
 export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse> {
   endPoint = "https://api.coinbase.com"
 
@@ -519,7 +541,7 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
 
   options = {
     cache: {
-      maxAge: 1 * 60 * 60 * 1000,
+      maxAge: 20 * 60 * 1000,
     }
   }
 

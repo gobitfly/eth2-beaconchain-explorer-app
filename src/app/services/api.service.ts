@@ -230,7 +230,7 @@ export class ApiService {
 
 
   private updateLastRefreshed(response: AxiosResponse<any>) {
-    if (response.status == 200) {
+    if (response && response.status == 200) {
       const cached = response.request.fromCache == true;
       if (!cached || this.lastRefreshed == 0) {
         this.lastRefreshed = Date.now()

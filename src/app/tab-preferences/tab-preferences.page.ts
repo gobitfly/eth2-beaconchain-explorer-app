@@ -21,7 +21,7 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import BigNumber from "bignumber.js";
-import { StorageService, SETTING_NOTIFY, SETTING_NOTIFY_SLASHED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_ATTESTATION_MISSED } from '../services/storage.service';
+import { StorageService } from '../services/storage.service';
 import { UnitconvService } from '../services/unitconv.service';
 import { OAuthUtils } from '../utils/OAuthUtils';
 import ClientUpdateUtils from '../utils/ClientUpdateUtils';
@@ -33,21 +33,19 @@ import { Plugins } from '@capacitor/core';
 import { ValidatorUtils } from '../utils/ValidatorUtils';
 import Unit, { MAPPING } from '../utils/EthereumUnits';
 import { AlertController } from '@ionic/angular';
-import { GetMobileSettingsRequest, MobileSettingsResponse } from '../requests/requests';
+
 import FirebaseUtils from '../utils/FirebaseUtils';
 import { Platform } from '@ionic/angular';
-import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
+import { AlertService } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import { LicencesPage } from '../pages/licences/licences.page';
 import { SubscribePage } from '../pages/subscribe/subscribe.page';
 import { MerchantUtils, PRODUCT_STANDARD } from '../utils/MerchantUtils';
+import { NotificationBase, LOCK_KEY } from './notification-base';
 
 const { Device } = Plugins;
 const { Browser } = Plugins;
 const { Toast } = Plugins;
-
-const LOCK_KEY = "first_time_push_v6"
-const LOCKED_STATE = "locked_v2"
 
 @Component({
   selector: 'app-tab3',
@@ -59,14 +57,6 @@ export class Tab3Page {
   fadeIn = "invisible"
 
   darkMode: boolean
-  notify: boolean
-
-  notifySlashed: boolean
-  notifyDecreased: boolean
-  notifyClientUpdate: boolean
-  notifyProposalsSubmitted: boolean
-  notifyProposalsMissed: boolean
-  notifyAttestationsMissed: boolean
 
   eth1client: string
   eth2client: string
@@ -84,10 +74,6 @@ export class Tab3Page {
   appVersion: string
 
   debug = false
-
-  blocked = false
-
-  notifyInitialized = false
 
   snowing: boolean
 
@@ -113,11 +99,12 @@ export class Tab3Page {
     public platform: Platform,
     protected alerts: AlertService,
     protected sync: SyncService,
-    protected merchant: MerchantUtils
+    protected merchant: MerchantUtils,
+    protected notificationBase: NotificationBase
   ) { }
 
   ngOnInit() {
-    this.notifyInitialized = false
+    
     this.theme.isDarkThemed().then((result) => this.darkMode = result)
     this.theme.getThemeColor().then((result) => this.themeColor = result)
 
@@ -125,7 +112,6 @@ export class Tab3Page {
     this.updateUtils.getETH2Client().then((result) => this.eth2client = result)
     this.updateUtils.getUpdateChannel().then((result) => this.updateChannel = result)
 
-    this.loadNotifyToggles()
     this.theme.isWinterEnabled().then((result) => this.snowing = result)
 
     this.allCurrencies = this.getAllCurrencies()
@@ -144,18 +130,12 @@ export class Tab3Page {
       }
 
     })
+    this.notificationBase.disableToggleLock()
 
     this.fadeIn = "fade-in"
     setTimeout(() => {
       this.fadeIn = null
     }, 1500)
-  }
-
-  // changes a toggle without triggering onChange
-  protected lockedToggle = true;
-  protected changeToggleSafely(func: () => void) {
-    this.lockedToggle = true;
-    func()
   }
 
   changeWidgetTheme() {
@@ -170,7 +150,6 @@ export class Tab3Page {
       this.theme.toggle(this.darkMode, true, this.themeColor)
       this.themeColorLock = false;
     }, 250)
-    
   }
 
   widgetSetupInfo() {
@@ -211,58 +190,6 @@ export class Tab3Page {
     })
   }
 
-  private async loadNotifyToggles() {
-    const net = (await this.api.networkConfig).net
-    
-    // locking toggle so we dont execute onChange when setting initial values
-    const preferences = await this.storage.getNotificationTogglePreferences(net)
-
-    this.lockedToggle = true
-    this.notifySlashed = preferences.notifySlashed
-
-    this.notifyDecreased = preferences.notifyDecreased
-
-    this.notifyClientUpdate = preferences.notifyClientUpdate
-
-    this.notifyProposalsSubmitted = preferences.notifyProposalsSubmitted
-    this.notifyProposalsMissed = preferences.notifyProposalsMissed
-
-    this.notifyAttestationsMissed = preferences.notifyAttestationsMissed
-
-    if (await this.api.isNotMainnet()) {
-      this.lockedToggle = true
-      this.notify = preferences.notify
-      this.notifyInitialized = true;
-      this.disableToggleLock()
-      return;
-    }
-
-    await this.getNotificationSetting(preferences.notify).then((result) => {
-      this.lockedToggle = true
-      this.notify = result
-      this.disableToggleLock()
-    })
-
-    this.disableToggleLock()
-
-    this.notifyInitialized = true;
-
-    const remoteNofiy = await this.getRemoteNotificationSetting(preferences.notify)
-    if (remoteNofiy != this.notify) {
-      this.lockedToggle = true
-      this.notify = remoteNofiy
-      this.disableToggleLock()
-    }
-
-    setTimeout(() => this.firstTimePushAllNotificationSettings(), 500)
-  }
-
-  protected disableToggleLock() {
-    setTimeout(() => {
-      this.lockedToggle = false
-    }, 300)
-  }
-
   private getAllCurrencies() {
     const erg = []
     MAPPING.forEach((value: Unit, key) => {
@@ -277,59 +204,6 @@ export class Tab3Page {
 
   darkModeToggle() {
     this.theme.toggle(this.darkMode)
-  }
-
-  private async getDefaultNotificationSetting() {
-    if (this.platform.is("ios")) return false // iOS users need to grant notification permission first
-    else return await this.firebaseUtils.hasNotificationToken() // on Android, enable as default when token is present
-  }
-
-  // Android registers firebase service at app start
-  // So if there is no token present when enabling notifications,
-  // there might be no google play services on this device
-  private async isSupportedOnAndroid() {
-    if (this.platform.is("android")) {
-      const hasToken = await this.firebaseUtils.hasNotificationToken()
-      if (!hasToken) {
-        this.alerts.showError(
-          "Play Service",
-          "We could not enable notifications for your device which might be due to missing Google Play Services. Please note that notifications do not work without Google Play Services.",
-          SETTINGS_PAGE + 2
-        )
-        this.changeToggleSafely(() => { this.notify = false })
-        return false
-      }
-    }
-    return true
-  }
-
-  async notifyToggle() {
-    if (this.lockedToggle) {
-      return;
-    }
-
-    if (!(await this.isSupportedOnAndroid())) return
-
-    if (await this.firebaseUtils.hasConsentDenied()) {
-      this.changeToggleSafely(() => { this.notify = false })
-      this.firebaseUtils.alertIOSManuallyEnableNotifications()
-      return
-    }
-
-    if (await this.api.isNotMainnet()) {
-      this.notifyAttestationsMissed = this.notify
-      this.notifyDecreased = this.notify
-      this.notifyProposalsMissed = this.notify
-      this.notifyProposalsSubmitted = this.notify
-      this.notifySlashed = this.notify
-
-      const net = (await this.api.networkConfig).net
-      this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
-    } else {
-      this.sync.changeGeneralNotify(this.notify)
-    }
-
-    if (this.notify) this.firebaseUtils.registerPush(true)
   }
 
   overrideDisplayCurrency = null
@@ -357,90 +231,6 @@ export class Tab3Page {
     })
   }
 
-  private async getRemoteNotificationSetting(notifyLocalStore): Promise<boolean> {
-    const local = await this.getNotificationSetting(notifyLocalStore)
-    const remote = await this.getRemoteNotificationSettingResponse()
-
-    if (remote) {
-      console.log("Returning notification enabled remote state:", remote.notify_enabled)
-      return remote.notify_enabled
-    }
-    return local
-  }
-
-  private async getNotificationSetting(notifyLocalStore): Promise<boolean> {
-    const local = (notifyLocalStore != null) ? notifyLocalStore : await this.getDefaultNotificationSetting()
-
-    console.log("Returning notification enabled local state:", local)
-    return local
-  }
-
-  private async getRemoteNotificationSettingResponse(): Promise<MobileSettingsResponse> {
-    const request = new GetMobileSettingsRequest()
-    const response = await this.api.execute(request)
-    const result = request.parse(response)
-    if (result && result.length >= 1) return result[0]
-    return null
-  }
-
-  private async firstTimePushAllNotificationSettings() {
-    if (!this.notify) return
-
-    const locked = await this.storage.getItem(LOCK_KEY)
-    if (locked && locked == LOCKED_STATE) return;
-
-    console.log("firstTimePushAllNotificationSettings is running")
-
-    this.notifyEventToggle("validator_balance_decreased")
-    this.notifyEventToggle("validator_got_slashed")
-    this.notifyClientUpdates()
-
-    //const v3LockPresent = await this.storage.getItem("first_time_push_v3")
-    //if (!v3LockPresent) {
-    this.notifyEventToggle("validator_proposal_submitted")
-    this.notifyEventToggle("validator_proposal_missed")
-    // }
-
-    this.notifyEventToggle("validator_attestation_missed")
-
-    this.storage.setItem(LOCK_KEY, LOCKED_STATE)
-  }
-
-  private getNotifySettingName(eventName: string): string {
-    switch (eventName) {
-      case "validator_balance_decreased": return SETTING_NOTIFY_DECREASED
-      case "validator_got_slashed": return SETTING_NOTIFY_SLASHED
-      case "validator_proposal_submitted": return SETTING_NOTIFY_PROPOSAL_SUBMITTED
-      case "validator_proposal_missed": return SETTING_NOTIFY_PROPOSAL_MISSED
-      case "validator_attestation_missed": return SETTING_NOTIFY_ATTESTATION_MISSED
-      default: return null
-    }
-  }
-
-  private getToggleFromEvent(eventName) {
-    switch (eventName) {
-      case "validator_balance_decreased": return this.notifyDecreased
-      case "validator_got_slashed": return this.notifySlashed
-      case "validator_proposal_submitted": return this.notifyProposalsSubmitted
-      case "validator_proposal_missed": return this.notifyProposalsMissed
-      case "validator_attestation_missed": return this.notifyAttestationsMissed
-      default: return false
-    }
-  }
-
-  async notifyEventToggle(eventName) {
-    console.log("notifyEventToggle", this.lockedToggle)
-    if (this.lockedToggle) {
-      return;
-    }
-
-    this.sync.changeNotifyEvent(
-      this.getNotifySettingName(eventName),
-      eventName,
-      this.getToggleFromEvent(eventName)
-    )
-  }
-
   rateApp() {
     if (this.platform.is("android")) {
       window.open('market://details?id=in.beaconcha.mobile', '_system', 'location=yes');
@@ -450,7 +240,7 @@ export class Tab3Page {
   }
 
   changeUpdateChannel() {
-    if (this.lockedToggle) {
+    if (this.notificationBase.lockedToggle) {
       return;
     }
 
@@ -459,7 +249,7 @@ export class Tab3Page {
   }
 
   async changeETH2Client() {
-    if (this.lockedToggle) {
+    if (this.notificationBase.lockedToggle) {
       return;
     }
 
@@ -468,7 +258,7 @@ export class Tab3Page {
   }
 
   async changeETH1Client() {
-    if (this.lockedToggle) {
+    if (this.notificationBase.lockedToggle) {
       return;
     }
 
@@ -476,16 +266,6 @@ export class Tab3Page {
     this.updateUtils.checkUpdates()
   }
 
-  notifyClientUpdates() {
-    if (this.lockedToggle) {
-      return;
-    }
-
-    this.sync.changeNotifyClientUpdate(
-      SETTING_NOTIFY_CLIENTUPDATE,
-      this.notifyClientUpdate
-    )
-  }
 
   async openBrowser(link, native: boolean = false) {
     if (native) {
@@ -525,7 +305,7 @@ export class Tab3Page {
     await this.sync.fullSync()
     await this.storage.setNetworkPreferences(newConfig)
     await this.api.updateNetworkConfig()
-    await this.loadNotifyToggles()
+    await this.notificationBase.loadNotifyToggles()
     this.validatorUtils.notifyListeners()
   }
 

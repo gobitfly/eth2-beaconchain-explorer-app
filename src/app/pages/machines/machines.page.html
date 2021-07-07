@@ -38,21 +38,21 @@
 
       <app-machinechart priority="true" [title]="key ? key : 'Machine'" [subtitleLeft]="data[key] | delegate: clientFormatter"
         [subtitleRight]="data[key].formattedDate | date:'short'"
-        [icon]="data[key] | delegate: onlineStateDelegate" [key]="key"
+        [icon]="data[key] | delegate: onlineStateDelegate | async" [key]="key"
         [clickAction]="key | delegate: machineClickDelegate"
         [chartData]="data[key] | delegate: cpuDelegate" [hidden]="selectedChart != 'cpu'">
       </app-machinechart>
 
       <app-machinechart [title]="key ? key : 'Machine'" [subtitleLeft]="data[key] | delegate: clientFormatter"
         [subtitleRight]="data[key].formattedDate | date:'short'"
-        [icon]="data[key] | delegate: onlineStateDelegate" [key]="key"
+        [icon]="data[key] | delegate: onlineStateDelegate | async" [key]="key"
         [clickAction]="key | delegate: machineClickDelegate"
         [chartData]="data[key] | delegate: memoryDelegate" [hidden]="selectedChart != 'memory'">
       </app-machinechart>
 
       <app-machinechart [title]="key ? key : 'Machine'" [subtitleLeft]="data[key] | delegate: clientFormatter"
         [subtitleRight]="data[key].formattedDate | date:'short'"
-        [icon]="data[key] | delegate: onlineStateDelegate" [key]="key"
+        [icon]="data[key] | delegate: onlineStateDelegate | async" [key]="key"
         [clickAction]="key | delegate: machineClickDelegate"
         [chartData]="data[key] | delegate: syncDelegate" [hidden]="selectedChart != 'sync'">
       </app-machinechart>

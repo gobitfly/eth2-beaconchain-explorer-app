@@ -260,33 +260,6 @@ export class ValidatorUtils extends CacheModule {
         })
     }
 
-    async postNotifySub(eventName: string, filter: string = null, enabled, silent = true, network: string): Promise<boolean> {
-        const loggedIn = await this.storage.isLoggedIn()
-        if (!loggedIn) return false
-
-        const request = new NotificationSubsRequest(eventName, filter, enabled); // this.getToggleFromEvent(eventName)
-        if (network) {
-            request.endPoint = network
-        }
-
-        const response = await this.api.execute(request)
-        const result = request.wasSuccessfull(response)
-        if (!result) {
-            console.warn("Error chaning notification event subscription")
-            if (!silent) {
-                this.alerts.showError(
-                    "Sorry",
-                    "Your notification setting could not be synced. Please try it again in a couple minutes.",
-                    VALIDATORUTILS + 1
-                )
-            }
-
-            return false
-        }
-
-        return true
-    }
-
     // checks if remote validators are already known locally.
     // If not, return all indizes of non locally known validators
     public async getAllNewIndizesOnly(myRemotes: MyValidatorResponse[]): Promise<number[]> {

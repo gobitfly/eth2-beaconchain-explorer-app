@@ -107,6 +107,12 @@ export default class ThemeUtils {
         this.toggleWinter(await this.isWinterEnabled(), false)
     }
 
+    resetTheming() {
+        this.undoColor()
+        this.colorHandler()
+        this.storage.setObject(STORAGE_KEY, { theme: this.userPreference, themeColor: "" })
+    }
+
     async isWinterEnabled() {
         if (!this.isWinterSeason()) return false;
         const temp = (await this.storage.getBooleanSetting("snow_enabled", true))
@@ -179,14 +185,16 @@ export default class ThemeUtils {
     }
 
     private async changeNavigationBarColor(isDarkThemed) {
-        if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#000000' });
-        else NavigationBar.setBackgroundColor({ color: '#f7f7f7' });
+        try {
+            if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#000000' });
+            else NavigationBar.setBackgroundColor({ color: '#f7f7f7' });
+        } catch(e){}
     }
 
     private async changeStatusBarColor(color, isDarkThemed) {
         if (this.platform.is("android")) {
             const darker = isDarkThemed ? "#000000" : this.shadeColor(color, -12)
-
+            console.log("statusbar color", darker)
             StatusBar.setStyle({
                 style: StatusBarStyle.Dark
             });
