@@ -56,6 +56,12 @@ ion-button {
   --box-shadow: none;
 }
 
+.bigger-alert {
+  .alert-message.sc-ion-alert-md {
+    max-height: 335px !important;
+  } 
+}
+
 .fixed-content {
   background: #dedede;
 }

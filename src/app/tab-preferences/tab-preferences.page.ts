@@ -42,6 +42,7 @@ import { LicencesPage } from '../pages/licences/licences.page';
 import { SubscribePage } from '../pages/subscribe/subscribe.page';
 import { MerchantUtils, PRODUCT_STANDARD } from '../utils/MerchantUtils';
 import { NotificationBase, LOCK_KEY } from './notification-base';
+import { Router } from '@angular/router';
 
 const { Device } = Plugins;
 const { Browser } = Plugins;
@@ -100,7 +101,8 @@ export class Tab3Page {
     protected alerts: AlertService,
     protected sync: SyncService,
     protected merchant: MerchantUtils,
-    protected notificationBase: NotificationBase
+    protected notificationBase: NotificationBase,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -142,6 +144,10 @@ export class Tab3Page {
     
   }
 
+  gotoNotificationPage() {
+    this.router.navigate(['/notifications'])
+  }
+
   themeColorLock = false
   changeThemeColor() {
     this.themeColorLock = true;
@@ -178,7 +184,8 @@ export class Tab3Page {
 
     this.alerts.showInfo(
       "Widget Setup",
-      tutorialText
+      tutorialText,
+      "bigger-alert"
     )
   }
 

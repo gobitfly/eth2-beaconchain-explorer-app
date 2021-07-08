@@ -205,7 +205,7 @@
       </ion-label>
     </ion-item>
 
-    <ion-item lines="none" [disabled]="!authUser" [routerLink]="['/notifications']">
+    <ion-item lines="none" [disabled]="!authUser" (click)="gotoNotificationPage()">
       <ion-icon slot="start" name="notifications-outline"></ion-icon>
       <ion-label>Notification Preferences</ion-label>
       <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
