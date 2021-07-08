@@ -58,8 +58,9 @@ export class AlertService {
     await alert.present();
   }
 
-  async showInfo(title: string, message: string) {
+  async showInfo(title: string, message: string, customCss: ("" | "bigger-alert") = "") {
     const alert = await this.alertController.create({
+      cssClass: customCss,
       header: title,
       message: message,
       buttons: ["OK"]
