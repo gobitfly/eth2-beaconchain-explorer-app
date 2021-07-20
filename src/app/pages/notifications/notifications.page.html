@@ -93,7 +93,7 @@
   </ion-list>
 
   <ion-list-header>
-    <ion-label>Machines</ion-label>
+    <ion-label>Monitoring</ion-label>
   </ion-list-header>
 
   <ion-list>
@@ -156,6 +156,26 @@
     <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="cpuThreshold" _ngcontent-ves-c134="" min="10" max="99" step="1" ng-reflect-min="10" ng-reflect-max="99" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="90" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="90"></ion-range>
 
     <ion-note slot="end">≥ {{ cpuThreshold }} %</ion-note>
+</ion-item>
+
+
+<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
+  <ion-icon slot="start"name="server-outline"></ion-icon>
+ 
+  <ion-label>
+    Memory Usage
+  </ion-label>
+  <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyMachineMemoryLoad" (ionChange)="changeMemoryNotification()"
+    slot="end"></ion-toggle>
+</ion-item>
+
+<ion-item [class]="!notifyMachineMemoryLoad || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+  <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
+  <ion-range *ngIf="canCustomizeThresholds" min="10" max="99" step="1" [(ngModel)]="memoryThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeMemoryNotification()" (touchend)="changeMemoryNotification()">
+  </ion-range>
+  <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="memoryThreshold" _ngcontent-ves-c134="" min="10" max="99" step="1" ng-reflect-min="10" ng-reflect-max="99" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="90" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="90"></ion-range>
+
+  <ion-note slot="end">≥ {{ memoryThreshold }} %</ion-note>
 </ion-item>
 
 

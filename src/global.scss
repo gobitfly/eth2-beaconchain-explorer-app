@@ -60,6 +60,16 @@ ion-button {
   .alert-message.sc-ion-alert-md {
     max-height: 335px !important;
   } 
+  .alert-message.sc-ion-alert-ios {
+    max-height: 335px !important;
+  } 
+
+  .alert-wrapper.sc-ion-alert-md {
+    min-width: 340px !important;
+  }
+  .alert-wrapper.sc-ion-alert-ios {
+    min-width: 340px !important;
+  }
 }
 
 .fixed-content {
