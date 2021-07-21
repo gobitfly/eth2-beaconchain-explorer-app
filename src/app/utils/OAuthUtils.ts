@@ -31,6 +31,7 @@ import { SyncService } from '../services/sync.service';
 import { MerchantUtils } from "./MerchantUtils";
 
 const { Toast } = Plugins;
+const { Device } = Plugins;
 
 @Injectable({
   providedIn: 'root'
@@ -105,30 +106,49 @@ export class OAuthUtils {
     });
   }
 
+  public hashCode(string: string): string {
+    var hash = 0;
+    for (var i = 0; i < string.length; i++) {
+        var character = string.charCodeAt(i);
+        hash = ((hash << 5) - hash) + character;
+        hash = hash & hash;
+    }
+    return hash.toString(16);
+  }
+
   private async getOAuthOptions() {
     const api = this.api
     const endpointUrl = await api.getResourceUrl("user/token")
+
+    const info = await Device.getInfo().catch(() => { return { uuid: "iduno" }})
+    let clientID = this.hashCode(info.uuid)
+    while (clientID.length <= 5) {
+      clientID += "0"
+    }
+
+    const responseType = "code"
+    const callback = "beaconchainmobile://callback"
 
     return {
       authorizationBaseUrl: await api.getBaseUrl() + "/user/authorize",
       accessTokenEndpoint: endpointUrl,
       web: {
-        appId: "sasf",
-        responseType: "code",
-        redirectUrl: "beaconchainmobile://callback",
+        appId: clientID,
+        responseType: responseType,
+        redirectUrl: callback,
         windowOptions: "height=600,left=0,top=0",
       },
       android: {
-        appId: "sasf",
-        responseType: "code",
-        redirectUrl: "beaconchainmobile://callback",
+        appId: clientID,
+        responseType: responseType,
+        redirectUrl: callback,
         handleResultOnNewIntent: true,
         handleResultOnActivityResult: true
       },
       ios: {
-        appId: "sasf",
-        responseType: "code",
-        redirectUrl: "beaconchainmobile://callback",
+        appId: clientID,
+        responseType: responseType,
+        redirectUrl: callback,
       },
     };
   }

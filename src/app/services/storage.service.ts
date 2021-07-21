@@ -62,6 +62,13 @@ export class StorageService extends CacheModule {
 
   // --- upper level helper ---
 
+  async backupAuthUser() {
+    return this.setObject(AUTH_USER + "_backup", await this.getAuthUser());
+  }
+
+  async restoreAuthUser() {
+    return this.setAuthUser(await this.getObject(AUTH_USER + "_backup"))
+  }
 
   async getAuthUser(): Promise<StorageTypes.AuthUser> {
     return this.getObject(AUTH_USER);
