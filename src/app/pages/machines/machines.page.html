@@ -26,7 +26,7 @@
 
   <ion-item class="top-bar" *ngIf="!this.data || showData" (click)="openTimeSelection()">
     <ion-label>Last {{ this.selectedTimeFrame }}</ion-label>
-    <ion-icon slot="end" name="time-outline"></ion-icon>
+    <ion-icon class="opacity-icon" slot="end" name="time-outline"></ion-icon>
   </ion-item>
 
   <div *ngIf="this.data && showData">
@@ -78,7 +78,7 @@
 
   <div *ngIf="this.data && !showData">
     <div class="nothingfound">
-      <ion-icon name="pulse-outline"></ion-icon><br/>
+      <ion-icon class="opacity-icon" name="pulse-outline"></ion-icon><br/>
       <ion-label><strong class="title">Machine Monitoring</strong></ion-label><br /><br />
 
       <ion-label>Monitor your eth2 staking machines on the go.</ion-label>

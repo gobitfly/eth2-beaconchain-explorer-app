@@ -40,11 +40,11 @@
   <ion-item *ngIf="items && !loading && initialized" class="top-bar" [class]="fadeIn">
     <ion-label *ngIf="searchResultMode" i18n="Search Results">Search Results</ion-label>
     <ion-label *ngIf="!searchResultMode" i18n="My Validators">My Validators</ion-label>
-    <ion-icon slot="end" name="bookmarks-outline" (click)="addAllDialog()"
+    <ion-icon class="opacity-icon" slot="end" name="bookmarks-outline" (click)="addAllDialog()"
       *ngIf="searchResultMode && this.items && items.length > 1"></ion-icon>
-    <ion-icon slot="end" name="close-circle-outline" (click)="removeAllDialog()"
+    <ion-icon class="opacity-icon" slot="end" name="close-circle-outline" (click)="removeAllDialog()"
       *ngIf="!searchResultMode && this.items && items.length > 1"></ion-icon>
-    <ion-icon slot="end" name="sync-circle-outline" (click)="syncRemote()"
+    <ion-icon class="opacity-icon" slot="end" name="sync-circle-outline" (click)="syncRemote()"
       *ngIf="isLoggedIn && !searchResultMode && this.items && items.length >= 0"></ion-icon>
   </ion-item>
 
