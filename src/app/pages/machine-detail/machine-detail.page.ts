@@ -61,6 +61,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
   syncAttention: string = null
   diskAttention: string = null
+  memoryAttention: string = null
   syncLabelState: string = ""
   syncLabelEth1Connected: string = ""
 
@@ -147,6 +148,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
       this.syncAttention = this.getSyncAttention(this.data)
       this.diskAttention = await this.getDiskAttention(this.data)
+      this.memoryAttention = await this.getMemoryAttention(this.data)
 
       this.fallbacks = this.getFallbackConfigurations(this.data)
 
@@ -181,7 +183,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
     this.scrolling = false
   }
 
-  public doBeaconchainSizeChart(current): any[] {
+  public doBeaconchainSizeChart(current: ProcessedStats): any[] {
     const chartData = []
 
     if (current && current.node) {
@@ -200,7 +202,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
     return chartData
   }
 
-  public doPeerCharts(current): any[] {
+  public doPeerCharts(current: ProcessedStats): any[] {
     const chartData = []
 
     if (current && current.node) {
@@ -219,7 +221,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
     return chartData
   }
 
-  public doDiskCharts(current): any[] {
+  public doDiskCharts(current: ProcessedStats): any[] {
     const chartData = []
 
     if (!current) return chartData;
@@ -242,7 +244,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
     return chartData
   }
 
-  public doValidatorChart(current): any[] {
+  public doValidatorChart(current: ProcessedStats): any[] {
     const chartData = []
 
     if (current && current.validator) {
@@ -278,7 +280,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
     return chartData
   }
 
-  public doDiskIoUsageCharts(current): any[] {
+  public doDiskIoUsageCharts(current: ProcessedStats): any[] {
     const chartData = []
 
     if (!current) return chartData;
@@ -308,7 +310,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
     return chartData
   }
 
-  public doNetworkCharts(current): any[] {
+  public doNetworkCharts(current: ProcessedStats): any[] {
     const chartData = []
 
     if (!current) return chartData;
@@ -345,7 +347,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
     return chartData
   }
 
-  public doCPUSystemCharts(current): any[] {
+  public doCPUSystemCharts(current: ProcessedStats): any[] {
     const chartData = []
 
     if (!current) return chartData;
@@ -420,7 +422,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
     return chartData
   }
 
-  public doMemorySystemCharts(current): any[] {
+  public doMemorySystemCharts(current: ProcessedStats): any[] {
     const chartData = []
 
     if (!current) return chartData;

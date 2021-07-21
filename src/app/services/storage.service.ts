@@ -42,9 +42,11 @@ export const SETTING_NOTIFY_CLIENTUPDATE = "setting_notify_clientupdate"
 export const SETTING_NOTIFY_MACHINE_OFFLINE = "setting_notify_machineoffline"
 export const SETTING_NOTIFY_HDD_WARN = "setting_notify_hddwarn"
 export const SETTING_NOTIFY_CPU_WARN = "setting_notify_cpuwarn"
+export const SETTING_NOTIFY_MEMORY_WARN = "setting_notify_memorywarn"
 
 export const CPU_THRESHOLD = "cpu_usage_threshold"
 export const HDD_THRESHOLD = "hdd_usage_threshold"
+export const RAM_THRESHOLD = "ram_usage_threshold"
 
 export const DEBUG_SETTING_OVERRIDE_PACKAGE = "debug_setting_override_package"
 
@@ -60,6 +62,13 @@ export class StorageService extends CacheModule {
 
   // --- upper level helper ---
 
+  async backupAuthUser() {
+    return this.setObject(AUTH_USER + "_backup", await this.getAuthUser());
+  }
+
+  async restoreAuthUser() {
+    return this.setAuthUser(await this.getObject(AUTH_USER + "_backup"))
+  }
 
   async getAuthUser(): Promise<StorageTypes.AuthUser> {
     return this.getObject(AUTH_USER);
@@ -118,6 +127,7 @@ export class StorageService extends CacheModule {
     const notifyMachineOffline = await this.getBooleanSetting(SETTING_NOTIFY_MACHINE_OFFLINE, false)
     const notifyMachineHddWarn = await this.getBooleanSetting(SETTING_NOTIFY_HDD_WARN, false)
     const notifyMachineCpuWarn = await this.getBooleanSetting(SETTING_NOTIFY_CPU_WARN, false)
+    const notifyMachineMemoryLoad = await this.getBooleanSetting(SETTING_NOTIFY_MEMORY_WARN, false)
 
     const notifyLocal = await this.getBooleanSetting(network + SETTING_NOTIFY, null)
     return {
@@ -130,7 +140,8 @@ export class StorageService extends CacheModule {
       notifyAttestationsMissed: notifyAttestationsMissed,
       notifyMachineOffline: notifyMachineOffline,
       notifyMachineHddWarn: notifyMachineHddWarn,
-      notifyMachineCpuWarn: notifyMachineCpuWarn
+      notifyMachineCpuWarn: notifyMachineCpuWarn,
+      notifyMachineMemoryLoad: notifyMachineMemoryLoad
     }
   }
 
@@ -302,4 +313,5 @@ interface NotificationToggles {
   notifyMachineOffline: boolean;
   notifyMachineHddWarn: boolean;
   notifyMachineCpuWarn: boolean;
+  notifyMachineMemoryLoad: boolean;
 }

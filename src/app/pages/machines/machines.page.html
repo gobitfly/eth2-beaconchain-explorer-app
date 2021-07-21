@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title (click)="easterEgg()">Machines</ion-title>
+    <ion-title>Monitoring</ion-title>
   </ion-toolbar>
   <ion-segment [(ngModel)]="selectedChart" mode="md" scrollable="true">
     <ion-segment-button value="cpu" [disabled]="scrolling"
@@ -26,10 +26,26 @@
 
   <ion-item class="top-bar" *ngIf="!this.data || showData" (click)="openTimeSelection()">
     <ion-label>Last {{ this.selectedTimeFrame }}</ion-label>
-    <ion-icon slot="end" name="time-outline"></ion-icon>
+    <ion-icon class="opacity-icon" slot="end" name="time-outline"></ion-icon>
   </ion-item>
 
   <div *ngIf="this.data && showData">
+    <ion-card *ngIf="legacyApi" class="sync-alert-container">
+      <ion-card-header>
+        <ion-card-title class="sync-alert" style="font-weight: bold;">
+          <ion-icon name="warning-outline" class="sync-alert alert-icon" style="margin-bottom: 4px; margin-right:15px;"></ion-icon>
+          <span style="padding-bottom: 5px;">Attention</span>
+          <ion-icon (click)="closeLegacyApiDialog()" name="close-outline" class="sync-alert alert-icon" style="float:right; margin-bottom: 4px; margin-right:5px;"></ion-icon>
+
+        </ion-card-title>
+      </ion-card-header>
+    
+      <ion-card-content (click)="legacyApiMigrateDialog()">
+        <ion-label class="alert-text">You may be using an old monitoring endpoint on your machine. Click here for more info on how to migrate to continue using this feature.</ion-label>
+      </ion-card-content>
+    </ion-card>
+
+
     <div style="margin-top:0px; margin-bottom:10px;" *ngIf="!hasHistoryPremium">
       <app-text-ad location="machines"></app-text-ad>  
     </div>
@@ -62,7 +78,7 @@
 
   <div *ngIf="this.data && !showData">
     <div class="nothingfound">
-      <ion-icon name="pulse-outline"></ion-icon><br/>
+      <ion-icon class="opacity-icon" name="pulse-outline"></ion-icon><br/>
       <ion-label><strong class="title">Machine Monitoring</strong></ion-label><br /><br />
 
       <ion-label>Monitor your eth2 staking machines on the go.</ion-label>

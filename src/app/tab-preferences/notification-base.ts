@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
-import { SETTING_NOTIFY, SETTING_NOTIFY_ATTESTATION_MISSED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_SLASHED, StorageService } from 'src/app/services/storage.service';
+import { SETTING_NOTIFY, SETTING_NOTIFY_ATTESTATION_MISSED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_SLASHED, StorageService } from 'src/app/services/storage.service';
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
@@ -29,6 +29,7 @@ export class NotificationBase implements OnInit {
   notifyMachineOffline: boolean
   notifyMachineDiskFull: boolean
   notifyMachineCpuLoad: boolean
+  notifyMachineMemoryLoad: boolean
 
   constructor(
     protected api: ApiService,
@@ -96,6 +97,7 @@ export class NotificationBase implements OnInit {
     this.notifyMachineCpuLoad = preferences.notifyMachineCpuWarn
     this.notifyMachineDiskFull = preferences.notifyMachineHddWarn
     this.notifyMachineOffline = preferences.notifyMachineOffline
+    this.notifyMachineMemoryLoad = preferences.notifyMachineMemoryLoad
 
     if (await this.api.isNotMainnet()) {
       this.lockedToggle = true
@@ -238,6 +240,7 @@ export class NotificationBase implements OnInit {
       case "monitoring_machine_offline": return SETTING_NOTIFY_MACHINE_OFFLINE
       case "monitoring_cpu_load": return SETTING_NOTIFY_CPU_WARN
       case "monitoring_hdd_almostfull": return SETTING_NOTIFY_HDD_WARN
+      case "monitoring_memory_usage": return SETTING_NOTIFY_MEMORY_WARN
       default: return null
     }
   }
@@ -252,6 +255,7 @@ export class NotificationBase implements OnInit {
       case "monitoring_machine_offline": return this.notifyMachineOffline
       case "monitoring_cpu_load": return this.notifyMachineCpuLoad
       case "monitoring_hdd_almostfull": return this.notifyMachineDiskFull
+      case "monitoring_memory_usage": return this.notifyMachineMemoryLoad
       default: return null
     }
   }

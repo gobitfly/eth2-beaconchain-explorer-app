@@ -137,4 +137,17 @@ export class DevPage extends Tab3Page implements OnInit {
     await alert.present();
   }
 
+  async restoreAuthUser() {
+    let result = await this.storage.restoreAuthUser()
+    this.alerts.confirmDialog("Success", "Restart app with restored user?", "OK", () => { this.restartApp() })
+  }
+
+  async backupAuthUser() {
+    let result = await this.storage.backupAuthUser()
+    console.log("backup success")
+    Toast.show({
+      text: 'Backup successfull'
+    });
+  }
+
 }

@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { HDD_THRESHOLD, StorageService } from "../services/storage.service";
+import { HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from "../services/storage.service";
 
 const OFFLINE_THRESHOLD = 8 * 60 * 1000
 
@@ -86,7 +86,7 @@ export default class MachineController {
     }
 
 
-    public doMemoryCharts(current): any[] {
+    public doMemoryCharts(current: ProcessedStats): any[] {
         const chartData = []
 
         if (current && current.system) {
@@ -127,7 +127,7 @@ export default class MachineController {
         return chartData
     }
 
-    public doCPUCharts(current): any[] {
+    public doCPUCharts(current: ProcessedStats): any[] {
         const chartData = []
 
         if (!current) return chartData
@@ -226,7 +226,7 @@ export default class MachineController {
         }
     }
 
-    public doSyncCharts(current): any[] {
+    public doSyncCharts(current: ProcessedStats): any[] {
         const chartData = []
 
         let fallbacks = this.getFallbackConfigurations(current)
@@ -313,7 +313,9 @@ export default class MachineController {
     async getAnyAttention(data: ProcessedStats) {
         let sync = this.getSyncAttention(data)
         if (sync) return sync
-        return await this.getDiskAttention(data)
+        let disk = await this.getDiskAttention(data)
+        if(disk) return disk
+        return await this.getMemoryAttention(data)
     }
 
     protected async getDiskAttention(data: ProcessedStats): Promise<string> {
@@ -324,6 +326,19 @@ export default class MachineController {
 
         if (freePercentage < threshold/100) {
             return "Your disk is almost full. There's less than " + threshold + "% free space available."
+        }
+        
+        return null
+    }
+
+    protected async getMemoryAttention(data: ProcessedStats): Promise<string> {
+        if(!data || !data.system) return null
+        let usagePercentage = 1 - this.getLastFrom(data.system, (array) => (array.memory_node_bytes_free + array.memory_node_bytes_buffers + array.memory_node_bytes_cached) / array.memory_node_bytes_total)
+        const threshold = await this.store.getSetting(RAM_THRESHOLD, 80)
+        console.log("RAM threshold", threshold, usagePercentage)
+
+        if (usagePercentage > threshold/100) {
+            return "Your RAM usage exceeded " + threshold + "% of the available space."
         }
         
         return null
@@ -365,7 +380,7 @@ export default class MachineController {
         return null
     }
 
-    protected getLastN(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false, depth = 10) {
+    protected getLastN<T>(dataArray: T[], callbackValue: (array: T) => any, isDiffPair: boolean = false, depth = 10) {
         var erg = []
         if (!dataArray) return null
         const length = Math.min(dataArray.length, depth)
@@ -385,7 +400,7 @@ export default class MachineController {
     }
 
 
-    protected getAvgFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false, depth = 10): any {
+    protected getAvgFrom<T>(dataArray: T[], callbackValue: (array: T) => any, isDiffPair: boolean = false, depth = 10): any {
         let data = this.getLastN(dataArray, callbackValue, isDiffPair, depth)
         if (!data) return null
         
@@ -409,7 +424,7 @@ export default class MachineController {
         return Math.round((erg / length) * 10000) / 10000
     }
 
-    protected getLastFrom(dataArray: any[], callbackValue: (array) => any, isDiffPair: boolean = false): any {
+    protected getLastFrom<T>(dataArray: T[], callbackValue: (array: T) => any, isDiffPair: boolean = false): any {
         if (!dataArray || dataArray.length <= 0) return null
         if (isDiffPair) {
             if (dataArray.length <= 2) return null
@@ -482,7 +497,7 @@ export default class MachineController {
         return result
     }
 
-    public timeAxisChanges(data: StatsBase[], delegateValue: (value, timeDiff?) => number, accumilative: boolean = false) {
+    public timeAxisChanges<T extends StatsBase>(data: T[], delegateValue: (value: T, timeDiff?) => number, accumilative: boolean = false) {
         var result = []
         var summedUp = -1
         var lastValue = 0
@@ -582,7 +597,7 @@ export default class MachineController {
         return result1 != null ? result1 : result3 != null ? result3 : result4 != null ? result4 : null
     }
 
-    public findAnyDataIn(current: any[], dataCallback: (value) => string) {
+    public findAnyDataIn<T>(current: T[], dataCallback: (value: T) => string) {
         if (!current || current.length <= 0) return null
         const result = dataCallback(current[current.length - 1])
         if (result && result != "") {
