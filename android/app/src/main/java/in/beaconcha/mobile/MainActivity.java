@@ -35,13 +35,15 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        registerPlugin(com.byteowls.capacitor.oauth2.OAuth2ClientPlugin.class);
+
         // Initializes the Bridge
-        this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
-            add(com.byteowls.capacitor.oauth2.OAuth2ClientPlugin.class);
+       /* this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
+            add();
             add(NavigationBar.class);
             //add(com.getcapacitor.community.admob.AdMob.class);
             // Additional plugins you've installed go here
             // Ex: add(TotallyAwesomePlugin.class);
-        }});
+        }});*/
     }
 }

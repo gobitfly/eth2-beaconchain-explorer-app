@@ -24,7 +24,6 @@ import { ModalController } from '@ionic/angular';
 import { ValidatordetailPage } from '../pages/validatordetail/validatordetail.page';
 import { ApiService } from '../services/api.service';
 import { AlertController } from '@ionic/angular';
-import { Plugins } from '@capacitor/core';
 import { ValidatorResponse, AttestationPerformanceResponse } from '../requests/requests';
 import { StorageService } from '../services/storage.service';
 import { AlertService } from '../services/alert.service';
@@ -33,7 +32,7 @@ import BigNumber from 'bignumber.js';
 import { SubscribePage } from '../pages/subscribe/subscribe.page';
 import { MerchantUtils } from '../utils/MerchantUtils';
 
-const { Keyboard } = Plugins;
+import { Keyboard } from '@capacitor/keyboard';
 
 @Component({
   selector: 'app-tab2',

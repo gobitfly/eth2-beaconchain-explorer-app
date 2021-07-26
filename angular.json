@@ -78,7 +78,13 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "app:build:production"
+                "vendorChunk": true,
+                "extractLicenses": false,
+                "buildOptimizer": false,
+                "sourceMap": true,
+                "optimization": false,
+               "namedChunks": true,
+               "browserTarget": "app:build:production"
             },
             "ci": {
               "progress": false

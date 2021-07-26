@@ -21,15 +21,11 @@
 import { ApiService } from "../services/api.service";
 import { StorageService } from "../services/storage.service";
 import { UpdateTokenRequest } from "../requests/requests";
-import {
-  Plugins,
-  PushNotification,
-  PushNotificationActionPerformed,
-} from "@capacitor/core";
 import { Injectable } from '@angular/core';
 import { AlertController, Platform } from '@ionic/angular';
 
-const { PushNotifications } = Plugins;
+import { PushNotifications, PushNotificationSchema,
+  ActionPerformed, } from '@capacitor/push-notifications';
 
 const LOGTAG = "[FirebaseUtils]";
 
@@ -81,10 +77,10 @@ export default class FirebaseUtils {
     // Request permission to use push notifications
     // iOS will prompt user and return if they granted permission or not
     // Android will just grant without prompting
-    PushNotifications.requestPermission().then((result) => {
+    PushNotifications.requestPermissions().then((result) => {
       this.storage.setBooleanSetting(NOTIFICATION_CONSENT_KEY, true)
 
-      if (result.granted) {
+      if (result.receive == 'granted') {
         // Register with Apple / Google to receive push via APNS/FCM
         PushNotifications.register();
       } else {
@@ -109,7 +105,7 @@ export default class FirebaseUtils {
     // Show us the notification payload if the app is open on our device
     PushNotifications.addListener(
       "pushNotificationReceived",
-      (notification: PushNotification) => {
+      (notification: PushNotificationSchema) => {
         this.inAppNotification(notification.title, notification.body)
       }
     );
@@ -117,7 +113,7 @@ export default class FirebaseUtils {
     // Method called when tapping on a notification
     PushNotifications.addListener(
       "pushNotificationActionPerformed",
-      (notification: PushNotificationActionPerformed) => {
+      (notification: ActionPerformed) => {
         //alert("Push action performed: " + JSON.stringify(notification));
       }
     );

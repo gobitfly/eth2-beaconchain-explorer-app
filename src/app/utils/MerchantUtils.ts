@@ -27,8 +27,7 @@ import { AlertService, PURCHASEUTILS } from '../services/alert.service';
 import { ApiService } from '../services/api.service';
 import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from '../services/storage.service';
 
-import { Plugins } from '@capacitor/core';
-const { SplashScreen } = Plugins;
+import { SplashScreen } from '@capacitor/splash-screen';
 
 const FIRST_PURCHASE_RETRY = "first_purchase_retry"
 

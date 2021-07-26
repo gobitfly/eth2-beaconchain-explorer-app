@@ -26,7 +26,7 @@ import { CacheModule } from '../utils/CacheModule'
 import BigNumber from 'bignumber.js';
 import { Platform } from '@ionic/angular';
 
-const { Storage } = Plugins;
+import { Storage } from '@capacitor/storage';
 const { StorageMirror } = Plugins;
 
 const AUTH_USER = "auth_user";
@@ -191,6 +191,15 @@ export class StorageService extends CacheModule {
     return result.ts
   }
 
+  async migrateToCapacitor3() {
+    if (!this.platform.is("ios")) return;
+    let alreadyMigrated = await this.getBooleanSetting("migrated_to_cap3", false)
+    if (!alreadyMigrated) {
+      console.log("migrating to capacitor 3 storage...")
+      let result = await Storage.migrate()
+      this.setBooleanSetting("migrated_to_cap3", true)
+    }
+  }
 
   // --- Low level ---
 
@@ -221,16 +230,15 @@ export class StorageService extends CacheModule {
   private reflectiOSStorage() {
     try {
       if (!this.platform.is("ios")) return;
-      // TODO: Theres's a new prefix in capacitor 3
       StorageMirror.reflect({
         keys: [
-          "_cap_prefered_unit",
-          "_cap_network_preferences",
-          "_cap_validators_main",
-          "_cap_validators_pyrmont",
-          "_cap_validators_prater",
-          "_cap_validators_staging",
-          "_cap_auth_user"
+          "CapacitorStorage.prefered_unit",
+          "CapacitorStorage.network_preferences",
+          "CapacitorStorage.validators_main",
+          "CapacitorStorage.validators_pyrmont",
+          "CapacitorStorage.validators_prater",
+          "CapacitorStorage.validators_staging",
+          "CapacitorStorage.auth_user"
         ]
       })
     } catch (e) {

@@ -20,12 +20,11 @@
 
 import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
-import { Plugins } from '@capacitor/core';
 import { StorageService } from 'src/app/services/storage.service';
 import { OAuthUtils } from 'src/app/utils/OAuthUtils';
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils';
 
-const { Browser } = Plugins;
+import { Browser } from '@capacitor/browser';
 
 @Component({
   selector: 'app-help',

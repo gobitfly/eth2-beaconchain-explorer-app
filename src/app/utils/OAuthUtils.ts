@@ -30,8 +30,8 @@ import { LoadingController } from '@ionic/angular';
 import { SyncService } from '../services/sync.service';
 import { MerchantUtils } from "./MerchantUtils";
 
-const { Toast } = Plugins;
-const { Device } = Plugins;
+import { Toast } from '@capacitor/toast';
+import { Device } from '@capacitor/device';
 
 @Injectable({
   providedIn: 'root'
@@ -120,7 +120,7 @@ export class OAuthUtils {
     const api = this.api
     const endpointUrl = await api.getResourceUrl("user/token")
 
-    const info = await Device.getInfo().catch(() => { return { uuid: "iduno" }})
+    const info = await Device.getId().catch(() => { return { uuid: "iduno" }})
     let clientID = this.hashCode(info.uuid)
     while (clientID.length <= 5) {
       clientID += "0"

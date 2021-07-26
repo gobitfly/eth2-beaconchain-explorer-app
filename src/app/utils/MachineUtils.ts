@@ -21,21 +21,26 @@ import MachineController, { ProcessedStats, StatsResponse } from "../controllers
 import { GetMyMachinesRequest } from "../requests/requests";
 import { SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, StorageService } from "../services/storage.service";
 import { SyncService } from "../services/sync.service";
+import { CacheModule } from "./CacheModule";
 
 const LOGTAG = "[MachineUtils] "
 const MACHINES_STORAGE_KEY = "stored_machine_names"
 export const UNSUPPORTED_PRYSM = "unsupported_prysm_version"
 
+const MACHINE_CACHE = "machine_"
+
 @Injectable({
     providedIn: 'root'
   })
-export default class MachineUtils {
+export default class MachineUtils extends CacheModule {
 
     constructor(
         private api: ApiService,
         private storage: StorageService,
         private sync: SyncService 
-    ) { }
+    ) {
+        super("machine", 4 * 60 * 1000)
+    }
 
     /*
         2 Listen
@@ -140,9 +145,14 @@ export default class MachineUtils {
     }
     
     private async getData(timeslot: number): Promise<StatsResponse> {
+        let cached = await this.getCache(MACHINE_CACHE + timeslot)
+        if(cached) return cached
         const request = new GetMyMachinesRequest(0, timeslot)
         const response = await this.api.execute(request)
         const result = request.parse(response)
+        if (result && result[0]) {
+            this.putCache(MACHINE_CACHE + timeslot, result[0])
+        }
         return result[0]
     }
 }

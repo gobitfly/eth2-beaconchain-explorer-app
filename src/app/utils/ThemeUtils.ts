@@ -23,13 +23,12 @@ import { Injectable } from '@angular/core';
 import { NavigationBarPlugin } from 'capacitor-navigationbarnx';
 import {
     Plugins,
-    StatusBarStyle,
 } from '@capacitor/core';
 import { Platform } from '@ionic/angular';
 import * as Snowflakes from 'magic-snowflakes';
 import confetti from 'canvas-confetti';
 
-const { StatusBar } = Plugins;
+import { StatusBar, Style } from '@capacitor/status-bar';
 const NavigationBar = Plugins.NavigationBar as NavigationBarPlugin;
 
 enum Theme {
@@ -196,7 +195,7 @@ export default class ThemeUtils {
             const darker = isDarkThemed ? "#000000" : this.shadeColor(color, -12)
             console.log("statusbar color", darker)
             StatusBar.setStyle({
-                style: StatusBarStyle.Dark
+                style: Style.Dark
             });
             StatusBar.setBackgroundColor({
                 color: darker

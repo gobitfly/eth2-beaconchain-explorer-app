@@ -72,6 +72,7 @@ export abstract class APIRequest<T> {
   requiresAuth = false
   updatesLastRefreshState = false
   ignoreFails = false
+  maxCacheAge = 5 * 60 * 1000
 }
 
 // ------------- Responses -------------
@@ -462,13 +463,7 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
   requiresAuth = true
   postData: any
   ignoreFails = true
-
-  // should not be cached for long
-  options = {
-    cache: {
-      maxAge: 1000
-    }
-  }
+  maxCacheAge = 1000
 
   parse(response: any): ApiTokenResponse[] {
     if (response && response.data) return [response.data] as ApiTokenResponse[];
@@ -477,11 +472,14 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 
   constructor(refreshToken: string) {
     super()
-    this.postData = new FormData();
-    this.postData.append('grant_type', 'refresh_token');
-    this.postData.append('refresh_token', refreshToken);
+    this.postData = new FormDataContainer({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken
+    })
   }
 }
+
+
 
 export class UpdateTokenRequest extends APIRequest<APIResponse> {
   resource = "user/mobile/notify/register";
@@ -509,13 +507,7 @@ export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
   resource = "/serve/native-app.php?z=";
   method = Method.GET;
   ignoreFails = true
-
-  options = {
-    cache: {
-      maxAge: 4 * 60 * 1000,
-    }
-  }
-
+  maxCacheAge = 4 * 60 * 1000
 
   parse(response: any): CoinzillaAdResponse[] {
     if (!this.wasSuccessfull(response, false) || !response.data.ad) {
@@ -538,12 +530,7 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
   resource = "v2/prices/";
   method = Method.GET;
   ignoreFails = true
-
-  options = {
-    cache: {
-      maxAge: 20 * 60 * 1000,
-    }
-  }
+  maxCacheAge = 20 * 60 * 1000
 
   parse(response: any): CoinbaseExchangeResponse[] {
     return this.parseBase(response, false);
@@ -561,11 +548,8 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
   resource = "repos/"; 
   method = Method.GET;
   ignoreFails = true
-
+  maxCacheAge = 4 * 60 * 60 * 1000
   options = {
-    cache: {
-      maxAge: 4 * 60 * 60 * 1000,
-    },
     headers: {
       'Content-Type': 'application/json',
       "Accept": "application/json",
@@ -594,3 +578,14 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 }
 
 export default class { }
+
+export class FormDataContainer {
+  private data: any
+  constructor(data: any) {
+    this.data = data
+  }
+
+  getBody() {
+    return this.data
+  }
+}

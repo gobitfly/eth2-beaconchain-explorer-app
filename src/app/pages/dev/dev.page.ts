@@ -1,14 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
-import { AlertService } from 'src/app/services/alert.service';
 import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from 'src/app/services/storage.service';
-import { SyncService } from 'src/app/services/sync.service';
-import FirebaseUtils, { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils';
-import { MerchantUtils } from 'src/app/utils/MerchantUtils';
-import ThemeUtils from 'src/app/utils/ThemeUtils';
-import { Plugins } from '@capacitor/core';
+import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils';
 import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page';
-const { Toast } = Plugins;
+import { Toast } from '@capacitor/toast';
 
 @Component({
   selector: 'app-dev',
@@ -34,6 +28,11 @@ export class DevPage extends Tab3Page implements OnInit {
   }
 
   // --- Development methods ---
+
+  clearApiCache() {
+    this.storage.setObject("cachemodule_api", null)
+    this.alerts.confirmDialog("Restart", "API requests cache cleared, restart?", "OK", () => { this.restartApp() })
+  }
 
   clearSyncQueue() {
     this.sync.developDeleteQueue()

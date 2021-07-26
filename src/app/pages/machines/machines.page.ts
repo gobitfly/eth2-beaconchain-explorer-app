@@ -3,14 +3,13 @@ import {  ModalController } from '@ionic/angular';
 import { MachineDetailPage } from '../machine-detail/machine-detail.page';
 import MachineController, { ProcessedStats } from '../../controllers/MachineController'
 import { AlertService } from 'src/app/services/alert.service';
-import { Plugins } from '@capacitor/core';
 import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils';
 import { StorageService } from 'src/app/services/storage.service';
 import { OAuthUtils } from 'src/app/utils/OAuthUtils';
 import MachineUtils from 'src/app/utils/MachineUtils';
 
-const { Browser } = Plugins;
+import { Browser } from '@capacitor/browser';
 
 @Component({
   selector: 'app-machines',
@@ -70,8 +69,12 @@ export class MachinesPage extends MachineController implements OnInit {
     }, 500)
   }
 
+  lastEnter = 0
   ionViewWillEnter() {
-    this.getAndProcessData()
+    if (this.lastEnter == 0 || this.lastEnter + 5 * 60 * 1000 < Date.now()) {
+      this.lastEnter = Date.now()
+      this.getAndProcessData()
+    }
   }
 
   delegater(func) {
