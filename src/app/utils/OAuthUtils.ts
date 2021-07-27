@@ -32,6 +32,7 @@ import { MerchantUtils } from "./MerchantUtils";
 
 import { Toast } from '@capacitor/toast';
 import { Device } from '@capacitor/device';
+const { OAuth2Client }= Plugins;
 
 @Injectable({
   providedIn: 'root'
@@ -51,7 +52,7 @@ export class OAuthUtils {
   }
 
   async login(statusCallback: ((finished: boolean) => void) = null) {
-    return Plugins.OAuth2Client.authenticate(await this.getOAuthOptions())
+    return OAuth2Client.authenticate(await this.getOAuthOptions())
       .then(async (response: any) => {
 
         const loadingScreen = await this.presentLoading()
