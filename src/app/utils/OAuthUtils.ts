@@ -32,7 +32,7 @@ import { MerchantUtils } from "./MerchantUtils";
 
 import { Toast } from '@capacitor/toast';
 import { Device } from '@capacitor/device';
-const { OAuth2Client }= Plugins;
+import { OAuth2Client } from '@byteowls/capacitor-oauth2';
 
 @Injectable({
   providedIn: 'root'
