@@ -20,7 +20,7 @@
 
 import { ApiService } from "../services/api.service";
 import { registerWebPlugin } from "@capacitor/core";
-import { OAuth2Client } from "@byteowls/capacitor-oauth2";
+//import { OAuth2Client } from "@byteowls/capacitor-oauth2";
 import { Plugins } from "@capacitor/core";
 import { Injectable } from '@angular/core';
 import { StorageService } from '../services/storage.service';
@@ -47,7 +47,7 @@ export class OAuthUtils {
     private sync: SyncService,
     private merchantUtils: MerchantUtils
   ) {
-    registerWebPlugin(OAuth2Client);
+    //registerWebPlugin(OAuth2Client);
   }
 
   async login(statusCallback: ((finished: boolean) => void) = null) {

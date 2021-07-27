@@ -131,7 +131,7 @@ export default class ThemeUtils {
     }
 
     // TODO: Should start thinking about increasing the minimum system requirements for this app ¯\_(ツ)_/¯
-    private silvesterFireworks() {
+    silvesterFireworks() {
         var duration = 10 * 1000;
         var animationEnd = Date.now() + duration;
         var defaults = { startVelocity: 30, spread: 100, ticks: 70, zIndex: 0 };

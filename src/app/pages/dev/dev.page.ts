@@ -73,6 +73,15 @@ export class DevPage extends Tab3Page implements OnInit {
     )
   }
 
+  confetti() {
+    this.theme.silvesterFireworks()
+  }
+
+  resetLastFirebaseToken() {
+    this.storage.setItem("last_firebase_token", null)
+    this.alerts.confirmDialog("Restart", "API requests cache cleared, restart?", "OK", () => { this.restartApp() })
+  }
+
   restartApp() {
     this.merchant.restartApp()
   }
