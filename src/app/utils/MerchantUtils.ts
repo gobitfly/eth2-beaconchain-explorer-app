@@ -125,7 +125,7 @@ export class MerchantUtils {
   private initCustomValidator() {
     this.store.validator = async (product: IAPProduct, callback) => {
 
-      if (this.restorePurchase) {
+      if (this.restorePurchase && product.id != "in.beaconcha.mobile") {
         this.restorePurchase = false
         await this.confirmPurchaseOnRemote(product)
       }
@@ -197,8 +197,7 @@ export class MerchantUtils {
       .approved((p: IAPProduct) => {
         // Handle the product deliverable
         this.currentPlan = p.id;
-
-
+      
         //this.ref.detectChanges();
         return p.verify();
       })
@@ -246,6 +245,11 @@ export class MerchantUtils {
   }
 
   private async confirmPurchaseOnRemote(product) {
+    if (product.id == "in.beaconcha.mobile") {
+      this.alertService.showError("Purchase Error", "Invalid product, try again later or report this issue to us if persistent.", PURCHASEUTILS + 4)
+      return;
+    }
+
     console.log("purchase made, product info", product)
   
         const isIOS = this.platform.is("ios")
