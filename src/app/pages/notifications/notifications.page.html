@@ -30,7 +30,7 @@
   <ion-list>
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="chevron-down-circle-outline"></ion-icon>
-      <ion-label i18n="Settings balance decreased notification">
+      <ion-label>
         Balance Decreased
       </ion-label>
       <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyDecreased"
@@ -39,7 +39,7 @@
 
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-      <ion-label i18n="Settings validator slashed notifications">
+      <ion-label>
         Validator Slashed
       </ion-label>
       <ion-toggle checked id="notifyToggle" [(ngModel)]="notifySlashed"
@@ -49,7 +49,7 @@
 
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="information-circle-outline"></ion-icon>
-      <ion-label i18n="Settings validator submitted proposals">
+      <ion-label>
         Submitted Proposals
       </ion-label>
       <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyProposalsSubmitted"
@@ -58,7 +58,7 @@
 
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="remove-circle-outline"></ion-icon>
-      <ion-label i18n="Settings validator missed proposals">
+      <ion-label>
         Missed Proposals
       </ion-label>
       <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyProposalsMissed"
@@ -67,7 +67,7 @@
 
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="remove-circle-outline"></ion-icon>
-      <ion-label i18n="Settings validator missed proposals">
+      <ion-label >
         Missed Attestations
       </ion-label>
       <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyAttestationsMissed"
@@ -84,7 +84,7 @@
 
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
-      <ion-label i18n="Setting client update notifications">
+      <ion-label>
         Client Updates
       </ion-label>
       <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyClientUpdate" (ionChange)="notifyClientUpdates()"

@@ -29,6 +29,13 @@ export class DevPage extends Tab3Page implements OnInit {
 
   // --- Development methods ---
 
+  forceTokenRefresh() {
+    this.api.refreshToken()
+    Toast.show({
+      text: 'Token refreshed'
+    });
+  }
+
   clearApiCache() {
     this.storage.setObject("cachemodule_api", null)
     this.alerts.confirmDialog("Restart", "API requests cache cleared, restart?", "OK", () => { this.restartApp() })

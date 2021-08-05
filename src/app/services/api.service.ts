@@ -126,17 +126,31 @@ export class ApiService extends CacheModule {
 
     const now = Date.now()
     const req = new RefreshTokenRequest(user.refreshToken)
-    const resp = await this.execute(req).catch(_ => { return null })
-    const result = req.parse(resp)
+
+    var formBody = new FormData();
+    formBody.set("grant_type", "refresh_token");
+    formBody.set("refresh_token", user.refreshToken);
+    const url = await this.getResourceUrl(req.resource, req.endPoint)
+    
+    // use js here for the request since the native http plugin performs inconsistent across platforms with non json requests
+    const resp = await fetch(
+       url,
+        {
+            method: 'POST',
+            body: formBody,
+            headers: await this.getAuthHeader(true)
+        }
+    )
+    const result = await resp.json()
 
     console.log("Refresh token", result, resp)
-    if (!result || result.length <= 0 || !result[0].access_token) {
+    if (!result || !result.access_token) {
       console.warn("could not refresh token", result)
       return null
     }
 
-    user.accessToken = result[0].access_token
-    user.expiresIn = now + (result[0].expires_in * 1000)
+    user.accessToken = result.access_token
+    user.expiresIn = now + (result.expires_in * 1000)
 
     await this.storage.setAuthUser(user)
     return user
@@ -241,6 +255,7 @@ export class ApiService extends CacheModule {
   private async get(resource: string, endpoint: string = "default", ignoreFails = false, options = {headers: {}}) {
     const getOptions = {
       url: await this.getResourceUrl(resource, endpoint),
+      method: "get",
       headers: options.headers
     }
     return Http
@@ -258,7 +273,8 @@ export class ApiService extends CacheModule {
     const postOptions = {
       url: await this.getResourceUrl(resource, endpoint),
       headers: options.headers,
-      data: this.formatPostData(data)
+      data: this.formatPostData(data),
+      method: "post",
     }
     return Http
 

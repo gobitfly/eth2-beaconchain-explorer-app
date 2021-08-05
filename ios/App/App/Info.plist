@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>WKAppBoundDomains</key>
-	<array>
-		<string>beaconcha.in</string>
-	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -44,18 +40,6 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>NSCameraUsageDescription</key>
-	<string>We do not require this permission, do not grant!</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We do not require this permission, do not grant!</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We do not require this permission, do not grant!</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>We do not require this permission, do not grant!</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We do not require this permission, do not grant!</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We do not require this permission, do not grant!</string>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>ConfigurationIntent</string>

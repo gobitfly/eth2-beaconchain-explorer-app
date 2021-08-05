@@ -57,9 +57,9 @@ export class OAuthUtils {
 
         const loadingScreen = await this.presentLoading()
         loadingScreen.present();
-
-        const accessToken = response["access_token"];
-        const refreshToken = response["refresh_token"];
+      
+        const accessToken = response.access_token_response.access_token;
+        const refreshToken = response.access_token_response.refresh_token;
 
         // inconsistent on ios, just assume a 10min lifetime for first token and then just refresh it
         // and kick off real expiration times
