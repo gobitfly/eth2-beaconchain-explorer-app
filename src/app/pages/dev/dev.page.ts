@@ -1,14 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
-import { AlertService } from 'src/app/services/alert.service';
 import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from 'src/app/services/storage.service';
-import { SyncService } from 'src/app/services/sync.service';
-import FirebaseUtils, { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils';
-import { MerchantUtils } from 'src/app/utils/MerchantUtils';
-import ThemeUtils from 'src/app/utils/ThemeUtils';
-import { Plugins } from '@capacitor/core';
+import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils';
 import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page';
-const { Toast } = Plugins;
+import { Toast } from '@capacitor/toast';
 
 @Component({
   selector: 'app-dev',
@@ -34,6 +28,18 @@ export class DevPage extends Tab3Page implements OnInit {
   }
 
   // --- Development methods ---
+
+  forceTokenRefresh() {
+    this.api.refreshToken()
+    Toast.show({
+      text: 'Token refreshed'
+    });
+  }
+
+  clearApiCache() {
+    this.storage.setObject("cachemodule_api", null)
+    this.alerts.confirmDialog("Restart", "API requests cache cleared, restart?", "OK", () => { this.restartApp() })
+  }
 
   clearSyncQueue() {
     this.sync.developDeleteQueue()
@@ -72,6 +78,15 @@ export class DevPage extends Tab3Page implements OnInit {
       this.alerts.showInfo("Success", "Toggle test was successfull if this alert only appears once and toggle returns to disabled"),
       650
     )
+  }
+
+  confetti() {
+    this.theme.silvesterFireworks()
+  }
+
+  resetLastFirebaseToken() {
+    this.storage.setItem("last_firebase_token", null)
+    this.alerts.confirmDialog("Restart", "API requests cache cleared, restart?", "OK", () => { this.restartApp() })
   }
 
   restartApp() {
@@ -135,6 +150,19 @@ export class DevPage extends Tab3Page implements OnInit {
     });
 
     await alert.present();
+  }
+
+  async restoreAuthUser() {
+    let result = await this.storage.restoreAuthUser()
+    this.alerts.confirmDialog("Success", "Restart app with restored user?", "OK", () => { this.restartApp() })
+  }
+
+  async backupAuthUser() {
+    let result = await this.storage.backupAuthUser()
+    console.log("backup success")
+    Toast.show({
+      text: 'Backup successfull'
+    });
   }
 
 }

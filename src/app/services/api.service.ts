@@ -19,37 +19,24 @@
  */
 
 import { Injectable } from '@angular/core';
-import axios, { AxiosResponse } from "axios";
-import { APIRequest, Method, RefreshTokenRequest } from "../requests/requests";
-import localforage from "localforage";
-import { setupCache } from "axios-cache-adapter";
+import { APIRequest, FormDataContainer, Method, RefreshTokenRequest } from "../requests/requests";
 import { StorageService } from './storage.service';
 import { ApiNetwork } from '../models/StorageTypes';
 import { isDevMode } from "@angular/core"
 import { Mutex } from 'async-mutex';
 import { MAP } from '../utils/NetworkData'
+import { Http, HttpResponse } from '@capacitor-community/http';
+import { CacheModule } from '../utils/CacheModule';
 
 const LOGTAG = "[ApiService]";
 var cacheKey = "api-cache"
-
-const forageStore = localforage.createInstance({
-  driver: [localforage.INDEXEDDB, localforage.LOCALSTORAGE],
-  name: cacheKey,
-});
-
-const cache = setupCache({
-  maxAge: 5 * 60 * 1000, // 5 min cache time
-  store: forageStore,
-  readHeaders: false,
-  exclude: { query: false },
-});
 
 const SERVER_TIMEOUT = 25000
 
 @Injectable({
   providedIn: 'root'
 })
-export class ApiService {
+export class ApiService extends CacheModule {
 
   networkConfig: Promise<ApiNetwork>
 
@@ -63,34 +50,32 @@ export class ApiService {
 
   public lastRefreshed = 0 // only updated by calls that have the updatesLastRefreshState flag enabled
 
+  lastCacheInvalidate = 0
+
   constructor(
     private storage: StorageService
   ) {
+    super("api", 5 * 60 * 1000, storage)
     this.isDebugMode().then((result) => {
       this.debug = result
       this.disableLogging()
     }) 
-
-    this.registerLogMiddleware()
+    this.lastCacheInvalidate = Date.now()
+    //this.registerLogMiddleware()
     this.updateNetworkConfig()
   }
-
-  private http = axios.create({
-      timeout: SERVER_TIMEOUT,
-      adapter: cache.adapter
-    }
-  );
 
   mayInvalidateOnFaultyConnectionState() {
     if(!this.connectionStateOK) this.invalidateCache()
   }
 
   invalidateCache() {
-    console.log("invalidating request cache")
-    // @ts-ignore
-    cache.store.clear()
-    forageStore.clear()
-    this.storage.invalidateAllCache()
+    if (this.lastCacheInvalidate + 40000 < Date.now()) {
+      this.lastCacheInvalidate = Date.now()
+      console.log("invalidating request cache")
+      this.invalidateAllCache()
+      this.storage.invalidateAllCache()
+    }
   }
 
   async updateNetworkConfig() {
@@ -128,7 +113,7 @@ export class ApiService {
     }
 
     return {
-      Authorization: 'Bearer ' + user.accessToken
+      'Authorization': 'Bearer ' + user.accessToken
     }
   }
 
@@ -141,23 +126,31 @@ export class ApiService {
 
     const now = Date.now()
     const req = new RefreshTokenRequest(user.refreshToken)
-    const resp = await this.execute(req).catch(_ => { return null })
-    const result = req.parse(resp)
+
+    var formBody = new FormData();
+    formBody.set("grant_type", "refresh_token");
+    formBody.set("refresh_token", user.refreshToken);
+    const url = await this.getResourceUrl(req.resource, req.endPoint)
+    
+    // use js here for the request since the native http plugin performs inconsistent across platforms with non json requests
+    const resp = await fetch(
+       url,
+        {
+            method: 'POST',
+            body: formBody,
+            headers: await this.getAuthHeader(true)
+        }
+    )
+    const result = await resp.json()
 
     console.log("Refresh token", result, resp)
-    if (!result || result.length <= 0 || !result[0].access_token) {
+    if (!result || !result.access_token) {
       console.warn("could not refresh token", result)
       return null
-
-      /*if (result && result[0]) {
-        this.alertService.showInfo("Login Expired", "Please log back in to receive further notifications.")
-        this.storage.setAuthUser(null)
-      }
-      return*/
     }
 
-    user.accessToken = result[0].access_token
-    user.expiresIn = now + (result[0].expires_in * 1000)
+    user.accessToken = result.access_token
+    user.expiresIn = now + (result.expires_in * 1000)
 
     await this.storage.setAuthUser(user)
     return user
@@ -184,8 +177,25 @@ export class ApiService {
     return test
   }
 
+  private async getCacheKey(request: APIRequest<any>): Promise<string> {
+    return request.method + await this.getResourceUrl(request.resource, request.endPoint)
+  }
 
   async execute(request: APIRequest<any>) {
+    await this.initialized
+
+    if (!this.connectionStateOK) {
+      this.invalidateCache()
+    }
+
+    // If cached and not stale, return cache
+    let cached = this.getCache(await this.getCacheKey(request))
+    if (cached) {
+      if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
+      cached.cached = true
+      return cached
+    }
+
     var options = request.options
 
     // second is special case for notifications
@@ -202,14 +212,11 @@ export class ApiService {
       }
     }
 
-    if (!this.connectionStateOK) {
-      options.clearCacheEntry = true
-    }
-
     await this.lockOrWait(request.resource)
 
+    console.log(LOGTAG + " Send request: " + request.resource, request)
 
-    var response: Promise<AxiosResponse<any>>
+    var response: Promise<Response>
     switch (request.method) {
       case Method.GET:
         response = this.get(request.resource, request.endPoint, request.ignoreFails, options)
@@ -222,46 +229,72 @@ export class ApiService {
     }
 
     const result = await response
+    if (request.method == Method.GET && result && result.status == 200 && result.data) {
+      this.putCache(await this.getCacheKey(request), result, request.maxCacheAge)
+    }
+
     if (request.updatesLastRefreshState) this.updateLastRefreshed(result)
 
     this.unlock(request.resource)
+    console.log(
+      LOGTAG + " Response: " + result.url + "",
+      result
+    );
+
+    result.cached = false
+
     return result
   }
 
-
-  private updateLastRefreshed(response: AxiosResponse<any>) {
+  private updateLastRefreshed(response: Response) {
     if (response && response.status == 200) {
-      const cached = response.request.fromCache == true;
-      if (!cached || this.lastRefreshed == 0) {
         this.lastRefreshed = Date.now()
-      }
     }
   }
 
-  private async get(resource: string, endpoint: string = "default", ignoreFails = false, options = {}) {
-    return this.http
-      .get(await this.getResourceUrl(resource, endpoint), options)
+  private async get(resource: string, endpoint: string = "default", ignoreFails = false, options = {headers: {}}) {
+    const getOptions = {
+      url: await this.getResourceUrl(resource, endpoint),
+      method: "get",
+      headers: options.headers
+    }
+    return Http
+      .get(getOptions)
       .catch((err) => {
         this.updateConnectionState(ignoreFails, false);
         console.warn("Connection err", err)
       })
-      .then((response: AxiosResponse<any>) => this.validateResponse(ignoreFails, response));
+      .then((response: Response) => this.validateResponse(ignoreFails, response));
   }
 
-  private async post(resource: string, data: any, endpoint: string = "default", ignoreFails = false, options = {}) {
-    return this.http
+  private async post(resource: string, data: any, endpoint: string = "default", ignoreFails = false, options = { headers: {}}) {
+    options.headers = { ...options.headers, ...{ 'Content-Type':this.getContentType(data)}}
+    
+    const postOptions = {
+      url: await this.getResourceUrl(resource, endpoint),
+      headers: options.headers,
+      data: this.formatPostData(data),
+      method: "post",
+    }
+    return Http
 
-      .post(await this.getResourceUrl(resource, endpoint), this.formatPostData(data), options)
+      .post(postOptions) //options)
       .catch((err) => {
         this.updateConnectionState(ignoreFails, false);
         console.warn("Connection err", err)
       })
-      .then((response: AxiosResponse<any>) => this.validateResponse(ignoreFails, response));
+      .then((response: Response) => this.validateResponse(ignoreFails, response));
+  }
+
+  private getContentType(data: any): string {
+    if (data instanceof FormDataContainer) return "application/x-www-form-urlencoded"
+    return "application/json"
+    
   }
 
   private formatPostData(data: any) {
-    if (data instanceof FormData) return data
-    return JSON.stringify(data)
+    if (data instanceof FormDataContainer) return data.getBody()
+    return data
   }
 
   private updateConnectionState(ignoreFails: boolean, working: boolean) {
@@ -270,7 +303,7 @@ export class ApiService {
     console.log(LOGTAG + " setting status", working)
   }
 
-  private validateResponse(ignoreFails, response: AxiosResponse<any>): AxiosResponse<any> {
+  private validateResponse(ignoreFails, response: Response): Response {
     if (!response || !response.data) { // || !response.data.data
       this.updateConnectionState(ignoreFails, false)
       return
@@ -324,34 +357,6 @@ export class ApiService {
     return text.charAt(0).toUpperCase() + text.slice(1)
   }
 
-  private registerLogMiddleware() {
-    this.http.interceptors.request.use(
-      function (config) {
-        console.log(LOGTAG + " Send request: " + config.url, config)
-        return config;
-      },
-      function (error) {
-        console.log(LOGTAG + " Request error:", error);
-        return Promise.reject(error);
-      }
-    );
-
-    this.http.interceptors.response.use(
-      function (response) {
-        const cached = response.request.fromCache == true;
-        console.log(
-          LOGTAG + " Response: " + (cached ? "(cached) " : "") + response.config.url + "",
-          response
-        );
-        return response;
-      },
-      function (error) {
-        console.log(LOGTAG + " Response error:", error);
-        return Promise.reject(error);
-      }
-    );
-  }
-
   private disableLogging() {
     if (!this.debug) {
       if (window) {
@@ -361,4 +366,8 @@ export class ApiService {
       }
     }
   }
+}
+
+interface Response extends HttpResponse {
+  cached: boolean
 }

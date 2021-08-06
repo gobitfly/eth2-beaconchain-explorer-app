@@ -10,7 +10,16 @@ android {
 apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
     implementation project(':byteowls-capacitor-oauth2')
-    //implementation project(':capacitor-community-admob')
+    implementation project(':capacitor-community-http')
+    implementation project(':capacitor-app')
+    implementation project(':capacitor-browser')
+    implementation project(':capacitor-device')
+    implementation project(':capacitor-keyboard')
+    implementation project(':capacitor-push-notifications')
+    implementation project(':capacitor-splash-screen')
+    implementation project(':capacitor-status-bar')
+    implementation project(':capacitor-storage')
+    implementation project(':capacitor-toast')
     implementation project(':capacitor-navigationbarnx')
     implementation "com.android.billingclient:billing:3.0.0"
 }

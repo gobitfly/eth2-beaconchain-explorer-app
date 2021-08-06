@@ -21,8 +21,8 @@
 import { ApiService } from '../services/api.service';
 import { StorageService } from '../services/storage.service';
 import { Injectable } from '@angular/core';
-import { EpochRequest, EpochResponse, PerformanceRequest, RemoveMyValidatorsRequest, NotificationSubsRequest, PerformanceResponse, AttestationPerformanceRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse } from '../requests/requests';
-import { AlertService, VALIDATORUTILS } from '../services/alert.service';
+import { EpochRequest, EpochResponse, PerformanceRequest, RemoveMyValidatorsRequest, PerformanceResponse, AttestationPerformanceRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse } from '../requests/requests';
+import { AlertService } from '../services/alert.service';
 import { CacheModule } from './CacheModule';
 import { MerchantUtils } from './MerchantUtils';
 
@@ -316,7 +316,8 @@ export class ValidatorUtils extends CacheModule {
         const request = new EpochRequest(epoch)
         const response = await this.api.execute(request)
         const result = request.parse(response)[0]
-        if (response.request.fromCache != true) {
+
+        if (response.cached != true) { 
             await this.storage.setLastEpochRequestTime(Date.now())
         }
         const lastCachedTime = await this.storage.getLastEpochRequestTime()

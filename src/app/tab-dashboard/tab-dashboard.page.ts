@@ -23,10 +23,9 @@ import { ApiService } from '../services/api.service';
 import { ValidatorUtils } from '../utils/ValidatorUtils';
 import OverviewController, { OverviewData } from '../controllers/OverviewController';
 import ClientUpdateUtils from '../utils/ClientUpdateUtils';
-import { Plugins, AppState } from '@capacitor/core';
 import { StorageService } from '../services/storage.service';
 import { UnitconvService } from '../services/unitconv.service';
-const { App } = Plugins;
+import { App, AppState } from '@capacitor/app';
 
 @Component({
   selector: 'app-tab1',
@@ -101,7 +100,7 @@ export class Tab1Page {
     const epoch = this.validatorUtils.getRemoteCurrentEpoch().catch((error) => { return null })
     const attestationPerformance = this.validatorUtils.getAllMyAttestationPerformances().catch((error) => { return null })
     const overviewController = new OverviewController(() => {
-      if (this.lastRefreshTs + 30 > this.getUnixSeconds()) return
+      if (this.lastRefreshTs + 60 > this.getUnixSeconds()) return
       this.api.invalidateCache()
       this.refresh()
     })

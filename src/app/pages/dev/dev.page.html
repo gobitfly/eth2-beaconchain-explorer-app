@@ -11,43 +11,27 @@
   <ion-list>
 
     <ion-item lines="none" (click)="forceSync()">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
       <ion-label>Force sync</ion-label>
     </ion-item>
 
-    <ion-item lines="none" (click)="updateFirebaseToken()">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
-      <ion-label>Update firebase token</ion-label>
-    </ion-item>
-
     <ion-item lines="none" (click)="clearSyncQueue()">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
       <ion-label>Clear sync queue</ion-label>
     </ion-item>
-
-    <ion-item lines="none" (click)="changeAccessToken()">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
-      <ion-label>Manually edit access token</ion-label>
-    </ion-item>
-
-    <ion-item lines="none" (click)="triggerToggleTest()">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
-      <ion-label>Toggle init</ion-label>
-    </ion-item>
-
-    <ion-item lines="none">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
-      <ion-label>Toggle test</ion-label>
-      <ion-toggle [(ngModel)]="toggleTest" (ionChange)="toggleTestChange()" slot="end"></ion-toggle>
-    </ion-item>
-
+    
     <ion-item lines="none" (click)="permanentDevMode()">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
       <ion-label>Make dev mode permanent</ion-label>
     </ion-item>
 
+    <ion-item lines="none" (click)="clearApiCache()">
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+      <ion-label>Clear API cache</ion-label>
+    </ion-item>
+
     <ion-item lines="none">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
       <ion-label>
         Override Premium
       </ion-label>
@@ -70,23 +54,88 @@
       </ion-select>
     </ion-item>
 
+
+    <ion-list-header>
+      <ion-label>Auth User</ion-label>
+    </ion-list-header>
+
+    <ion-item lines="none" (click)="changeAccessToken()">
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+      <ion-label>Manually edit access token</ion-label>
+    </ion-item>
+  
+    <ion-item lines="none" (click)="backupAuthUser()">
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+      <ion-label>Backup Auth User</ion-label>
+    </ion-item>
+
+    <ion-item lines="none" (click)="restoreAuthUser()">
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+      <ion-label>Restore Auth User</ion-label>
+    </ion-item>
+
+    <ion-item lines="none" (click)="forceTokenRefresh()">
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+      <ion-label>Refresh Token</ion-label>
+    </ion-item>
+
+    <ion-list-header>
+      <ion-label>UI Tests</ion-label>
+    </ion-list-header>
+
+    <ion-item lines="none" (click)="triggerToggleTest()">
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+      <ion-label>Toggle init</ion-label>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+      <ion-label>Toggle test</ion-label>
+      <ion-toggle [(ngModel)]="toggleTest" (ionChange)="toggleTestChange()" slot="end"></ion-toggle>
+    </ion-item>
+
+    <ion-item lines="none" (click)="confetti()">
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+      <ion-label>Confetti</ion-label>
+    </ion-item>
+
+
+    <ion-list-header>
+      <ion-label>Other</ion-label>
+    </ion-list-header>
+
     <ion-item lines="none" (click)="restartApp()">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
       <ion-label>Restart App</ion-label>
     </ion-item>
 
     <ion-item lines="none" (click)="clearStorage()">
-      <ion-icon slot="start" name="bug-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
       <ion-label>Clear storage</ion-label>
     </ion-item>
-
 
   </ion-list>
 
   <ion-list-header>
-    <ion-label>Firebase Token:</ion-label>
+    <ion-label>Firebase</ion-label>
   </ion-list-header>
-  <p>{{ firebaseToken }}</p>
+
+  <ion-item lines="none" (click)="updateFirebaseToken()">
+    <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+    <ion-label>Update firebase token</ion-label>
+  </ion-item>
+
+
+  <ion-item lines="none" (click)="resetLastFirebaseToken()">
+    <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+    <ion-label>Reset saved firebase token</ion-label>
+  </ion-item>
+
+  <ion-item lines="none">
+    <p>{{ firebaseToken }}</p>
+  </ion-item>
+
+
 
   <br/>
 

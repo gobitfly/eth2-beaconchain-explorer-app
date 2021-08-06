@@ -1,0 +1,13 @@
+{
+  "appId": "in.beaconcha.mobile",
+  "appName": "Beaconchain Dashboard",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
+}

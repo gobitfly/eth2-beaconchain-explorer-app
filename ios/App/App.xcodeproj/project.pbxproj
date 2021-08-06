@@ -13,10 +13,46 @@
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
-		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
+		C7065CAE2632EEE800DF9149 /* WebAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7065CAD2632EEE800DF9149 /* WebAPI.swift */; };
+		C7065CB22636CF0B00DF9149 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7065CB12636CF0B00DF9149 /* Models.swift */; };
+		C7065CDA2638399000DF9149 /* StorageBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7065CD92638399000DF9149 /* StorageBridge.swift */; };
+		C76F885E263021BC0066804A /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C76F885D263021BC0066804A /* WidgetKit.framework */; };
+		C76F8860263021BC0066804A /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C76F885F263021BC0066804A /* SwiftUI.framework */; };
+		C76F8863263021BC0066804A /* Beaconchain_Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = C76F8862263021BC0066804A /* Beaconchain_Widget.swift */; };
+		C76F8866263021BF0066804A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C76F8865263021BF0066804A /* Assets.xcassets */; };
+		C76F8868263021BF0066804A /* Beaconchain_Widget.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = C76F8864263021BD0066804A /* Beaconchain_Widget.intentdefinition */; };
+		C76F8869263021BF0066804A /* Beaconchain_Widget.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = C76F8864263021BD0066804A /* Beaconchain_Widget.intentdefinition */; };
+		C76F886C263021BF0066804A /* Beaconchain WidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C76F885C263021BC0066804A /* Beaconchain WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C790154F257E70EA0077FB87 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C790154E257E70EA0077FB87 /* GoogleService-Info.plist */; };
+		C7A11E3D26AF015F00BCBA28 /* public in Resources */ = {isa = PBXBuildFile; fileRef = C7A11E3C26AF015F00BCBA28 /* public */; };
+		C7AAA53A26398A5A00CCFC42 /* StorageMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7AAA53926398A5A00CCFC42 /* StorageMirror.swift */; };
+		C7AAA54226398DD600CCFC42 /* StorageMirror.m in Sources */ = {isa = PBXBuildFile; fileRef = C7AAA54126398DD600CCFC42 /* StorageMirror.m */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C76F886A263021BF0066804A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C76F885B263021BC0066804A;
+			remoteInfo = "Beaconchain WidgetExtension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C76F886D263021BF0066804A /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C76F886C263021BF0066804A /* Beaconchain WidgetExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
@@ -27,12 +63,26 @@
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = SOURCE_ROOT; };
+		64322C5426BBEFF60080504C /* Beaconchain WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Beaconchain WidgetExtension.entitlements"; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
+		C7065CAD2632EEE800DF9149 /* WebAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAPI.swift; sourceTree = "<group>"; };
+		C7065CB12636CF0B00DF9149 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		C7065CD92638399000DF9149 /* StorageBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageBridge.swift; sourceTree = "<group>"; };
+		C76F885C263021BC0066804A /* Beaconchain WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Beaconchain WidgetExtension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C76F885D263021BC0066804A /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		C76F885F263021BC0066804A /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		C76F8862263021BC0066804A /* Beaconchain_Widget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Beaconchain_Widget.swift; sourceTree = "<group>"; };
+		C76F8864263021BD0066804A /* Beaconchain_Widget.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = Beaconchain_Widget.intentdefinition; sourceTree = "<group>"; };
+		C76F8865263021BF0066804A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C76F8867263021BF0066804A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C790154D257E70A30077FB87 /* AppRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppRelease.entitlements; sourceTree = "<group>"; };
 		C790154E257E70EA0077FB87 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C7901566257FC9CD0077FB87 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		C7A11E3C26AF015F00BCBA28 /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		C7AAA53926398A5A00CCFC42 /* StorageMirror.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageMirror.swift; sourceTree = "<group>"; };
+		C7AAA54026398DD600CCFC42 /* App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "App-Bridging-Header.h"; sourceTree = "<group>"; };
+		C7AAA54126398DD600CCFC42 /* StorageMirror.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StorageMirror.m; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -45,6 +95,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C76F8859263021BC0066804A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C76F8860263021BC0066804A /* SwiftUI.framework in Frameworks */,
+				C76F885E263021BC0066804A /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -52,6 +111,8 @@
 			isa = PBXGroup;
 			children = (
 				AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */,
+				C76F885D263021BC0066804A /* WidgetKit.framework */,
+				C76F885F263021BC0066804A /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -59,7 +120,9 @@
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
+				64322C5426BBEFF60080504C /* Beaconchain WidgetExtension.entitlements */,
 				504EC3061FED79650016851F /* App */,
+				C76F8861263021BC0066804A /* Beaconchain Widget */,
 				504EC3051FED79650016851F /* Products */,
 				7F8756D8B27F46E3366F6CEA /* Pods */,
 				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
@@ -70,6 +133,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				C76F885C263021BC0066804A /* Beaconchain WidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -77,6 +141,7 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
+				C7A11E3C26AF015F00BCBA28 /* public */,
 				C7901566257FC9CD0077FB87 /* App.entitlements */,
 				C790154E257E70EA0077FB87 /* GoogleService-Info.plist */,
 				C790154D257E70A30077FB87 /* AppRelease.entitlements */,
@@ -87,7 +152,9 @@
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
 				504EC3131FED79650016851F /* Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
-				50B271D01FEDC1A000F3C39B /* public */,
+				C7AAA53926398A5A00CCFC42 /* StorageMirror.swift */,
+				C7AAA54126398DD600CCFC42 /* StorageMirror.m */,
+				C7AAA54026398DD600CCFC42 /* App-Bridging-Header.h */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -99,6 +166,20 @@
 				AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		C76F8861263021BC0066804A /* Beaconchain Widget */ = {
+			isa = PBXGroup;
+			children = (
+				C76F8862263021BC0066804A /* Beaconchain_Widget.swift */,
+				C76F8864263021BD0066804A /* Beaconchain_Widget.intentdefinition */,
+				C76F8865263021BF0066804A /* Assets.xcassets */,
+				C76F8867263021BF0066804A /* Info.plist */,
+				C7065CAD2632EEE800DF9149 /* WebAPI.swift */,
+				C7065CB12636CF0B00DF9149 /* Models.swift */,
+				C7065CD92638399000DF9149 /* StorageBridge.swift */,
+			);
+			path = "Beaconchain Widget";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -113,15 +194,34 @@
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
+				C76F886D263021BF0066804A /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				C76F886B263021BF0066804A /* PBXTargetDependency */,
 			);
 			name = App;
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* App.app */;
 			productType = "com.apple.product-type.application";
+		};
+		C76F885B263021BC0066804A /* Beaconchain WidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C76F8870263021BF0066804A /* Build configuration list for PBXNativeTarget "Beaconchain WidgetExtension" */;
+			buildPhases = (
+				C76F8858263021BC0066804A /* Sources */,
+				C76F8859263021BC0066804A /* Frameworks */,
+				C76F885A263021BC0066804A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Beaconchain WidgetExtension";
+			productName = "Beaconchain WidgetExtension";
+			productReference = C76F885C263021BC0066804A /* Beaconchain WidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -129,12 +229,16 @@
 		504EC2FC1FED79650016851F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0920;
+				LastSwiftUpdateCheck = 1250;
 				LastUpgradeCheck = 0920;
 				TargetAttributes = {
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = 1100;
+						LastSwiftMigration = 1240;
+						ProvisioningStyle = Automatic;
+					};
+					C76F885B263021BC0066804A = {
+						CreatedOnToolsVersion = 12.4;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -153,6 +257,7 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				C76F885B263021BC0066804A /* Beaconchain WidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -163,12 +268,20 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
-				50B271D11FEDC1A000F3C39B /* public in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				C790154F257E70EA0077FB87 /* GoogleService-Info.plist in Resources */,
+				C7A11E3D26AF015F00BCBA28 /* public in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C76F885A263021BC0066804A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C76F8866263021BF0066804A /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,11 +328,34 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C76F8869263021BF0066804A /* Beaconchain_Widget.intentdefinition in Sources */,
+				C7AAA53A26398A5A00CCFC42 /* StorageMirror.swift in Sources */,
+				C7AAA54226398DD600CCFC42 /* StorageMirror.m in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C76F8858263021BC0066804A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C76F8868263021BF0066804A /* Beaconchain_Widget.intentdefinition in Sources */,
+				C7065CAE2632EEE800DF9149 /* WebAPI.swift in Sources */,
+				C76F8863263021BC0066804A /* Beaconchain_Widget.swift in Sources */,
+				C7065CDA2638399000DF9149 /* StorageBridge.swift in Sources */,
+				C7065CB22636CF0B00DF9149 /* Models.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C76F886B263021BF0066804A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C76F885B263021BC0066804A /* Beaconchain WidgetExtension */;
+			targetProxy = C76F886A263021BF0066804A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -289,7 +425,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -340,7 +476,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -352,21 +488,25 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 43;
 				DEVELOPMENT_TEAM = 3HYX3N9WTV;
 				INFOPLIST_FILE = App/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 2.3.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = in.beaconcha.mobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG USE_PUSH";
+				SWIFT_OBJC_BRIDGING_HEADER = "App/App-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -376,20 +516,78 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = App/AppRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 43;
 				DEVELOPMENT_TEAM = 3HYX3N9WTV;
 				INFOPLIST_FILE = App/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.4.1;
+				MARKETING_VERSION = 2.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = in.beaconcha.mobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = USE_PUSH;
+				SWIFT_OBJC_BRIDGING_HEADER = "App/App-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		C76F886E263021BF0066804A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = "Beaconchain WidgetExtension.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 43;
+				DEVELOPMENT_TEAM = 3HYX3N9WTV;
+				INFOPLIST_FILE = "Beaconchain Widget/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 2.3.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "in.beaconcha.mobile.Beaconchain-Widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		C76F886F263021BF0066804A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_ENTITLEMENTS = "Beaconchain WidgetExtension.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 43;
+				DEVELOPMENT_TEAM = 3HYX3N9WTV;
+				INFOPLIST_FILE = "Beaconchain Widget/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 2.3.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "in.beaconcha.mobile.Beaconchain-Widget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -412,6 +610,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C76F8870263021BF0066804A /* Build configuration list for PBXNativeTarget "Beaconchain WidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C76F886E263021BF0066804A /* Debug */,
+				C76F886F263021BF0066804A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -29,7 +29,6 @@ import ThemeUtils from '../utils/ThemeUtils';
 import { findConfigForKey } from '../utils/NetworkData';
 import { ModalController } from '@ionic/angular';
 import { HelppagePage } from '../pages/helppage/helppage.page';
-import { Plugins } from '@capacitor/core';
 import { ValidatorUtils } from '../utils/ValidatorUtils';
 import Unit, { MAPPING } from '../utils/EthereumUnits';
 import { AlertController } from '@ionic/angular';
@@ -44,9 +43,9 @@ import { MerchantUtils, PRODUCT_STANDARD } from '../utils/MerchantUtils';
 import { NotificationBase, LOCK_KEY } from './notification-base';
 import { Router } from '@angular/router';
 
-const { Device } = Plugins;
-const { Browser } = Plugins;
-const { Toast } = Plugins;
+import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
+import { Toast } from '@capacitor/toast';
 
 @Component({
   selector: 'app-tab3',
@@ -121,7 +120,7 @@ export class Tab3Page {
       this.allTestNetworks = result
     })
 
-    Device.getInfo().then((result) => this.appVersion = result.appVersion)
+    App.getInfo().then((result) => this.appVersion = result.version)
 
     this.storage.getStakingShare().then((result) => this.stakingShare = result)
 

@@ -38,13 +38,13 @@
   </ion-refresher>
 
   <ion-item *ngIf="items && !loading && initialized" class="top-bar" [class]="fadeIn">
-    <ion-label *ngIf="searchResultMode" i18n="Search Results">Search Results</ion-label>
-    <ion-label *ngIf="!searchResultMode" i18n="My Validators">My Validators</ion-label>
-    <ion-icon slot="end" name="bookmarks-outline" (click)="addAllDialog()"
+    <ion-label *ngIf="searchResultMode" >Search Results</ion-label>
+    <ion-label *ngIf="!searchResultMode" >My Validators</ion-label>
+    <ion-icon class="opacity-icon" slot="end" name="bookmarks-outline" (click)="addAllDialog()"
       *ngIf="searchResultMode && this.items && items.length > 1"></ion-icon>
-    <ion-icon slot="end" name="close-circle-outline" (click)="removeAllDialog()"
+    <ion-icon class="opacity-icon" slot="end" name="close-circle-outline" (click)="removeAllDialog()"
       *ngIf="!searchResultMode && this.items && items.length > 1"></ion-icon>
-    <ion-icon slot="end" name="sync-circle-outline" (click)="syncRemote()"
+    <ion-icon class="opacity-icon" slot="end" name="sync-circle-outline" (click)="syncRemote()"
       *ngIf="isLoggedIn && !searchResultMode && this.items && items.length >= 0"></ion-icon>
   </ion-item>
 
@@ -68,15 +68,15 @@
 
   <div class="nothingfound" *ngIf="items && items.length <= 0 && searchResultMode && !loading">
     <ion-icon name="telescope-outline"></ion-icon>
-    <h2 i18n="Search nothing found title">Nothing found</h2>
-    <ion-label i18n="Search nothing found text">We couldn't find the validators you are looking for.
+    <h2 >Nothing found</h2>
+    <ion-label >We couldn't find the validators you are looking for.
       Try searching by Index, Public Key or ETH1 address.</ion-label>
   </div>
 
   <div class="nothingfound" *ngIf="items && items.length <= 0 && !searchResultMode && !loading && initialized">
     <ion-icon name="arrow-up-circle-outline"></ion-icon>
-    <h2 i18n="my validators add title">Add Validators</h2>
-    <ion-label i18n="Search nothing found text">
+    <h2>Add Validators</h2>
+    <ion-label >
       You can add your validators by searching for a public key, validator index or your eth 1 address.
     </ion-label>
   </div>

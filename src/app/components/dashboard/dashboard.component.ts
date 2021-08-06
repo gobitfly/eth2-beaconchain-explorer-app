@@ -25,14 +25,13 @@ import { DasboardDataRequest, EpochResponse } from '../../requests/requests';
 import * as HighCharts from 'highcharts';
 import * as Highstock from "highcharts/highstock";
 import BigNumber from "bignumber.js";
-import { Plugins } from '@capacitor/core';
 import { OverviewData } from '../../controllers/OverviewController';
 import { Release } from '../../utils/ClientUpdateUtils';
 import ThemeUtils from 'src/app/utils/ThemeUtils';
 import { highChartOptions } from 'src/app/utils/HighchartOptions';
 import { StorageService } from 'src/app/services/storage.service';
 import confetti from 'canvas-confetti';
-const { Browser } = Plugins;
+import { Browser } from '@capacitor/browser';
 
 @Component({
   selector: 'app-validator-dashboard',

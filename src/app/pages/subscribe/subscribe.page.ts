@@ -4,11 +4,8 @@ import { fromEvent, Subscription } from 'rxjs';
 import { StorageService } from 'src/app/services/storage.service';
 import { MerchantUtils, Package } from 'src/app/utils/MerchantUtils';
 import { OAuthUtils } from 'src/app/utils/OAuthUtils';
-
-import { Plugins } from '@capacitor/core';
 import { AlertService } from 'src/app/services/alert.service';
-
-const { Toast } = Plugins;
+import { Toast } from '@capacitor/toast';
 
 @Component({
   selector: 'app-subscribe',

@@ -19,13 +19,11 @@
  */
 
 import { Component, OnInit, Input } from '@angular/core';
-import { Plugins, StoragePlugin } from '@capacitor/core';
-import { textChangeRangeIsUnchanged } from 'typescript';
 import { AlertController } from '@ionic/angular';
 import { StorageService } from 'src/app/services/storage.service';
 import confetti from 'canvas-confetti';
 
-const { Browser } = Plugins;
+import { Browser } from '@capacitor/browser';
 
 @Component({
   selector: 'app-message',
@@ -53,12 +51,6 @@ export class MessageComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    if (this.openUrl && this.openUrl.startsWith("http")) {
-      if (!this.openUrlExternal) {
-        Browser.prefetch({ urls: [this.openUrl] })
-      }
-    }
-
     if (this.dismissAble) {
       if (!this.dismissKey) this.dismissKey = this.defaultDismissKey()
       this.storage.getBooleanSetting(this.dismissKey, false).then((dismissed) => {

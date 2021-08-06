@@ -20,7 +20,7 @@
 
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title i18n="Preferences">
+    <ion-title >
       Preferences
     </ion-title>
   </ion-toolbar>
@@ -30,9 +30,9 @@
 
   <ion-list (click)="openUpgrades()">
     <ion-item lines="none" class="premium" >
-      <ion-icon slot="start" name="rocket-outline"></ion-icon>
+      <ion-icon slot="start" name="rocket-outline" class="opacity-icon"></ion-icon>
       <ion-label>Upgrade to Premium</ion-label>
-      <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+      <ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon"></ion-icon>
     </ion-item>
     <span class="hint">Premium supports up to 280 validators, Widgets, Themes and more.</span>
 
@@ -46,14 +46,14 @@
   <ion-list>
 
     <ion-item lines="none" *ngIf="theme.isWinterSeason()">
-      <ion-icon slot="start" name="snow-outline"></ion-icon>
+      <ion-icon slot="start" name="snow-outline" class="opacity-icon"></ion-icon>
       <ion-label>Let it snow</ion-label>
       <ion-toggle checked [(ngModel)]="snowing" (ionChange)="toggleSnow()" slot="end"></ion-toggle>
     </ion-item>
 
     <ion-item lines="none">
-      <ion-icon slot="start" name="moon-outline"></ion-icon>
-      <ion-label i18n="Settings toggle dark theme">
+      <ion-icon slot="start" name="moon-outline" class="opacity-icon"></ion-icon>
+      <ion-label>
         Toggle Dark Theme
       </ion-label>
       <ion-toggle id="themeToggle" [(ngModel)]="darkMode" (ionChange)="darkModeToggle()" slot="end"></ion-toggle>
@@ -112,8 +112,8 @@
     </ion-item> -->
 
     <ion-item lines="none">
-      <ion-icon slot="start" name="wallet-outline"></ion-icon>
-      <ion-label i18n="Settings configure display currency">Display Currency</ion-label>
+      <ion-icon slot="start" name="wallet-outline" class="opacity-icon"></ion-icon>
+      <ion-label>Display Currency</ion-label>
       <ion-select value="ETHER" [(ngModel)]="this.unit.pref" (ionChange)="changeCurrency()" interface="popover"
         *ngIf="overrideDisplayCurrency == null">
         <ion-select-option *ngFor="let item of allCurrencies;" value="{{item[1]}}">
@@ -131,7 +131,7 @@
   <ion-list>
 
     <ion-item lines="none">
-      <ion-icon slot="start" name="color-palette-outline"></ion-icon>
+      <ion-icon slot="start" name="color-palette-outline" class="opacity-icon"></ion-icon>
       <ion-label>
         Theme Color
       </ion-label>
@@ -177,17 +177,17 @@
           Metal
         </ion-select-option>
       </ion-select>
-      <ion-icon slot="end" name="lock-closed-outline" *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'" (click)="openUpgrades()">
+      <ion-icon slot="end" class="opacity-icon" name="lock-closed-outline" *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'" (click)="openUpgrades()">
       </ion-icon>
     </ion-item>
 
     <ion-item lines="none"(click)="widgetSetupInfo()">
 
-      <ion-icon slot="start" name="shapes-outline">
+      <ion-icon class="opacity-icon" slot="start" name="shapes-outline">
       </ion-icon>
       <ion-label>Widgets</ion-label>
-      <ion-icon slot="end" name="lock-closed-outline" *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'"></ion-icon>
-      <ion-icon slot="end"  name="information-circle-outline" *ngIf="currentPlan != 'standard' && currentPlan != 'plankton'"></ion-icon>
+      <ion-icon slot="end" class="opacity-icon" name="lock-closed-outline" *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'"></ion-icon>
+      <ion-icon slot="end" class="opacity-icon" name="information-circle-outline" *ngIf="currentPlan != 'standard' && currentPlan != 'plankton'"></ion-icon>
     </ion-item>
 
   </ion-list>
@@ -198,30 +198,30 @@
 
   <ion-list>
     <ion-item lines="none" *ngIf="!authUser" (click)="openOAuth()">
-      <ion-icon slot="start" name="log-in-outline">
+      <ion-icon class="opacity-icon" slot="start" name="log-in-outline">
       </ion-icon>
-      <ion-label i18n="Settings login to receive notifications">
+      <ion-label>
         Login to Receive Notifications
       </ion-label>
     </ion-item>
 
     <ion-item lines="none" [disabled]="!authUser" (click)="gotoNotificationPage()">
-      <ion-icon slot="start" name="notifications-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="start" name="notifications-outline"></ion-icon>
       <ion-label>Notification Preferences</ion-label>
-      <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="end" name="chevron-forward-outline"></ion-icon>
     </ion-item>
 
    
   </ion-list>
 
   <ion-list-header>
-    <ion-label i18n="Settings show me client updates for">Show me client updates for</ion-label>
+    <ion-label>Show me client updates for</ion-label>
   </ion-list-header>
 
   <ion-list>
     <ion-item lines="none">
-      <ion-icon slot="start" name="cube-outline"></ion-icon>
-      <ion-label i18n="Settings eth 1 client">Eth 1 Client</ion-label>
+      <ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
+      <ion-label>Eth 1 Client</ion-label>
       <ion-select placeholder="None" [(ngModel)]="eth1client" (ionChange)="changeETH1Client()" interface="popover">
         <ion-select-option value="none">None</ion-select-option>
         <ion-select-option value="GETH">Geth</ion-select-option>
@@ -231,8 +231,8 @@
       </ion-select>
     </ion-item>
     <ion-item lines="none">
-      <ion-icon slot="start" name="bonfire-outline"></ion-icon>
-      <ion-label i18n="Settings eth beaconchain client">Eth Beaconchain Client</ion-label>
+      <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
+      <ion-label>Eth Beaconchain Client</ion-label>
       <ion-select placeholder="None" [(ngModel)]="eth2client" (ionChange)="changeETH2Client()" interface="popover">
         <ion-select-option value="none">None</ion-select-option>
         <ion-select-option value="PRYSM">Prysm</ion-select-option>
@@ -242,33 +242,33 @@
       </ion-select>
     </ion-item>
     <ion-item lines="none">
-      <ion-icon slot="start" name="git-branch"></ion-icon>
-      <ion-label i18n="Settings update channel">Update Channel</ion-label>
+      <ion-icon class="opacity-icon" slot="start" name="git-branch"></ion-icon>
+      <ion-label >Update Channel</ion-label>
       <ion-select value="STABLE" [(ngModel)]="updateChannel" (ionChange)="changeUpdateChannel()" interface="popover">
-        <ion-select-option value="STABLE" i18n="Settings update channel stable">Stable</ion-select-option>
-        <ion-select-option value="PRERELEASE" i18n="Settings update channel prerelease">Pre-release</ion-select-option>
+        <ion-select-option value="STABLE" >Stable</ion-select-option>
+        <ion-select-option value="PRERELEASE">Pre-release</ion-select-option>
       </ion-select>
     </ion-item>
   </ion-list>
 
   <ion-list-header>
-    <ion-label i18n="Settings general title">General</ion-label>
+    <ion-label >General</ion-label>
   </ion-list-header>
 
   <ion-list>
 
     <ion-item lines="none" (click)="partialStake()">
-      <ion-icon slot="start" name="pie-chart-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="start" name="pie-chart-outline"></ion-icon>
       <ion-label>Stake Share</ion-label>
       <ion-label slot="end" class="selected-option" *ngIf="stakingShare == null">Full</ion-label>
       <ion-label slot="end" class="selected-option" *ngIf="stakingShare != null">{{ stakingShare }} Ether</ion-label>
     </ion-item>
 
     <ion-item lines="none">
-      <ion-icon slot="start" name="planet-outline"></ion-icon>
-      <ion-label i18n="Settings network title">Network</ion-label>
+      <ion-icon class="opacity-icon" slot="start" name="planet-outline"></ion-icon>
+      <ion-label>Network</ion-label>
       <ion-select value="main" [(ngModel)]="network" (ionChange)="changeNetwork()" interface="popover">
-        <ion-select-option value="main" i18n="Settings network mainnet">Mainnet</ion-select-option>
+        <ion-select-option value="main" >Mainnet</ion-select-option>
         <ion-select-option *ngFor="let item of allTestNetworks;" value="{{item[1]}}">
           {{ item[0] }}
         </ion-select-option>
@@ -276,56 +276,61 @@
     </ion-item>
 
     <ion-item lines="none" (click)="rateApp()">
-      <ion-icon slot="start" name="heart-outline"></ion-icon>
-      <ion-label i18n="Settings rate this app">Rate this App</ion-label>
+      <ion-icon class="opacity-icon" slot="start" name="heart-outline"></ion-icon>
+      <ion-label >Rate this App</ion-label>
     </ion-item>
 
     <ion-item lines="none" (click)="openFAQ()">
-      <ion-icon slot="start" name="bulb-outline"></ion-icon>
-      <ion-label i18n="Settings FAQ">Guides & FAQ</ion-label>
+      <ion-icon class="opacity-icon" slot="start" name="bulb-outline"></ion-icon>
+      <ion-label >Guides & FAQ</ion-label>
     </ion-item>
 
 
     <ion-item lines="none" (click)="manageSubs()" [disabled]="!authUser">
-      <ion-icon slot="start" name="pricetag-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="start" name="pricetag-outline"></ion-icon>
       <ion-label>Manage Subscriptions</ion-label>
     </ion-item>
 
+    <ion-item lines="none" (click)="openBrowser('https://github.com/gobitfly/eth2-beaconchain-explorer-app/issues')">
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+      <ion-label>Bug Report</ion-label>
+    </ion-item>
+    
     <ion-item lines="none" (click)="logout()" *ngIf="authUser">
-      <ion-icon slot="start" name="log-out-outline"></ion-icon>
-      <ion-label i18n="Settings logout">Logout</ion-label>
+      <ion-icon class="opacity-icon" slot="start" name="log-out-outline"></ion-icon>
+      <ion-label >Logout</ion-label>
     </ion-item>
     <ion-item lines="none" (click)="openOAuth()" *ngIf="!authUser">
-      <ion-icon slot="start" name="log-in-outline"></ion-icon>
-      <ion-label i18n="Settings logout">Login</ion-label>
+      <ion-icon class="opacity-icon" slot="start" name="log-in-outline"></ion-icon>
+      <ion-label>Login</ion-label>
     </ion-item>
   </ion-list>
 
   <ion-list-header>
-    <ion-label i18n="Settings legal title">Legal</ion-label>
+    <ion-label>Legal</ion-label>
   </ion-list-header>
   <ion-list>
     <ion-item lines="none" (click)="openBrowser('https://beaconcha.in/legal/privacy.pdf', true)">
-      <ion-label i18n="Settings privacy policy">Privacy Policy</ion-label>
+      <ion-label >Privacy Policy</ion-label>
     </ion-item>
 
     <ion-item lines="none" (click)="openBrowser('https://beaconcha.in/legal/tos.pdf', true)">
-      <ion-label i18n="Settings privacy policy">Terms of Service</ion-label>
+      <ion-label>Terms of Service</ion-label>
     </ion-item>
     <ion-item lines="none" (click)="openOpenSource()">
-      <ion-label i18n="Settings open source licences">Open Source Licences</ion-label>
+      <ion-label >Open Source Licences</ion-label>
     </ion-item>
 
     <ion-item lines="none" (click)="openIconCredit()">
-      <ion-label i18n="Settings app icon credits">App Icon Credit</ion-label>
+      <ion-label>App Icon Credit</ion-label>
     </ion-item>
 
     <ion-item lines="none" (click)="openBrowser('https://beaconcha.in/imprint')">
-      <ion-label i18n="Settings imprint">Imprint</ion-label>
+      <ion-label>Imprint</ion-label>
     </ion-item>
 
     <ion-item lines="none" [routerLink]="['/dev']" *ngIf="debug">
-      <ion-icon slot="end" name="bug-outline"></ion-icon>
+      <ion-icon class="opacity-icon" slot="end" name="bug-outline"></ion-icon>
       <ion-label>Dev</ion-label>
     </ion-item>
   </ion-list>

@@ -29,7 +29,6 @@ npm-debug.log*
 /platforms
 /plugins
 /www
-capacitor.config.json
 /android/app/google-services.json
 /ios/App/GoogleService-Info.plist
 /appassets

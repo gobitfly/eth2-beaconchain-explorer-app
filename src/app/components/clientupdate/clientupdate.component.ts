@@ -19,12 +19,9 @@
  */
 
 import { Component, OnInit, Input } from '@angular/core';
-import { Plugins } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
+import { Toast } from '@capacitor/toast';
 import ClientUpdateUtils from '../../utils/ClientUpdateUtils';
-
-const { Browser } = Plugins;
-
-const { Toast } = Plugins;
 
 @Component({
   selector: 'app-clientupdate',
@@ -46,8 +43,6 @@ export class ClientupdateComponent implements OnInit {
   ngOnChanges() {
     if (this.data && this.data.data) {
       this.version = this.data.data.tag_name;
-      if (this.data.data.html_url && this.data.data.html_url.startsWith("http"))
-        Browser.prefetch({ urls: [this.data.data.html_url] })
     }
   }
 

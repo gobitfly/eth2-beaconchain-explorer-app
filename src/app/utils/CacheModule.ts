@@ -18,33 +18,59 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { resolve } from "@angular/compiler-cli/src/ngtsc/file_system"
+import { StorageService } from "../services/storage.service"
+
 interface CachedData {
+    maxStaleTime: number
     time: number
     data: any
 }
 
-const STALE_TIME = 6 * 60 * 1000 // 6 Minutes
-
 export class CacheModule {
 
-    private keyPrefix = ""
+    private staleTime = 5 * 60 * 1000 // 6 Minutes
 
-    constructor(keyPrefix: string = "") {
+    private keyPrefix = ""
+    private hardStorage: StorageService = null
+    initialized: Promise<any>
+
+    constructor(keyPrefix: string = "", staleTime = 6 * 60 * 1000, hardStorage: StorageService = null) {
         this.keyPrefix = keyPrefix
+        this.staleTime = staleTime
+        this.hardStorage = hardStorage
+        this.init()
+    }
+
+    async init() {
+        if (this.hardStorage) {
+            this.initialized = this.hardStorage.getObject("cachemodule_" + this.keyPrefix)
+            let result = await this.initialized
+            if(result) this.cache = result
+            console.log("[CacheModule] initialized with ", this.cache)
+        } else {
+            this.initialized = new Promise<void>((resolve) => { resolve() })
+            await this.initialized
+        }
     }
 
     private cache: Map<String, CachedData> = new Map()
 
-    protected putCache(key: string, data: any) {
-        this.cache[this.getKey(key)] = {
+    protected putCache(key: string, data: any, staleTime = this.staleTime) {
+        this.cache.set(this.getKey(key), {
+            maxStaleTime: staleTime ?? this.staleTime,
             time: this.getTimestamp(),
             data: data
+        })
+      
+        if (this.hardStorage) {
+            this.hardStorage.setObject("cachemodule_"+this.keyPrefix, this.cache)
         }
     }
 
     protected getCache(key: string) {
-        const temp = this.cache[this.getKey(key)]
-        if (!temp || temp.time + STALE_TIME < this.getTimestamp()) {
+        const temp = this.cache.get(this.getKey(key))
+        if (!temp || temp.time + temp.maxStaleTime < this.getTimestamp()) {
             return null
         }
         console.log("[CacheModule] getting from cache", temp.data)
@@ -86,6 +112,9 @@ export class CacheModule {
 
     invalidateAllCache() {
         this.cache = new Map()
+        if (this.hardStorage) {
+            this.hardStorage.setObject("cachemodule_"+this.keyPrefix, null)
+        }
     }
 
     private getTimestamp(): number {

@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonRange, ModalController, Platform } from '@ionic/angular';
 import { AlertService } from 'src/app/services/alert.service';
 import { ApiService } from 'src/app/services/api.service';
-import { CPU_THRESHOLD, HDD_THRESHOLD, StorageService } from 'src/app/services/storage.service';
+import { CPU_THRESHOLD, HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from 'src/app/services/storage.service';
 import { SyncService } from 'src/app/services/sync.service';
 import { NotificationBase } from 'src/app/tab-preferences/notification-base';
 import FirebaseUtils from 'src/app/utils/FirebaseUtils';
@@ -22,6 +22,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 
   storageThreshold = 90
   cpuThreshold = 60
+  memoryThreshold = 80
 
   canCustomizeThresholds = false
 
@@ -67,6 +68,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 
     this.cpuThreshold = await this.storage.getSetting(CPU_THRESHOLD, 60)
     this.storageThreshold = await this.storage.getSetting(HDD_THRESHOLD, 90)
+    this.memoryThreshold = await this.storage.getSetting(RAM_THRESHOLD, 80)
     await this.loadNotifyToggles()
     setTimeout(() => { this.initialized = true }, 400)
   }
@@ -83,6 +85,13 @@ export class NotificationsPage extends NotificationBase implements OnInit {
     this.storage.setSetting(CPU_THRESHOLD, this.cpuThreshold)
     const thresholdConv = this.cpuThreshold / 100
     this.notifyEventToggleAllMachines('monitoring_cpu_load', thresholdConv)
+  }
+
+  changeMemoryNotification() {
+    if (!this.initialized) return
+    this.storage.setSetting(RAM_THRESHOLD, this.memoryThreshold)
+    const thresholdConv = this.memoryThreshold / 100
+    this.notifyEventToggleAllMachines('monitoring_memory_usage', thresholdConv)
   }
 
   async notifyEventToggleAllMachines(event: string, threshold: number = null) {

@@ -22,9 +22,8 @@ import { Component } from '@angular/core';
 
 import { ModalController, Platform } from '@ionic/angular';
 import ThemeUtils from './utils/ThemeUtils';
-import { Plugins } from '@capacitor/core';
-const { SplashScreen } = Plugins;
-const { AdMob } = Plugins;
+import { SplashScreen } from '@capacitor/splash-screen';
+import { StorageService } from './services/storage.service';
 
 @Component({
   selector: 'app-root',
@@ -35,24 +34,26 @@ export class AppComponent {
   constructor(
     private platform: Platform,
     private theme: ThemeUtils,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private storage: StorageService
   ) {
     this.initializeApp();
   }
 
   initializeApp() {
     this.platform.ready().then(() => {
-
-      this.theme.init(() => {
-        SplashScreen.hide()
-      }); // just initialize the theme service
-
-      this.setAndroidBackButtonBehavior();
-
-     /* AdMob.initialize({
-        requestTrackingAuthorization: false,
-        testingDevices: []
-      });*/
+      this.storage.migrateToCapacitor3().then(() => {
+        this.theme.init(() => {
+          SplashScreen.hide()
+        }); // just initialize the theme service
+  
+        this.setAndroidBackButtonBehavior();
+  
+       /* AdMob.initialize({
+          requestTrackingAuthorization: false,
+          testingDevices: []
+        });*/
+      })
     });
   }
 
