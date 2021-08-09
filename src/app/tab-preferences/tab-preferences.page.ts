@@ -40,7 +40,7 @@ import { SyncService } from '../services/sync.service';
 import { LicencesPage } from '../pages/licences/licences.page';
 import { SubscribePage } from '../pages/subscribe/subscribe.page';
 import { MerchantUtils, PRODUCT_STANDARD } from '../utils/MerchantUtils';
-import { NotificationBase, LOCK_KEY } from './notification-base';
+import { NotificationBase } from './notification-base';
 import { Router } from '@angular/router';
 
 import { App } from '@capacitor/app';
@@ -299,7 +299,6 @@ export class Tab3Page {
 
   confirmLogout() {
     this.storage.removeAuthUser();
-    this.storage.setItem(LOCK_KEY, "")
     this.authUser = null
     Toast.show({
       text: 'Logged out'

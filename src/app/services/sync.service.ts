@@ -142,7 +142,7 @@ export class SyncService {
       if (syncAction == SyncActionEvent.NOTIFICATIONS) {
         const temp = await this.getChanged(cleanKey)
         console.log("== STALING " + cleanKey + " ==", temp)
-        this.setLastChanged(cleanKey, temp.eventName, temp.eventFilter, temp.eventThreshold)
+        await this.setLastChanged(cleanKey, temp.eventName, temp.eventFilter, temp.eventThreshold)
       }
     }
 
