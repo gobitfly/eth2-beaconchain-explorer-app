@@ -26,6 +26,9 @@ import ClientUpdateUtils from '../utils/ClientUpdateUtils';
 import { StorageService } from '../services/storage.service';
 import { UnitconvService } from '../services/unitconv.service';
 import { App, AppState } from '@capacitor/app';
+import { SyncService } from '../services/sync.service';
+
+export const REAPPLY_KEY = "reapply_notification2"
 
 @Component({
   selector: 'app-tab1',
@@ -45,7 +48,8 @@ export class Tab1Page {
     public api: ApiService,
     public updates: ClientUpdateUtils,
     private storage: StorageService,
-    private unitConv: UnitconvService
+    private unitConv: UnitconvService,
+    private sync: SyncService
   ) {
     this.validatorUtils.registerListener(() => {
       this.refresh()
@@ -60,6 +64,18 @@ export class Tab1Page {
       }
     });
 
+    this.reApplyNotifications()
+  }
+
+  async reApplyNotifications() {
+    const isLoggedIn = await this.storage.getAuthUser()
+    if (!isLoggedIn) return
+    
+    const reapply = await this.storage.getBooleanSetting(REAPPLY_KEY, false)
+    if (!reapply) {
+      this.sync.syncAllSettingsForceStaleNotifications()
+    }
+    this.storage.setBooleanSetting(REAPPLY_KEY, true)
   }
 
   onScroll($event) {
