@@ -110,7 +110,11 @@ export class MachineDetailPage extends MachineController implements OnInit {
       this.networkLabelRx = "Receive: " + bytes(this.getAvgFrom(this.data.system, (array) => array.network_node_bytes_total_receive / this.magicGapNumber, true), true, true, 2) + "/s"
       this.networkLabelTx = "Transmit: " +  bytes(this.getAvgFrom(this.data.system, (array) => array.network_node_bytes_total_transmit / this.magicGapNumber, true), true, true, 2)+"/s"
     
-      this.memoryLabelFree = "Free: " + bytes(this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_free), true, true, 1)
+
+      const lastMemAv = this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_free + array.memory_node_bytes_buffers + array.memory_node_bytes_cached)
+      const lastMemTotal = this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_total)
+      const percentMem = Math.round(1000 - (lastMemAv * 1000 / lastMemTotal)) / 10;
+      this.memoryLabelFree = "Used: " + bytes(lastMemTotal - lastMemAv, true, true, 1) + " - " + percentMem + "%"
       this.memoryLabelTotal = "Total: " + bytes(this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_total), true, true, 1)
    
       this.memoryProcessLabelNode = "Node: " + bytes(this.getLastFrom(this.data.node, (array) => array.memory_process_bytes), true, true, 2)

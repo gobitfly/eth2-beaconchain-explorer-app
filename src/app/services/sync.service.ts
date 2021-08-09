@@ -109,6 +109,7 @@ export class SyncService {
     console.log("== Syncing notify ==")
 
     const unlock = await this.syncLock.acquire();
+    this.bundleList = []
 
     const allNotifyKeys = await this.getAllSyncChangeKeys()
     for (const key of allNotifyKeys) {
@@ -335,7 +336,7 @@ export class SyncService {
     }
 
     const response = await this.api.execute(request)
-    const result = request.wasSuccessfull(response)
+    const result = request.wasSuccessfull(response) 
     if (!result) {
       return false
     }

@@ -44,8 +44,12 @@ export abstract class APIRequest<T> {
   }
 
   wasSuccessfull(response: any, hasDataStatus = true): boolean {
-    if (!response || !response.status) return false
-    return response.status == 200 && (response.data.status == "OK" || !hasDataStatus)
+    if (this.nativeHttp) {
+      if (!response || !response.status) return false
+      return response.status == 200 && (response.data.status == "OK" || !hasDataStatus)
+    } else {
+      return response && response.status == "OK"
+    }
   }
 
   protected parseBase(response: any, hasDataStatus = true): T[] {
@@ -73,6 +77,8 @@ export abstract class APIRequest<T> {
   updatesLastRefreshState = false
   ignoreFails = false
   maxCacheAge = 5 * 60 * 1000
+  nativeHttp = true
+ 
 }
 
 // ------------- Responses -------------
@@ -448,6 +454,7 @@ export class NotificationBundleSubsRequest extends APIRequest<ApiTokenResponse> 
   requiresAuth = true
   postData: any = {}
   ignoreFails = true
+  nativeHttp = false
 
   constructor(enabled: boolean, data: BundleSub[]) {
     super()
