@@ -158,8 +158,7 @@
     <ion-note slot="end">≥ {{ cpuThreshold }} %</ion-note>
 </ion-item>
 
-<!-- todo: remove hidden once server has been deployed with ram notification support -->
-<ion-item lines="none" [hidden]="true" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
+<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
   <ion-icon slot="start"name="server-outline"></ion-icon>
  
   <ion-label>
@@ -170,8 +169,7 @@
 </ion-item>
 
 
-<!-- todo: remove hidden once server has been deployed with ram notification support -->
-<ion-item [hidden]="true" [class]="!notifyMachineMemoryLoad || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+<ion-item [class]="!notifyMachineMemoryLoad || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
   <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
   <ion-range *ngIf="canCustomizeThresholds" min="10" max="99" step="1" [(ngModel)]="memoryThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeMemoryNotification()" (touchend)="changeMemoryNotification()">
   </ion-range>

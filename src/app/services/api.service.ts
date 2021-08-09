@@ -222,7 +222,11 @@ export class ApiService extends CacheModule {
         response = this.get(request.resource, request.endPoint, request.ignoreFails, options)
         break;
       case Method.POST:
-        response = this.post(request.resource, request.postData, request.endPoint, request.ignoreFails, options)
+        if (request.nativeHttp) {
+          response = this.post(request.resource, request.postData, request.endPoint, request.ignoreFails, options)
+        } else {
+          response = this.legacyPost(request.resource, request.postData, request.endPoint, request.ignoreFails, options)
+        }
         break;
       default:
         throw "Unsupported method: " + request.method;
@@ -268,7 +272,9 @@ export class ApiService extends CacheModule {
   }
 
   private async post(resource: string, data: any, endpoint: string = "default", ignoreFails = false, options = { headers: {}}) {
-    options.headers = { ...options.headers, ...{ 'Content-Type':this.getContentType(data)}}
+    if(!options.headers.hasOwnProperty("Content-Type")){
+      options.headers = { ...options.headers, ...{ 'Content-Type':this.getContentType(data)}}
+    }
     
     const postOptions = {
       url: await this.getResourceUrl(resource, endpoint),
@@ -284,6 +290,25 @@ export class ApiService extends CacheModule {
         console.warn("Connection err", err)
       })
       .then((response: Response) => this.validateResponse(ignoreFails, response));
+  }
+
+  private async legacyPost(resource: string, data: any, endpoint: string = "default", ignoreFails = false, options = { headers: {} }) {
+    if(!options.headers.hasOwnProperty("Content-Type")){
+      options.headers = { ...options.headers, ...{ 'Content-Type':this.getContentType(data)}}
+    }
+    const resp = await fetch(
+      await this.getResourceUrl(resource, endpoint),
+       {
+           method: 'POST',
+           body: JSON.stringify(this.formatPostData(data)),
+           headers: options.headers
+       }
+    )
+    if (resp) {
+      return resp.json()
+    } else {
+      return null
+    }
   }
 
   private getContentType(data: any): string {

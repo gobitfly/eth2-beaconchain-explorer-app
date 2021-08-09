@@ -118,12 +118,12 @@ export class StorageService extends CacheModule {
   }
 
   async loadPreferencesToggles(network: string): Promise<NotificationToggles> {
-    const notifySlashed = await this.getBooleanSetting(network + SETTING_NOTIFY_SLASHED)
-    const notifyDecreased = await this.getBooleanSetting(network + SETTING_NOTIFY_DECREASED)
-    const notifyClientUpdate = await this.getBooleanSetting(network + SETTING_NOTIFY_CLIENTUPDATE)
-    const notifyProposalsSubmitted = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_SUBMITTED)
-    const notifyProposalsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_MISSED)
-    const notifyAttestationsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_ATTESTATION_MISSED)
+    const notifySlashed = await this.getBooleanSetting(network + SETTING_NOTIFY_SLASHED, false)
+    const notifyDecreased = await this.getBooleanSetting(network + SETTING_NOTIFY_DECREASED, false)
+    const notifyClientUpdate = await this.getBooleanSetting(network + SETTING_NOTIFY_CLIENTUPDATE, false)
+    const notifyProposalsSubmitted = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_SUBMITTED, false)
+    const notifyProposalsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_MISSED, false)
+    const notifyAttestationsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_ATTESTATION_MISSED, false)
     const notifyMachineOffline = await this.getBooleanSetting(SETTING_NOTIFY_MACHINE_OFFLINE, false)
     const notifyMachineHddWarn = await this.getBooleanSetting(SETTING_NOTIFY_HDD_WARN, false)
     const notifyMachineCpuWarn = await this.getBooleanSetting(SETTING_NOTIFY_CPU_WARN, false)

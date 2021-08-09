@@ -19,7 +19,7 @@ import { ApiService } from "../services/api.service";
 import { Injectable } from '@angular/core';
 import MachineController, { ProcessedStats, StatsResponse } from "../controllers/MachineController";
 import { GetMyMachinesRequest } from "../requests/requests";
-import { SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, StorageService } from "../services/storage.service";
+import { SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, StorageService } from "../services/storage.service";
 import { SyncService } from "../services/sync.service";
 import { CacheModule } from "./CacheModule";
 
@@ -68,7 +68,8 @@ export default class MachineUtils extends CacheModule {
                 console.log(LOGTAG + "found a new machine, applying your notification preferences...")
                 returnOK = (await this.sync.reapplyNotifyEvent(SETTING_NOTIFY_MACHINE_OFFLINE, "monitoring_machine_offline", it)) && returnOK
                 returnOK = (await this.sync.reapplyNotifyEvent(SETTING_NOTIFY_HDD_WARN, "monitoring_hdd_almostfull", it)) && returnOK
-                returnOK = (await this.sync.reapplyNotifyEvent(SETTING_NOTIFY_CPU_WARN , "monitoring_cpu_load", it)) && returnOK
+                returnOK = (await this.sync.reapplyNotifyEvent(SETTING_NOTIFY_CPU_WARN, "monitoring_cpu_load", it)) && returnOK
+                returnOK = (await this.sync.reapplyNotifyEvent(SETTING_NOTIFY_MEMORY_WARN, "monitoring_memory_usage", it)) && returnOK
             }
         }
         this.sync.syncAllSettings()

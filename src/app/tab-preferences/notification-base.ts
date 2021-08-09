@@ -8,7 +8,6 @@ import FirebaseUtils from '../utils/FirebaseUtils';
 import { GetMobileSettingsRequest, MobileSettingsResponse } from '../requests/requests';
 import { Injectable } from '@angular/core';
 
-export const LOCK_KEY = "first_time_push_v6"
 const LOCKED_STATE = "locked_v2"
 
 @Injectable({
@@ -126,8 +125,6 @@ export class NotificationBase implements OnInit {
       }
       this.remoteNotifyLoadedOnce = true
     }
-
-    setTimeout(() => this.firstTimePushAllNotificationSettings(), 500)
   }
 
   async notifyToggle() {
@@ -169,7 +166,7 @@ export class NotificationBase implements OnInit {
     const local = await this.getNotificationSetting(notifyLocalStore)
     const remote = await this.getRemoteNotificationSettingResponse()
 
-    if (remote) {
+    if (remote && notifyLocalStore) {
       console.log("Returning notification enabled remote state:", remote.notify_enabled)
       return remote.notify_enabled
     }
@@ -189,33 +186,6 @@ export class NotificationBase implements OnInit {
     const result = request.parse(response)
     if (result && result.length >= 1) return result[0]
     return null
-  }
-
-  private async firstTimePushAllNotificationSettings() {
-    if (!this.notify) return
-
-    const locked = await this.storage.getItem(LOCK_KEY)
-    if (locked && locked == LOCKED_STATE) return;
-
-    console.log("firstTimePushAllNotificationSettings is running")
-
-    this.notifyEventToggle("validator_balance_decreased")
-    this.notifyEventToggle("validator_got_slashed")
-    this.notifyClientUpdates()
-
-    //const v3LockPresent = await this.storage.getItem("first_time_push_v3")
-    //if (!v3LockPresent) {
-    this.notifyEventToggle("validator_proposal_submitted")
-    this.notifyEventToggle("validator_proposal_missed")
-    // }
-
-    /*
-
-    this.notifyEventToggle("monitoring_machine_offline")
-    this.notifyEventToggle("monitoring_cpu_load")
-    this.notifyEventToggle("monitoring_hdd_almostfull")
-*/
-    this.storage.setItem(LOCK_KEY, LOCKED_STATE)
   }
     
   notifyClientUpdates() {
