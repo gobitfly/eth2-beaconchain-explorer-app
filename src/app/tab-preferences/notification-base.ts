@@ -169,7 +169,7 @@ export class NotificationBase implements OnInit {
     const local = await this.getNotificationSetting(notifyLocalStore)
     const remote = await this.getRemoteNotificationSettingResponse()
 
-    if (remote) {
+    if (remote && notifyLocalStore) {
       console.log("Returning notification enabled remote state:", remote.notify_enabled)
       return remote.notify_enabled
     }
