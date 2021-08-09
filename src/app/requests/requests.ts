@@ -48,7 +48,7 @@ export abstract class APIRequest<T> {
       if (!response || !response.status) return false
       return response.status == 200 && (response.data.status == "OK" || !hasDataStatus)
     } else {
-      return response && response.status == "OK"
+      return response && (response.status == "OK" || !hasDataStatus)
     }
   }
 
@@ -77,7 +77,7 @@ export abstract class APIRequest<T> {
   updatesLastRefreshState = false
   ignoreFails = false
   maxCacheAge = 5 * 60 * 1000
-  nativeHttp = true
+  nativeHttp = true // TODO: for some reason, native HTTP Post doesnt work on iOS..
  
 }
 
@@ -305,6 +305,7 @@ export class SetMobileSettingsRequest extends APIRequest<MobileSettingsResponse>
   postData: any
   requiresAuth = true
   ignoreFails = true
+  nativeHttp = false
 
   parse(response: any): MobileSettingsResponse[] {
     if (!response || !response.data) return null
@@ -336,6 +337,7 @@ export class PostMobileSubscription extends APIRequest<MobileSettingsResponse> {
   method = Method.POST;
   requiresAuth = true
   ignoreFails = true
+  nativeHttp = false
 
   constructor(subscriptionData: SubscriptionData) {
     super()
@@ -375,6 +377,7 @@ export class RemoveMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
   requiresAuth = true
   postData = {}
   ignoreFails = true
+  nativeHttp = false
 
   options: any = {
     headers: {
@@ -400,6 +403,7 @@ export class AddMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
   requiresAuth = true
   postData: any
   ignoreFails = true
+  nativeHttp = false
 
   options: any = {
     headers: {
@@ -494,6 +498,7 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
   postData: any
   requiresAuth = true
   ignoreFails = true
+  nativeHttp = false
 
   parse(response: any): APIResponse[] {
     if (response && response.data) return response.data as APIResponse[];

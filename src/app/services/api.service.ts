@@ -272,7 +272,9 @@ export class ApiService extends CacheModule {
   }
 
   private async post(resource: string, data: any, endpoint: string = "default", ignoreFails = false, options = { headers: {}}) {
-    options.headers = { ...options.headers, ...{ 'Content-Type':this.getContentType(data)}}
+    if(!options.headers.hasOwnProperty("Content-Type")){
+      options.headers = { ...options.headers, ...{ 'Content-Type':this.getContentType(data)}}
+    }
     
     const postOptions = {
       url: await this.getResourceUrl(resource, endpoint),
@@ -291,8 +293,9 @@ export class ApiService extends CacheModule {
   }
 
   private async legacyPost(resource: string, data: any, endpoint: string = "default", ignoreFails = false, options = { headers: {} }) {
-    console.log("legacy request",  JSON.stringify(this.formatPostData(data)))
-    options.headers = { ...options.headers, ...{ 'Content-Type':this.getContentType(data)}}
+    if(!options.headers.hasOwnProperty("Content-Type")){
+      options.headers = { ...options.headers, ...{ 'Content-Type':this.getContentType(data)}}
+    }
     const resp = await fetch(
       await this.getResourceUrl(resource, endpoint),
        {
