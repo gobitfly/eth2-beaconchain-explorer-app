@@ -44,7 +44,8 @@ export class CacheModule {
 
     async init() {
         if (this.hardStorage) {
-            this.initialized = this.hardStorage.getObject("cachemodule_" + this.keyPrefix)
+            this.hardStorage.setObject("cachemodule_"+this.keyPrefix, null)
+            this.initialized = this.hardStorage.getObject("cachemodule2_" + this.keyPrefix)
             let result = await this.initialized
             if(result) this.cache = result
             console.log("[CacheModule] initialized with ", this.cache)
@@ -55,21 +56,35 @@ export class CacheModule {
     }
 
     private cache: Map<String, CachedData> = new Map()
+    private hotOnly: Map<String, CachedData> = new Map()
 
     protected putCache(key: string, data: any, staleTime = this.staleTime) {
-        this.cache.set(this.getKey(key), {
-            maxStaleTime: staleTime ?? this.staleTime,
-            time: this.getTimestamp(),
-            data: data
+        const cacheKey = this.getKey(key)
+
+        // rationale: don't store big data objects in hardStorage due to severe performance impacts
+        const storeHotOnly = cacheKey.indexOf("user/stats/") >= 0
+        const store = storeHotOnly ? this.hotOnly : this.cache
+
+        store.set(cacheKey, {
+                maxStaleTime: staleTime ?? this.staleTime,
+                time: this.getTimestamp(),
+                data: data
         })
       
         if (this.hardStorage) {
-            this.hardStorage.setObject("cachemodule_"+this.keyPrefix, this.cache)
+            this.hardStorage.setObject("cachemodule2_"+this.keyPrefix, this.cache)
         }
     }
 
-    protected getCache(key: string) {
-        const temp = this.cache.get(this.getKey(key))
+    protected async getCache(key: string) {
+        await this.initialized
+        const cacheKey = this.getKey(key)
+        
+        // rationale: don't store big data objects in hardStorage due to severe performance impacts
+        const storeHotOnly = cacheKey.indexOf("user/stats/") >= 0
+        const store = storeHotOnly ? this.hotOnly : this.cache
+
+        const temp = store.get(this.getKey(key))
         if (!temp || temp.time + temp.maxStaleTime < this.getTimestamp()) {
             return null
         }
@@ -97,10 +112,10 @@ export class CacheModule {
         }
     }
 
-    protected getMultipleCached(prefix: string, keys: string[]) {
+    protected async getMultipleCached(prefix: string, keys: string[]) {
         var result = new Array(keys.length)
         for (var i = 0; i < keys.length; i++) {
-            result[i] = this.getCache(prefix + keys[i])
+            result[i] = await this.getCache(prefix + keys[i])
             if (!result[i]) return null;
         }
         return result
@@ -113,7 +128,7 @@ export class CacheModule {
     invalidateAllCache() {
         this.cache = new Map()
         if (this.hardStorage) {
-            this.hardStorage.setObject("cachemodule_"+this.keyPrefix, null)
+            this.hardStorage.setObject("cachemodule2_"+this.keyPrefix, null)
         }
     }
 

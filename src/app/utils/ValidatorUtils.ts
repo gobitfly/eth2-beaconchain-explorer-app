@@ -184,7 +184,7 @@ export class ValidatorUtils extends CacheModule {
         const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator())
 
         const cachePerformanceKey = await this.getCachedPerformanceKey()
-        const cached = this.getMultipleCached(cachePerformanceKey, validatorString.split(","))
+        const cached = await this.getMultipleCached(cachePerformanceKey, validatorString.split(","))
         if (cached != null && cached.length > 0) return cached
 
         const remoteUpdates = await this.getRemoteValidatorPerformance(
@@ -203,7 +203,7 @@ export class ValidatorUtils extends CacheModule {
         const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator())
 
         const cacheAttestationKey = await this.getCachedAttestationKey()
-        const cached = this.getMultipleCached(cacheAttestationKey, validatorString.split(","))
+        const cached = await this.getMultipleCached(cacheAttestationKey, validatorString.split(","))
         if (cached != null && cached.length > 0) return cached
 
         const remoteUpdates = await this.getRemoteValidatorAttestationPerformance(
@@ -221,7 +221,7 @@ export class ValidatorUtils extends CacheModule {
         const epochPromise = this.getRemoteCurrentEpoch()
         const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator())
 
-        const cached = this.getMultipleCached(allMyKeyBare, validatorString.split(","))
+        const cached = await this.getMultipleCached(allMyKeyBare, validatorString.split(","))
         if (cached != null) {
             console.log("return my validators from cache")
             return cached
@@ -310,7 +310,7 @@ export class ValidatorUtils extends CacheModule {
     }
 
     async getRemoteCurrentEpoch(epoch = "latest"): Promise<EpochResponse> {
-        const cached = this.getCache(await this.getCachedEpochKey())
+        const cached = await this.getCache(await this.getCachedEpochKey())
         if (cached != null) return cached
 
         const request = new EpochRequest(epoch)
@@ -359,7 +359,7 @@ export class ValidatorUtils extends CacheModule {
         if (!args || args[0] === undefined) return []
 
         const cachePerformanceKey = await this.getCachedPerformanceKey()
-        const cached = this.getMultipleCached(cachePerformanceKey, args)
+        const cached = await this.getMultipleCached(cachePerformanceKey, args)
         if (cached != null && cached.length > 0) return cached
 
         const request = new PerformanceRequest(args)
@@ -373,7 +373,7 @@ export class ValidatorUtils extends CacheModule {
         if (!args || args[0] === undefined) return []
 
         const cacheAttestationKey = await this.getCachedAttestationKey()
-        const cached = this.getMultipleCached(cacheAttestationKey, args)
+        const cached = await this.getMultipleCached(cacheAttestationKey, args)
         if (cached != null && cached.length > 0) return cached
 
         const request = new AttestationPerformanceRequest(args)
