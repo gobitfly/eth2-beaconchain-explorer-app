@@ -209,7 +209,7 @@ export class StorageService extends CacheModule {
   }
 
   async getObject(key: string): Promise<any | null> {
-    const cached = this.getCache(key)
+    const cached = await this.getCache(key)
     if (cached != null) return cached
 
     const value = await this.getItem(key);
@@ -247,7 +247,7 @@ export class StorageService extends CacheModule {
   }
 
   async getItem(key: string): Promise<string | null> {
-    const cached = this.getCache(key)
+    const cached = await this.getCache(key)
     if (cached != null) return cached
 
     const { value } = await Storage.get({ key: key });

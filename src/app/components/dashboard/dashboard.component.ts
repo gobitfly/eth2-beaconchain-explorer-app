@@ -84,7 +84,7 @@ export class DashboardComponent implements OnInit {
       if (event.data.currentValue) {
         this.chartError = false
         this.chartData = null
-        this.doneLoading = this.data != null
+        this.doneLoading = event.data.currentValue != null
           this.fadeIn = "fade-in"
           setTimeout(() => {
             this.fadeIn = null

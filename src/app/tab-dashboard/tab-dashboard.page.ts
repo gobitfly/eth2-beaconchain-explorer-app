@@ -127,7 +127,7 @@ export class Tab1Page {
       await epoch,
       await attestationPerformance,
       await this.storage.getStakingShare()
-      )
+    )
     this.lastRefreshTs = this.getUnixSeconds()
   }
 

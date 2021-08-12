@@ -27,6 +27,7 @@ import { Mutex } from 'async-mutex';
 import { MAP } from '../utils/NetworkData'
 import { Http, HttpResponse } from '@capacitor-community/http';
 import { CacheModule } from '../utils/CacheModule';
+//import axios, { AxiosResponse } from "axios";
 
 const LOGTAG = "[ApiService]";
 var cacheKey = "api-cache"
@@ -51,6 +52,11 @@ export class ApiService extends CacheModule {
   public lastRefreshed = 0 // only updated by calls that have the updatesLastRefreshState flag enabled
 
   lastCacheInvalidate = 0
+
+  /*private httpLegacy = axios.create({
+    timeout: SERVER_TIMEOUT,
+  }
+);*/
 
   constructor(
     private storage: StorageService
@@ -189,7 +195,7 @@ export class ApiService extends CacheModule {
     }
 
     // If cached and not stale, return cache
-    let cached = this.getCache(await this.getCacheKey(request))
+    let cached = await this.getCache(await this.getCacheKey(request))
     if (cached) {
       if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
       cached.cached = true
@@ -215,11 +221,16 @@ export class ApiService extends CacheModule {
     await this.lockOrWait(request.resource)
 
     console.log(LOGTAG + " Send request: " + request.resource, request)
+    let startTs = Date.now()
 
     var response: Promise<Response>
     switch (request.method) {
       case Method.GET:
-        response = this.get(request.resource, request.endPoint, request.ignoreFails, options)
+        //if (request.nativeHttp) {
+          response = this.get(request.resource, request.endPoint, request.ignoreFails, options)
+        //} else {
+        //  response = this.legacyGet(request.resource, request.endPoint, request.ignoreFails, options)
+        //}
         break;
       case Method.POST:
         if (request.nativeHttp) {
@@ -242,7 +253,8 @@ export class ApiService extends CacheModule {
     this.unlock(request.resource)
     console.log(
       LOGTAG + " Response: " + result.url + "",
-      result
+      result,
+      Date.now() - startTs
     );
 
     result.cached = false
@@ -292,6 +304,16 @@ export class ApiService extends CacheModule {
       .then((response: Response) => this.validateResponse(ignoreFails, response));
   }
 
+  /*private async legacyGet(resource: string, endpoint: string = "default", ignoreFails = false, options = {headers: {}}) {
+    return this.httpLegacy
+      .get(await this.getResourceUrl(resource, endpoint), options)
+      .catch((err) => {
+        this.updateConnectionState(ignoreFails, false);
+        console.warn("Connection err", err)
+      })
+      .then((response: AxiosResponse<any>) => this.validateResponseLegacy(ignoreFails, response));
+  }*/
+
   private async legacyPost(resource: string, data: any, endpoint: string = "default", ignoreFails = false, options = { headers: {} }) {
     if(!options.headers.hasOwnProperty("Content-Type")){
       options.headers = { ...options.headers, ...{ 'Content-Type':this.getContentType(data)}}
@@ -327,6 +349,21 @@ export class ApiService extends CacheModule {
     this.connectionStateOK = working
     console.log(LOGTAG + " setting status", working)
   }
+
+  /*private validateResponseLegacy(ignoreFails, response: AxiosResponse<any>): Response {
+    if (!response || !response.data) { // || !response.data.data
+      this.updateConnectionState(ignoreFails, false)
+      return
+    }
+    this.updateConnectionState(ignoreFails, true)
+    return {
+      cached: false,
+      data: response.data,
+      status: response.status,
+      headers: response.headers,
+      url: response.config.url,
+    }
+  }*/
 
   private validateResponse(ignoreFails, response: Response): Response {
     if (!response || !response.data) { // || !response.data.data
