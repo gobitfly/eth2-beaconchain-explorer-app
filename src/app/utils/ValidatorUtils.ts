@@ -181,7 +181,7 @@ export class ValidatorUtils extends CacheModule {
         const storageKey = await this.getStorageKey()
         const local = await this.getMap(storageKey)
 
-        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator())
+        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator() - 1)
 
         const cachePerformanceKey = await this.getCachedPerformanceKey()
         const cached = await this.getMultipleCached(cachePerformanceKey, validatorString.split(","))
@@ -200,7 +200,7 @@ export class ValidatorUtils extends CacheModule {
         const storageKey = await this.getStorageKey()
         const local = await this.getMap(storageKey)
 
-        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator())
+        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator() - 1)
 
         const cacheAttestationKey = await this.getCachedAttestationKey()
         const cached = await this.getMultipleCached(cacheAttestationKey, validatorString.split(","))
@@ -219,7 +219,7 @@ export class ValidatorUtils extends CacheModule {
         const storageKey = await this.getStorageKey()
         const local = await this.getMapWithoutDeleted(storageKey)
         const epochPromise = this.getRemoteCurrentEpoch()
-        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator())
+        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator() - 1)
 
         const cached = await this.getMultipleCached(allMyKeyBare, validatorString.split(","))
         if (cached != null) {

@@ -70,7 +70,7 @@ export type Description = {
 
 export default class OverviewController {
 
-    constructor(private refreshCallback: () => void = null) {}
+    constructor(private refreshCallback: () => void = null, private userMaxValidators = 280) {}
 
     proccessDashboard(
         validators: Validator[],
@@ -143,7 +143,7 @@ export default class OverviewController {
             performance365d: performance365d.multipliedBy(sharePercentage),
             dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator),
             lazyLoadChart: true,
-            lazyChartValidators: getValidatorQueryString(validators, 2000, 280), // TODO remove hardcoded val
+            lazyChartValidators: getValidatorQueryString(validators, 2000, this.userMaxValidators - 1), 
             foreignValidator: foreignValidator,
             foreignValidatorItem: foreignValidator ? validators[0] : null,
             effectiveBalance: effectiveBalance,

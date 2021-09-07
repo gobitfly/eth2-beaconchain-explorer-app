@@ -27,6 +27,7 @@ import { StorageService } from '../services/storage.service';
 import { UnitconvService } from '../services/unitconv.service';
 import { App, AppState } from '@capacitor/app';
 import { SyncService } from '../services/sync.service';
+import { MerchantUtils } from '../utils/MerchantUtils';
 
 export const REAPPLY_KEY = "reapply_notification2"
 
@@ -49,7 +50,8 @@ export class Tab1Page {
     public updates: ClientUpdateUtils,
     private storage: StorageService,
     private unitConv: UnitconvService,
-    private sync: SyncService
+    private sync: SyncService,
+    private merchant: MerchantUtils
   ) {
     this.validatorUtils.registerListener(() => {
       this.refresh()
@@ -119,7 +121,7 @@ export class Tab1Page {
       if (this.lastRefreshTs + 60 > this.getUnixSeconds()) return
       this.api.invalidateCache()
       this.refresh()
-    })
+    }, await this.merchant.getCurrentPlanMaxValidator())
     this.updates.checkUpdates()
     this.overallData = overviewController.proccessDashboard(
       await validators,

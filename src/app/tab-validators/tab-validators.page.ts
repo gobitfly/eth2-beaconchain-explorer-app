@@ -298,6 +298,9 @@ export class Tab2Page {
     const modal = await this.modalController.create({
       component: SubscribePage,
       cssClass: 'my-custom-class',
+      componentProps: {
+        'tab': 'whale'
+      }
     });
     return await modal.present();
   }

@@ -120,7 +120,7 @@ export default class ThemeUtils {
 
     isWinterSeason() {
         var d = new Date();
-        return d.getMonth() == 11 && d.getDate() >= 24 && d.getDate() <= 27
+        return d.getMonth() == 11 && d.getDate() >= 24 && d.getDate() <= 24
     }
 
     isSilvester() {

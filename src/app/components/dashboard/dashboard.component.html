@@ -76,6 +76,10 @@
     <app-message title="Congrats on your first proposal!" icon="ribbon-outline" iconStyle="genesis" dismissAble="true"
       dismissKey="first_proposal_executed" confettiOnClick="true" *ngIf="showFirstProposalMsg"></app-message>
 
+    <app-message title="Limited to 100 validators." icon="rocket-outline" iconStyle="genesis" 
+      (click)="upgrade()"
+       *ngIf="(data.validatorCount >= currentPackageMaxValidators)">
+     </app-message>
 
   </ion-list>
 

@@ -22,6 +22,7 @@ import { CoinzillaAdRequest, CoinzillaAdResponse } from "../requests/requests";
 import { MerchantUtils } from "./MerchantUtils";
 
 export type AdLocation = "dashboard" | "validator" | "machines"
+export const BEACONCHAIN_AD_ACTION = ":open-premium-upgrade:"
 
 interface AdOSPair {
     ios: string
@@ -83,7 +84,20 @@ export default class AdUtils {
         if (result && result.length > 0) {
             return result[0]
         }
-        return null
+
+        // default ad
+        return {
+            title: "Upgrade to Beaconcha.in Premium",
+            img: null,
+            thumbnail: null,
+            description_short: "No ads. Widgets, custom themes, custom notifications, support for more validators and more.",
+            description: "Support us and help keep beaconcha.in up and running.",
+            cta_button: "",
+            website: "",
+            name: "",
+            url: BEACONCHAIN_AD_ACTION,
+            impressionUrl: null,
+          }
     }
 
 }

@@ -32,6 +32,9 @@ import { highChartOptions } from 'src/app/utils/HighchartOptions';
 import { StorageService } from 'src/app/services/storage.service';
 import confetti from 'canvas-confetti';
 import { Browser } from '@capacitor/browser';
+import { ModalController } from '@ionic/angular';
+import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
+import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 
 @Component({
   selector: 'app-validator-dashboard',
@@ -69,12 +72,15 @@ export class DashboardComponent implements OnInit {
 
   doneLoading = false
   proposals: Proposals = null
+  currentPackageMaxValidators = 100
 
   constructor(
     public unit: UnitconvService,
     public api: ApiService,
     public theme: ThemeUtils,
-    private storage: StorageService
+    private storage: StorageService,
+    private modalController: ModalController,
+    private merchant: MerchantUtils
   ) {
     this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
   }
@@ -107,6 +113,7 @@ export class DashboardComponent implements OnInit {
     this.storage.getBooleanSetting("rank_percent_mode", false).then((result) => this.rankPercentMode = result)
     highChartOptions(HighCharts)
     highChartOptions(Highstock)
+    this.merchant.getCurrentPlanMaxValidator().then((result) => { this.currentPackageMaxValidators = result })
   }
 
   async checkForGenesisOccured() {
@@ -133,6 +140,16 @@ export class DashboardComponent implements OnInit {
     return chartReq.parse(response)
   }
 
+  async upgrade() {
+    const modal = await this.modalController.create({
+      component: SubscribePage,
+      cssClass: 'my-custom-class',
+      componentProps: {
+        'tab': 'whale'
+      }
+    });
+    return await modal.present();
+  }
 
   switchCurrencyPipe() {
     if (this.unit.pref == "ETHER") {
