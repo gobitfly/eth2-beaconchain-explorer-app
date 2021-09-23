@@ -21,7 +21,17 @@
 import { ApiNetwork } from "../models/StorageTypes"
 
 export const MAP: ApiNetwork[] = [
-
+    {
+        key: "staging",
+        protocol: "https",
+        host: "staging.beaconcha.in",
+        net: "",
+        endpoint: "/api/",
+        version: "v1",
+        onlyDebug: true,
+        active: true,
+        genesisTs: 1606824023
+    },
     {
         key: "main",
         protocol: "https",
