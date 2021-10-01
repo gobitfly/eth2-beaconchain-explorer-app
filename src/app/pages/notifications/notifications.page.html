@@ -28,14 +28,14 @@
   </ion-list-header>
 
   <ion-list>
-    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+    <!-- <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="chevron-down-circle-outline"></ion-icon>
       <ion-label>
         Balance Decreased
       </ion-label>
       <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyDecreased"
         (ionChange)="notifyEventToggle('validator_balance_decreased')" slot="end"></ion-toggle>
-    </ion-item>
+    </ion-item> -->
 
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="close-circle-outline"></ion-icon>

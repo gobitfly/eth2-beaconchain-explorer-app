@@ -1,12 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
-import { SETTING_NOTIFY, SETTING_NOTIFY_ATTESTATION_MISSED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_SLASHED, StorageService } from 'src/app/services/storage.service';
+import {  StorageService } from 'src/app/services/storage.service';
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
 import { GetMobileSettingsRequest, MobileSettingsResponse } from '../requests/requests';
 import { Injectable } from '@angular/core';
+
+import {  NotificationFilter, CurrentNotificationSubsRequest } from '../requests/requests';
+import { SETTING_NOTIFY, SETTING_NOTIFY_ATTESTATION_MISSED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_SLASHED } from '../utils/Constants'
+import { ValidatorUtils } from '../utils/ValidatorUtils';
+import MachineUtils from '../utils/MachineUtils';
+
 
 const LOCKED_STATE = "locked_v2"
 
@@ -36,8 +42,11 @@ export class NotificationBase implements OnInit {
     protected firebaseUtils: FirebaseUtils,
     protected platform: Platform,
     protected alerts: AlertService,
-    protected sync: SyncService
-  ) { }
+    protected sync: SyncService,
+    protected validatorUtil: ValidatorUtils,
+    protected machineUtil: MachineUtils
+  ) { 
+  }
 
   ngOnInit() {
     this.notifyInitialized = false
@@ -74,17 +83,15 @@ export class NotificationBase implements OnInit {
     return true
   }
 
-  remoteNotifyLoadedOnce = false
-  public async loadNotifyToggles() {
-    const net = (await this.api.networkConfig).net
-    
-    // locking toggle so we dont execute onChange when setting initial values
-    const preferences = await this.storage.getNotificationTogglePreferences(net)
+  public async loadPreferences(net: string) {
+    const machines = await this.machineUtil.getAllMachineNames()
+    const validators = await (await this.validatorUtil.getAllMyValidators()).map(v => v.pubkey)
+    const preferences = await this.storage.getNotificationTogglePreferences(net, validators, machines)
 
     this.lockedToggle = true
     this.notifySlashed = preferences.notifySlashed
 
-    this.notifyDecreased = preferences.notifyDecreased
+    // this.notifyDecreased = preferences.notifyDecreased
 
     this.notifyClientUpdate = preferences.notifyClientUpdate
 
@@ -97,32 +104,46 @@ export class NotificationBase implements OnInit {
     this.notifyMachineDiskFull = preferences.notifyMachineHddWarn
     this.notifyMachineOffline = preferences.notifyMachineOffline
     this.notifyMachineMemoryLoad = preferences.notifyMachineMemoryLoad
+    return preferences
+  }
 
-    if (await this.api.isNotMainnet()) {
-      this.lockedToggle = true
-      this.notify = preferences.notify
-      this.notifyInitialized = true;
-      this.disableToggleLock()
-      return;
-    }
+  remoteNotifyLoadedOnce = false
+  public async loadNotifyToggles() {
+    const net = (await this.api.networkConfig).networkName
+    
+    // locking toggle so we dont execute onChange when setting initial values
+    const preferences = await this.loadPreferences(net)
+    // console.log('checking if mainnet')
+    // if (await this.api.isNotMainnet()) {
+    //   this.lockedToggle = true
+    //   this.notify = preferences.notify
+    //   this.notifyInitialized = true;
+    //   this.disableToggleLock()
+    //   return;
+    // }
 
-    await this.getNotificationSetting(preferences.notify).then((result) => {
+    await this.getNotificationSetting(preferences.notify).then(result => {
       this.lockedToggle = true
       this.notify = result
       this.disableToggleLock()
     })
 
+
     this.disableToggleLock()
 
+    console.log('remote settings loaded? ', this.remoteNotifyLoadedOnce)
     this.notifyInitialized = true;
-
     if (!this.remoteNotifyLoadedOnce) {
       const remoteNofiy = await this.getRemoteNotificationSetting(preferences.notify)
+ 
+      this.lockedToggle = true
       if (remoteNofiy != this.notify) {
-        this.lockedToggle = true
         this.notify = remoteNofiy
-        this.disableToggleLock()
       }
+      await this.getRemoteNotificationSubscriptions()
+      await this.loadPreferences(net)
+      
+      this.disableToggleLock()
       this.remoteNotifyLoadedOnce = true
     }
   }
@@ -140,7 +161,7 @@ export class NotificationBase implements OnInit {
       return
     }
 
-    if (this.notify == false) {
+    if (this.notify === false) {
       this.notifyAttestationsMissed = this.notify
       this.notifyDecreased = this.notify
       this.notifyProposalsMissed = this.notify
@@ -152,20 +173,22 @@ export class NotificationBase implements OnInit {
       this.notifyMachineOffline = this.notify
     }
 
-    const net = (await this.api.networkConfig).net
+    const net = (await this.api.networkConfig).networkName
     this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
     
-    if(! (await this.api.isNotMainnet())){
-      this.sync.changeGeneralNotify(this.notify)
-    }
+    // if(! (await this.api.isNotMainnet())){
+      console.log('queuing for change: ', this.notify)
+    this.sync.changeGeneralNotify(net, this.notify)
+    // }
 
     if (this.notify) this.firebaseUtils.registerPush(true)
   }
     
   private async getRemoteNotificationSetting(notifyLocalStore): Promise<boolean> {
-    const local = await this.getNotificationSetting(notifyLocalStore)
-    const remote = await this.getRemoteNotificationSettingResponse()
+    const req : [Promise<boolean>, Promise<MobileSettingsResponse>] =  [this.getNotificationSetting(notifyLocalStore), this.getRemoteNotificationSettingResponse()]
+    const [local, remote] = await Promise.all(req)
 
+    
     if (remote && notifyLocalStore) {
       console.log("Returning notification enabled remote state:", remote.notify_enabled)
       return remote.notify_enabled
@@ -178,6 +201,29 @@ export class NotificationBase implements OnInit {
 
     console.log("Returning notification enabled local state:", local)
     return local
+  }
+
+  private async getRemoteNotificationSubscriptions(filter?: NotificationFilter): Promise<boolean> {
+    const loggedIn = await this.storage.isLoggedIn()
+    if (!loggedIn) return false
+  
+    const request = new CurrentNotificationSubsRequest(filter);
+   
+    const response = await this.api.execute(request);
+    const result = request.wasSuccessfull(response);
+    this.storage.keys()
+    if (!result) {
+      return false
+    }
+    for (let i = 0; i < response.data.length; i++) {
+      console.log('setting boolean setting: ', response.data[i].EventName, response.data[i].EventFilter)
+      if(response.data[i].EventFilter) {
+        this.storage.setBooleanSetting(response.data[i].EventName + ":" + response.data[i].EventFilter, true)
+      } else {
+        this.storage.setBooleanSetting(response.data[i].EventName, true)
+      }
+    }
+    return true
   }
 
   private async getRemoteNotificationSettingResponse(): Promise<MobileSettingsResponse> {
@@ -201,6 +247,7 @@ export class NotificationBase implements OnInit {
 
 
   private getNotifySettingName(eventName: string): string {
+    // replace the network prefix
     switch (eventName) {
       case "validator_balance_decreased": return SETTING_NOTIFY_DECREASED
       case "validator_got_slashed": return SETTING_NOTIFY_SLASHED
@@ -216,6 +263,7 @@ export class NotificationBase implements OnInit {
   }
 
   private getToggleFromEvent(eventName) {
+    // replace the network prefix
     switch (eventName) {
       case "validator_balance_decreased": return this.notifyDecreased
       case "validator_got_slashed": return this.notifySlashed

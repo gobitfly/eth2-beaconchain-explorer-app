@@ -25,6 +25,9 @@ import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
 import { MerchantUtils } from '../utils/MerchantUtils';
 import ThemeUtils from '../utils/ThemeUtils';
+import { NotificationFilter } from '../requests/requests'
+import MachineUtils from '../utils/MachineUtils';
+import { NotificationBase } from '../tab-preferences/notification-base';
 
 @Component({
   selector: 'app-tabs',
@@ -39,7 +42,8 @@ export class TabsPage {
     private storage: StorageService,
     private api: ApiService,
     private merchant: MerchantUtils,
-    private theme: ThemeUtils
+    private theme: ThemeUtils,
+    private notifications: NotificationBase,
   ) { }
 
   ionViewDidEnter() {
@@ -64,8 +68,9 @@ export class TabsPage {
 
     // lazy settings toggle preload (slow storage)
     setTimeout(async () => {
-      const net = (await this.api.networkConfig).net
-      this.storage.getNotificationTogglePreferences(net) // preloading toggle settings
+      const net = (await this.api.networkConfig).networkName
+      // this.storage.getNotificationTogglePreferences(net) // preloading toggle settings
+      this.notifications.loadPreferences(net)
     }, 350)
 
     // Validate licence and reset theme accordingly

@@ -132,7 +132,8 @@ export class OAuthUtils {
     }
 
     const responseType = "code"
-    const callback = "beaconchainmobile://callback"
+    // const callback = "beaconchainmobile://callback"
+    const callback = "http://localhost:4200"
 
     return {
       authorizationBaseUrl: await api.getBaseUrl() + "/user/authorize",

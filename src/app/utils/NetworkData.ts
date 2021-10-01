@@ -26,17 +26,20 @@ export const MAP: ApiNetwork[] = [
         protocol: "https",
         host: "staging.beaconcha.in",
         net: "",
+        networkName: "",
         endpoint: "/api/",
         version: "v1",
         onlyDebug: true,
         active: true,
-        genesisTs: 1606824023
+        genesisTs: 1614588812
     },
+    
     {
         key: "main",
-        protocol: "https",
-        host: "beaconcha.in",
+        protocol: "http",
+        host: "localhost:8081",
         net: "",
+        networkName: "mainnet",
         endpoint: "/api/",
         version: "v1",
         onlyDebug: false,
@@ -49,6 +52,7 @@ export const MAP: ApiNetwork[] = [
         protocol: "https",
         host: "beaconcha.in",
         net: "prater.",
+        networkName: "",
         endpoint: "/api/",
         version: "v1",
         onlyDebug: false,
@@ -61,6 +65,7 @@ export const MAP: ApiNetwork[] = [
         protocol: "https",
         host: "beaconcha.in",
         net: "pyrmont.",
+        networkName: "pyrmont",
         endpoint: "/api/",
         version: "v1",
         onlyDebug: false,
@@ -75,6 +80,19 @@ export const MAP: ApiNetwork[] = [
         net: "",
         endpoint: "/api/",
         version: "v1",
+        networkName: "",
+        onlyDebug: true,
+        active: true,
+        genesisTs: 1605009608 // Arbitrary, doesnt matter on local
+    },
+    {
+        key: "localhost dev",
+        protocol: "http",
+        host: "localhost:8081",
+        net: "mainnet",
+        endpoint: "/api/",
+        version: "v1",
+        networkName: "",
         onlyDebug: true,
         active: true,
         genesisTs: 1605009608 // Arbitrary, doesnt matter on local
@@ -100,6 +118,7 @@ export const MAP: ApiNetwork[] = [
         endpoint: "/api/",
         version: "v1",
         onlyDebug: true,
+        networkName: "",
         active: true,
         genesisTs: 1605009608 // Arbitrary, doesnt matter on invalid connection
     },
@@ -107,6 +126,7 @@ export const MAP: ApiNetwork[] = [
 
 export function findConfigForKey(key: string): ApiNetwork {
     for (let entry of MAP) {
+        console.log('checking', entry.key, key)
         if (entry.key == key) return entry
     }
     return MAP[0]

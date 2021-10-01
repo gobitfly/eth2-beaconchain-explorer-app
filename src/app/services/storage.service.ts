@@ -25,30 +25,14 @@ import { findConfigForKey } from '../utils/NetworkData';
 import { CacheModule } from '../utils/CacheModule'
 import BigNumber from 'bignumber.js';
 import { Platform } from '@ionic/angular';
+import { SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_SLASHED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_ATTESTATION_MISSED, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MEMORY_WARN, EVENT_MONITORING_MACHINE_OFFLINE, EVENT_VALIDATOR_GOT_SLASHED, EVENT_VALIDATOR_ATTESTATION_MISSED, EVENT_MONITORING_HDD_ALMOSTFULL, EVENT_MONITORING_CPU_LOAD, EVENT_MONITORING_MEMORY_USAGE, EVENT_ETH_CLIENT_UPDATE, ETH1_CLIENT_SAVED, ETH2_CLIENT_SAVED} from '../utils/Constants'
+
 
 import { Storage } from '@capacitor/storage';
 const { StorageMirror } = Plugins;
 
 const AUTH_USER = "auth_user";
 const PREFERENCES = "network_preferences";
-
-export const SETTING_NOTIFY = "setting_notify"
-export const SETTING_NOTIFY_SLASHED = "setting_notify_slashed"
-export const SETTING_NOTIFY_DECREASED = "setting_notify_decreased"
-export const SETTING_NOTIFY_PROPOSAL_SUBMITTED = "setting_notify_proposalsubmitted"
-export const SETTING_NOTIFY_PROPOSAL_MISSED = "setting_notify_proposalsmissed"
-export const SETTING_NOTIFY_ATTESTATION_MISSED = "setting_notify_attestationsmissed"
-export const SETTING_NOTIFY_CLIENTUPDATE = "setting_notify_clientupdate"
-export const SETTING_NOTIFY_MACHINE_OFFLINE = "setting_notify_machineoffline"
-export const SETTING_NOTIFY_HDD_WARN = "setting_notify_hddwarn"
-export const SETTING_NOTIFY_CPU_WARN = "setting_notify_cpuwarn"
-export const SETTING_NOTIFY_MEMORY_WARN = "setting_notify_memorywarn"
-
-export const CPU_THRESHOLD = "cpu_usage_threshold"
-export const HDD_THRESHOLD = "hdd_usage_threshold"
-export const RAM_THRESHOLD = "ram_usage_threshold"
-
-export const DEBUG_SETTING_OVERRIDE_PACKAGE = "debug_setting_override_package"
 
 @Injectable({
   providedIn: 'root'
@@ -90,6 +74,7 @@ export class StorageService extends CacheModule {
 
   async getNetworkPreferences(): Promise<StorageTypes.ApiNetwork> {
     const result = await this.getObject(PREFERENCES);
+    console.log('getting network preferences', result)
     if (!result) {
       return findConfigForKey("main")
     }
@@ -111,29 +96,79 @@ export class StorageService extends CacheModule {
     return this.getObject("PREMIUM")
   }
 
-  async getNotificationTogglePreferences(network: string): Promise<NotificationToggles> {
-    const notificationtoggles = await this.loadPreferencesToggles(network)
+  async getNotificationTogglePreferences( network: string, validators: string[], machines: string[]): Promise<NotificationToggles> {
+    const notificationtoggles = await this.loadPreferencesToggles(network, validators, machines)
+
     this.putCache(network + "toggle_preferences", notificationtoggles)
+    console.log('getting notification toggle preferences: ', notificationtoggles)
     return notificationtoggles
   }
+  
+  
+  
+  async loadPreferencesToggles(network: string, validators: string[], machines: string[]): Promise<NotificationToggles> {
+    const notify = await this.getBooleanSetting(network + ":" + SETTING_NOTIFY ) 
+    const hasValidators = validators.length && notify ? true : false
+    let notifySlashed = hasValidators
+    let notifyProposalsSubmitted = hasValidators
+    let notifyProposalsMissed = hasValidators
+    let notifyAttestationsMissed = hasValidators
 
-  async loadPreferencesToggles(network: string): Promise<NotificationToggles> {
-    const notifySlashed = await this.getBooleanSetting(network + SETTING_NOTIFY_SLASHED, false)
-    const notifyDecreased = await this.getBooleanSetting(network + SETTING_NOTIFY_DECREASED, false)
-    const notifyClientUpdate = await this.getBooleanSetting(network + SETTING_NOTIFY_CLIENTUPDATE, false)
-    const notifyProposalsSubmitted = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_SUBMITTED, false)
-    const notifyProposalsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_MISSED, false)
-    const notifyAttestationsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_ATTESTATION_MISSED, false)
-    const notifyMachineOffline = await this.getBooleanSetting(SETTING_NOTIFY_MACHINE_OFFLINE, false)
-    const notifyMachineHddWarn = await this.getBooleanSetting(SETTING_NOTIFY_HDD_WARN, false)
-    const notifyMachineCpuWarn = await this.getBooleanSetting(SETTING_NOTIFY_CPU_WARN, false)
-    const notifyMachineMemoryLoad = await this.getBooleanSetting(SETTING_NOTIFY_MEMORY_WARN, false)
+    for (let i = 0; i < validators.length; i++) {
+      if (notifySlashed) {
+        notifySlashed = await this.getBooleanSetting(network + ":" + EVENT_VALIDATOR_GOT_SLASHED + ":" + validators[i], false)
+      }
+      if (notifyProposalsSubmitted) {
+        notifyProposalsSubmitted = await this.getBooleanSetting(network + ":" + EVENT_VALIDATOR_GOT_SLASHED + ":" + validators[i], false)
+      }
+      if (notifyProposalsMissed) {
+        notifyProposalsMissed = await this.getBooleanSetting(network + ":" + EVENT_VALIDATOR_GOT_SLASHED + ":" + validators[i], false)
+      }
+      if (notifyAttestationsMissed) {
+        notifyProposalsMissed = await this.getBooleanSetting(network + ":" + EVENT_VALIDATOR_ATTESTATION_MISSED + ":" + validators[i], false)
+      }
+    }
 
-    const notifyLocal = await this.getBooleanSetting(network + SETTING_NOTIFY, null)
+    const hasMachines = machines.length && notify ? true : false
+
+    let notifyMachineOffline = hasMachines
+    let notifyMachineHddWarn = hasMachines
+    let notifyMachineCpuWarn = hasMachines
+    let notifyMachineMemoryLoad = hasMachines
+
+    for (let i = 0; i < machines.length; i++) {
+      if (notifyMachineOffline) {
+        notifyMachineOffline = await this.getBooleanSetting(network + ":" + EVENT_MONITORING_MACHINE_OFFLINE + ":" + machines[i], false)
+      }
+      if (notifyMachineHddWarn) {
+        notifyMachineHddWarn = await this.getBooleanSetting(network + ":" + EVENT_MONITORING_HDD_ALMOSTFULL + ":" + machines[i], false)
+
+      }
+      if (notifyMachineCpuWarn) {
+        notifyMachineCpuWarn = await this.getBooleanSetting(network + ":" + EVENT_MONITORING_CPU_LOAD + ":" + machines[i], false)
+
+      }
+      if (notifyMachineMemoryLoad) {
+        notifyMachineMemoryLoad = await this.getBooleanSetting(network + ":" + EVENT_MONITORING_MEMORY_USAGE + ":" + machines[i], false)
+      }
+    }
+
+    let notifyClientUpdate = false
+    const eth1Cliet = await this.getItem(ETH1_CLIENT_SAVED)
+    const eth2Client = this.getItem(ETH2_CLIENT_SAVED)
+
+    const eth1 = await this.getBooleanSetting(EVENT_ETH_CLIENT_UPDATE + ":" + eth1Cliet, false)
+    const eth2 = await this.getBooleanSetting(EVENT_ETH_CLIENT_UPDATE + ":" + eth2Client, false)
+
+    if(eth1 && eth2 && notify) {
+      notifyClientUpdate = true
+    }
+
+    console.log('getting setting machine offline: ', network + ":" + EVENT_MONITORING_MACHINE_OFFLINE , notifyMachineOffline)
+
     return {
-      notify: notifyLocal,
+      notify: notify,
       notifySlashed: notifySlashed,
-      notifyDecreased: notifyDecreased,
       notifyClientUpdate: notifyClientUpdate,
       notifyProposalsSubmitted: notifyProposalsSubmitted,
       notifyProposalsMissed: notifyProposalsMissed,
@@ -313,7 +348,6 @@ interface PremiumObject {
 interface NotificationToggles {
   notify: boolean;
   notifySlashed: boolean;
-  notifyDecreased: boolean;
   notifyClientUpdate: boolean;
   notifyProposalsSubmitted: boolean;
   notifyProposalsMissed: boolean;

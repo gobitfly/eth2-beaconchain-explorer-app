@@ -18,8 +18,8 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from "../services/storage.service";
-
+import { StorageService } from "../services/storage.service";
+import { HDD_THRESHOLD, RAM_THRESHOLD  } from '../utils/Constants'
 const OFFLINE_THRESHOLD = 8 * 60 * 1000
 
 

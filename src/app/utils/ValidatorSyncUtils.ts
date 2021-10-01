@@ -54,8 +54,9 @@ export class ValidatorSyncUtils {
     public async syncDown() {
 
         const loggedIn = await this.storage.isLoggedIn()
+        console.log('sync down logged in: ', loggedIn)
         if (!loggedIn) return
-        console.log("[SYNC] sincing down")
+        console.log("[SYNC] syncing down")
 
         const myRemotes = await this.validator.getMyRemoteValidators()
         if (!myRemotes || myRemotes.length <= 0) return

@@ -19,9 +19,10 @@ import { ApiService } from "../services/api.service";
 import { Injectable } from '@angular/core';
 import MachineController, { ProcessedStats, StatsResponse } from "../controllers/MachineController";
 import { GetMyMachinesRequest } from "../requests/requests";
-import { SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, StorageService } from "../services/storage.service";
+import { StorageService } from "../services/storage.service";
 import { SyncService } from "../services/sync.service";
 import { CacheModule } from "./CacheModule";
+import { SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, } from '../utils/Constants'
 
 const LOGTAG = "[MachineUtils] "
 const MACHINES_STORAGE_KEY = "stored_machine_names"
@@ -88,7 +89,7 @@ export default class MachineUtils extends CacheModule {
     private getAllMachineNamesFrom(data: ProcessedStats[]): string[] {
         var result: string[] = []
         for (var key in data) {
-            const it = data[key]
+            // const it = data[key]
             result.push(key)
         }
         return result
@@ -147,10 +148,15 @@ export default class MachineUtils extends CacheModule {
     
     private async getData(timeslot: number): Promise<StatsResponse> {
         let cached = await this.getCache(MACHINE_CACHE + timeslot)
+        console.log('cached:', cached)
         if(cached) return cached
+        console.log('not cached')
         const request = new GetMyMachinesRequest(0, timeslot)
+        console.log('request: ', request)
         const response = await this.api.execute(request)
+        console.log('response from getdata', response)
         const result = request.parse(response)
+        console.log('got user data', result)
         if (result && result[0]) {
             this.putCache(MACHINE_CACHE + timeslot, result[0])
         }

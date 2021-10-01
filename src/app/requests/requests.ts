@@ -467,6 +467,30 @@ export class NotificationBundleSubsRequest extends APIRequest<ApiTokenResponse> 
   }
 }
 
+export interface NotificationFilter {
+  event_names?: Array<string>;
+  event_filters?: Array<string>;
+  limit?: number;
+  offset?: number;
+  search?: string;
+  join_validator?: boolean;
+}
+
+  
+export class CurrentNotificationSubsRequest extends APIRequest<ApiTokenResponse> {
+  resource = "user/notifications"
+  method = Method.POST
+  requiresAuth = true
+  postData: any = {}
+  ignoreFails = true
+  nativeHttp = false
+
+  constructor(data: NotificationFilter) {
+    super()
+    this.postData = data
+  }
+}
+
 
 export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
   resource = "user/token";

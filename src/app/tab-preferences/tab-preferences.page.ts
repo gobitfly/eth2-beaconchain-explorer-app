@@ -192,6 +192,7 @@ export class Tab3Page {
     this.storage.getAuthUser().then((result) => this.authUser = result)
     this.debug = this.api.debug
     this.api.getNetworkName().then((result) => {
+      console.log('getting network name: ', result)
       this.network = result
     })
   }

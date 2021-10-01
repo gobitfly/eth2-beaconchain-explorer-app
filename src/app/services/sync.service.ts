@@ -20,11 +20,13 @@
 
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
-import { SETTING_NOTIFY, SETTING_NOTIFY_CLIENTUPDATE, StorageService } from './storage.service';
+import { StorageService } from './storage.service';
+import { SETTING_NOTIFY, SETTING_NOTIFY_CLIENTUPDATE } from '../utils/Constants'
 import { Mutex } from 'async-mutex';
-import { BundleSub, NotificationBundleSubsRequest, SetMobileSettingsRequest } from '../requests/requests';
+import {  BundleSub, NotificationBundleSubsRequest, SetMobileSettingsRequest, NotificationFilter, CurrentNotificationSubsRequest } from '../requests/requests';
 import ClientUpdateUtils, { ETH1_CLIENT_SAVED, ETH2_CLIENT_SAVED } from '../utils/ClientUpdateUtils';
 import { ValidatorSyncUtils } from '../utils/ValidatorSyncUtils';
+import { ValidatorUtils } from '../utils/ValidatorUtils'
 
 const NOTIFY_SYNCCHANGE = "notify_syncchange_"
 
@@ -77,6 +79,7 @@ export class SyncService {
     private storage: StorageService,
     private validatorSyncUtils: ValidatorSyncUtils,
     private updateUtils: ClientUpdateUtils,
+    private validatorUtils: ValidatorUtils,
   ) { }
 
   public async mightSyncUpAndSyncDelete() {
@@ -131,6 +134,7 @@ export class SyncService {
 
   async syncAllSettingsForceStaleNotifications() {
     const loggedIn = await this.storage.isLoggedIn()
+    console.log('syncing settings', loggedIn)
     if (!loggedIn) return false
 
     const allNotifyKeys = await this.getAllSyncChangeKeys()
@@ -272,6 +276,7 @@ export class SyncService {
 
 
   private queueForPost(enabled: boolean, network: string, bundle: BundleSubWithAction) {
+    console.log('queueing for push: ', bundle, enabled, network)
     this.bundleList.push({
       bundle: bundle,
       enabled: enabled,
@@ -404,8 +409,8 @@ export class SyncService {
     this.storage.setItem("UNSYNCED_OLD" + key, value)
   }
 
-  async changeGeneralNotify(value: boolean, filter: string = null) {
-    this.storage.setBooleanSetting(SETTING_NOTIFY, value)
+  async changeGeneralNotify(network: string, value: boolean, filter: string = null) {
+    this.storage.setBooleanSetting(network +":"+ SETTING_NOTIFY, value)
     this.setLastChanged(SETTING_NOTIFY, SETTING_NOTIFY, filter, null)
   }
 
@@ -509,4 +514,6 @@ export class SyncService {
     }
     return erg
   }
+
 }
+    // getNotifyBundle returns the notifications the current authenticated user has.

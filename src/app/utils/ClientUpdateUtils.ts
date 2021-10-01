@@ -19,10 +19,10 @@
  */
 
 import { ApiService } from '../services/api.service';
-import { StorageService, SETTING_NOTIFY_CLIENTUPDATE } from '../services/storage.service';
+import { StorageService } from '../services/storage.service';
 import { Injectable } from '@angular/core';
 import { GithubReleaseRequest, GithubReleaseResponse } from '../requests/requests';
-
+import { SETTING_NOTIFY_CLIENTUPDATE } from '../utils/Constants'
 export interface ETHClient {
     key: string,
     name: string,

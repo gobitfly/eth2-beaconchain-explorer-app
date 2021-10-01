@@ -100,6 +100,7 @@ export class ApiService extends CacheModule {
     if (!isTokenRefreshCall && user.expiresIn <= Date.now() - (SERVER_TIMEOUT + 1000)) { // grace window, should be higher than allowed server timeout
       console.log("Token expired, refreshing...", user.expiresIn)
       user = await this.refreshToken()
+      console.log('token refreshed', user)
       if (!user || !user.accessToken) {
         
         // logout logic if token can not be refreshed again within an 12 hour window
@@ -254,7 +255,7 @@ export class ApiService extends CacheModule {
     console.log(
       LOGTAG + " Response: " + result.url + "",
       result,
-      Date.now() - startTs
+      Date.now() - startTs + 'ms'
     );
 
     result.cached = false

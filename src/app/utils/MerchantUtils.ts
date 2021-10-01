@@ -25,7 +25,8 @@ import { Platform } from '@ionic/angular';
 import { PostMobileSubscription, SubscriptionData } from '../requests/requests';
 import { AlertService, PURCHASEUTILS } from '../services/alert.service';
 import { ApiService } from '../services/api.service';
-import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from '../services/storage.service';
+import { StorageService } from '../services/storage.service';
+import { DEBUG_SETTING_OVERRIDE_PACKAGE } from '../utils/Constants'
 
 import { SplashScreen } from '@capacitor/splash-screen';
 

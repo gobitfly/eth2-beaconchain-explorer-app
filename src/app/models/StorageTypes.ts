@@ -29,6 +29,7 @@ export interface ApiNetwork {
   protocol: string
   host: string
   net: string
+  networkName: string
   endpoint: string
   version: string
   onlyDebug: boolean

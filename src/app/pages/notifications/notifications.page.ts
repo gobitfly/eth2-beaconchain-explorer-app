@@ -2,13 +2,16 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonRange, ModalController, Platform } from '@ionic/angular';
 import { AlertService } from 'src/app/services/alert.service';
 import { ApiService } from 'src/app/services/api.service';
-import { CPU_THRESHOLD, HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from 'src/app/services/storage.service';
+import { StorageService } from 'src/app/services/storage.service';
 import { SyncService } from 'src/app/services/sync.service';
 import { NotificationBase } from 'src/app/tab-preferences/notification-base';
 import FirebaseUtils from 'src/app/utils/FirebaseUtils';
 import MachineUtils, { UNSUPPORTED_PRYSM } from 'src/app/utils/MachineUtils';
 import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 import { SubscribePage } from '../subscribe/subscribe.page';
+import { CPU_THRESHOLD, HDD_THRESHOLD, RAM_THRESHOLD, } from '../../utils/Constants'
+import { ValidatorUtils } from '../../utils/ValidatorUtils';
+
 
 @Component({
   selector: 'app-notifications',
@@ -42,9 +45,10 @@ export class NotificationsPage extends NotificationBase implements OnInit {
     protected sync: SyncService,
     private merchantUtils: MerchantUtils,
     private modalController: ModalController,
-    private machineUtils: MachineUtils
+    private machineUtils: MachineUtils,
+    protected validatorUtil: ValidatorUtils,
   ) {
-    super(api, storage, firebaseUtils, platform, alerts, sync)
+    super(api, storage, firebaseUtils, platform, alerts, sync, validatorUtil, machineUtils )
   }
 
   handleLockedClick() {
@@ -102,10 +106,9 @@ export class NotificationsPage extends NotificationBase implements OnInit {
   }
 
   async ngOnInit() {
-    
-
     this.allMachines = this.machineUtils.getAllMachineNames()
     let result = await this.allMachines
+    console.log('got all machine names: ', result)
     this.noMachines = result.length == 0
   }
 
