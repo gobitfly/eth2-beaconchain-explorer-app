@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, Platform } from '@ionic/angular';
 import { fromEvent, Subscription } from 'rxjs';
 import { StorageService } from 'src/app/services/storage.service';
@@ -13,6 +13,8 @@ import { Toast } from '@capacitor/toast';
   styleUrls: ['./subscribe.page.scss'],
 })
 export class SubscribePage implements OnInit {
+
+  @Input() tab: string = null
 
   currentY = 0
 
@@ -38,6 +40,14 @@ export class SubscribePage implements OnInit {
 
     this.merchant.getCurrentPlanConfirmed().then((result) => {
       this.activeUserPackageName = result
+      if (this.tab) {
+        result = this.tab
+      }
+      const pkg = this.merchant.findProduct(result)
+      if (pkg) {
+        this.selectedPackage = pkg
+      }
+      
     });
 
     this.isiOS = this.platform.is("ios")

@@ -1,8 +1,9 @@
 import { ThrowStmt } from '@angular/compiler';
 import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
-import { Animation, AnimationController } from '@ionic/angular';
+import { Animation, AnimationController, ModalController } from '@ionic/angular';
+import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
 import { CoinzillaAdResponse } from 'src/app/requests/requests';
-import AdUtils, { AdLocation } from 'src/app/utils/AdUtils';
+import AdUtils, { AdLocation, BEACONCHAIN_AD_ACTION } from 'src/app/utils/AdUtils';
 
 const TRANSITION_SPEED = 650
 var DELAY_SPEED = 5000
@@ -27,7 +28,8 @@ export class TextAdComponent implements OnInit {
 
   constructor(
     private animationCtrl: AnimationController,
-    private adUtils: AdUtils
+    private adUtils: AdUtils,
+    private modalController: ModalController
   ) { }
 
   ngOnInit() {
@@ -97,11 +99,24 @@ export class TextAdComponent implements OnInit {
   }
 
   openAd() {
-    window.open(this.ad.url, '_system', 'location=yes');
+    if (this.ad.url && this.ad.url == BEACONCHAIN_AD_ACTION) {
+      this.openUpgrades()
+    } else {
+      window.open(this.ad.url, '_system', 'location=yes');
+    }
+  }
+
+  async openUpgrades() {
+    const modal = await this.modalController.create({
+      component: SubscribePage,
+      cssClass: 'my-custom-class',
+    });
+    return await modal.present();
   }
 
   async sendImpression() {
     try {
+      if (!this.ad.impressionUrl) return;
       var xhr = new XMLHttpRequest();
       xhr.open('GET', this.ad.impressionUrl, true);
       xhr.onload = function () {

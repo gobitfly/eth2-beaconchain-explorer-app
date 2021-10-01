@@ -3,7 +3,7 @@
 
   <div class="head" (click)="openAd()">
     <div class="logo-container">
-      <img src="{{ ad.thumbnail }}" class="logo"><br/>
+      <img src="{{ ad.thumbnail }}" class="logo" [class]="!ad.thumbnail ? 'own-ad' : ''"><br/>
       
     </div>
     <div class="title-container" #titleContainer>

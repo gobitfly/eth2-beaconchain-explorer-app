@@ -28,15 +28,13 @@
 
 <ion-content [fullscreen]="true" [class]="fadeIn">
 
-  <ion-list (click)="openUpgrades()">
+  <ion-list (click)="openUpgrades()" *ngIf="currentPlan == 'standard'">
     <ion-item lines="none" class="premium" >
       <ion-icon slot="start" name="rocket-outline" class="opacity-icon"></ion-icon>
       <ion-label>Upgrade to Premium</ion-label>
       <ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon"></ion-icon>
     </ion-item>
     <span class="hint">Premium supports up to 280 validators, Widgets, Themes and more.</span>
-
-    
   </ion-list>
 
   <ion-list-header>
@@ -189,6 +187,14 @@
       <ion-icon slot="end" class="opacity-icon" name="lock-closed-outline" *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'"></ion-icon>
       <ion-icon slot="end" class="opacity-icon" name="information-circle-outline" *ngIf="currentPlan != 'standard' && currentPlan != 'plankton'"></ion-icon>
     </ion-item>
+
+    <ion-list (click)="openUpgrades()" *ngIf="currentPlan != 'standard'">
+      <ion-item lines="none" class="premium" >
+        <ion-icon slot="start" name="rocket-outline" class="opacity-icon"></ion-icon>
+        <ion-label>Manage Premium</ion-label>
+        <ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon"></ion-icon>
+      </ion-item>
+    </ion-list>
 
   </ion-list>
 

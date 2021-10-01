@@ -23,7 +23,7 @@ import { ValidatorUtils, Validator, getDisplayName, SAVED } from '../../utils/Va
 import { ModalController } from '@ionic/angular';
 import OverviewController from '../../controllers/OverviewController';
 import { fromEvent, Subscription } from 'rxjs';
-import { ApiService } from 'src/app/services/api.service';
+import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 
 @Component({
   selector: 'app-validatordetail',
@@ -48,7 +48,7 @@ export class ValidatordetailPage implements OnInit {
   constructor(
     private validatorUtils: ValidatorUtils,
     private modalCtrl: ModalController,
-    private api: ApiService
+    private merchant: MerchantUtils
   ) { }
 
   setInput(validator: Validator) {
@@ -94,7 +94,7 @@ export class ValidatordetailPage implements OnInit {
     const performances = await this.validatorUtils.getRemoteValidatorPerformance(item.index)
     const epoch = await this.validatorUtils.getRemoteCurrentEpoch()
     const attestationPerformance = await this.validatorUtils.getRemoteValidatorAttestationPerformance(item.index).catch((error) => { return null })
-    const overviewController = new OverviewController()
+    const overviewController = new OverviewController(null, await this.merchant.getCurrentPlanMaxValidator())
     this.data = overviewController.proccessDetail([item], performances, epoch, attestationPerformance)
   }
 
