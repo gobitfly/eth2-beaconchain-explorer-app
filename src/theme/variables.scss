@@ -142,7 +142,7 @@ body {
 
   --ion-tab-bar-background: #fff; // f8f8f8
 
-  --ion-card-background: #f8f8f8;
+  --ion-card-background: #fff;
 
   --ion-tab-button-color-selected: #000;
   --ion-tab-button-color: rgba(0, 0, 0, 0.64);
@@ -160,8 +160,9 @@ body {
 
   --chart-default: #7cb5ec;
 
-
-  
+  --status-bg-image: none;
+  --button-bg-image: var(--ion-color-primary);
+  --button-border-radius: 55px;
 }
 
 body.dark {
@@ -309,6 +310,10 @@ body.dark {
   --primary: #fff;
   //--mask-fill-color: #222;
   --x-alert-primary: #fff;
+
+  --status-bg-image: none;
+  --button-bg-image: var(--ion-color-primary);
+  --button-border-radius: 55px;
 }
 
 body.teal {
@@ -572,6 +577,73 @@ body.orange {
   --status-warn: white;
   --status-danger: white;
   --status-secondary: white;
+}
+
+
+
+body.ethpool {
+  --ion-color-primary: #ee7112;
+  --ion-color-primary-rgb: 238, 113, 18;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --status-bg-image: linear-gradient(to bottom, rgba(45, 171, 244, 0), #1473e613);
+  --button-bg-image: linear-gradient(to bottom,#fea777,#e37016);
+  --button-border-radius: 0px;
+  --ion-toolbar-background: #e1d8d8; // //2f2e42
+  --x-alert-primary: #ff5722;
+  --x-update-messages-background: #e1d8d8;
+  --x-update-messages-background-selected: rgb(233, 224, 224);
+
+  --ion-color-success: #2abe37;
+  --ion-color-warning: #f0952d;
+  --ion-color-danger: #ff5858;
+
+  --status-ok: var(--ion-color-success);
+  --status-warn: var(--ion-color-warning);
+  --status-danger: var(--ion-color-danger);
+  --status-secondary: var(--ion-color-secondary);
+
+  --ion-item-background: #f5f3f3;
+  
+  --ion-background-color: #F0EEEE;
+  --ion-background-color-rgb: 240, 238, 238;
+  
+  --ion-card-background: #f5f3f3;
+  --background-color: #f5f3f3;
+
+
+  --ion-tab-bar-background: #e1d8d8; // f8f8f8
+  --ion-tab-button-color-selected: #000;
+  --ion-tab-button-color: rgba(0, 0, 0, 0.64);
+
+  --x-toolbar-title-color: #262327;
+}
+
+
+body.ethpool.dark {
+  --ion-toolbar-background: #262327 !important; // //2f2e42
+  
+  --x-alert-primary: #ff5722;
+  --x-update-messages-background: #24201f !important;
+  --x-update-messages-background-selected: rgb(26, 22, 21) !important;
+
+  --ion-item-background: #262327;
+  
+  --ion-background-color: #211E22;
+  --ion-background-color-rgb: 33, 30, 34;
+  
+  --ion-card-background: #262327;
+  --background-color: #262327;
+
+
+  --ion-tab-bar-background: #24201f; // f8f8f8
+  --ion-tab-button-color-selected: #fff;
+  --ion-tab-button-color: rgba(255,255,255, 0.64);
+
+  --x-toolbar-title-color: #fff;
 }
 
 

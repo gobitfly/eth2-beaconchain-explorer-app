@@ -29,7 +29,8 @@
 }
 
 .setup-head {
-  --background: var(--ion-toolbar-background) !important;
+  background-image: var(--status-bg-image);
+  background-color: var(--ion-toolbar-background) !important;
   color: #fff;
 }
 

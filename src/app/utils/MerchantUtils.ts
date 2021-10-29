@@ -325,6 +325,18 @@ export class MerchantUtils {
     return PRODUCT_STANDARD
   }
 
+
+  async getDefaultTheme(): Promise<string> {
+    const authUser = await this.storage.getAuthUser()
+    if (!authUser || !authUser.accessToken) return PRODUCT_STANDARD
+    const jwtParts = authUser.accessToken.split(".")
+    const claims: ClaimParts = JSON.parse(atob(jwtParts[1]))
+    if (claims && claims.hasOwnProperty('theme') && claims.theme) {
+      return claims.theme
+    }
+    return ""
+  }
+
   findProduct(name: string): Package {
     for (var i = 0; i < this.PACKAGES.length; i++){
       const current = this.PACKAGES[i]
@@ -385,6 +397,7 @@ interface ClaimParts {
   package: string
   exp: number,
   iss: string
+  theme: string
 }
 
 export interface Package {

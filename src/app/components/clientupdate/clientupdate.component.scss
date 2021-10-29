@@ -26,10 +26,10 @@
 }
 
 ion-label {
-  color: #fff !important;
+  color: var(--x-toolbar-title-color) !important;
 }
 ion-icon {
-  color: #fff !important;
+  color: var(--x-toolbar-title-color) !important;
 
   margin: 8px;
 }

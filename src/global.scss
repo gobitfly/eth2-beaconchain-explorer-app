@@ -228,6 +228,8 @@ ion-back-button {
 ion-tab-button {
   --color-selected: var(--ion-tab-button-color-selected);
   --color: var(--ion-tab-button-color);
+
+  color: var(--ion-tab-button-color);
 }
 
 ion-label {

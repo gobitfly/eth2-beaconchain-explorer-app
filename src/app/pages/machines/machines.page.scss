@@ -1,7 +1,7 @@
 @import "../../../theme/variables.scss";
 
 ion-segment-button {
-  color: white;
+  color: var(--x-toolbar-title-color);
 
   font-family: "Varela";
   font-size: 0.75em;
@@ -83,7 +83,7 @@ ion-segment {
 }
 
 ion-button {
-  --border-radius: 55px;
+  --border-radius: var(--button-border-radius);
   text-transform: none;
   width: 70%;
   min-width: 180px;
@@ -92,6 +92,7 @@ ion-button {
   font-weight: bold !important;
   font-size: 1em !important;
   height: 44px;
+  --background: var(--button-bg-image);
 
   // font-family: "Varela";
   // --font-family: "Varela";

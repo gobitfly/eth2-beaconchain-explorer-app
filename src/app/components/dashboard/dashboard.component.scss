@@ -52,9 +52,12 @@ ion-segment-button {
 
 .status {
   text-align: center;
-  background-color: var(--ion-toolbar-background);
+  background-color: var(--ion-toolbar-background) !important;
+  background-image: var(--status-bg-image);
   padding-bottom: 0px;
 }
+
+
 
 .status-icon {
   margin-top: 7px;
