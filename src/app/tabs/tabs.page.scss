@@ -18,3 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+ion-tab-bar {
+    --border-top: var(--tab-top-border);
+    border-top: var(--tab-top-border);
+}

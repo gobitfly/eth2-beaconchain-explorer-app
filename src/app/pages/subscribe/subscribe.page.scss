@@ -1,7 +1,7 @@
 @import "../../../theme/variables.scss";
 
 ion-button {
-  --border-radius: 55px;
+  --border-radius: var(--button-border-radius);
   text-transform: none;
   width: 70%;
   margin-top: 25px;
@@ -9,7 +9,7 @@ ion-button {
   font-weight: bold !important;
   font-size: 1em !important;
   height: 44px;
-
+  --background: var(--button-bg-image);
   // font-family: "Varela";
   // --font-family: "Varela";
 }
@@ -28,6 +28,7 @@ ion-content {
 .status {
   text-align: center;
   background-color: var(--ion-toolbar-background);
+  background-image: var(--status-bg-image);
   padding-bottom: 0px;
 }
 
@@ -48,13 +49,13 @@ ion-toolbar {
 
 h1,
 h2 {
-  color: white;
+  color: var(--x-toolbar-title-color);
 }
 
 .status-icon {
   margin-bottom: 12px;
   font-size: 60px;
-  color: white;
+  color: var(--x-toolbar-title-color);
 }
 
 .center {
@@ -73,7 +74,7 @@ h2 {
 }
 
 ion-label {
-  color: white;
+  color: var(--x-toolbar-title-color);
 }
 
 .package {

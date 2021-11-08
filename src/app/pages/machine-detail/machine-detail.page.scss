@@ -1,7 +1,7 @@
 @import "../../../theme/variables.scss";
 
 ion-segment-button {
-  color: white;
+  color: var(--x-toolbar-title-color);
 
   font-family: "Varela";
   font-size: 0.75em;

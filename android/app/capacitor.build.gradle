@@ -14,6 +14,7 @@ dependencies {
     implementation project(':capacitor-app')
     implementation project(':capacitor-browser')
     implementation project(':capacitor-device')
+    implementation project(':capacitor-haptics')
     implementation project(':capacitor-keyboard')
     implementation project(':capacitor-push-notifications')
     implementation project(':capacitor-splash-screen')
@@ -21,7 +22,7 @@ dependencies {
     implementation project(':capacitor-storage')
     implementation project(':capacitor-toast')
     implementation project(':capacitor-navigationbarnx')
-    implementation "com.android.billingclient:billing:3.0.0"
+    implementation "com.android.billingclient:billing:3.0.3"
 }
 
 

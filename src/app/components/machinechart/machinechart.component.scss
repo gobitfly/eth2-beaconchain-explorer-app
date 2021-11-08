@@ -46,8 +46,8 @@
 }
 
 ion-card-header {
-  --background: var(--ion-tab-bar-background);
-  background: var(--ion-tab-bar-background);
+  --background: var(--ion-card-background);
+  background: var(--ion-card-background);
   padding-bottom: 0px !important;
   margin-bottom: 0px !important;
 
@@ -55,8 +55,8 @@ ion-card-header {
 }
 
 ion-card-subtitle {
-  --background: var(--ion-tab-bar-background) !important;
-  background: var(--ion-tab-bar-background) !important;
+  --background: var(--ion-card-background) !important;
+  background: var(--ion-card-background) !important;
   padding-bottom: 0px !important;
   margin-bottom: 0px !important;
   height: 24px;

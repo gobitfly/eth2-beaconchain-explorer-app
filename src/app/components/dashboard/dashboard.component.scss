@@ -52,9 +52,12 @@ ion-segment-button {
 
 .status {
   text-align: center;
-  background-color: var(--ion-toolbar-background);
+  background-color: var(--ion-toolbar-background) !important;
+  background-image: var(--status-bg-image);
   padding-bottom: 0px;
 }
+
+
 
 .status-icon {
   margin-top: 7px;
@@ -127,7 +130,7 @@ ion-item {
 .value {
   text-align: end;
   font-weight: bold !important;
-  font-size: 1.05em !important;
+  font-size: 1.1em !important;
 }
 
 .chartcontainer {
@@ -177,8 +180,13 @@ ion-item {
   text-align: end !important;
 }
 
+.stat-title {
+  opacity: 0.85;
+}
+
 .income-title {
-  font-size: 0.97em;
+  opacity: 0.85;
+  font-size: 1.0em;
   //color: var(--ion-text-color-lighter);
 }
 

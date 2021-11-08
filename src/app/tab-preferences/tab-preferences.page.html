@@ -138,6 +138,9 @@
         <ion-select-option value="">
           Default
         </ion-select-option>
+        <ion-select-option value="ethpool">
+          Ethpool
+        </ion-select-option>
         <ion-select-option value="teal">
           Teal
         </ion-select-option>
@@ -174,6 +177,7 @@
         <ion-select-option value="metal">
           Metal
         </ion-select-option>
+
       </ion-select>
       <ion-icon slot="end" class="opacity-icon" name="lock-closed-outline" *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'" (click)="openUpgrades()">
       </ion-icon>

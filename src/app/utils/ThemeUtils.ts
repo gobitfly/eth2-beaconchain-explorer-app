@@ -64,7 +64,7 @@ export default class ThemeUtils {
                 setTimeout(() => {
                     this.colorHandler()
                     splashScreenCallback()
-                }, 600)
+                }, 1200)
                 return preferenceDarkMode
             }
         )
@@ -185,14 +185,26 @@ export default class ThemeUtils {
 
     private async changeNavigationBarColor(isDarkThemed) {
         try {
-            if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#000000' });
-            else NavigationBar.setBackgroundColor({ color: '#f7f7f7' });
+            const themeColor = await this.getThemeColor()
+            if (themeColor == "ethpool") {
+                if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#24201f' });
+                else NavigationBar.setBackgroundColor({ color: '#e1d8d8' });
+            } else {
+                if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#000000' });
+                else NavigationBar.setBackgroundColor({ color: '#f7f7f7' });
+            }
+
         } catch(e){}
     }
 
     private async changeStatusBarColor(color, isDarkThemed) {
         if (this.platform.is("android")) {
-            const darker = isDarkThemed ? "#000000" : this.shadeColor(color, -12)
+            const themeColor = await this.getThemeColor()
+            var darker = isDarkThemed ? "#000000" : color;//this.shadeColor(color, -12)
+            if (themeColor == "ethpool") {
+                darker = isDarkThemed ? '#262327' : '#e1d8d8'
+            } 
+            
             console.log("statusbar color", darker)
             StatusBar.setStyle({
                 style: Style.Dark

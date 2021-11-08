@@ -1,6 +1,6 @@
 ext {
     minSdkVersion = 21
-    compileSdkVersion = 30 // TODO for 30: capacitor oauth2 plugin compatibility with sdk 30
+    compileSdkVersion = 30
     targetSdkVersion = 30
     androidxActivityVersion = '1.2.0'
     androidxAppCompatVersion = '1.2.0'
