@@ -64,7 +64,7 @@ export default class ThemeUtils {
                 setTimeout(() => {
                     this.colorHandler()
                     splashScreenCallback()
-                }, 600)
+                }, 1200)
                 return preferenceDarkMode
             }
         )
@@ -200,9 +200,9 @@ export default class ThemeUtils {
     private async changeStatusBarColor(color, isDarkThemed) {
         if (this.platform.is("android")) {
             const themeColor = await this.getThemeColor()
-            var darker = isDarkThemed ? "#000000" : this.shadeColor(color, -12)
+            var darker = isDarkThemed ? "#000000" : color;//this.shadeColor(color, -12)
             if (themeColor == "ethpool") {
-                darker = isDarkThemed ? '#24201f' : '#e1d8d8'
+                darker = isDarkThemed ? '#262327' : '#e1d8d8'
             } 
             
             console.log("statusbar color", darker)

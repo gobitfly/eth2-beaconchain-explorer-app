@@ -19,5 +19,6 @@
  */
 
 ion-tab-bar {
-    border-top: 0px;
+    --border-top: var(--tab-top-border);
+    border-top: var(--tab-top-border);
 }

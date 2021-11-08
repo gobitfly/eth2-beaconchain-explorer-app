@@ -52,15 +52,7 @@
   src: url("./assets/fonts/Montserrat-Medium.ttf");
 }
 
-body.dark .opacity-icon {
-  color: #fff;
-  opacity: 0.6;
-}
 
-.opacity-icon {
-  color: #000;
-  opacity: 0.6;
-}
 
 ion-button {
   --box-shadow: none;
@@ -225,11 +217,45 @@ ion-back-button {
   color: #fff;
 }
 
+ion-tab-button.tab-selected {
+
+  .opacity-icon {
+    color: #000;
+    opacity: 0.95;
+  }
+}
+
+body.dark {
+
+  ion-tab-button.tab-selected {
+    .opacity-icon {
+      color: #fff;
+      opacity: 0.95;
+    }
+  }
+
+  ion-tab-button {
+    --color-selected: var(--ion-tab-button-color-selected);
+    --color: var(--ion-tab-button-color);
+
+    color: var(--ion-tab-button-color);
+    .opacity-icon {
+      color: #fff;
+      opacity: 0.6;
+    }
+  }
+}
+
 ion-tab-button {
   --color-selected: var(--ion-tab-button-color-selected);
   --color: var(--ion-tab-button-color);
 
   color: var(--ion-tab-button-color);
+
+  .opacity-icon {
+    color: #000;
+    opacity: 0.6;
+  }
 }
 
 ion-label {

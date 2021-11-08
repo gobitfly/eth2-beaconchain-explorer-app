@@ -21,7 +21,7 @@
 import { Component, OnInit, Input, SimpleChange } from '@angular/core';
 import { UnitconvService } from '../../services/unitconv.service';
 import { ApiService } from '../../services/api.service';
-import { DasboardDataRequest, EpochResponse } from '../../requests/requests';
+import { DasboardDataRequest, EpochRequest, EpochResponse } from '../../requests/requests';
 import * as HighCharts from 'highcharts';
 import * as Highstock from "highcharts/highstock";
 import BigNumber from "bignumber.js";
@@ -124,9 +124,14 @@ export class DashboardComponent implements OnInit {
   }
 
   async checkForFinalization() {
-    if (!this.data || !this.data.currentEpoch) return
-    const currentEpoch = this.data.currentEpoch as EpochResponse
-    this.finalizationIssue = new BigNumber(currentEpoch.globalparticipationrate).isLessThan("0.664") && currentEpoch.epoch > 7
+    const olderEpoch = new EpochRequest((this.data.currentEpoch.epoch - 6).toString())
+    olderEpoch.maxCacheAge = 2 * 60 * 60 * 1000
+    const response = await this.api.execute(olderEpoch).catch((error) => { return null })
+    const olderResult = olderEpoch.parse(response)[0]
+
+    if (!this.data || !this.data.currentEpoch || !olderResult) return
+    console.log("checkForFinalization", olderResult)
+    this.finalizationIssue = new BigNumber(olderResult.globalparticipationrate).isLessThan("0.664") && olderResult.epoch > 7
   }
 
   async getChartData(data: ('balances' | 'proposals')) {

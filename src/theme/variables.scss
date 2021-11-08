@@ -67,8 +67,8 @@
   --traffic-light-red: #eb445a;
 
   /** success **/
-  --ion-color-success: #2dd36f;
-  --ion-color-success-rgb: 45, 211, 111;
+  --ion-color-success: #1ec260;
+  --ion-color-success-rgb: 30,194,96;
   --ion-color-success-contrast: #ffffff;
   --ion-color-success-contrast-rgb: 255, 255, 255;
   --ion-color-success-shade: #28ba62;
@@ -121,6 +121,7 @@
 }
 
 body {
+  --tab-top-border: 1px; 
   --status-ok: var(--ion-color-success);
   --status-warn: var(--ion-color-warning);
   --status-danger: var(--ion-color-danger);
@@ -582,6 +583,7 @@ body.orange {
 
 
 body.ethpool {
+  --tab-top-border: 0px; 
   --ion-color-primary: #ee7112;
   --ion-color-primary-rgb: 238, 113, 18;
   --ion-color-primary-contrast: #ffffff;
@@ -624,6 +626,7 @@ body.ethpool {
 
 
 body.ethpool.dark {
+  --tab-top-border: 0px; 
   --ion-toolbar-background: #262327 !important; // //2f2e42
   
   --x-alert-primary: #ff5722;
