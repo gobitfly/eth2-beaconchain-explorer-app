@@ -28,6 +28,7 @@ import { MAP } from '../utils/NetworkData'
 import { Http, HttpResponse } from '@capacitor-community/http';
 import { CacheModule } from '../utils/CacheModule';
 import axios, { AxiosResponse } from "axios";
+import { Device } from '@capacitor/device';
 
 const LOGTAG = "[ApiService]";
 var cacheKey = "api-cache"
@@ -222,6 +223,13 @@ export class ApiService extends CacheModule {
 
     console.log(LOGTAG + " Send request: " + request.resource, request)
     let startTs = Date.now()
+
+    // Workaround for iOS 15 :)
+    const isIOS15 = await (await Device.getInfo()).platform == "ios" && await (await Device.getInfo()).osVersion.startsWith("15") // TODO iOS 16? :)
+    if (isIOS15) {
+      console.log("iOS 15 detected, fall back to non native requests")
+      request.nativeHttp = false // this is fine :)
+    }
 
     var response: Promise<Response>
     switch (request.method) {
