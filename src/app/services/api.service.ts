@@ -59,6 +59,8 @@ export class ApiService extends CacheModule {
   }
 );
 
+  forceNativeAll = false
+
   constructor(
     private storage: StorageService
   ) {
@@ -70,6 +72,7 @@ export class ApiService extends CacheModule {
     this.lastCacheInvalidate = Date.now()
     //this.registerLogMiddleware()
     this.updateNetworkConfig()
+    //this.isIOS15().then((result) => { this.forceNativeAll = result })
   }
 
   mayInvalidateOnFaultyConnectionState() {
@@ -224,11 +227,9 @@ export class ApiService extends CacheModule {
     console.log(LOGTAG + " Send request: " + request.resource, request)
     let startTs = Date.now()
 
-    // Workaround for iOS 15 :)
-    const isIOS15 = await (await Device.getInfo()).platform == "ios" && await (await Device.getInfo()).osVersion.startsWith("15") // TODO iOS 16? :)
-    if (isIOS15) {
-      console.log("iOS 15 detected, fall back to non native requests")
-      request.nativeHttp = false // this is fine :)
+    if (this.forceNativeAll) { // android appears to have issues with native POST right now
+      console.log("force native all")
+      request.nativeHttp = false
     }
 
     var response: Promise<Response>
@@ -339,6 +340,16 @@ export class ApiService extends CacheModule {
     } else {
       return null
     }
+  }
+
+  private async isIOS15(): Promise<boolean> {
+    const osVersion = (await Device.getInfo()).osVersion
+    if(!osVersion) return false
+    const splitVersion = osVersion.split(".")
+    if(!splitVersion || splitVersion.length < 1) return false
+    const majorVersion = parseInt(splitVersion[0])
+    if(isNaN(majorVersion)) return false
+    return (await Device.getInfo()).platform == "ios" && majorVersion >= 15
   }
 
   private getContentType(data: any): string {
