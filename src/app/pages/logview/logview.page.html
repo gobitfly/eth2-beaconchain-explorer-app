@@ -18,9 +18,17 @@
 <ion-content>
 
   <div class="logs">
-    <div *ngFor="let log of logs; index as i; " class="log-entry" [class]="formatLog(log.text)">
-      <span (click)="openExtra(i)">{{ log.text }}</span>
-      <p *ngIf="((open && open[i]) || openAll) && log.extra" class="open">{{ log.extra }}</p>
+    <div *ngFor="let log of logs; index as i; " class="log-entry" [class]="formatLog(log.text)" (click)="openExtra(i)">
+      <div >
+        <div style="float:left;">{{ log.text }}</div>
+        <div style="float:right;" *ngIf="log.extra">
+          <span *ngIf="(open && !open[i])">+</span>
+          <span *ngIf="(open && open[i])">-</span>
+        </div>
+      </div>
+      <div style="clear:both;"></div>
+      
+      <p *ngIf="((open && open[i]) || openAll) && log.extra" class="open" >{{ log.extra }}</p>
     </div>
   </div>
 

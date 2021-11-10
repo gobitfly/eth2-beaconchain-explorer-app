@@ -13,22 +13,24 @@ span {
 
 .error {
     background-color: #ff0000;
-    .open {
-        background-color: #ff0000a4;
-    }
+}
+
+.error .open {
+    background-color: #e70000;
 }
 
 .warn {
     background-color: #e9be00;
-    .open {
-        background-color: #e9be00a4;
-    }
+}
+
+.warn .open {
+    background-color: #d4ad00;
 }
 
 .log {
     background-color: #85858535;
-    .open {
-        background-color: #858585c7;
-    }
 }
 
+.log .open {
+    background-color: #858585c7;
+}

@@ -49,8 +49,9 @@ export class UnitconvService {
     if (unitPair == "ETH-BTC") return this.getExchangeRateBitcoin()
 
     const req = new CoinbaseExchangeRequest(unitPair)
-    const response = await this.api.execute(req)
+    const response = await this.api.execute(req).catch((error) => { return null })
     const temp = req.parse(response)
+    if(temp.length <= 0) return null
     return temp[0]
   }
 
@@ -61,9 +62,10 @@ export class UnitconvService {
 
     const responseEthUsdPromise = this.api.execute(reqEthUsd)
     const responseBtcUsdPromise = this.api.execute(reqBtcUsd)
-
+    
     const responseEthUsd = reqEthUsd.parse(await responseEthUsdPromise)
     const responseBtcUsd = reqBtcUsd.parse(await responseBtcUsdPromise)
+    if(responseEthUsd.length <= 0 || responseBtcUsd.length <= 0) return null
 
     const rate = new BigNumber(responseEthUsd[0].amount)
       .dividedBy(new BigNumber(responseBtcUsd[0].amount))

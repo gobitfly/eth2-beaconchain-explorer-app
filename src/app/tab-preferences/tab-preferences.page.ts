@@ -417,6 +417,40 @@ export class Tab3Page {
     this.theme.toggleWinter(this.snowing)
   }
 
+  versionClickCount = 0;
+  openLogSessionDialog() {
+    this.versionClickCount++;
+    if (this.versionClickCount % 3 != 0) return;
+    this.openLogSessionDialogReally()
+  }
+
+  async openLogSessionDialogReally() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Logs Viewer',
+      message: 'For which session would you like to see logs?',
+      buttons: [
+        {
+          text: 'Current Session',
+          handler: () => { this.storage.openLogSession(this.modalController, 0) }
+        },
+        {
+          text: 'Last Session',
+          handler: () => { this.storage.openLogSession(this.modalController, 1) }
+        },
+        {
+          text: 'Last Last Session',
+          handler: () => { this.storage.openLogSession(this.modalController, 2) }
+        },
+        {
+          text: 'Cancel',
+        }
+      ],
+    });
+
+    await alert.present();
+  }
+
 }
 
 

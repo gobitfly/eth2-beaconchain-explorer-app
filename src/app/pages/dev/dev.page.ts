@@ -167,19 +167,7 @@ export class DevPage extends Tab3Page implements OnInit {
   }
 
 
-  async openLogSession(offset: number) {
-    var lastLogSession = parseInt(await window.localStorage.getItem("last_log_session"))
-    if (isNaN(lastLogSession)) lastLogSession = 0
-    
-  
-      const modal = await this.modalController.create({
-        component: LogviewPage,
-        cssClass: 'my-custom-class',
-        componentProps: {
-          'logs': JSON.parse(window.localStorage.getItem("log_session_"+((lastLogSession + (3 - offset)) % 3)))
-        }
-      });
-      return await modal.present();
-    
+  openLogSession(offset: number) {
+    this.storage.openLogSession(this.modalController, offset)
   }
 }
