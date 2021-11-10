@@ -17,7 +17,7 @@ export class LogviewPage implements OnInit {
   constructor(private modalCtrl: ModalController) { }
 
   ngOnInit() {
-    this.open = new Array(this.logs.length)
+    if(this.logs) this.open = new Array(this.logs.length)
   }
 
   closeModal() {
