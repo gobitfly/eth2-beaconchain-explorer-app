@@ -67,7 +67,7 @@ export class ApiService extends CacheModule {
     super("api", 5 * 60 * 1000, storage)
     this.isDebugMode().then((result) => {
       this.debug = result
-      this.disableLogging()
+      window.localStorage.setItem("debug", this.debug ? "true" : "false") 
     }) 
     this.lastCacheInvalidate = Date.now()
     //this.registerLogMiddleware()
@@ -438,15 +438,6 @@ export class ApiService extends CacheModule {
     return text.charAt(0).toUpperCase() + text.slice(1)
   }
 
-  private disableLogging() {
-    if (!this.debug) {
-      if (window) {
-        window.console.log = function () { };
-        window.console.info = function () { };
-        window.console.warn = function () { };
-      }
-    }
-  }
 }
 
 interface Response extends HttpResponse {

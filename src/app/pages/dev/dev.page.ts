@@ -3,6 +3,7 @@ import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from 'src/app/services
 import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils';
 import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page';
 import { Toast } from '@capacitor/toast';
+import { LogviewPage } from '../logview/logview.page';
 
 @Component({
   selector: 'app-dev',
@@ -165,4 +166,20 @@ export class DevPage extends Tab3Page implements OnInit {
     });
   }
 
+
+  async openLogSession(offset: number) {
+    var lastLogSession = parseInt(await window.localStorage.getItem("last_log_session"))
+    if (isNaN(lastLogSession)) lastLogSession = 0
+    
+  
+      const modal = await this.modalController.create({
+        component: LogviewPage,
+        cssClass: 'my-custom-class',
+        componentProps: {
+          'logs': JSON.parse(window.localStorage.getItem("log_session_"+((lastLogSession + (3 - offset)) % 3)))
+        }
+      });
+      return await modal.present();
+    
+  }
 }

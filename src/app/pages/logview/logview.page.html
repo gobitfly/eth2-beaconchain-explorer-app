@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon size="large" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Logview</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="expandAll()">
+        <ion-icon size="large" [name]="openAll ? 'contract-outline' : 'expand-outline'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content>
+
+  <div class="logs">
+    <div *ngFor="let log of logs; index as i; " class="log-entry" [class]="formatLog(log.text)">
+      <span (click)="openExtra(i)">{{ log.text }}</span>
+      <p *ngIf="((open && open[i]) || openAll) && log.extra" class="open">{{ log.extra }}</p>
+    </div>
+  </div>
+
+
+</ion-content>
