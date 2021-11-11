@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -27,8 +28,11 @@
                 android:layout_height="42dp"
                 android:layout_gravity="center"
                 android:layout_marginStart="25dp"
+                app:tint="?attr/statusColor"
+                android:tint="?attr/statusColor"
                 android:src="@drawable/ic_notification"
-                app:srcCompat="@drawable/ic_notification" />
+                app:srcCompat="@drawable/ic_notification"
+                tools:ignore="UseAppTint" />
         </LinearLayout>
 
 
@@ -36,7 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:layout_margin="14dp"
+            android:layout_margin="12dp"
             android:layout_marginStart="10dp"
             android:columnCount="2"
             android:orientation="horizontal"
