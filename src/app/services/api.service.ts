@@ -59,7 +59,7 @@ export class ApiService extends CacheModule {
   }
 );
 
-  forceNativeAll = false
+  forceNativeAll = true
 
   constructor(
     private storage: StorageService
@@ -229,7 +229,7 @@ export class ApiService extends CacheModule {
 
     if (this.forceNativeAll) { // android appears to have issues with native POST right now
       console.log("force native all")
-      request.nativeHttp = false
+      request.nativeHttp = true
     }
 
     var response: Promise<Response>
