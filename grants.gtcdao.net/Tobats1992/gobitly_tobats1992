@@ -1,0 +1,60 @@
+"Result for https://grants.gtcdao.net/Tobats1992/gobitly_tobats1992/ALL without DNSSEC validation and with DNSSEC detail:
+{
+  "Status": 3,
+  "TC": false,
+  "RD": true,
+  "RA": true,
+  "AD": true,
+  "CD": true,
+  "Question": [
+    {
+      "name": "https://grants.gtcdao.net/Tobats1992/gobitly_tobats1992.",
+      "type": 255
+    }
+  ],
+  "Authority": [
+    {
+      "name": ".",
+      "type": 6,
+      "TTL": 86399,
+      "data": "a.root-servers.net. nstld.verisign-grs.com. 2021121100 1800 900 604800 86400"
+    },
+    {
+      "name": ".",
+      "type": 46,
+      "TTL": 86399,
+      "data": "soa 8 0 86400 1640322000 1639195200 14748 . C6NebqA6yIg2Fy3r7+yDKgtj2p0d4bMv79a1DUkDcpO49J9BSMbu30AIjxgx4MgLyDkBcQ5h2hAoje9GO0qJUyjIQdwXyj8bojL+TUO56I8rVJANCkGNWPS+vJ9FauBS0gP16oJ3x4dxc6AN91KZc4K9xmLHJEEroHW3N5cG3EzwITUEKIBGARZxn29mxfMbMBzKHrUwka5VsJ6iBt909T7lwy1vsRXvUyzJ/CD3wkkWp1K60ZgOtfELjPoi1eoUpsC+4DHV7vR6ZWr4vHb49HYW5E1eTp3lreYI6OonEM7HzUk35Cqk9TmZEXbbU8Qz/OqoNRfnA8T1ehw+g0oz2g=="
+    },
+    {
+      "name": ".",
+      "type": 47,
+      "TTL": 86398,
+      "data": "aaa. NS SOA RRSIG NSEC DNSKEY"
+    },
+    {
+      "name": ".",
+      "type": 46,
+      "TTL": 86398,
+      "data": "nsec 8 0 86400 1640322000 1639195200 14748 . VJtyXVzDM47FaTIBQlgy/+WXBZpVz/99a2fNVaVPNxO4/M3RCCPrff71uAUQM4O9mBcWuO+2qSFD1YCOH99/4y6NcFSzJISdPyhxp8MGz1BFzLcC+esfyRGh4OHSUHNdC1D5RjhO/n8JYLkOpV8Aj4fwBl31IuLGSz8Cp6niVNhC5rsbigaCgGbl/GKpnvOME4uvZLgN1S1Xer5AH/U3pMSSX1twsFy1l2jvkSpH8bwcxPesiwk/N2f9cSw/wpZ9GFePfQRKHwtqyshmkEhOBEYYeUvvYJXh1uAN1wcRT8PClhjORhgH2UYPWL33DnzGxuh4zmihIt8E1RavJ0F+6w=="
+    },
+    {
+      "name": "net.",
+      "type": 47,
+      "TTL": 78324,
+      "data": "netbank. NS DS RRSIG NSEC"
+    },
+    {
+      "name": "net.",
+      "type": 46,
+      "TTL": 78324,
+      "data": "nsec 8 1 86400 1640322000 1639195200 14748 . DcxF9/9suQaqulllvFJE7vPBro/laxLgCqNtOhEbg7tlQZt/Ygagh8+8qrfDUZX9YL2HUOk1FMWik+USlAH5+8u9+byJN29nVMQ+2UYqiJQnywmT+5xN0DD6l3LkxHvo/v2hHLVuRN3V1tvAU17boUEPaJerZfOLR+ARQCQr/7IYmjhnqDlE9J33PFXzCOGIQ9SOojV/4hIhCwZYpzoKojw1f3bZqIrG85ZioiIJrJHVUUWHzCXwJnGgmz+Ig0fwFatnfCoJTbK+fdh/D7g4FH1GvXrQtchN2fW/MOE6Rc3YdQ4pLlP+71MyUajG6xwmiR4OmGm11vrUwai0KXIhkQ=="
+    }
+  ],
+  "edns_client_subnet": "223.25.59.248/0"
+}
+You may also resolve directly at: https://dns.google/resolve?name=https://grants.gtcdao.net/Tobats1992/gobitly_tobats1992&type=ALL&edns_client_subnet=223.25.59.248&cd=true&do=true
+
+Help
+Cache Flush
+Get Started with Google Public DNS"
+ https://dns.google/query?name=https%3A%2F%2Fgrants.gtcdao.net%2FTobats1992%2Fgobitly_tobats1992&rr_type=ALL&ecs=223.25.59.248&disable_dnssec=true&show_dnssec=true#:~:text=Result%20for%20https,Google%20Public%20DNS
