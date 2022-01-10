@@ -23,9 +23,13 @@ import { ApiService } from '../services/api.service';
 import { ValidatorUtils } from '../utils/ValidatorUtils';
 import OverviewController, { OverviewData } from '../controllers/OverviewController';
 import ClientUpdateUtils from '../utils/ClientUpdateUtils';
-import { Plugins, AppState } from '@capacitor/core';
 import { StorageService } from '../services/storage.service';
-const { App } = Plugins;
+import { UnitconvService } from '../services/unitconv.service';
+import { App, AppState } from '@capacitor/app';
+import { SyncService } from '../services/sync.service';
+import { MerchantUtils } from '../utils/MerchantUtils';
+
+export const REAPPLY_KEY = "reapply_notification2"
 
 @Component({
   selector: 'app-tab1',
@@ -44,7 +48,10 @@ export class Tab1Page {
     private validatorUtils: ValidatorUtils,
     public api: ApiService,
     public updates: ClientUpdateUtils,
-    private storage: StorageService
+    private storage: StorageService,
+    private unitConv: UnitconvService,
+    private sync: SyncService,
+    private merchant: MerchantUtils
   ) {
     this.validatorUtils.registerListener(() => {
       this.refresh()
@@ -59,6 +66,18 @@ export class Tab1Page {
       }
     });
 
+    this.reApplyNotifications()
+  }
+
+  async reApplyNotifications() {
+    const isLoggedIn = await this.storage.getAuthUser()
+    if (!isLoggedIn) return
+    
+    const reapply = await this.storage.getBooleanSetting(REAPPLY_KEY, false)
+    if (!reapply) {
+      this.sync.syncAllSettingsForceStaleNotifications()
+    }
+    this.storage.setBooleanSetting(REAPPLY_KEY, true)
   }
 
   onScroll($event) {
@@ -99,10 +118,10 @@ export class Tab1Page {
     const epoch = this.validatorUtils.getRemoteCurrentEpoch().catch((error) => { return null })
     const attestationPerformance = this.validatorUtils.getAllMyAttestationPerformances().catch((error) => { return null })
     const overviewController = new OverviewController(() => {
-      if (this.lastRefreshTs + 30 > this.getUnixSeconds()) return
+      if (this.lastRefreshTs + 60 > this.getUnixSeconds()) return
       this.api.invalidateCache()
       this.refresh()
-    })
+    }, await this.merchant.getCurrentPlanMaxValidator())
     this.updates.checkUpdates()
     this.overallData = overviewController.proccessDashboard(
       await validators,
@@ -110,7 +129,7 @@ export class Tab1Page {
       await epoch,
       await attestationPerformance,
       await this.storage.getStakingShare()
-      )
+    )
     this.lastRefreshTs = this.getUnixSeconds()
   }
 
@@ -119,9 +138,14 @@ export class Tab1Page {
   }
 
   async doRefresh(event) {
+    const old =  Object.assign({}, this.overallData);
+    this.overallData = null
     await this.refresh().catch(() => {
+      this.api.mayInvalidateOnFaultyConnectionState()
+      this.overallData = old
       event.target.complete();
     })
+    await this.unitConv.updatePriceData()
     event.target.complete();
   }
 

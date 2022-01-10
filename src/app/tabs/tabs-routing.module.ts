@@ -40,6 +40,10 @@ const routes: Routes = [
         loadChildren: () => import('../tab-preferences/tab-preferences.module').then(m => m.Tab3PageModule)
       },
       {
+        path: 'machines',
+        loadChildren: () => import('../pages/machines/machines.module').then(m => m.MachinesPageModule)
+      },
+      {
         path: '',
         redirectTo: '/tabs/dashboard',
         pathMatch: 'full'

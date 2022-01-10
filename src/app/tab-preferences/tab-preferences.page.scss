@@ -55,3 +55,17 @@ ion-list-header {
   text-align: end;
   font-weight: normal;
 }
+
+.hint {
+  display: inline-block;
+  color: var(--ion-text-color-secondary);
+  max-width: 65%;
+  margin-left: 72px;
+  font-size: 0.9em;
+  line-height: 1em !important;
+  margin-bottom: 10px;
+}
+
+.premium {
+  padding-bottom: 0px !important;
+}

@@ -37,6 +37,26 @@ const routes: Routes = [
   {
     path: 'licences',
     loadChildren: () => import('./pages/licences/licences.module').then(m => m.LicencesPageModule)
+  },
+  {
+    path: 'subscribe',
+    loadChildren: () => import('./pages/subscribe/subscribe.module').then( m => m.SubscribePageModule)
+  },
+  {
+    path: 'machine-detail',
+    loadChildren: () => import('./pages/machine-detail/machine-detail.module').then( m => m.MachineDetailPageModule)
+  },
+  {
+    path: 'dev',
+    loadChildren: () => import('./pages/dev/dev.module').then( m => m.DevPageModule)
+  },
+  {
+    path: 'notifications',
+    loadChildren: () => import('./pages/notifications/notifications.module').then( m => m.NotificationsPageModule)
+  },
+  {
+    path: 'logview',
+    loadChildren: () => import('./pages/logview/logview.module').then( m => m.LogviewPageModule)
   }
 ];
 @NgModule({

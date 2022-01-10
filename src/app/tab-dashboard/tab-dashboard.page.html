@@ -30,17 +30,17 @@
 <ion-content [fullscreen]="true" [scrollEvents]="true" (ionScroll)="onScroll($event)"
   (ionScrollStart)="onScrollStarted()" (ionScrollEnd)="onScrollEnded()">
 
-  <ion-item class="setup-head" *ngIf="!initialized">
+  <div class="setup-head" *ngIf="!initialized">
 
     <div class="inner-setup-head">
       <ion-icon class="setup-icon" name="color-wand-outline" [ngStyle]="{'opacity': currentY | fadeoutpipe: 100 }">
       </ion-icon>
-      <h2 i18n="dashboard get started title" [ngStyle]="{'opacity': currentY | fadeoutpipe: 180 }">
+      <h2 [ngStyle]="{'opacity': currentY | fadeoutpipe: 180 }">
         Let´s get started
       </h2>
     </div>
 
-  </ion-item>
+  </div>
 
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" [disabled]="!initialized">
     <ion-refresher-content></ion-refresher-content>

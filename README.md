@@ -1,4 +1,5 @@
-![[Beaconchain Dashboard](https://beaconcha.in/mobile)](.github/banner.png)
+![[Beaconchain Dashboard](https://beaconcha.in/mobile)](.github/banner.png)  
+[![Build](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml/badge.svg)](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml)  
 
 # Beaconchain Dashboard App
 

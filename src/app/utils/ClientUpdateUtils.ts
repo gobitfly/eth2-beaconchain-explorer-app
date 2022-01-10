@@ -223,7 +223,7 @@ export default class ClientUpdateUtils {
 
     private async getReleases(client: ETHClient): Promise<Release> {
         const req = new GithubReleaseRequest(client.repo, !(await this.isPreReleaseAllowed()))
-        const response = await this.api.execute(req)
+        const response = await this.api.execute(req).catch((error) => { return null })
         const temp = req.parse(response)
         if (temp.length <= 0) return null
         console.log("Client updates data", response, temp)

@@ -33,7 +33,7 @@ export const MAP: ApiNetwork[] = [
         active: true,
         genesisTs: 1606824023
     },
-
+  
     {
         key: "prater",
         protocol: "https",
@@ -45,7 +45,7 @@ export const MAP: ApiNetwork[] = [
         active: true,
         genesisTs: 1614588812
     },
-    
+
     {
         key: "pyrmont",
         protocol: "https",
@@ -59,42 +59,6 @@ export const MAP: ApiNetwork[] = [
     },
 
     {
-        key: "medalla",
-        protocol: "https",
-        host: "beaconcha.in",
-        net: "medalla.",
-        endpoint: "/api/",
-        version: "v1",
-        onlyDebug: false,
-        active: true,
-        genesisTs: 1596546008
-    },
-
-    {
-        key: "zinken",
-        protocol: "https",
-        host: "beaconcha.in",
-        net: "zinken.",
-        endpoint: "/api/",
-        version: "v1",
-        onlyDebug: false,
-        active: true,
-        genesisTs: 1602504000
-    },
-
-    {
-        key: "toledo",
-        protocol: "https",
-        host: "beaconcha.in",
-        net: "toledo.",
-        endpoint: "/api/",
-        version: "v1",
-        onlyDebug: false,
-        active: true,
-        genesisTs: 1605009608
-    },
-
-    {
         key: "local dev",
         protocol: "http",
         host: "192.168.103.224:3333",
@@ -105,23 +69,23 @@ export const MAP: ApiNetwork[] = [
         active: true,
         genesisTs: 1605009608 // Arbitrary, doesnt matter on local
     },
-    
-    {
-        key: "invalid (no connection)",
+
+  /*  {
+        key: "local dev office",
         protocol: "http",
-        host: "0.0.0.0",
+        host: "192.168.103.224:3333",
         net: "",
         endpoint: "/api/",
         version: "v1",
         onlyDebug: true,
         active: true,
-        genesisTs: 1605009608 // Arbitrary, doesnt matter on invalid connection
-    },
+        genesisTs: 1605009608 // Arbitrary, doesnt matter on local
+    },*/
 
     {
-        key: "testing 2",
+        key: "invalid (no connection)",
         protocol: "http",
-        host: "34.68.171.198",
+        host: "0.0.0.0",
         net: "",
         endpoint: "/api/",
         version: "v1",

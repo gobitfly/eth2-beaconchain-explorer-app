@@ -21,19 +21,15 @@
 import { ApiService } from "../services/api.service";
 import { StorageService } from "../services/storage.service";
 import { UpdateTokenRequest } from "../requests/requests";
-import {
-  Plugins,
-  PushNotification,
-  PushNotificationActionPerformed,
-} from "@capacitor/core";
 import { Injectable } from '@angular/core';
 import { AlertController, Platform } from '@ionic/angular';
 
-const { PushNotifications } = Plugins;
+import { PushNotifications, PushNotificationSchema,
+  ActionPerformed, } from '@capacitor/push-notifications';
 
 const LOGTAG = "[FirebaseUtils]";
 
-const CURRENT_TOKENKEY = "firebase_token"
+export const CURRENT_TOKENKEY = "firebase_token"
 const NOTIFICATION_CONSENT_KEY = "notification_consent"
 
 @Injectable({
@@ -64,7 +60,7 @@ export default class FirebaseUtils {
   }
 
   async registerPush(iosTriggerConsent = false) {
-    console.log("registerPush", iosTriggerConsent)
+    console.log(LOGTAG+ "registerPush", iosTriggerConsent)
     if (this.alreadyRegistered) return
 
     if (this.platform.is("ios")) {
@@ -72,7 +68,7 @@ export default class FirebaseUtils {
       // Unless user has already consented or is triggering consent, stop registerPush right here
       const hasSeenConsent = await this.storage.getBooleanSetting(NOTIFICATION_CONSENT_KEY, false)
 
-      console.log("registerPush hasconsent", hasSeenConsent)
+      console.log(LOGTAG + "registerPush hasconsent", hasSeenConsent)
       if (!hasSeenConsent && !iosTriggerConsent) return;
     }
 
@@ -81,10 +77,10 @@ export default class FirebaseUtils {
     // Request permission to use push notifications
     // iOS will prompt user and return if they granted permission or not
     // Android will just grant without prompting
-    PushNotifications.requestPermission().then((result) => {
+    PushNotifications.requestPermissions().then((result) => {
       this.storage.setBooleanSetting(NOTIFICATION_CONSENT_KEY, true)
 
-      if (result.granted) {
+      if (result.receive == 'granted') {
         // Register with Apple / Google to receive push via APNS/FCM
         PushNotifications.register();
       } else {
@@ -94,21 +90,22 @@ export default class FirebaseUtils {
 
     // On success, we should be able to receive notifications
     PushNotifications.addListener(
-      "registration", (token) => {
-        this.storage.setItem(CURRENT_TOKENKEY, token.value)
+      "registration", async (token) => {
+        console.log(LOGTAG + "register token", token.value)
+        await this.storage.setItem(CURRENT_TOKENKEY, token.value)
         this.updateRemoteNotificationToken(token.value)
       }
     );
 
     // Some issue with our setup and push will not work
     PushNotifications.addListener("registrationError", (error: any) => {
-      console.warn("Error on registration:" + JSON.stringify(error))
+      console.warn(LOGTAG + "Error on registration:" + JSON.stringify(error))
     });
 
     // Show us the notification payload if the app is open on our device
     PushNotifications.addListener(
       "pushNotificationReceived",
-      (notification: PushNotification) => {
+      (notification: PushNotificationSchema) => {
         this.inAppNotification(notification.title, notification.body)
       }
     );
@@ -116,7 +113,7 @@ export default class FirebaseUtils {
     // Method called when tapping on a notification
     PushNotifications.addListener(
       "pushNotificationActionPerformed",
-      (notification: PushNotificationActionPerformed) => {
+      (notification: ActionPerformed) => {
         //alert("Push action performed: " + JSON.stringify(notification));
       }
     );
@@ -169,7 +166,7 @@ export default class FirebaseUtils {
     const firebaseTokenKey = "last_firebase_token";
     const loggedIn = await this.storage.isLoggedIn();
 
-    if (loggedIn) {
+    if (loggedIn && token != null) {
       const lastToken = await this.storage.getItem(
         firebaseTokenKey
       );

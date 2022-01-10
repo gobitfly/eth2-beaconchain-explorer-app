@@ -1,0 +1,187 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/preferences"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Notifications</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list-header>
+    <ion-label *ngIf="network == 'Main'">General</ion-label>
+    <ion-label *ngIf="network != 'Main'">General » {{ network }}</ion-label>
+  </ion-list-header>
+
+  <ion-list>
+    <ion-item lines="none" [disabled]="!authUser || !notifyInitialized">
+      <ion-icon slot="start" name="notifications-outline"></ion-icon>
+      <ion-label>
+        Notifications
+      </ion-label>
+      <ion-toggle checked id="notifyToggle" [(ngModel)]="notify" (ionChange)="notifyToggle()" slot="end"></ion-toggle>
+    </ion-item>
+  </ion-list>
+
+  <ion-list-header>
+    <ion-label>Validators</ion-label>
+  </ion-list-header>
+
+  <ion-list>
+    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+      <ion-icon slot="start" name="chevron-down-circle-outline"></ion-icon>
+      <ion-label>
+        Balance Decreased
+      </ion-label>
+      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyDecreased"
+        (ionChange)="notifyEventToggle('validator_balance_decreased')" slot="end"></ion-toggle>
+    </ion-item>
+
+    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+      <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+      <ion-label>
+        Validator Slashed
+      </ion-label>
+      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifySlashed"
+        (ionChange)="notifyEventToggle('validator_got_slashed')" slot="end"></ion-toggle>
+    </ion-item>
+
+
+    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+      <ion-icon slot="start" name="information-circle-outline"></ion-icon>
+      <ion-label>
+        Submitted Proposals
+      </ion-label>
+      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyProposalsSubmitted"
+        (ionChange)="notifyEventToggle('validator_proposal_submitted')" slot="end"></ion-toggle>
+    </ion-item>
+
+    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+      <ion-icon slot="start" name="remove-circle-outline"></ion-icon>
+      <ion-label>
+        Missed Proposals
+      </ion-label>
+      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyProposalsMissed"
+        (ionChange)="notifyEventToggle('validator_proposal_missed')" slot="end"></ion-toggle>
+    </ion-item>
+
+    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+      <ion-icon slot="start" name="remove-circle-outline"></ion-icon>
+      <ion-label >
+        Missed Attestations
+      </ion-label>
+      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyAttestationsMissed"
+        (ionChange)="notifyEventToggle('validator_attestation_missed')" slot="end"></ion-toggle>
+    </ion-item>
+    </ion-list>
+
+
+    <ion-list-header>
+      <ion-label>ETH Client Updates</ion-label>
+    </ion-list-header>
+  
+    <ion-list>
+
+    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+      <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
+      <ion-label>
+        Client Updates
+      </ion-label>
+      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyClientUpdate" (ionChange)="notifyClientUpdates()"
+        slot="end"></ion-toggle>
+    </ion-item>
+  </ion-list>
+
+  <ion-list-header>
+    <ion-label>Monitoring</ion-label>
+  </ion-list-header>
+
+  <ion-list>
+
+  <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
+    <ion-icon slot="start" name="battery-dead-outline"></ion-icon>
+    <ion-label>
+      Machine Offline
+    </ion-label>
+    <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyMachineOffline" (ionChange)="notifyEventToggleAllMachines('monitoring_machine_offline')"
+      slot="end"></ion-toggle>
+  </ion-item>
+
+  <div *ngIf="unsupportedPrysm">
+    <ion-list-header >
+      <ion-label>Not supported</ion-label>
+    </ion-list-header>
+    <ion-item text-wrap>
+      <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
+      <ion-label class="ion-text-wrap">Does not work with at least one of your machines. Prysm is currently not supported.</ion-label>
+        
+    </ion-item >
+    
+  </div>
+
+
+  <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
+    <ion-icon slot="start" name="file-tray-full-outline"></ion-icon>
+    <ion-label>
+      Storage Usage 
+    </ion-label>
+    <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyMachineDiskFull" (ionChange)="changeDiskNotification()"
+      slot="end"></ion-toggle>
+      
+  </ion-item>
+
+  <ion-item [class]="!notifyMachineDiskFull || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+    <ion-range *ngIf="canCustomizeThresholds" min="10" max="99" step="1" [(ngModel)]="storageThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeDiskNotification()" (touchend)="changeDiskNotification()">
+    </ion-range>
+    <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="storageThreshold" _ngcontent-ves-c134="" min="10" max="99" step="1" ng-reflect-min="10" ng-reflect-max="99" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="90" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="90"></ion-range>
+
+    <ion-note slot="end">≥ {{ storageThreshold }} %</ion-note>
+    <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds" ></ion-icon>
+</ion-item>
+
+
+  <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
+    <ion-icon slot="start" name="flash-outline"></ion-icon>
+    <ion-label>
+      CPU Usage
+    </ion-label>
+    <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyMachineCpuLoad" (ionChange)="changeCPUNotification()"
+      slot="end"></ion-toggle>
+  </ion-item>
+
+  <ion-item [class]="!notifyMachineCpuLoad || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+    <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
+    <ion-range *ngIf="canCustomizeThresholds" min="5" max="99" step="1" [(ngModel)]="cpuThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeCPUNotification()" (touchend)="changeCPUNotification()">
+    </ion-range>
+    <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="cpuThreshold" _ngcontent-ves-c134="" min="10" max="99" step="1" ng-reflect-min="10" ng-reflect-max="99" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="90" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="90"></ion-range>
+
+    <ion-note slot="end">≥ {{ cpuThreshold }} %</ion-note>
+</ion-item>
+
+<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
+  <ion-icon slot="start"name="server-outline"></ion-icon>
+ 
+  <ion-label>
+    Memory Usage
+  </ion-label>
+  <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyMachineMemoryLoad" (ionChange)="changeMemoryNotification()"
+    slot="end"></ion-toggle>
+</ion-item>
+
+
+<ion-item [class]="!notifyMachineMemoryLoad || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+  <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
+  <ion-range *ngIf="canCustomizeThresholds" min="10" max="99" step="1" [(ngModel)]="memoryThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeMemoryNotification()" (touchend)="changeMemoryNotification()">
+  </ion-range>
+  <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="memoryThreshold" _ngcontent-ves-c134="" min="10" max="99" step="1" ng-reflect-min="10" ng-reflect-max="99" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="90" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="90"></ion-range>
+
+  <ion-note slot="end">≥ {{ memoryThreshold }} %</ion-note>
+</ion-item>
+
+
+<div class="filler"></div>
+
+</ion-list>
+
+
+</ion-content>

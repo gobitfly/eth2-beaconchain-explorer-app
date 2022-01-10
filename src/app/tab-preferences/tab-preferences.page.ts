@@ -21,7 +21,7 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import BigNumber from "bignumber.js";
-import { StorageService, SETTING_NOTIFY, SETTING_NOTIFY_SLASHED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_ATTESTATION_MISSED } from '../services/storage.service';
+import { StorageService } from '../services/storage.service';
 import { UnitconvService } from '../services/unitconv.service';
 import { OAuthUtils } from '../utils/OAuthUtils';
 import ClientUpdateUtils from '../utils/ClientUpdateUtils';
@@ -29,23 +29,23 @@ import ThemeUtils from '../utils/ThemeUtils';
 import { findConfigForKey } from '../utils/NetworkData';
 import { ModalController } from '@ionic/angular';
 import { HelppagePage } from '../pages/helppage/helppage.page';
-import { Plugins } from '@capacitor/core';
 import { ValidatorUtils } from '../utils/ValidatorUtils';
 import Unit, { MAPPING } from '../utils/EthereumUnits';
 import { AlertController } from '@ionic/angular';
-import { GetMobileSettingsRequest, MobileSettingsResponse } from '../requests/requests';
+
 import FirebaseUtils from '../utils/FirebaseUtils';
 import { Platform } from '@ionic/angular';
-import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
+import { AlertService } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import { LicencesPage } from '../pages/licences/licences.page';
+import { SubscribePage } from '../pages/subscribe/subscribe.page';
+import { MerchantUtils, PRODUCT_STANDARD } from '../utils/MerchantUtils';
+import { NotificationBase } from './notification-base';
+import { Router } from '@angular/router';
 
-const { Device } = Plugins;
-const { Browser } = Plugins;
-const { Toast } = Plugins;
-
-const LOCK_KEY = "first_time_push_v6"
-const LOCKED_STATE = "locked"
+import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
+import { Toast } from '@capacitor/toast';
 
 @Component({
   selector: 'app-tab3',
@@ -57,14 +57,6 @@ export class Tab3Page {
   fadeIn = "invisible"
 
   darkMode: boolean
-  notify: boolean
-
-  notifySlashed: boolean
-  notifyDecreased: boolean
-  notifyClientUpdate: boolean
-  notifyProposalsSubmitted: boolean
-  notifyProposalsMissed: boolean
-  notifyAttestationsMissed: boolean
 
   eth1client: string
   eth2client: string
@@ -83,47 +75,63 @@ export class Tab3Page {
 
   debug = false
 
-  blocked = false
-
-  notifyInitialized = false
-
   snowing: boolean
 
   stakingShare = null
 
+  themeColor: string
+  //widgetThemeColor: string
+  currentPlan: string
+
+  premiumLabel: string = ""
+
   constructor(
-    private api: ApiService,
-    private oauth: OAuthUtils,
+    protected api: ApiService,
+    protected oauth: OAuthUtils,
     public theme: ThemeUtils,
     public unit: UnitconvService,
-    private storage: StorageService,
-    private updateUtils: ClientUpdateUtils,
-    private validatorUtils: ValidatorUtils,
-    private modalController: ModalController,
-    private alertController: AlertController,
-    private firebaseUtils: FirebaseUtils,
+    protected storage: StorageService,
+    protected updateUtils: ClientUpdateUtils,
+    protected validatorUtils: ValidatorUtils,
+    protected modalController: ModalController,
+    protected alertController: AlertController,
+    protected firebaseUtils: FirebaseUtils,
     public platform: Platform,
-    private alerts: AlertService,
-    private sync: SyncService
+    protected alerts: AlertService,
+    protected sync: SyncService,
+    protected merchant: MerchantUtils,
+    protected notificationBase: NotificationBase,
+    private router: Router
   ) { }
 
   ngOnInit() {
-    this.notifyInitialized = false
+    
     this.theme.isDarkThemed().then((result) => this.darkMode = result)
+    this.theme.getThemeColor().then((result) => this.themeColor = result)
 
     this.updateUtils.getETH1Client().then((result) => this.eth1client = result)
     this.updateUtils.getETH2Client().then((result) => this.eth2client = result)
     this.updateUtils.getUpdateChannel().then((result) => this.updateChannel = result)
 
-    this.loadNotifyToggles()
     this.theme.isWinterEnabled().then((result) => this.snowing = result)
 
     this.allCurrencies = this.getAllCurrencies()
-    this.allTestNetworks = this.api.getAllTestNetNames()
+    this.api.getAllTestNetNames().then(result => {
+      this.allTestNetworks = result
+    })
 
-    Device.getInfo().then((result) => this.appVersion = result.appVersion)
+    App.getInfo().then((result) => this.appVersion = result.version)
 
     this.storage.getStakingShare().then((result) => this.stakingShare = result)
+
+    this.merchant.getCurrentPlanConfirmed().then((result) => {
+      this.currentPlan = result
+      if (this.currentPlan != PRODUCT_STANDARD) {
+        this.premiumLabel = " - " + this.api.capitalize(this.currentPlan)
+      }
+
+    })
+    this.notificationBase.disableToggleLock()
 
     this.fadeIn = "fade-in"
     setTimeout(() => {
@@ -131,11 +139,53 @@ export class Tab3Page {
     }, 1500)
   }
 
-  // changes a toggle without triggering onChange
-  private lockedToggle = true;
-  private changeToggleSafely(func: () => void) {
-    this.lockedToggle = true;
-    func()
+  changeWidgetTheme() {
+    
+  }
+
+  gotoNotificationPage() {
+    this.router.navigate(['/notifications'])
+  }
+
+  themeColorLock = false
+  changeThemeColor() {
+    this.themeColorLock = true;
+    this.theme.undoColor()
+    setTimeout(() => {
+      this.theme.toggle(this.darkMode, true, this.themeColor)
+      this.themeColorLock = false;
+    }, 250)
+  }
+
+  widgetSetupInfo() {
+    if (this.currentPlan == 'standard' || this.currentPlan == 'plankton') {
+      this.openUpgrades()
+      return;
+    }
+
+    var tutorialText = "MISSINGNO"
+    if (this.platform.is("ios")) {
+      tutorialText =
+        "1. Go to your homescreen<br/>" +
+        "2. Hold down on an empty space<br/>" +
+        "3. On the top right corner, click the + symbol<br/>" +
+        "4. Scroll down and select Beaconchain Dashboard and chose your widget<br/>" +
+        "<br/>You can configure your widget by holding down on the widget.<br/><br/>" +
+        "Widgets are only available on iOS 14 or newer<br/><br/>" +
+        "If you just purchased a premium package and the widget does not show any data, try deleting it and adding the widget again."
+    } else {
+      tutorialText = "1. Go to your homescreen<br/>" +
+        "2. Hold down on an empty space<br/>" +
+        "3. Click on 'Widgets'<br/>" +
+        "4. Scroll down and select Beaconchain Dashboard and chose your widget<br/><br/>" +
+        "If you just purchased a premium package and the widget does not show any data, try deleting it and adding the widget again."
+    }
+
+    this.alerts.showInfo(
+      "Widget Setup",
+      tutorialText,
+      "bigger-alert"
+    )
   }
 
   ionViewWillEnter() {
@@ -144,58 +194,6 @@ export class Tab3Page {
     this.api.getNetworkName().then((result) => {
       this.network = result
     })
-  }
-
-  private async loadNotifyToggles() {
-    const net = (await this.api.networkConfig).net
-    
-    // locking toggle so we dont execute onChange when setting initial values
-    const preferences = await this.storage.getNotificationTogglePreferences(net)
-
-    this.lockedToggle = true
-    this.notifySlashed = preferences.notifySlashed
-
-    this.notifyDecreased = preferences.notifyDecreased
-
-    this.notifyClientUpdate = preferences.notifyClientUpdate
-
-    this.notifyProposalsSubmitted = preferences.notifyProposalsSubmitted
-    this.notifyProposalsMissed = preferences.notifyProposalsMissed
-
-    this.notifyAttestationsMissed = preferences.notifyAttestationsMissed
-
-    if (await this.api.isNotMainnet()) {
-      this.lockedToggle = true
-      this.notify = preferences.notify
-      this.notifyInitialized = true;
-      this.disableToggleLock()
-      return;
-    }
-
-    await this.getNotificationSetting(preferences.notify).then((result) => {
-      this.lockedToggle = true
-      this.notify = result
-      this.disableToggleLock()
-    })
-
-    this.disableToggleLock()
-
-    this.notifyInitialized = true;
-
-    const remoteNofiy = await this.getRemoteNotificationSetting(preferences.notify)
-    if (remoteNofiy != this.notify) {
-      this.lockedToggle = true
-      this.notify = remoteNofiy
-      this.disableToggleLock()
-    }
-
-    setTimeout(() => this.firstTimePushAllNotificationSettings(), 200)
-  }
-
-  private disableToggleLock() {
-    setTimeout(() => {
-      this.lockedToggle = false
-    }, 300)
   }
 
   private getAllCurrencies() {
@@ -212,59 +210,6 @@ export class Tab3Page {
 
   darkModeToggle() {
     this.theme.toggle(this.darkMode)
-  }
-
-  private async getDefaultNotificationSetting() {
-    if (this.platform.is("ios")) return false // iOS users need to grant notification permission first
-    else return await this.firebaseUtils.hasNotificationToken() // on Android, enable as default when token is present
-  }
-
-  // Android registers firebase service at app start
-  // So if there is no token present when enabling notifications,
-  // there might be no google play services on this device
-  private async isSupportedOnAndroid() {
-    if (this.platform.is("android")) {
-      const hasToken = await this.firebaseUtils.hasNotificationToken()
-      if (!hasToken) {
-        this.alerts.showError(
-          "Play Service",
-          "We could not enable notifications for your device which might be due to missing Google Play Services. Please note that notifications do not work without Google Play Services.",
-          SETTINGS_PAGE + 2
-        )
-        this.changeToggleSafely(() => { this.notify = false })
-        return false
-      }
-    }
-    return true
-  }
-
-  async notifyToggle() {
-    if (this.lockedToggle) {
-      return;
-    }
-
-    if (!(await this.isSupportedOnAndroid())) return
-
-    if (await this.firebaseUtils.hasConsentDenied()) {
-      this.changeToggleSafely(() => { this.notify = false })
-      this.firebaseUtils.alertIOSManuallyEnableNotifications()
-      return
-    }
-
-    if (await this.api.isNotMainnet()) {
-      this.notifyAttestationsMissed = this.notify
-      this.notifyDecreased = this.notify
-      this.notifyProposalsMissed = this.notify
-      this.notifyProposalsSubmitted = this.notify
-      this.notifySlashed = this.notify
-
-      const net = (await this.api.networkConfig).net
-      this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
-    } else {
-      this.sync.changeGeneralNotify(this.notify)
-    }
-
-    if (this.notify) this.firebaseUtils.registerPush(true)
   }
 
   overrideDisplayCurrency = null
@@ -292,90 +237,6 @@ export class Tab3Page {
     })
   }
 
-  private async getRemoteNotificationSetting(notifyLocalStore): Promise<boolean> {
-    const local = await this.getNotificationSetting(notifyLocalStore)
-    const remote = await this.getRemoteNotificationSettingResponse()
-
-    if (remote) {
-      console.log("Returning notification enabled remote state:", remote.notify_enabled)
-      return remote.notify_enabled
-    }
-    return local
-  }
-
-  private async getNotificationSetting(notifyLocalStore): Promise<boolean> {
-    const local = (notifyLocalStore != null) ? notifyLocalStore : await this.getDefaultNotificationSetting()
-
-    console.log("Returning notification enabled local state:", local)
-    return local
-  }
-
-  private async getRemoteNotificationSettingResponse(): Promise<MobileSettingsResponse> {
-    const request = new GetMobileSettingsRequest()
-    const response = await this.api.execute(request)
-    const result = request.parse(response)
-    if (result && result.length >= 1) return result[0]
-    return null
-  }
-
-  private async firstTimePushAllNotificationSettings() {
-    if (!this.notify) return
-
-    const locked = await this.storage.getItem(LOCK_KEY)
-    if (locked && locked == LOCKED_STATE) return;
-
-    console.log("firstTimePushAllNotificationSettings is running")
-
-    this.notifyEventToggle("validator_balance_decreased")
-    this.notifyEventToggle("validator_got_slashed")
-    this.notifyClientUpdates()
-
-    //const v3LockPresent = await this.storage.getItem("first_time_push_v3")
-    //if (!v3LockPresent) {
-    this.notifyEventToggle("validator_proposal_submitted")
-    this.notifyEventToggle("validator_proposal_missed")
-    // }
-
-    this.notifyEventToggle("validator_attestation_missed")
-
-    this.storage.setItem(LOCK_KEY, LOCKED_STATE)
-  }
-
-  private getNotifySettingName(eventName: string): string {
-    switch (eventName) {
-      case "validator_balance_decreased": return SETTING_NOTIFY_DECREASED
-      case "validator_got_slashed": return SETTING_NOTIFY_SLASHED
-      case "validator_proposal_submitted": return SETTING_NOTIFY_PROPOSAL_SUBMITTED
-      case "validator_proposal_missed": return SETTING_NOTIFY_PROPOSAL_MISSED
-      case "validator_attestation_missed": return SETTING_NOTIFY_ATTESTATION_MISSED
-      default: return null
-    }
-  }
-
-  private getToggleFromEvent(eventName) {
-    switch (eventName) {
-      case "validator_balance_decreased": return this.notifyDecreased
-      case "validator_got_slashed": return this.notifySlashed
-      case "validator_proposal_submitted": return this.notifyProposalsSubmitted
-      case "validator_proposal_missed": return this.notifyProposalsMissed
-      case "validator_attestation_missed": return this.notifyAttestationsMissed
-      default: return false
-    }
-  }
-
-  async notifyEventToggle(eventName) {
-    console.log("notifyEventToggle", this.lockedToggle)
-    if (this.lockedToggle) {
-      return;
-    }
-
-    this.sync.changeNotifyEvent(
-      this.getNotifySettingName(eventName),
-      eventName,
-      this.getToggleFromEvent(eventName)
-    )
-  }
-
   rateApp() {
     if (this.platform.is("android")) {
       window.open('market://details?id=in.beaconcha.mobile', '_system', 'location=yes');
@@ -385,7 +246,7 @@ export class Tab3Page {
   }
 
   changeUpdateChannel() {
-    if (this.lockedToggle) {
+    if (this.notificationBase.lockedToggle) {
       return;
     }
 
@@ -394,7 +255,7 @@ export class Tab3Page {
   }
 
   async changeETH2Client() {
-    if (this.lockedToggle) {
+    if (this.notificationBase.lockedToggle) {
       return;
     }
 
@@ -403,7 +264,7 @@ export class Tab3Page {
   }
 
   async changeETH1Client() {
-    if (this.lockedToggle) {
+    if (this.notificationBase.lockedToggle) {
       return;
     }
 
@@ -411,16 +272,6 @@ export class Tab3Page {
     this.updateUtils.checkUpdates()
   }
 
-  notifyClientUpdates() {
-    if (this.lockedToggle) {
-      return;
-    }
-
-    this.sync.changeNotifyClientUpdate(
-      SETTING_NOTIFY_CLIENTUPDATE,
-      this.notifyClientUpdate
-    )
-  }
 
   async openBrowser(link, native: boolean = false) {
     if (native) {
@@ -448,7 +299,6 @@ export class Tab3Page {
 
   confirmLogout() {
     this.storage.removeAuthUser();
-    this.storage.setItem(LOCK_KEY, "")
     this.authUser = null
     Toast.show({
       text: 'Logged out'
@@ -460,7 +310,7 @@ export class Tab3Page {
     await this.sync.fullSync()
     await this.storage.setNetworkPreferences(newConfig)
     await this.api.updateNetworkConfig()
-    await this.loadNotifyToggles()
+    await this.notificationBase.loadNotifyToggles()
     this.validatorUtils.notifyListeners()
   }
 
@@ -473,6 +323,14 @@ export class Tab3Page {
     });
 
     await alert.present();
+  }
+
+  async openUpgrades() {
+    const modal = await this.modalController.create({
+      component: SubscribePage,
+      cssClass: 'my-custom-class',
+    });
+    return await modal.present();
   }
 
   async openFAQ() {
@@ -495,6 +353,9 @@ export class Tab3Page {
     this.sync.syncAllSettings()
   }
 
+  manageSubs() {
+    this.merchant.manageSubscriptions()
+  }
 
   async partialStake() {
     const validatorCount = await this.validatorUtils.localValidatorCount()
@@ -552,83 +413,39 @@ export class Tab3Page {
     await alert.present();
   }
 
-
-  // --- Development methods ---
-
-  clearSyncQueue() {
-    this.sync.developDeleteQueue()
-    Toast.show({
-      text: 'Queue cleared'
-    });
-  }
-
-  forceSync() {
-    this.sync.fullSync()
-  }
-
-  updateFirebaseToken() {
-    this.firebaseUtils.pushLastTokenUpstream(true)
-  }
-
-  permanentDevMode() {
-    this.storage.setObject("dev_mode", { enabled: true })
-    Toast.show({
-      text: 'Permanent dev mode enabled'
-    });
-  }
-
-  triggerToggleTest() {
-    this.toggleTest = true
-  }
-
-  toggleTest = false
-  toggleTestChange() {
-    if (this.lockedToggle) {
-      this.lockedToggle = false
-      return;
-    }
-    setTimeout(() => this.changeToggleSafely(() => { this.toggleTest = false }), 500)
-    setTimeout(() =>
-      this.alerts.showInfo("Success", "Toggle test was successfull if this alert only appears once and toggle returns to disabled"),
-      650
-    )
-  }
-
-
   toggleSnow() {
     this.theme.toggleWinter(this.snowing)
   }
 
-  async changeAccessToken() {
+  versionClickCount = 0;
+  openLogSessionDialog() {
+    this.versionClickCount++;
+    if (this.versionClickCount % 3 != 0) return;
+    this.openLogSessionDialogReally()
+  }
+
+  async openLogSessionDialogReally() {
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
-      header: 'Access Token',
-      inputs: [
-        {
-          name: 'token',
-          type: 'text',
-          placeholder: 'Access token'
-        }
-      ],
+      header: 'Logs Viewer',
+      message: 'For which session would you like to see logs?',
       buttons: [
         {
+          text: 'Current Session',
+          handler: () => { this.storage.openLogSession(this.modalController, 0) }
+        },
+        {
+          text: 'Last Session',
+          handler: () => { this.storage.openLogSession(this.modalController, 1) }
+        },
+        {
+          text: 'Last Last Session',
+          handler: () => { this.storage.openLogSession(this.modalController, 2) }
+        },
+        {
           text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'secondary',
-          handler: () => {
-
-          }
-        }, {
-          text: 'Ok',
-          handler: (alertData) => {
-            this.storage.setAuthUser({
-              accessToken: alertData.token,
-              refreshToken: "-",
-              expiresIn: Number.MAX_SAFE_INTEGER
-            })
-          }
         }
-      ]
+      ],
     });
 
     await alert.present();

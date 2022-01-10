@@ -21,18 +21,20 @@
 import { Component, OnInit, Input, SimpleChange } from '@angular/core';
 import { UnitconvService } from '../../services/unitconv.service';
 import { ApiService } from '../../services/api.service';
-import { DasboardDataRequest, EpochResponse } from '../../requests/requests';
+import { DasboardDataRequest, EpochRequest, EpochResponse } from '../../requests/requests';
 import * as HighCharts from 'highcharts';
 import * as Highstock from "highcharts/highstock";
 import BigNumber from "bignumber.js";
-import { Plugins } from '@capacitor/core';
 import { OverviewData } from '../../controllers/OverviewController';
 import { Release } from '../../utils/ClientUpdateUtils';
 import ThemeUtils from 'src/app/utils/ThemeUtils';
 import { highChartOptions } from 'src/app/utils/HighchartOptions';
 import { StorageService } from 'src/app/services/storage.service';
 import confetti from 'canvas-confetti';
-const { Browser } = Plugins;
+import { Browser } from '@capacitor/browser';
+import { ModalController } from '@ionic/angular';
+import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
+import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 
 @Component({
   selector: 'app-validator-dashboard',
@@ -69,12 +71,16 @@ export class DashboardComponent implements OnInit {
   firstCelebrate = true
 
   doneLoading = false
+  proposals: Proposals = null
+  currentPackageMaxValidators = 100
 
   constructor(
     public unit: UnitconvService,
     public api: ApiService,
     public theme: ThemeUtils,
-    private storage: StorageService
+    private storage: StorageService,
+    private modalController: ModalController,
+    private merchant: MerchantUtils
   ) {
     this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
   }
@@ -84,15 +90,11 @@ export class DashboardComponent implements OnInit {
       if (event.data.currentValue) {
         this.chartError = false
         this.chartData = null
-        this.doneLoading = this.data != null
-        if (this.data != null) {
-          if (this.fadeIn == "invisible") {
-            this.fadeIn = "fade-in"
-            setTimeout(() => {
-              this.fadeIn = null
-            }, 1500)
-          }
-        }
+        this.doneLoading = event.data.currentValue != null
+          this.fadeIn = "fade-in"
+          setTimeout(() => {
+            this.fadeIn = null
+          }, 1500)
 
         this.drawBalanceChart()
         this.drawProposalChart()
@@ -111,6 +113,7 @@ export class DashboardComponent implements OnInit {
     this.storage.getBooleanSetting("rank_percent_mode", false).then((result) => this.rankPercentMode = result)
     highChartOptions(HighCharts)
     highChartOptions(Highstock)
+    this.merchant.getCurrentPlanMaxValidator().then((result) => { this.currentPackageMaxValidators = result })
   }
 
   async checkForGenesisOccured() {
@@ -121,12 +124,17 @@ export class DashboardComponent implements OnInit {
   }
 
   async checkForFinalization() {
-    if (!this.data || !this.data.currentEpoch) return
-    const currentEpoch = this.data.currentEpoch as EpochResponse
-    this.finalizationIssue = new BigNumber(currentEpoch.globalparticipationrate).isLessThan("0.664") && currentEpoch.epoch > 7
+    const olderEpoch = new EpochRequest((this.data.currentEpoch.epoch - 6).toString())
+    olderEpoch.maxCacheAge = 2 * 60 * 60 * 1000
+    const response = await this.api.execute(olderEpoch).catch((error) => { return null })
+    const olderResult = olderEpoch.parse(response)[0]
+
+    if (!this.data || !this.data.currentEpoch || !olderResult) return
+    console.log("checkForFinalization", olderResult)
+    this.finalizationIssue = new BigNumber(olderResult.globalparticipationrate).isLessThan("0.664") && olderResult.epoch > 7
   }
 
-  async getChartData(data: ('balance' | 'proposals')) {
+  async getChartData(data: ('balances' | 'proposals')) {
     if (!this.data || !this.data.lazyChartValidators) return null
     const chartReq = new DasboardDataRequest(data, this.data.lazyChartValidators)
     const response = await this.api.execute(chartReq).catch((error) => { return null })
@@ -137,6 +145,16 @@ export class DashboardComponent implements OnInit {
     return chartReq.parse(response)
   }
 
+  async upgrade() {
+    const modal = await this.modalController.create({
+      component: SubscribePage,
+      cssClass: 'my-custom-class',
+      componentProps: {
+        'tab': 'whale'
+      }
+    });
+    return await modal.present();
+  }
 
   switchCurrencyPipe() {
     if (this.unit.pref == "ETHER") {
@@ -166,6 +184,11 @@ export class DashboardComponent implements OnInit {
       else if (d[1] == 3) orphaned.push([d[0] * 1000, 1])
     })
 
+    this.proposals = {
+      good: proposed.length,
+      bad: missed.length + orphaned.length
+    }
+
     this.checkForFirstProposal(proposed)
 
     this.createProposedChart(proposed, missed, orphaned)
@@ -193,7 +216,7 @@ export class DashboardComponent implements OnInit {
   }
 
   async drawBalanceChart() {
-    this.chartData = await this.getChartData("balance")
+    this.chartData = await this.getChartData("balances")
 
     if (!this.chartData || this.chartData.length <= 3) {
       this.chartError = true;
@@ -202,63 +225,19 @@ export class DashboardComponent implements OnInit {
     }
 
     this.chartError = false;
-
-    var balance = new Array(this.chartData.length)
-    var effectiveBalance = new Array(this.chartData.length)
-    var validatorCount = new Array(this.chartData.length)
-    var utilization = new Array(this.chartData.length)
-    for (var i = 0; i < this.chartData.length; i++) {
-      var res = this.chartData[i]
-      validatorCount[i] = [res[0], res[1]]
-      balance[i] = [res[0], res[2]]
-      effectiveBalance[i] = [res[0], res[3]]
-      utilization[i] = [res[0], res[3] / (res[1] * 32)]
-    }
-
-    this.utilizationAvg = this.averageUtilization(utilization)
     setTimeout(() => { this.doneLoading = true }, 50)
 
 
-    this.createBalanceChart(this.calculateIncomeData(balance))
+    this.createBalanceChart(this.calculateIncomeData(this.chartData))
   }
 
 
   private calculateIncomeData(balance) {
-    var income = new Array(14);
-    var lastDay = -1;
-    var count = 0;
-    var endDayBalance = 0;
-    var endTs = 0;
-    for (var i = balance.length - 1; i >= 0; i--) {
-      let tsDate = new Date(balance[i][0]);
-      let day = tsDate.getDate()
-      if (lastDay == -1) {
-        endTs = balance[i][0];
-        endDayBalance = balance[i][1];
-        lastDay = day;
-      }
-
-      if (lastDay != day) {
-        const middleOfDay = new Date(endTs)
-        middleOfDay.setHours(0)
-        var dayIncome = endDayBalance - balance[i][1];
-        if (dayIncome > 31) {
-          dayIncome - this.data.effectiveBalance.toNumber();
-        }
-
-        let color = dayIncome < 0 ? "#ff835c" : "#7cb5ec";
-
-        income[count] = { x: middleOfDay.getTime(), y: dayIncome, color: color };
-
-        endTs = balance[i][0];
-        endDayBalance = balance[i][1];
-        lastDay = day;
-        count++;
-      }
-      if (count >= 14) break;
-
+    var income = [];
+    for (var i = 0; i < balance.length; i++) {
+        let color = balance[i].y < 0 ? "#ff835c" : "var(--chart-default)";
+        income.push({ x: balance[i].x, y: balance[i].y, color: color })
     }
-    income[count] = [endTs + 24 * 3600 * 1000, 0];
     return income;
   }
 
@@ -291,12 +270,12 @@ export class DashboardComponent implements OnInit {
       title: {
         text: '' //Balance History for all Validators
       },
-      colors: ["#7cb5ec", "#ff835c", "#e4a354", "#2b908f", "#f45b5b", "#91e8e1"],
+      colors: ["var(--chart-default)", "#ff835c", "#e4a354", "#2b908f", "#f45b5b", "#91e8e1"],
       xAxis: {
         lineWidth: 0,
         tickColor: '#e5e1e1',
         type: 'datetime',
-        range: 7 * 24 * 60 * 60 * 1000,
+        range: 32 * 24 * 60 * 60 * 1000,
       },
       yAxis: [
         {
@@ -329,21 +308,21 @@ export class DashboardComponent implements OnInit {
       series: [
         {
           name: 'Proposed',
-          color: '#7cb5ec',
+          color: 'var(--chart-default)',
           data: proposed,
-          pointWidth: 25,
+          pointWidth: 5,
         },
         {
           name: 'Missed',
           color: '#ff835c',
           data: missed,
-          pointWidth: 25,
+          pointWidth: 5,
         },
         {
           name: 'Orphaned',
           color: '#e4a354',
           data: orphaned,
-          pointWidth: 25,
+          pointWidth: 5,
         }
       ],
       rangeSelector: {
@@ -353,7 +332,7 @@ export class DashboardComponent implements OnInit {
         enabled: false
       },
       navigator: {
-        enabled: false
+        enabled: true
       }
     })
   }
@@ -374,7 +353,7 @@ export class DashboardComponent implements OnInit {
         enabled: false
       },
       navigator: {
-        enabled: false
+        enabled: true
       },
       chart: {
         type: 'column',
@@ -387,10 +366,10 @@ export class DashboardComponent implements OnInit {
       },
       xAxis: {
 
-        tickInterval: 24 * 3600 * 1000,
+       // tickInterval: 24 * 3600 * 1000,
         //tickmarkPlacement: 'on',
 
-        range: 9 * 24 * 60 * 60 * 1000,
+        range: 32 * 24 * 60 * 60 * 1000,
         type: 'datetime',
       },
       tooltip: {
@@ -401,7 +380,7 @@ export class DashboardComponent implements OnInit {
         formatter: (tooltip) => {
           const value = new BigNumber(tooltip.chart.hoverPoint.y);
 
-          return `Income: ${value.toFormat(6)} Ether<br/><span style="font-size:11px;">${this.unit.convertToPref(value, "ETHER")}</span>`
+          return `Income: ${value.toFormat(6)} Ether<br/><span style="font-size:11px;">${this.unit.convertToPref(value, "ETHER")}</span><br/><br/><span style="font-size:11px;">${ new Date(tooltip.chart.hoverPoint.x).toLocaleString()}</span>`
         }
       },
       yAxis: [
@@ -420,7 +399,7 @@ export class DashboardComponent implements OnInit {
       ],
       series: [
         {
-          pointWidth: 25,
+      
           name: 'Income',
           data: income
         }
@@ -460,4 +439,9 @@ function timeToEpoch(genesisTs, ts) {
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
+}
+
+interface Proposals {
+  good: number
+  bad: number
 }

@@ -23,7 +23,9 @@ import { ApiService } from '../services/api.service';
 import { StorageService } from '../services/storage.service';
 import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
-
+import { MerchantUtils } from '../utils/MerchantUtils';
+import ThemeUtils from '../utils/ThemeUtils';
+import { Toast } from '@capacitor/toast';
 @Component({
   selector: 'app-tabs',
   templateUrl: 'tabs.page.html',
@@ -35,7 +37,9 @@ export class TabsPage {
     private firebaseUtils: FirebaseUtils,
     private sync: SyncService,
     private storage: StorageService,
-    private api: ApiService
+    private api: ApiService,
+    private merchant: MerchantUtils,
+    private theme: ThemeUtils
   ) { }
 
   ionViewDidEnter() {
@@ -63,6 +67,28 @@ export class TabsPage {
       const net = (await this.api.networkConfig).net
       this.storage.getNotificationTogglePreferences(net) // preloading toggle settings
     }, 350)
+
+    // Validate licence and reset theme accordingly
+    setTimeout(() => { this.validateTheming() }, 600)
+  }
+
+  private async validateTheming() {
+    const defaultTheme = await this.merchant.getDefaultTheme()
+    const stored = await this.storage.getItem("setting_default_theme")
+    if (defaultTheme != stored && defaultTheme != "") {
+
+      this.storage.setItem("setting_default_theme", defaultTheme)
+      this.theme.undoColor()
+      setTimeout(async () => {
+        this.theme.toggle(await this.theme.isDarkThemed(), true, defaultTheme)
+        Toast.show({
+          text: 'Switched to Ethpool theme'
+        })
+      }, 250)
+    }
+    
+    const hasTheming = await this.merchant.hasPremiumTheming()
+    if(!hasTheming) { this.theme.resetTheming() }
   }
 
   private hackyIonicPreloads() {

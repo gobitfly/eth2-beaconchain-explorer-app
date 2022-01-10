@@ -21,9 +21,10 @@
 import { ApiService } from '../services/api.service';
 import { StorageService } from '../services/storage.service';
 import { Injectable } from '@angular/core';
-import { EpochRequest, EpochResponse, PerformanceRequest, RemoveMyValidatorsRequest, NotificationSubsRequest, PerformanceResponse, AttestationPerformanceRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse } from '../requests/requests';
-import { AlertService, VALIDATORUTILS } from '../services/alert.service';
+import { EpochRequest, EpochResponse, PerformanceRequest, RemoveMyValidatorsRequest, PerformanceResponse, AttestationPerformanceRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse } from '../requests/requests';
+import { AlertService } from '../services/alert.service';
 import { CacheModule } from './CacheModule';
+import { MerchantUtils } from './MerchantUtils';
 
 export const SAVED = 0 // stored locally
 export const MEMORY = 1 // Search results etc
@@ -66,6 +67,7 @@ export class ValidatorUtils extends CacheModule {
         private api: ApiService,
         private storage: StorageService,
         private alerts: AlertService,
+        private merchantUtils: MerchantUtils
     ) {
         super("vu") // initialize cache module with vu prefix
     }
@@ -179,17 +181,17 @@ export class ValidatorUtils extends CacheModule {
         const storageKey = await this.getStorageKey()
         const local = await this.getMap(storageKey)
 
-        const validatorString = getValidatorQueryString([...local.values()], 2000, 99)
+        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator() - 1)
 
         const cachePerformanceKey = await this.getCachedPerformanceKey()
-        const cached = this.getMultipleCached(cachePerformanceKey, validatorString.split(","))
+        const cached = await this.getMultipleCached(cachePerformanceKey, validatorString.split(","))
         if (cached != null && cached.length > 0) return cached
 
         const remoteUpdates = await this.getRemoteValidatorPerformance(
             validatorString
         )
 
-        this.cacheMultiple(cachePerformanceKey, validatorString.split(","), remoteUpdates)
+        this.cacheMultiple(cachePerformanceKey, remoteUpdates)
 
         return remoteUpdates
     }
@@ -198,17 +200,17 @@ export class ValidatorUtils extends CacheModule {
         const storageKey = await this.getStorageKey()
         const local = await this.getMap(storageKey)
 
-        const validatorString = getValidatorQueryString([...local.values()], 2000, 99)
+        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator() - 1)
 
         const cacheAttestationKey = await this.getCachedAttestationKey()
-        const cached = this.getMultipleCached(cacheAttestationKey, validatorString.split(","))
+        const cached = await this.getMultipleCached(cacheAttestationKey, validatorString.split(","))
         if (cached != null && cached.length > 0) return cached
 
         const remoteUpdates = await this.getRemoteValidatorAttestationPerformance(
             validatorString
         )
 
-        this.cacheMultiple(cacheAttestationKey, validatorString.split(","), remoteUpdates)
+        this.cacheMultiple(cacheAttestationKey, remoteUpdates)
         return remoteUpdates
     }
 
@@ -217,9 +219,9 @@ export class ValidatorUtils extends CacheModule {
         const storageKey = await this.getStorageKey()
         const local = await this.getMapWithoutDeleted(storageKey)
         const epochPromise = this.getRemoteCurrentEpoch()
-        const validatorString = getValidatorQueryString([...local.values()], 2000, 99)
+        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator() - 1)
 
-        const cached = this.getMultipleCached(allMyKeyBare, validatorString.split(","))
+        const cached = await this.getMultipleCached(allMyKeyBare, validatorString.split(","))
         if (cached != null) {
             console.log("return my validators from cache")
             return cached
@@ -227,7 +229,8 @@ export class ValidatorUtils extends CacheModule {
 
         const remoteUpdatesPromise = this.getRemoteValidatorInfo(
             validatorString
-        )
+        ).catch(err => { return null })
+        if(remoteUpdatesPromise == null) return null
 
         const epoch = await epochPromise
         const remoteUpdates = await remoteUpdatesPromise
@@ -245,7 +248,7 @@ export class ValidatorUtils extends CacheModule {
 
         const result = [...local.values()]
 
-        this.cacheMultiple(allMyKeyBare, validatorString.split(","), result)
+        this.cacheMultiple(allMyKeyBare, result)
 
         return result
     }
@@ -255,33 +258,6 @@ export class ValidatorUtils extends CacheModule {
         validators.forEach((item) => {
             item.state = this.getValidatorState(item, epoch)
         })
-    }
-
-    async postNotifySub(eventName: string, filter: string = null, enabled, silent = true, network: string): Promise<boolean> {
-        const loggedIn = await this.storage.isLoggedIn()
-        if (!loggedIn) return false
-
-        const request = new NotificationSubsRequest(eventName, filter, enabled); // this.getToggleFromEvent(eventName)
-        if (network) {
-            request.endPoint = network
-        }
-
-        const response = await this.api.execute(request)
-        const result = request.wasSuccessfull(response)
-        if (!result) {
-            console.warn("Error chaning notification event subscription")
-            if (!silent) {
-                this.alerts.showError(
-                    "Sorry",
-                    "Your notification setting could not be synced. Please try it again in a couple minutes.",
-                    VALIDATORUTILS + 1
-                )
-            }
-
-            return false
-        }
-
-        return true
     }
 
     // checks if remote validators are already known locally.
@@ -334,13 +310,14 @@ export class ValidatorUtils extends CacheModule {
     }
 
     async getRemoteCurrentEpoch(epoch = "latest"): Promise<EpochResponse> {
-        const cached = this.getCache(await this.getCachedEpochKey())
+        const cached = await this.getCache(await this.getCachedEpochKey())
         if (cached != null) return cached
 
         const request = new EpochRequest(epoch)
         const response = await this.api.execute(request)
         const result = request.parse(response)[0]
-        if (response.request.fromCache != true) {
+
+        if (response.cached != true) { 
             await this.storage.setLastEpochRequestTime(Date.now())
         }
         const lastCachedTime = await this.storage.getLastEpochRequestTime()
@@ -382,13 +359,13 @@ export class ValidatorUtils extends CacheModule {
         if (!args || args[0] === undefined) return []
 
         const cachePerformanceKey = await this.getCachedPerformanceKey()
-        const cached = this.getMultipleCached(cachePerformanceKey, args)
+        const cached = await this.getMultipleCached(cachePerformanceKey, args)
         if (cached != null && cached.length > 0) return cached
 
         const request = new PerformanceRequest(args)
         const response = await this.api.execute(request)
         const result = request.parse(response)
-        this.cacheMultiple(cachePerformanceKey, args, result)
+        this.cacheMultiple(cachePerformanceKey, result)
         return result
     }
 
@@ -396,13 +373,13 @@ export class ValidatorUtils extends CacheModule {
         if (!args || args[0] === undefined) return []
 
         const cacheAttestationKey = await this.getCachedAttestationKey()
-        const cached = this.getMultipleCached(cacheAttestationKey, args)
+        const cached = await this.getMultipleCached(cacheAttestationKey, args)
         if (cached != null && cached.length > 0) return cached
 
         const request = new AttestationPerformanceRequest(args)
         const response = await this.api.execute(request)
         const result = request.parse(response)
-        this.cacheMultiple(cacheAttestationKey, args, result)
+        this.cacheMultiple(cacheAttestationKey, result)
         return result
     }
 
@@ -458,7 +435,8 @@ export class ValidatorUtils extends CacheModule {
     }
 
     async searchValidators(search: string): Promise<Validator[]> {
-        const result = await this.getRemoteValidatorInfo(search)
+        const result = await this.getRemoteValidatorInfo(search).catch(err => { return null })
+        if(result == null) return []
         const temp = this.convertToValidatorModel({ synced: false, storage: MEMORY, validatorResponse: result })
         await this.updateValidatorStates(temp)
         return temp
@@ -466,6 +444,7 @@ export class ValidatorUtils extends CacheModule {
 
     async searchValidatorsViaETH1(search: string, enforceMax: number = -1): Promise<Validator[]> {
         const result = await this.getRemoteValidatorViaETH1(search, enforceMax)
+        if(result == null) return []
         const temp = this.convertToValidatorModel({ synced: false, storage: MEMORY, validatorResponse: result })
         await this.updateValidatorStates(temp)
         return temp
@@ -478,7 +457,6 @@ export class ValidatorUtils extends CacheModule {
             return validator.name
         }
     }
-
 }
 
 export function getValidatorQueryString(validators: any[], getParamMaxLimit: number, maxValLimit: number = -1) { // Validator

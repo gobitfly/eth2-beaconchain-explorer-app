@@ -18,46 +18,91 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { resolve } from "@angular/compiler-cli/src/ngtsc/file_system"
+import { StorageService } from "../services/storage.service"
+
 interface CachedData {
+    maxStaleTime: number
     time: number
     data: any
 }
 
-const STALE_TIME = 6 * 60 * 1000 // 6 Minutes
-
 export class CacheModule {
 
-    private keyPrefix = ""
+    private staleTime = 5 * 60 * 1000 // 6 Minutes
 
-    constructor(keyPrefix: string = "") {
+    private keyPrefix = ""
+    private hardStorage: StorageService = null
+    initialized: Promise<any>
+
+    constructor(keyPrefix: string = "", staleTime = 6 * 60 * 1000, hardStorage: StorageService = null) {
         this.keyPrefix = keyPrefix
+        this.staleTime = staleTime
+        this.hardStorage = hardStorage
+        this.init()
     }
 
-    private cache: Map<String, CachedData> = new Map()
-
-    protected putCache(key: string, data: any) {
-        this.cache[this.getKey(key)] = {
-            time: this.getTimestamp(),
-            data: data
+    async init() {
+        if (this.hardStorage) {
+            this.hardStorage.setObject("cachemodule_"+this.keyPrefix, null)
+            this.initialized = this.hardStorage.getObject("cachemodule2_" + this.keyPrefix)
+            let result = await this.initialized
+            if(result) this.cache = result
+            console.log("[CacheModule] initialized with ", this.cache)
+        } else {
+            this.initialized = new Promise<void>((resolve) => { resolve() })
+            await this.initialized
         }
     }
 
-    protected getCache(key: string) {
-        const temp = this.cache[this.getKey(key)]
-        if (!temp || temp.time + STALE_TIME < this.getTimestamp()) {
+    private cache: Map<String, CachedData> = new Map()
+    private hotOnly: Map<String, CachedData> = new Map()
+
+    protected putCache(key: string, data: any, staleTime = this.staleTime) {
+        const cacheKey = this.getKey(key)
+
+        // rationale: don't store big data objects in hardStorage due to severe performance impacts
+        const storeHotOnly = cacheKey.indexOf("user/stats/") >= 0
+        const store = storeHotOnly ? this.hotOnly : this.cache
+
+        store.set(cacheKey, {
+                maxStaleTime: staleTime ?? this.staleTime,
+                time: this.getTimestamp(),
+                data: data
+        })
+      
+        if (this.hardStorage) {
+            this.hardStorage.setObject("cachemodule2_"+this.keyPrefix, this.cache)
+        }
+    }
+
+    protected async getCache(key: string) {
+        await this.initialized
+        const cacheKey = this.getKey(key)
+        
+        // rationale: don't store big data objects in hardStorage due to severe performance impacts
+        const storeHotOnly = cacheKey.indexOf("user/stats/") >= 0
+        const store = storeHotOnly ? this.hotOnly : this.cache
+
+        const temp = store.get(this.getKey(key))
+        if (!temp || temp.time + temp.maxStaleTime < this.getTimestamp()) {
             return null
         }
         console.log("[CacheModule] getting from cache", temp.data)
         return temp.data
     }
 
-    protected cacheMultiple(prefix: string, keys: string[], data: any[]) {
-        if (keys.length != data.length) {
-            console.log("[CacheModule] keys and data have different sizes, ignore cache attempt", keys, data)
+    protected cacheMultiple(prefix: string, data: any[]) {
+        if (!data || data.length <= 0) {
+            console.log("[CacheModule] ignore cache attempt of empty data set", data)
             return
         }
-        for (var i = 0; i < keys.length; i++) {
-            this.putCache(prefix + keys[i], data[i])
+        for (var i = 0; i < data.length; i++) {
+            const current = data[i]
+            const index = current.hasOwnProperty("validatorindex") ? data[i].validatorindex :
+                current.hasOwnProperty("index") ? data[i].index : console.error("[CacheModule] can not store cache entry - no index")
+            if(!index) return
+            this.putCache(prefix + index, current)
         }
     }
 
@@ -67,10 +112,10 @@ export class CacheModule {
         }
     }
 
-    protected getMultipleCached(prefix: string, keys: string[]) {
+    protected async getMultipleCached(prefix: string, keys: string[]) {
         var result = new Array(keys.length)
         for (var i = 0; i < keys.length; i++) {
-            result[i] = this.getCache(prefix + keys[i])
+            result[i] = await this.getCache(prefix + keys[i])
             if (!result[i]) return null;
         }
         return result
@@ -82,6 +127,9 @@ export class CacheModule {
 
     invalidateAllCache() {
         this.cache = new Map()
+        if (this.hardStorage) {
+            this.hardStorage.setObject("cachemodule2_"+this.keyPrefix, null)
+        }
     }
 
     private getTimestamp(): number {

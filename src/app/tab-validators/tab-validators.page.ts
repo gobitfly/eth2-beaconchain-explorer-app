@@ -24,14 +24,15 @@ import { ModalController } from '@ionic/angular';
 import { ValidatordetailPage } from '../pages/validatordetail/validatordetail.page';
 import { ApiService } from '../services/api.service';
 import { AlertController } from '@ionic/angular';
-import { Plugins } from '@capacitor/core';
 import { ValidatorResponse, AttestationPerformanceResponse } from '../requests/requests';
 import { StorageService } from '../services/storage.service';
 import { AlertService } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import BigNumber from 'bignumber.js';
+import { SubscribePage } from '../pages/subscribe/subscribe.page';
+import { MerchantUtils } from '../utils/MerchantUtils';
 
-const { Keyboard } = Plugins;
+import { Keyboard } from '@capacitor/keyboard';
 
 @Component({
   selector: 'app-tab2',
@@ -57,6 +58,8 @@ export class Tab2Page {
 
   initialized = false
 
+  currentPackageMaxValidators: number = 100
+
   constructor(
     private validatorUtils: ValidatorUtils,
     public modalController: ModalController,
@@ -64,12 +67,15 @@ export class Tab2Page {
     private alertController: AlertController,
     private storage: StorageService,
     private alerts: AlertService,
-    private sync: SyncService
+    private sync: SyncService,
+    private merchant: MerchantUtils
   ) {
-
     this.validatorUtils.registerListener(() => {
       this.refresh()
     })
+    this.merchant.getCurrentPlanMaxValidator().then((result) => {
+      this.currentPackageMaxValidators = result
+    });
   }
 
   ngOnInit() {
@@ -232,11 +238,12 @@ export class Tab2Page {
         console.log("SET reachedMaxValidators to true")
         this.reachedMaxValidators = true
 
-        return await this.validatorUtils.searchValidatorsViaETH1(target, 99)
+        return await this.validatorUtils.searchValidatorsViaETH1(target, this.currentPackageMaxValidators -1)
       }
       return []
     })
-    this.items = await this.applyAttestationEffectiveness(temp, target)
+ 
+    this.items = temp// await this.applyAttestationEffectiveness(temp, target)
     Tab2Page.itemCount = this.items.length
   }
 
@@ -261,6 +268,7 @@ export class Tab2Page {
 
   async doRefresh(event) {
     await this.refresh().catch(() => {
+      this.api.mayInvalidateOnFaultyConnectionState()
       event.target.complete();
     })
     event.target.complete();
@@ -284,6 +292,17 @@ export class Tab2Page {
   itemHeightFn(item, index) {
     if (index == Tab2Page.itemCount - 1) return 210;
     return 132;
+  }
+
+  async upgrade() {
+    const modal = await this.modalController.create({
+      component: SubscribePage,
+      cssClass: 'my-custom-class',
+      componentProps: {
+        'tab': 'whale'
+      }
+    });
+    return await modal.present();
   }
 
 }

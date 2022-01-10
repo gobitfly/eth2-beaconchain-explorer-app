@@ -20,7 +20,7 @@
 
 import { ApiService } from "../services/api.service";
 import { registerWebPlugin } from "@capacitor/core";
-import { OAuth2Client } from "@byteowls/capacitor-oauth2";
+//import { OAuth2Client } from "@byteowls/capacitor-oauth2";
 import { Plugins } from "@capacitor/core";
 import { Injectable } from '@angular/core';
 import { StorageService } from '../services/storage.service';
@@ -28,8 +28,11 @@ import FirebaseUtils from './FirebaseUtils';
 import { ValidatorUtils } from './ValidatorUtils';
 import { LoadingController } from '@ionic/angular';
 import { SyncService } from '../services/sync.service';
+import { MerchantUtils } from "./MerchantUtils";
 
-const { Toast } = Plugins;
+import { Toast } from '@capacitor/toast';
+import { Device } from '@capacitor/device';
+import { OAuth2Client } from '@byteowls/capacitor-oauth2';
 
 @Injectable({
   providedIn: 'root'
@@ -42,27 +45,32 @@ export class OAuthUtils {
     private firebaseUtils: FirebaseUtils,
     private validatorUtils: ValidatorUtils,
     private loadingController: LoadingController,
-    private sync: SyncService
+    private sync: SyncService,
+    private merchantUtils: MerchantUtils
   ) {
-    registerWebPlugin(OAuth2Client);
+    //registerWebPlugin(OAuth2Client);
   }
 
   async login(statusCallback: ((finished: boolean) => void) = null) {
-    return Plugins.OAuth2Client.authenticate(await this.getOAuthOptions())
+    return OAuth2Client.authenticate(await this.getOAuthOptions())
       .then(async (response: any) => {
 
         const loadingScreen = await this.presentLoading()
         loadingScreen.present();
 
-        const accessToken = response["access_token"];
-        const refreshToken = response["refresh_token"];
+        var result = response.access_token_response
+        if (!result.hasOwnProperty("access_token")) {
+          result = JSON.parse(response.access_token_response)
+        } 
+        const accessToken = result.access_token;
+        const refreshToken = result.refresh_token;
 
         // inconsistent on ios, just assume a 10min lifetime for first token and then just refresh it
         // and kick off real expiration times
         const expiresIn = Date.now() + (10 * 60 * 1000)
 
         console.log("successfull", accessToken, refreshToken, expiresIn)
-        this.storage.setAuthUser({
+        await this.storage.setAuthUser({
           accessToken: accessToken,
           refreshToken: refreshToken,
           expiresIn: expiresIn
@@ -72,10 +80,16 @@ export class OAuthUtils {
         await this.firebaseUtils.pushLastTokenUpstream(true)
         await this.sync.fullSync()
 
-        Toast.show({
-          text: "Welcome!"
-        })
+        let isPremium = await this.merchantUtils.hasMachineHistoryPremium()
+
         loadingScreen.dismiss()
+        if (isPremium) {
+          this.merchantUtils.restartDialogLogin()
+        } else {
+          Toast.show({
+            text: "Welcome!"
+          })
+        }
 
         return true
       })
@@ -97,30 +111,49 @@ export class OAuthUtils {
     });
   }
 
+  public hashCode(string: string): string {
+    var hash = 0;
+    for (var i = 0; i < string.length; i++) {
+        var character = string.charCodeAt(i);
+        hash = ((hash << 5) - hash) + character;
+        hash = hash & hash;
+    }
+    return hash.toString(16);
+  }
+
   private async getOAuthOptions() {
     const api = this.api
     const endpointUrl = await api.getResourceUrl("user/token")
+
+    const info = await Device.getId().catch(() => { return { uuid: "iduno" }})
+    let clientID = this.hashCode(info.uuid)
+    while (clientID.length <= 5) {
+      clientID += "0"
+    }
+
+    const responseType = "code"
+    const callback = "beaconchainmobile://callback"
 
     return {
       authorizationBaseUrl: await api.getBaseUrl() + "/user/authorize",
       accessTokenEndpoint: endpointUrl,
       web: {
-        appId: "sasf",
-        responseType: "code",
-        redirectUrl: "beaconchainmobile://callback",
+        appId: clientID,
+        responseType: responseType,
+        redirectUrl: callback,
         windowOptions: "height=600,left=0,top=0",
       },
       android: {
-        appId: "sasf",
-        responseType: "code",
-        redirectUrl: "beaconchainmobile://callback",
+        appId: clientID,
+        responseType: responseType,
+        redirectUrl: callback,
         handleResultOnNewIntent: true,
         handleResultOnActivityResult: true
       },
       ios: {
-        appId: "sasf",
-        responseType: "code",
-        redirectUrl: "beaconchainmobile://callback",
+        appId: clientID,
+        responseType: responseType,
+        redirectUrl: callback,
       },
     };
   }

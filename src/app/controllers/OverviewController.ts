@@ -70,7 +70,7 @@ export type Description = {
 
 export default class OverviewController {
 
-    constructor(private refreshCallback: () => void = null) {}
+    constructor(private refreshCallback: () => void = null, private userMaxValidators = 280) {}
 
     proccessDashboard(
         validators: Validator[],
@@ -102,6 +102,9 @@ export default class OverviewController {
         if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
         const effectiveBalance = sumBigInt(validators, cur => cur.data.effectivebalance);
+        const effectiveBalanceActive = sumBigInt(validators, cur => {
+            return cur.data.activationepoch <= currentEpoch.epoch ? cur.data.effectivebalance : new BigNumber(0)
+        });
 
         const effectiveBalanceInEth = convertEthUnits(effectiveBalance, Unit.GWEI, Unit.ETHER)
         const sharePercentage = share ? share.dividedBy(effectiveBalanceInEth).decimalPlaces(4) : new BigNumber(1)
@@ -140,18 +143,18 @@ export default class OverviewController {
             performance365d: performance365d.multipliedBy(sharePercentage),
             dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator),
             lazyLoadChart: true,
-            lazyChartValidators: getValidatorQueryString(validators, 2000, 99),
+            lazyChartValidators: getValidatorQueryString(validators, 2000, this.userMaxValidators - 1), 
             foreignValidator: foreignValidator,
             foreignValidatorItem: foreignValidator ? validators[0] : null,
             effectiveBalance: effectiveBalance,
             currentEpoch: currentEpoch,
-            apr: this.getAPR(effectiveBalance, performance7d)
+            apr: this.getAPR(effectiveBalanceActive, performance7d)
         } as OverviewData;
     }
 
 
     getAPR(effectiveBalance, performance) {
-        return new BigNumber(performance * 52 * 100 / effectiveBalance).decimalPlaces(1).toNumber()
+        return new BigNumber(performance * 5214 / effectiveBalance).decimalPlaces(1).toNumber()
     }
 
     getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
@@ -167,13 +170,29 @@ export default class OverviewController {
         const slashedCount = slashedValidators.length
 
         if (slashedCount > 0) {
-            return this.getSlashedState(activeValidatorCount, validatorCount, foreignValidator, slashedValidators[0].data, currentEpoch)
+            return this.getSlashedState(slashedCount,
+                validatorCount,
+                foreignValidator,
+                slashedValidators[0].data,
+                currentEpoch,
+                slashedCount == validatorCount
+            )
         }
 
         if (activeValidatorCount == requiredValidatorsForOKState && activeValidatorCount != 0) {
-            return this.getOkState(activeValidatorCount, validatorCount, foreignValidator, activeValidators[0].data, currentEpoch)
+            return this.getOkState(
+                activeValidatorCount,
+                validatorCount,
+                foreignValidator,
+                activeValidators[0].data,
+                currentEpoch
+            )
         } else if (activeValidatorCount == requiredValidatorsForOKState && activeValidatorCount == 0) {
-            return this.getExitedState(activeValidatorCount, validatorCount, foreignValidator)
+            return this.getExitedState(
+                activeValidatorCount,
+                validatorCount,
+                foreignValidator
+            )
         }
 
         const awaitingActivation = this.getWaitingForActivationValidators(validators)
@@ -185,7 +204,8 @@ export default class OverviewController {
                 validatorCount,
                 awaitingActivation[0].data,
                 currentEpoch,
-                foreignValidator
+                foreignValidator,
+                awaitingActivation.length == validatorCount
             )
         }
 
@@ -195,11 +215,16 @@ export default class OverviewController {
                 validatorCount,
                 activationeligibility[0].data,
                 currentEpoch,
-                foreignValidator
+                foreignValidator,
+                activationeligibility.length == validatorCount
             );
         }
 
-        return this.getOfflineState(activeValidatorCount, validatorCount, foreignValidator);
+        return this.getOfflineState(
+            activeValidatorCount,
+            validatorCount,
+            foreignValidator  
+        );
     }
 
     private descriptionSwitch(myText, foreignText, foreignValidator) {
@@ -236,10 +261,10 @@ export default class OverviewController {
         }
     }
 
-    private getSlashedState(activeValidatorCount, validatorCount, foreignValidator, validatorResp: ValidatorResponse, currentEpoch: EpochResponse): DashboardStatus {
+    private getSlashedState(activeValidatorCount, validatorCount, foreignValidator, validatorResp: ValidatorResponse, currentEpoch: EpochResponse, allAffected: boolean): DashboardStatus {
         const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
 
-        const pre = activeValidatorCount > 0 ? "Some" : "All"
+        const pre = allAffected ? "All" : "Some"
         return {
             icon: "alert-circle-outline",
             title: activeValidatorCount + " / " + validatorCount,
@@ -254,8 +279,8 @@ export default class OverviewController {
         }
     }
 
-    private getAwaitingActivationState(activeValidatorCount, validatorCount, awaitingActivation: ValidatorResponse, currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
-        const pre = activeValidatorCount > 0 ? "Some" : "All"
+    private getAwaitingActivationState(activeValidatorCount, validatorCount, awaitingActivation: ValidatorResponse, currentEpoch: EpochResponse, foreignValidator, allAffected: boolean): DashboardStatus {
+        const pre = allAffected ? "All" : "Some"
         return {
             icon: "timer-outline",
             title: activeValidatorCount + " / " + validatorCount,
@@ -270,8 +295,8 @@ export default class OverviewController {
         }
     }
 
-    private getEligbableActivationState(activeValidatorCount, validatorCount, eligbleState: ValidatorResponse, currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
-        const pre = activeValidatorCount > 0 ? "Some" : "All"
+    private getEligbableActivationState(activeValidatorCount, validatorCount, eligbleState: ValidatorResponse, currentEpoch: EpochResponse, foreignValidator, allAffected: boolean): DashboardStatus {
+        const pre = allAffected ? "All" : "Some"
         return {
             icon: "timer-outline",
             title: activeValidatorCount + " / " + validatorCount,
@@ -287,12 +312,11 @@ export default class OverviewController {
     }
 
     private getExitedState(activeValidatorCount, validatorCount, foreignValidator): DashboardStatus {
-        const pre = activeValidatorCount > 0 ? "Some" : "All"
         return {
             icon: this.descriptionSwitch("ribbon-outline", "home-outline", foreignValidator),
             title: activeValidatorCount + " / " + validatorCount,
             description: this.descriptionSwitch(
-                pre + " of your validators have exited",
+                "All of your validators have exited",
                 "This validator has exited",
                 foreignValidator
             ),
@@ -303,7 +327,7 @@ export default class OverviewController {
     }
 
     private getOfflineState(activeValidatorCount, validatorCount, foreignValidator): DashboardStatus {
-        const pre = activeValidatorCount > 0 ? "Some" : "All"
+        const pre = activeValidatorCount == 0 ? "All" : "Some"
         return {
             icon: "alert-circle-outline",
             title: activeValidatorCount + " / " + validatorCount,

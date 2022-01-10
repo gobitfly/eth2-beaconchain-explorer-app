@@ -24,8 +24,11 @@ import * as StorageTypes from "../models/StorageTypes";
 import { findConfigForKey } from '../utils/NetworkData';
 import { CacheModule } from '../utils/CacheModule'
 import BigNumber from 'bignumber.js';
+import { Platform } from '@ionic/angular';
 
-const { Storage } = Plugins;
+import { Storage } from '@capacitor/storage';
+import { LogviewPage } from '../pages/logview/logview.page';
+const { StorageMirror } = Plugins;
 
 const AUTH_USER = "auth_user";
 const PREFERENCES = "network_preferences";
@@ -37,17 +40,36 @@ export const SETTING_NOTIFY_PROPOSAL_SUBMITTED = "setting_notify_proposalsubmitt
 export const SETTING_NOTIFY_PROPOSAL_MISSED = "setting_notify_proposalsmissed"
 export const SETTING_NOTIFY_ATTESTATION_MISSED = "setting_notify_attestationsmissed"
 export const SETTING_NOTIFY_CLIENTUPDATE = "setting_notify_clientupdate"
+export const SETTING_NOTIFY_MACHINE_OFFLINE = "setting_notify_machineoffline"
+export const SETTING_NOTIFY_HDD_WARN = "setting_notify_hddwarn"
+export const SETTING_NOTIFY_CPU_WARN = "setting_notify_cpuwarn"
+export const SETTING_NOTIFY_MEMORY_WARN = "setting_notify_memorywarn"
+
+export const CPU_THRESHOLD = "cpu_usage_threshold"
+export const HDD_THRESHOLD = "hdd_usage_threshold"
+export const RAM_THRESHOLD = "ram_usage_threshold"
+
+export const DEBUG_SETTING_OVERRIDE_PACKAGE = "debug_setting_override_package"
 
 @Injectable({
   providedIn: 'root'
 })
 export class StorageService extends CacheModule {
 
-  constructor() {
+  constructor(private platform: Platform) {
     super()
+    this.reflectiOSStorage()
   }
 
   // --- upper level helper ---
+
+  async backupAuthUser() {
+    return this.setObject(AUTH_USER + "_backup", await this.getAuthUser());
+  }
+
+  async restoreAuthUser() {
+    return this.setAuthUser(await this.getObject(AUTH_USER + "_backup"))
+  }
 
   async getAuthUser(): Promise<StorageTypes.AuthUser> {
     return this.getObject(AUTH_USER);
@@ -91,22 +113,22 @@ export class StorageService extends CacheModule {
   }
 
   async getNotificationTogglePreferences(network: string): Promise<NotificationToggles> {
-    const cached = this.getCache(network + "toggle_preferences")
-    if (!cached) {
-      const notificationtoggles = await this.loadPreferencesToggles(network)
-      this.putCache(network + "toggle_preferences", notificationtoggles)
-      return notificationtoggles
-    }
-    return cached;
+    const notificationtoggles = await this.loadPreferencesToggles(network)
+    this.putCache(network + "toggle_preferences", notificationtoggles)
+    return notificationtoggles
   }
 
   async loadPreferencesToggles(network: string): Promise<NotificationToggles> {
-    const notifySlashed = await this.getBooleanSetting(network + SETTING_NOTIFY_SLASHED)
-    const notifyDecreased = await this.getBooleanSetting(network + SETTING_NOTIFY_DECREASED)
-    const notifyClientUpdate = await this.getBooleanSetting(network + SETTING_NOTIFY_CLIENTUPDATE)
-    const notifyProposalsSubmitted = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_SUBMITTED)
-    const notifyProposalsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_MISSED)
-    const notifyAttestationsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_ATTESTATION_MISSED)
+    const notifySlashed = await this.getBooleanSetting(network + SETTING_NOTIFY_SLASHED, false)
+    const notifyDecreased = await this.getBooleanSetting(network + SETTING_NOTIFY_DECREASED, false)
+    const notifyClientUpdate = await this.getBooleanSetting(network + SETTING_NOTIFY_CLIENTUPDATE, false)
+    const notifyProposalsSubmitted = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_SUBMITTED, false)
+    const notifyProposalsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_MISSED, false)
+    const notifyAttestationsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_ATTESTATION_MISSED, false)
+    const notifyMachineOffline = await this.getBooleanSetting(SETTING_NOTIFY_MACHINE_OFFLINE, false)
+    const notifyMachineHddWarn = await this.getBooleanSetting(SETTING_NOTIFY_HDD_WARN, false)
+    const notifyMachineCpuWarn = await this.getBooleanSetting(SETTING_NOTIFY_CPU_WARN, false)
+    const notifyMachineMemoryLoad = await this.getBooleanSetting(SETTING_NOTIFY_MEMORY_WARN, false)
 
     const notifyLocal = await this.getBooleanSetting(network + SETTING_NOTIFY, null)
     return {
@@ -116,20 +138,33 @@ export class StorageService extends CacheModule {
       notifyClientUpdate: notifyClientUpdate,
       notifyProposalsSubmitted: notifyProposalsSubmitted,
       notifyProposalsMissed: notifyProposalsMissed,
-      notifyAttestationsMissed: notifyAttestationsMissed
+      notifyAttestationsMissed: notifyAttestationsMissed,
+      notifyMachineOffline: notifyMachineOffline,
+      notifyMachineHddWarn: notifyMachineHddWarn,
+      notifyMachineCpuWarn: notifyMachineCpuWarn,
+      notifyMachineMemoryLoad: notifyMachineMemoryLoad
     }
   }
 
   setBooleanSetting(key, value) {
-    this.setObject(key, { value: value })
+    this.setSetting(key, value)
   }
 
   getBooleanSetting(key: string, defaultV: boolean = true) {
+    return this.getSetting(key, defaultV)
+  }
+
+  setSetting(key, value) {
+    this.setObject(key, { value: value })
+  }
+
+  getSetting(key: string, defaultV: any = 0) {
     return this.getObject(key).then((result) => {
       if (result) return result.value
       return defaultV
     })
   }
+
 
   async isSubscribedTo(event): Promise<boolean> {
     const notify = await this.getBooleanSetting(SETTING_NOTIFY)
@@ -157,6 +192,30 @@ export class StorageService extends CacheModule {
     return result.ts
   }
 
+  async migrateToCapacitor3() {
+    if (!this.platform.is("ios")) return;
+    let alreadyMigrated = await this.getBooleanSetting("migrated_to_cap3", false)
+    if (!alreadyMigrated) {
+      console.log("migrating to capacitor 3 storage...")
+      let result = await Storage.migrate()
+      this.setBooleanSetting("migrated_to_cap3", true)
+    }
+  }
+
+async openLogSession(modalCtr, offset: number) {
+  var lastLogSession = parseInt(await window.localStorage.getItem("last_log_session"))
+  if (isNaN(lastLogSession)) lastLogSession = 0
+  
+    const modal = await modalCtr.create({
+      component: LogviewPage,
+      cssClass: 'my-custom-class',
+      componentProps: {
+        'logs': JSON.parse(window.localStorage.getItem("log_session_"+((lastLogSession + (3 - offset)) % 3)))
+      }
+    });
+    return await modal.present();
+}
+
 
   // --- Low level ---
 
@@ -166,7 +225,7 @@ export class StorageService extends CacheModule {
   }
 
   async getObject(key: string): Promise<any | null> {
-    const cached = this.getCache(key)
+    const cached = await this.getCache(key)
     if (cached != null) return cached
 
     const value = await this.getItem(key);
@@ -180,10 +239,31 @@ export class StorageService extends CacheModule {
       key: key,
       value: value,
     });
+    this.reflectiOSStorage()
+  }
+
+  // sigh
+  private reflectiOSStorage() {
+    try {
+      if (!this.platform.is("ios")) return;
+      StorageMirror.reflect({
+        keys: [
+          "CapacitorStorage.prefered_unit",
+          "CapacitorStorage.network_preferences",
+          "CapacitorStorage.validators_main",
+          "CapacitorStorage.validators_pyrmont",
+          "CapacitorStorage.validators_prater",
+          "CapacitorStorage.validators_staging",
+          "CapacitorStorage.auth_user"
+        ]
+      })
+    } catch (e) {
+      console.warn("StorageMirror exception", e)
+    }
   }
 
   async getItem(key: string): Promise<string | null> {
-    const cached = this.getCache(key)
+    const cached = await this.getCache(key)
     if (cached != null) return cached
 
     const { value } = await Storage.get({ key: key });
@@ -202,6 +282,7 @@ export class StorageService extends CacheModule {
   async remove(key: string) {
     this.invalidateCache(key)
     await Storage.remove({ key: key });
+    this.reflectiOSStorage()
   }
 
   async keys() {
@@ -212,6 +293,7 @@ export class StorageService extends CacheModule {
   async clear() {
     this.invalidateAllCache()
     await Storage.clear();
+    this.reflectiOSStorage()
   }
 
 }
@@ -252,4 +334,8 @@ interface NotificationToggles {
   notifyProposalsSubmitted: boolean;
   notifyProposalsMissed: boolean;
   notifyAttestationsMissed: boolean;
+  notifyMachineOffline: boolean;
+  notifyMachineHddWarn: boolean;
+  notifyMachineCpuWarn: boolean;
+  notifyMachineMemoryLoad: boolean;
 }

@@ -31,7 +31,11 @@ export class PercentageabsPipe implements PipeTransform {
     const max = max_ instanceof BigNumber ? max_ : new BigNumber(max_)
 
     if (percentMode) {
-      return preablePrct + value.dividedBy(max).multipliedBy(100).decimalPlaces(1).toString() + " %"
+      var percentValue = value.dividedBy(max).multipliedBy(100).decimalPlaces(1)
+      if (percentValue.toNumber() <= 0.1) {
+        percentValue = value.dividedBy(max).multipliedBy(100).decimalPlaces(3)
+      }
+      return preablePrct + percentValue.toString() + " %"
     } else {
       return value.toFormat()
     }

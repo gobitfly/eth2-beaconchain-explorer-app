@@ -19,6 +19,7 @@
  */
 
 import BigNumber from "bignumber.js";
+import { StatsResponse } from '../controllers/MachineController'
 
 export enum Method {
   GET,
@@ -43,8 +44,12 @@ export abstract class APIRequest<T> {
   }
 
   wasSuccessfull(response: any, hasDataStatus = true): boolean {
-    if (!response || !response.status) return false
-    return response.status == 200 && (response.data.status == "OK" || !hasDataStatus)
+    if (this.nativeHttp) {
+      if (!response || !response.status) return false
+      return response.status == 200 && (response.data.status == "OK" || !hasDataStatus)
+    } else {
+      return response && (response.status == "OK" || !hasDataStatus)
+    }
   }
 
   protected parseBase(response: any, hasDataStatus = true): T[] {
@@ -64,12 +69,16 @@ export abstract class APIRequest<T> {
     headers: {
       'Content-Type': 'application/json',
       "Accept": "application/json",
+      "User-Agent": "Beaconcha.in Dashboard"
     }
   }
 
   requiresAuth = false
   updatesLastRefreshState = false
   ignoreFails = false
+  maxCacheAge = 5 * 60 * 1000
+  nativeHttp = true // TODO: for some reason, native HTTP Post doesnt work on iOS..
+ 
 }
 
 // ------------- Responses -------------
@@ -174,6 +183,19 @@ export interface BalanceHistoryResponse {
   validatorindex: number
 }
 
+export interface CoinzillaAdResponse {
+  title: string,
+  img: string,
+  thumbnail: string
+  description: string
+  description_short: string
+  cta_button: string
+  website: string
+  name: string
+  url: string
+  impressionUrl: string
+}
+
 // ------------- Reqests -------------
 
 export class ValidatorRequest extends APIRequest<ValidatorResponse>  {
@@ -259,7 +281,7 @@ export class DasboardDataRequest extends APIRequest<any> {
   /**
    * @param validator Index or PubKey
    */
-  constructor(data: ('balance' | 'proposals'), ...validator: any) {
+  constructor(data: ('balances' | 'proposals'), ...validator: any) {
     super()
     this.resource += data + "?validators=" + validator.join().replace(/\s/g, "");
   }
@@ -283,6 +305,7 @@ export class SetMobileSettingsRequest extends APIRequest<MobileSettingsResponse>
   postData: any
   requiresAuth = true
   ignoreFails = true
+  nativeHttp = false
 
   parse(response: any): MobileSettingsResponse[] {
     if (!response || !response.data) return null
@@ -293,6 +316,34 @@ export class SetMobileSettingsRequest extends APIRequest<MobileSettingsResponse>
     super()
     this.postData = { notify_enabled: notifyEnabled }
   }
+}
+
+export interface SubscriptionTransaction {
+  id: string,
+  receipt: string,
+  type: string
+}
+
+export interface SubscriptionData {
+  currency: string,
+  id: string,
+  priceMicros: number,
+  transaction: SubscriptionTransaction,
+  valid: boolean
+}
+
+export class PostMobileSubscription extends APIRequest<MobileSettingsResponse> {
+  resource = "user/subscription/register";
+  method = Method.POST;
+  requiresAuth = true
+  ignoreFails = true
+  nativeHttp = false
+
+  constructor(subscriptionData: SubscriptionData) {
+    super()
+    this.postData = subscriptionData
+  }
+
 }
 
 export class GetMobileSettingsRequest extends APIRequest<MobileSettingsResponse> {
@@ -308,12 +359,25 @@ export class GetMyValidatorsRequest extends APIRequest<MyValidatorResponse> {
   requiresAuth = true
 }
 
+export class GetMyMachinesRequest extends APIRequest<StatsResponse> {
+  resource = "user/stats";
+  method = Method.GET;
+  requiresAuth = true
+  ignoreFails = true
+
+  constructor(offset: number = 0, limit: number = 180) {
+    super()
+    this.resource += "/" + offset + "/" + limit
+  }
+}
+
 export class RemoveMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
   resource = "user/validator/{pubkey}/remove";
   method = Method.POST;
   requiresAuth = true
   postData = {}
   ignoreFails = true
+  nativeHttp = false
 
   options: any = {
     headers: {
@@ -339,6 +403,7 @@ export class AddMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
   requiresAuth = true
   postData: any
   ignoreFails = true
+  nativeHttp = false
 
   options: any = {
     headers: {
@@ -378,19 +443,38 @@ export class NotificationSubsRequest extends APIRequest<ApiTokenResponse> {
   }
 }
 
+export interface BundleSub {
+  event_name: string
+  event_filter: string
+  event_threshold: number
+}
+
+export class NotificationBundleSubsRequest extends APIRequest<ApiTokenResponse> {
+  private subscribe = "subscribe"
+  private unsubscribe = "unsubscribe"
+
+  resource = "user/notifications/bundled/";
+  method = Method.POST;
+  requiresAuth = true
+  postData: any = {}
+  ignoreFails = true
+  nativeHttp = false
+
+  constructor(enabled: boolean, data: BundleSub[]) {
+    super()
+    this.resource += (enabled ? this.subscribe : this.unsubscribe)
+    this.postData = data
+  }
+}
+
+
 export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
   resource = "user/token";
   method = Method.POST;
   requiresAuth = true
   postData: any
   ignoreFails = true
-
-  // should not be cached for long
-  options = {
-    cache: {
-      maxAge: 1000
-    }
-  }
+  maxCacheAge = 1000
 
   parse(response: any): ApiTokenResponse[] {
     if (response && response.data) return [response.data] as ApiTokenResponse[];
@@ -399,11 +483,14 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 
   constructor(refreshToken: string) {
     super()
-    this.postData = new FormData();
-    this.postData.append('grant_type', 'refresh_token');
-    this.postData.append('refresh_token', refreshToken);
+    this.postData = new FormDataContainer({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken
+    })
   }
 }
+
+
 
 export class UpdateTokenRequest extends APIRequest<APIResponse> {
   resource = "user/mobile/notify/register";
@@ -411,6 +498,7 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
   postData: any
   requiresAuth = true
   ignoreFails = true
+  nativeHttp = false
 
   parse(response: any): APIResponse[] {
     if (response && response.data) return response.data as APIResponse[];
@@ -425,18 +513,37 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 
 // ------------ Special external api requests -----------------
 
+export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
+  endPoint = "https://request-global.czilladx.com"
+
+  resource = "/serve/native-app.php?z=";
+  method = Method.GET;
+  ignoreFails = true
+  maxCacheAge = 4 * 60 * 1000
+  nativeHttp = true
+
+  parse(response: any): CoinzillaAdResponse[] {
+    if (!this.wasSuccessfull(response, false) || !response.data.ad) {
+      return []
+    }
+
+    return [response.data.ad];
+  }
+
+  constructor(tracker: string) {
+    super()
+    this.resource += tracker
+  }
+
+}
+
 export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse> {
   endPoint = "https://api.coinbase.com"
 
   resource = "v2/prices/";
   method = Method.GET;
   ignoreFails = true
-
-  options = {
-    cache: {
-      maxAge: 2 * 60 * 60 * 1000,
-    }
-  }
+  maxCacheAge = 20 * 60 * 1000
 
   parse(response: any): CoinbaseExchangeResponse[] {
     return this.parseBase(response, false);
@@ -454,10 +561,12 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
   resource = "repos/"; 
   method = Method.GET;
   ignoreFails = true
-
+  maxCacheAge = 4 * 60 * 60 * 1000
   options = {
-    cache: {
-      maxAge: 4 * 60 * 60 * 1000,
+    headers: {
+      'Content-Type': 'application/json',
+      "Accept": "application/json",
+      "User-Agent": "Beaconcha.in Dashboard"
     }
   }
 
@@ -482,3 +591,14 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 }
 
 export default class { }
+
+export class FormDataContainer {
+  private data: any
+  constructor(data: any) {
+    this.data = data
+  }
+
+  getBody() {
+    return this.data
+  }
+}

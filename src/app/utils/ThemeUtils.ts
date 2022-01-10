@@ -23,13 +23,12 @@ import { Injectable } from '@angular/core';
 import { NavigationBarPlugin } from 'capacitor-navigationbarnx';
 import {
     Plugins,
-    StatusBarStyle,
 } from '@capacitor/core';
 import { Platform } from '@ionic/angular';
 import * as Snowflakes from 'magic-snowflakes';
 import confetti from 'canvas-confetti';
 
-const { StatusBar } = Plugins;
+import { StatusBar, Style } from '@capacitor/status-bar';
 const NavigationBar = Plugins.NavigationBar as NavigationBarPlugin;
 
 enum Theme {
@@ -48,6 +47,7 @@ const STORAGE_KEY = "theme"
 export default class ThemeUtils {
 
     userPreference: Theme
+    currentThemeColor: string = ""
     private lock: Promise<void | ThemeStorage>
 
     private snowFlakes
@@ -64,7 +64,7 @@ export default class ThemeUtils {
                 setTimeout(() => {
                     this.colorHandler()
                     splashScreenCallback()
-                }, 600)
+                }, 1200)
                 return preferenceDarkMode
             }
         )
@@ -74,11 +74,12 @@ export default class ThemeUtils {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
         if (preferenceDarkMode) {
             this.userPreference = preferenceDarkMode.theme
+            this.currentThemeColor = preferenceDarkMode.themeColor
         } else {
             this.userPreference = prefersDark.matches ? Theme.DARK : Theme.LIGHT
         }
 
-        this.toggle(this.userPreference == Theme.DARK, false)
+        this.toggle(this.userPreference == Theme.DARK, false, this.currentThemeColor)
 
         if (this.isSilvester()) {
             setTimeout(
@@ -89,14 +90,26 @@ export default class ThemeUtils {
         }
     }
 
-    async toggle(darkModeEnabled: boolean, setColorHandler: boolean = true) {
+    undoColor(themeColor: string = this.currentThemeColor) {
+        if(themeColor && themeColor != "") document.body.classList.remove(themeColor);
+    }
+
+    async toggle(darkModeEnabled: boolean, setColorHandler: boolean = true, themeColor: string = this.currentThemeColor) {
         document.body.classList.toggle('dark', darkModeEnabled);
+        if(themeColor && themeColor != "") document.body.classList.toggle(themeColor, true);
         if (setColorHandler) this.colorHandler()
         const themeString = darkModeEnabled ? Theme.DARK : Theme.LIGHT
-        this.storage.setObject(STORAGE_KEY, { theme: themeString })
+        this.storage.setObject(STORAGE_KEY, { theme: themeString, themeColor: themeColor })
         this.userPreference = themeString
+        this.currentThemeColor = themeColor
 
         this.toggleWinter(await this.isWinterEnabled(), false)
+    }
+
+    resetTheming() {
+        this.undoColor()
+        this.colorHandler()
+        this.storage.setObject(STORAGE_KEY, { theme: this.userPreference, themeColor: "" })
     }
 
     async isWinterEnabled() {
@@ -107,7 +120,7 @@ export default class ThemeUtils {
 
     isWinterSeason() {
         var d = new Date();
-        return d.getMonth() == 11 && d.getDate() >= 24 && d.getDate() <= 27
+        return d.getMonth() == 11 && d.getDate() >= 24 && d.getDate() <= 24
     }
 
     isSilvester() {
@@ -118,7 +131,7 @@ export default class ThemeUtils {
     }
 
     // TODO: Should start thinking about increasing the minimum system requirements for this app ¯\_(ツ)_/¯
-    private silvesterFireworks() {
+    silvesterFireworks() {
         var duration = 10 * 1000;
         var animationEnd = Date.now() + duration;
         var defaults = { startVelocity: 30, spread: 100, ticks: 70, zIndex: 0 };
@@ -153,29 +166,48 @@ export default class ThemeUtils {
         this.snowFlakes = this.winterSeason(this.userPreference == Theme.DARK)
     }
 
+    async getThemeColor() {
+        await this.lock;
+        return this.currentThemeColor
+    }
+
     async isDarkThemed() {
         await this.lock;
         return this.userPreference == Theme.DARK;
     }
 
     private async colorHandler() {
-        const color = "#2f2e42"
+        const color = getComputedStyle(document.body).getPropertyValue("--ion-toolbar-background")
         const isDarkThemed = await this.isDarkThemed()
         this.changeStatusBarColor(color, isDarkThemed)
         this.changeNavigationBarColor(isDarkThemed)
     }
 
     private async changeNavigationBarColor(isDarkThemed) {
-        if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#000000' });
-        else NavigationBar.setBackgroundColor({ color: '#f7f7f7' });
+        try {
+            const themeColor = await this.getThemeColor()
+            if (themeColor == "ethpool") {
+                if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#24201f' });
+                else NavigationBar.setBackgroundColor({ color: '#e1d8d8' });
+            } else {
+                if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#000000' });
+                else NavigationBar.setBackgroundColor({ color: '#f7f7f7' });
+            }
+
+        } catch(e){}
     }
 
     private async changeStatusBarColor(color, isDarkThemed) {
         if (this.platform.is("android")) {
-            const darker = isDarkThemed ? "#000000" : this.shadeColor(color, -12)
-
+            const themeColor = await this.getThemeColor()
+            var darker = isDarkThemed ? "#000000" : color;//this.shadeColor(color, -12)
+            if (themeColor == "ethpool") {
+                darker = isDarkThemed ? '#262327' : '#e1d8d8'
+            } 
+            
+            console.log("statusbar color", darker)
             StatusBar.setStyle({
-                style: StatusBarStyle.Dark
+                style: Style.Dark
             });
             StatusBar.setBackgroundColor({
                 color: darker
@@ -202,19 +234,19 @@ export default class ThemeUtils {
         })
     }
 
-    private shadeColor(color: string, percent: number): string {
-
+    private shadeColor(color_: string, percent: number): string {
+        const color = color_.trim()
         var R = parseInt(color.substring(1, 3), 16);
         var G = parseInt(color.substring(3, 5), 16);
         var B = parseInt(color.substring(5, 7), 16);
 
-        R = Math.round(R * (100 + percent) / 100);
-        G = Math.round(G * (100 + percent) / 100);
-        B = Math.round(B * (100 + percent) / 100);
+        R = Math.round(R * ((100 + percent) / 100));
+        G = Math.round(G * ((100 + percent) / 100));
+        B = Math.round(B * ((100 + percent) / 100));
 
-        R = (R < 255) ? R : 255;
-        G = (G < 255) ? G : 255;
-        B = (B < 255) ? B : 255;
+        R = (R < 255) ? R < 0 ? 0 : R : 255;
+        G = (G < 255) ? G < 0 ? 0 : G : 255;
+        B = (B < 255) ? B < 0 ? 0 : B : 255;
 
         const RR = ((R.toString(16).length == 1) ? "0" + R.toString(16) : R.toString(16));
         const GG = ((G.toString(16).length == 1) ? "0" + G.toString(16) : G.toString(16));

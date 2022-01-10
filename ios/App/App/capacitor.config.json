@@ -1,0 +1,14 @@
+{
+	"appId": "in.beaconcha.mobile",
+	"appName": "Beaconchain Dashboard",
+	"bundledWebRuntime": false,
+	"npmClient": "npm",
+	"webDir": "www",
+	"CAPACITOR_ANDROID_STUDIO_PATH": "/home/bob/android-studio/bin/studio.sh",
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 3000,
+			"androidScaleType": "CENTER_CROP"
+		}
+	}
+}

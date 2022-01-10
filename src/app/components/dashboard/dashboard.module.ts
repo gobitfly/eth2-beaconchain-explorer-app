@@ -29,12 +29,13 @@ import { PipesModule } from '../../pipes/pipes.module'
 import { ClientupdateComponentModule } from '../../components/clientupdate/clientupdate.module';
 import { MessageComponentModule } from '../../components/message/message.module';
 import { TooltipModule } from 'ng2-tooltip-directive';
+import { TextAdComponentModule } from '../text-ad/text-ad.module';
 
 
 @NgModule({
   imports: [
     CommonModule, FormsModule, IonicModule, PipesModule,
-    ClientupdateComponentModule, MessageComponentModule, TooltipModule],
+    ClientupdateComponentModule, MessageComponentModule, TooltipModule, TextAdComponentModule],
   declarations: [DashboardComponent],
   exports: [DashboardComponent]
 })

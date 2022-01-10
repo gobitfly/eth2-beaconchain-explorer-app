@@ -44,7 +44,8 @@
 
         <div class="status-text" *ngIf="data.dashboardState.extendedDescription">
           <ion-label>
-            {{ data.dashboardState.extendedDescriptionPre }}<strong>{{ data.dashboardState.extendedDescription }}</strong>
+            {{ data.dashboardState.extendedDescriptionPre }}<strong>{{ data.dashboardState.extendedDescription
+              }}</strong>
           </ion-label>
         </div>
       </div>
@@ -75,25 +76,92 @@
     <app-message title="Congrats on your first proposal!" icon="ribbon-outline" iconStyle="genesis" dismissAble="true"
       dismissKey="first_proposal_executed" confettiOnClick="true" *ngIf="showFirstProposalMsg"></app-message>
 
+    <app-message title="Limited to 100 validators." icon="rocket-outline" iconStyle="genesis" 
+      (click)="upgrade()"
+       *ngIf="(data.validatorCount >= currentPackageMaxValidators)">
+     </app-message>
 
   </ion-list>
 
   <ion-list class="first-item-group">
 
-    <ion-item lines="none" *ngIf="data.foreignValidator">
+    <ion-item lines="none">
 
-      <ion-label>
-        Unique Index
-      </ion-label>
-      <ion-label class="value">
-        {{ data.foreignValidatorItem.data.validatorindex | number:'1.0':'en-US' }}
-      </ion-label>
+      <div class="grid">
 
+        <div class="grid-cell left" (click)="switchCurrencyPipe()">
+
+          <div class="grid">
+            <ion-label class="value left" [class]="data.performance1d | valuestyle:0">
+              {{ data.performance1d | mcurrency: "GWEI":unit.pref }}
+            </ion-label>
+          </div>
+          <div class="grid">
+            <ion-label class="income-title">
+              Last Day
+            </ion-label>
+          </div>
+
+        </div>
+
+        <div class="grid-cell" (click)="switchCurrencyPipe()">
+
+          <div>
+            <ion-label class="value" [class]="data.performance7d | valuestyle:0">
+              {{ data.performance7d | mcurrency: "GWEI":unit.pref }}
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title right">
+              Last Week
+            </ion-label>
+          </div>
+
+        </div>
+
+        <div class="grid-cell left" (click)="switchCurrencyPipe()">
+
+          <div>
+            <ion-label class="value left" [class]="data.performance31d | valuestyle:0">
+              {{ data.performance31d | mcurrency: "GWEI":unit.pref }}
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title">
+              Last Month
+            </ion-label>
+          </div>
+
+        </div>
+
+        <div class="grid-cell" (click)="switchCurrencyPipe()">
+
+          <div>
+            <ion-label class="value" [class]="data.performance365d | valuestyle:0">
+              {{ data.performance365d | mcurrency: "GWEI":unit.pref }}
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title right">
+              Total
+            </ion-label>
+          </div>
+
+        </div>
+
+
+      </div>
     </ion-item>
+
+  </ion-list>
+
+  <app-text-ad location="dashboard"></app-text-ad>
+
+  <ion-list class="performances">
 
     <ion-item lines="none">
 
-      <ion-label>
+      <ion-label class="stat-title">
         Balance
       </ion-label>
       <ion-label class="value" (click)="switchCurrencyPipe()">
@@ -102,24 +170,9 @@
 
     </ion-item>
 
-    <ion-item lines="none" *ngIf="data.foreignValidator">
-
-      <ion-label>
-        Effective Balance
-      </ion-label>
-      <ion-label class="value" (click)="switchCurrencyPipe()">
-        {{ data.effectiveBalance | mcurrency: "GWEI":"ETHER"  }}
-      </ion-label>
-
-    </ion-item>
-  </ion-list>
-
-  <ion-list class="performances">
-
-
     <ion-item lines="none">
 
-      <ion-label>
+      <ion-label class="stat-title">
         <span tooltip="Estimated yearly returns, based on the last 7 days" placement="right" trigger="click"
           hideDelayAfterClick="5000">APR</span>
       </ion-label>
@@ -131,7 +184,7 @@
 
     <ion-item lines="none" *ngIf="data.attrEffectiveness >= 0">
 
-      <ion-label>
+      <ion-label class="stat-title">
         <span tooltip="The attestation inclusion effectiveness should be 80% or higher to minimize reward penalties."
           placement="right" trigger="click" hideDelayAfterClick="5000">
           Effectiveness
@@ -143,67 +196,49 @@
 
     </ion-item>
 
+    <ion-item lines="none" *ngIf="proposals">
+
+      <ion-label class="stat-title">
+        <span
+          tooltip="Amount of valid or invalid (oprhaned or missed) block proposals."
+          placement="right" trigger="click" hideDelayAfterClick="5000">
+          Proposals
+        </span>
+      </ion-label>
+      <ion-label class="value">
+        <span class="ok-proposals">{{ proposals.good }}</span> /  <span [class]="proposals.bad == 0 ? '' : 'err-proposals'">{{ proposals.bad }}</span>
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="data.foreignValidator">
+
+      <ion-label class="stat-title">
+        Unique Index
+      </ion-label>
+      <ion-label class="value">
+        {{ data.foreignValidatorItem.data.validatorindex | number:'1.0':'en-US' }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="data.foreignValidator">
+
+      <ion-label class="stat-title">
+        Effective Balance
+      </ion-label>
+      <ion-label class="value" (click)="switchCurrencyPipe()">
+        {{ data.effectiveBalance | mcurrency: "GWEI":"ETHER" }}
+      </ion-label>
+
+    </ion-item>
+
   </ion-list>
-
-
-  <ion-list class="performances">
-
-    <ion-item lines="none">
-
-      <ion-label>
-        Last Day
-      </ion-label>
-      <ion-label class="value" [class]="data.performance1d | valuestyle:0" (click)="switchCurrencyPipe()">
-        {{ data.performance1d | mcurrency: "GWEI":unit.pref }}
-      </ion-label>
-
-    </ion-item>
-
-    <ion-item lines="none">
-
-      <ion-label>
-        Last Week
-      </ion-label>
-
-      <ion-label class="value" [class]="data.performance7d | valuestyle:0" (click)="switchCurrencyPipe()">
-        {{ data.performance7d | mcurrency: "GWEI":unit.pref }}
-      </ion-label>
-
-
-    </ion-item>
-
-    <ion-item lines="none">
-
-      <ion-label>
-        Last Month
-      </ion-label>
-
-      <ion-label class="value" [class]="data.performance31d | valuestyle:0" (click)="switchCurrencyPipe()">
-        {{ data.performance31d | mcurrency: "GWEI":unit.pref }}
-      </ion-label>
-
-
-    </ion-item>
-
-    <ion-item lines="none">
-
-      <ion-label>
-        Total
-      </ion-label>
-
-      <ion-label class="value" [class]="data.performance365d | valuestyle:0" (click)="switchCurrencyPipe()">
-        {{ data.performance365d | mcurrency: "GWEI":unit.pref }}
-      </ion-label>
-
-
-    </ion-item>
-  </ion-list>
-
 
   <ion-list class="performances">
 
     <ion-item lines="none" *ngIf="data.bestRank == data.worstRank">
-      <ion-label>
+      <ion-label class="stat-title">
         <span tooltip="Global rank of this validator, based on last 7 days" placement="right" trigger="click"
           hideDelayAfterClick="5000">
           Rank
@@ -214,14 +249,14 @@
         <ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
 
         <span class="rank-text">
-          {{ data.bestRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:"Top "  }}
+          {{ data.bestRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:"Top " }}
         </span>
       </ion-label>
     </ion-item>
 
 
     <ion-item lines="none" *ngIf="data.bestRank != data.worstRank">
-      <ion-label>
+      <ion-label class="stat-title">
         <span tooltip="Global rank of your best performing validator, based on last 7 days" placement="right"
           trigger="click" hideDelayAfterClick="5000">
           Best Rank
@@ -238,7 +273,7 @@
     </ion-item>
 
     <ion-item lines="none" *ngIf="data.bestRank != data.worstRank">
-      <ion-label>
+      <ion-label class="stat-title">
         <span tooltip="Global rank of your worst performing validator, based on last 7 days" placement="right"
           trigger="click" hideDelayAfterClick="5000">
           Worst Rank
@@ -266,9 +301,9 @@
     </ion-segment>
     <div class="chartcontainer">
 
-      <div class="stat-charts" id="highcharts{{ randomChartId }}" style="width:100%; height:350px;"
+      <div class="stat-charts" id="highcharts{{ randomChartId }}" style="width:100%; height:380px;"
         [hidden]="!chartData || selectedChart != 'chartIncome'"></div>
-      <div class="stat-charts" id="highchartsBlocks{{ randomChartId }}" style="width:100%; height:350px;"
+      <div class="stat-charts" id="highchartsBlocks{{ randomChartId }}" style="width:100%; height:380px;"
         [hidden]="!chartDataProposals || selectedChart != 'chartBlocks'"></div>
 
       <div class="center" *ngIf="!chartData ">
@@ -282,7 +317,7 @@
 
     <ion-item lines="none" *ngIf="utilizationAvg != -1">
 
-      <ion-label>
+      <ion-label class="stat-title">
         <span
           tooltip="Based on your earnings and effective balance, this value indicates how well your validators perform."
           placement="right" trigger="click" hideDelayAfterClick="5000">
@@ -297,7 +332,7 @@
 
     <ion-item lines="none">
 
-      <ion-label>
+      <ion-label class="stat-title">
         <span
           tooltip="Used to calculate rewards and penalties. Also influences luck on block proposals. Maximum is 32 per validator."
           placement="right" trigger="click" hideDelayAfterClick="5000">
@@ -316,7 +351,7 @@
 
     <ion-item lines="none" *ngIf="(unit.pref != 'ETHER' && unit.pref != 'FINNEY') || currencyPipe != null">
 
-      <ion-label>
+      <ion-label class="stat-title">
         Ethereum Price
       </ion-label>
       <ion-label class="value" (click)="switchCurrencyPipe()">
@@ -327,7 +362,7 @@
 
 
     <ion-item lines="none">
-      <ion-label>
+      <ion-label class="stat-title">
         <span tooltip="Last updated timestamp. New data is fetched every epoch (~6 minutes)" placement="right"
           trigger="click" hideDelayAfterClick="5000">
           Updated
@@ -343,7 +378,7 @@
   <ion-list class="performances">
     <ion-item lines="none" (click)="openBrowser()">
       <ion-icon slot="end" name="open-outline"></ion-icon>
-      <ion-label>
+      <ion-label class="stat-title">
         View on beaconcha.in
       </ion-label>
 

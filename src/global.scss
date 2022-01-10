@@ -52,8 +52,26 @@
   src: url("./assets/fonts/Montserrat-Medium.ttf");
 }
 
+
+
 ion-button {
   --box-shadow: none;
+}
+
+.bigger-alert {
+  .alert-message.sc-ion-alert-md {
+    max-height: 335px !important;
+  } 
+  .alert-message.sc-ion-alert-ios {
+    max-height: 335px !important;
+  } 
+
+  .alert-wrapper.sc-ion-alert-md {
+    min-width: 340px !important;
+  }
+  .alert-wrapper.sc-ion-alert-ios {
+    min-width: 340px !important;
+  }
 }
 
 .fixed-content {
@@ -118,6 +136,11 @@ h3 {
   --font-family: "Varela";
 }
 
+ion-modal {
+  --width: 100% !important;
+  --height: 100% !important;
+}
+
 ion-toolbar ion-title {
   --color: var(--x-toolbar-title-color);
 
@@ -131,6 +154,12 @@ ion-toolbar ion-title {
   font-weight: 400;
   font-family: "Varela";
   font-size: 1.4em;
+}
+
+ion-card {
+  background-color: var(--background-color) !important;
+  --box-shadow: none;
+  box-shadow: none !important;
 }
 
 .highcharts-background {
@@ -184,9 +213,49 @@ ion-toolbar ion-title {
   font-weight: bold;
 }
 
+ion-back-button {
+  color: #fff;
+}
+
+ion-tab-button.tab-selected {
+
+  .opacity-icon {
+    color: #000;
+    opacity: 0.95;
+  }
+}
+
+body.dark {
+
+  ion-tab-button.tab-selected {
+    .opacity-icon {
+      color: #fff;
+      opacity: 0.95;
+    }
+  }
+
+  ion-tab-button {
+    --color-selected: var(--ion-tab-button-color-selected);
+    --color: var(--ion-tab-button-color);
+
+    color: var(--ion-tab-button-color);
+    .opacity-icon {
+      color: #fff;
+      opacity: 0.6;
+    }
+  }
+}
+
 ion-tab-button {
   --color-selected: var(--ion-tab-button-color-selected);
   --color: var(--ion-tab-button-color);
+
+  color: var(--ion-tab-button-color);
+
+  .opacity-icon {
+    color: #000;
+    opacity: 0.6;
+  }
 }
 
 ion-label {

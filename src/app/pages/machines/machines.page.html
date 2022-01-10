@@ -1,0 +1,96 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Monitoring</ion-title>
+  </ion-toolbar>
+  <ion-segment [(ngModel)]="selectedChart" mode="md" scrollable="true">
+    <ion-segment-button value="cpu" [disabled]="scrolling"
+      [class]="selectedChart == 'cpu' ? 'segment-button-checked' : ''">
+      <ion-label>CPU</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="memory" [disabled]="scrolling">
+      <ion-label [class]="selectedChart == 'memory' ? 'segment-button-checked' : ''">Memory</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="sync" [disabled]="scrolling"
+      [class]="selectedChart == 'sync' ? 'segment-button-checked' : ''">
+      <ion-label>Sync</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+</ion-header>
+
+<ion-content [fullscreen]="true" [scrollEvents]="true" (ionScrollStart)="onScrollStarted()"
+  (ionScrollEnd)="onScrollEnded()">
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-item class="top-bar" *ngIf="!this.data || showData" (click)="openTimeSelection()">
+    <ion-label>Last {{ this.selectedTimeFrame }}</ion-label>
+    <ion-icon class="opacity-icon" slot="end" name="time-outline"></ion-icon>
+  </ion-item>
+
+  <div *ngIf="this.data && showData">
+    <ion-card *ngIf="legacyApi" class="sync-alert-container">
+      <ion-card-header>
+        <ion-card-title class="sync-alert" style="font-weight: bold;">
+          <ion-icon name="warning-outline" class="sync-alert alert-icon" style="margin-bottom: 4px; margin-right:15px;"></ion-icon>
+          <span style="padding-bottom: 5px;">Attention</span>
+          <ion-icon (click)="closeLegacyApiDialog()" name="close-outline" class="sync-alert alert-icon" style="float:right; margin-bottom: 4px; margin-right:5px;"></ion-icon>
+
+        </ion-card-title>
+      </ion-card-header>
+    
+      <ion-card-content (click)="legacyApiMigrateDialog()">
+        <ion-label class="alert-text">You may be using an old monitoring endpoint on your machine. Click here for more info on how to migrate to continue using this feature.</ion-label>
+      </ion-card-content>
+    </ion-card>
+
+
+    <div style="margin-top:0px; margin-bottom:10px;" *ngIf="!hasHistoryPremium">
+      <app-text-ad location="machines"></app-text-ad>  
+    </div>
+    
+    <div *ngFor="let key of orderedKeys" class="card" >
+
+      <app-machinechart priority="true" [title]="key ? key : 'Machine'" [subtitleLeft]="data[key] | delegate: clientFormatter"
+        [subtitleRight]="data[key].formattedDate | date:'short'"
+        [icon]="data[key] | delegate: onlineStateDelegate | async" [key]="key"
+        [clickAction]="key | delegate: machineClickDelegate"
+        [chartData]="data[key] | delegate: cpuDelegate" [hidden]="selectedChart != 'cpu'">
+      </app-machinechart>
+
+      <app-machinechart [title]="key ? key : 'Machine'" [subtitleLeft]="data[key] | delegate: clientFormatter"
+        [subtitleRight]="data[key].formattedDate | date:'short'"
+        [icon]="data[key] | delegate: onlineStateDelegate | async" [key]="key"
+        [clickAction]="key | delegate: machineClickDelegate"
+        [chartData]="data[key] | delegate: memoryDelegate" [hidden]="selectedChart != 'memory'">
+      </app-machinechart>
+
+      <app-machinechart [title]="key ? key : 'Machine'" [subtitleLeft]="data[key] | delegate: clientFormatter"
+        [subtitleRight]="data[key].formattedDate | date:'short'"
+        [icon]="data[key] | delegate: onlineStateDelegate | async" [key]="key"
+        [clickAction]="key | delegate: machineClickDelegate"
+        [chartData]="data[key] | delegate: syncDelegate" [hidden]="selectedChart != 'sync'">
+      </app-machinechart>
+
+    </div>
+  </div>
+
+  <div *ngIf="this.data && !showData">
+    <div class="nothingfound">
+      <ion-icon class="opacity-icon" name="pulse-outline"></ion-icon><br/>
+      <ion-label><strong class="title">Machine Monitoring</strong></ion-label><br /><br />
+
+      <ion-label>Monitor your eth2 staking machines on the go.</ion-label>
+      <br /><br />
+      <ion-button (click)="login()" [hidden]="loggedIn">Login</ion-button>
+     <ion-button [disabled]="!loggedIn" (click)="openBrowser('https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node')">Setup Monitoring</ion-button>
+    </div>
+  </div>
+
+  <div class="container loading-container" *ngIf="!this.data" >
+    <div class="center">
+      <ion-spinner class="status-icon loading-spinner"></ion-spinner>
+    </div>
+  </div>
+</ion-content>
