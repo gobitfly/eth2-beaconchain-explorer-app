@@ -88,7 +88,7 @@ export class CacheModule {
         if (!temp || temp.time + temp.maxStaleTime < this.getTimestamp()) {
             return null
         }
-        console.log("[CacheModule] getting from cache", temp.data)
+    
         return temp.data
     }
 
