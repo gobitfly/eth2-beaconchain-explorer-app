@@ -20,7 +20,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { IAPProduct, IAPProducts, InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
+import { IAPProduct, IAPProducts, InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
 import { Platform } from '@ionic/angular';
 import { PostMobileSubscription, SubscriptionData } from '../requests/requests';
 import { AlertService, PURCHASEUTILS } from '../services/alert.service';

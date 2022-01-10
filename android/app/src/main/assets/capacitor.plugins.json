@@ -20,13 +20,6 @@
 		"classpath": "com.capacitorjs.plugins.device.DevicePlugin"
 	},
 	{
-<<<<<<< HEAD
-		"pkg": "@capacitor/haptics",
-		"classpath": "com.capacitorjs.plugins.haptics.HapticsPlugin"
-	},
-	{
-=======
->>>>>>> 690aad61e1e9223780c745a49d3dd62d54954ab1
 		"pkg": "@capacitor/keyboard",
 		"classpath": "com.capacitorjs.plugins.keyboard.KeyboardPlugin"
 	},

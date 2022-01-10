@@ -22,7 +22,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed, async } from '@angular/core/testing';
 
 import { AngularDelegate, ModalController, Platform } from '@ionic/angular';
-import { SplashScreen } from '@ionic-native/splash-screen/ngx';
+import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
 
 import { AppComponent } from './app.component';
 import { platformBrowserTesting } from '@angular/platform-browser/testing';

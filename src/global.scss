@@ -264,6 +264,7 @@ ion-label {
 
 ion-toolbar ion-buttons ion-button ion-icon {
   color: var(--x-toolbar-title-color);
+  --color: var(--x-toolbar-title-color);
 }
 
 ion-item,
