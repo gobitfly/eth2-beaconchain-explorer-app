@@ -520,7 +520,7 @@ export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
   method = Method.GET;
   ignoreFails = true
   maxCacheAge = 4 * 60 * 1000
-  nativeHttp = false
+  nativeHttp = true
 
   parse(response: any): CoinzillaAdResponse[] {
     if (!this.wasSuccessfull(response, false) || !response.data.ad) {

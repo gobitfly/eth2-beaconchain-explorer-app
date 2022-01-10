@@ -3,6 +3,7 @@ import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from 'src/app/services
 import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils';
 import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page';
 import { Toast } from '@capacitor/toast';
+import { LogviewPage } from '../logview/logview.page';
 
 @Component({
   selector: 'app-dev',
@@ -165,4 +166,8 @@ export class DevPage extends Tab3Page implements OnInit {
     });
   }
 
+
+  openLogSession(offset: number) {
+    this.storage.openLogSession(this.modalController, offset)
+  }
 }

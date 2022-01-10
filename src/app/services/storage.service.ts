@@ -27,6 +27,7 @@ import BigNumber from 'bignumber.js';
 import { Platform } from '@ionic/angular';
 
 import { Storage } from '@capacitor/storage';
+import { LogviewPage } from '../pages/logview/logview.page';
 const { StorageMirror } = Plugins;
 
 const AUTH_USER = "auth_user";
@@ -200,6 +201,21 @@ export class StorageService extends CacheModule {
       this.setBooleanSetting("migrated_to_cap3", true)
     }
   }
+
+async openLogSession(modalCtr, offset: number) {
+  var lastLogSession = parseInt(await window.localStorage.getItem("last_log_session"))
+  if (isNaN(lastLogSession)) lastLogSession = 0
+  
+    const modal = await modalCtr.create({
+      component: LogviewPage,
+      cssClass: 'my-custom-class',
+      componentProps: {
+        'logs': JSON.parse(window.localStorage.getItem("log_session_"+((lastLogSession + (3 - offset)) % 3)))
+      }
+    });
+    return await modal.present();
+}
+
 
   // --- Low level ---
 

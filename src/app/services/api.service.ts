@@ -28,6 +28,7 @@ import { MAP } from '../utils/NetworkData'
 import { Http, HttpResponse } from '@capacitor-community/http';
 import { CacheModule } from '../utils/CacheModule';
 import axios, { AxiosResponse } from "axios";
+import { Device } from '@capacitor/device';
 
 const LOGTAG = "[ApiService]";
 var cacheKey = "api-cache"
@@ -58,17 +59,20 @@ export class ApiService extends CacheModule {
   }
 );
 
+  forceNativeAll = false
+
   constructor(
     private storage: StorageService
   ) {
     super("api", 5 * 60 * 1000, storage)
     this.isDebugMode().then((result) => {
       this.debug = result
-      this.disableLogging()
+      window.localStorage.setItem("debug", this.debug ? "true" : "false") 
     }) 
     this.lastCacheInvalidate = Date.now()
     //this.registerLogMiddleware()
     this.updateNetworkConfig()
+    //this.isIOS15().then((result) => { this.forceNativeAll = result })
   }
 
   mayInvalidateOnFaultyConnectionState() {
@@ -223,6 +227,11 @@ export class ApiService extends CacheModule {
     console.log(LOGTAG + " Send request: " + request.resource, request)
     let startTs = Date.now()
 
+    if (this.forceNativeAll) { // android appears to have issues with native POST right now
+      console.log("force native all")
+      request.nativeHttp = false
+    }
+
     var response: Promise<Response>
     switch (request.method) {
       case Method.GET:
@@ -333,6 +342,16 @@ export class ApiService extends CacheModule {
     }
   }
 
+  private async isIOS15(): Promise<boolean> {
+    const osVersion = (await Device.getInfo()).osVersion
+    if(!osVersion) return false
+    const splitVersion = osVersion.split(".")
+    if(!splitVersion || splitVersion.length < 1) return false
+    const majorVersion = parseInt(splitVersion[0])
+    if(isNaN(majorVersion)) return false
+    return (await Device.getInfo()).platform == "ios" && majorVersion >= 15
+  }
+
   private getContentType(data: any): string {
     if (data instanceof FormDataContainer) return "application/x-www-form-urlencoded"
     return "application/json"
@@ -419,15 +438,6 @@ export class ApiService extends CacheModule {
     return text.charAt(0).toUpperCase() + text.slice(1)
   }
 
-  private disableLogging() {
-    if (!this.debug) {
-      if (window) {
-        window.console.log = function () { };
-        window.console.info = function () { };
-        window.console.warn = function () { };
-      }
-    }
-  }
 }
 
 interface Response extends HttpResponse {

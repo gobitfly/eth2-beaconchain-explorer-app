@@ -328,7 +328,7 @@ export class MerchantUtils {
 
   async getDefaultTheme(): Promise<string> {
     const authUser = await this.storage.getAuthUser()
-    if (!authUser || !authUser.accessToken) return PRODUCT_STANDARD
+    if (!authUser || !authUser.accessToken) return ""
     const jwtParts = authUser.accessToken.split(".")
     const claims: ClaimParts = JSON.parse(atob(jwtParts[1]))
     if (claims && claims.hasOwnProperty('theme') && claims.theme) {

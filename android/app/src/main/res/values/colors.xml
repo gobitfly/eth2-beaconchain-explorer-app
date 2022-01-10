@@ -5,5 +5,5 @@
     <color name="widgetTextDark">#FFFFFF</color>
     <color name="widgetDescriptionDark">#AAFFFFFF</color>
     <color name="widgetSwitchColorDark">#AAFFFFFF</color>
-    <color name="widgetStatusDark">#2dd36f</color>
+    <color name="widgetStatusDark">#FFFFFF</color>
 </resources>
