@@ -404,6 +404,11 @@ export class DashboardComponent implements OnInit {
           opposite: false,
           labels: {
             formatter: function () {
+              if (this.value > 0 && this.value < 0.01) {
+                return this.value.toFixed(3)
+              } else if (this.value == 0) {
+                return "0"
+              }
               return this.value.toFixed(2)
             },
 

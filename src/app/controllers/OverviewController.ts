@@ -289,8 +289,8 @@ export default class OverviewController {
                 "This validator is waiting for activation",
                 foreignValidator
             ),
-            extendedDescriptionPre: "Waiting for ",
-            extendedDescription: "activation",
+            extendedDescriptionPre: null,
+            extendedDescription: null,
             iconCss: "waiting"
         }
     }

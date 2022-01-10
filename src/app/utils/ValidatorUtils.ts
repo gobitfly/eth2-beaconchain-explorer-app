@@ -101,8 +101,10 @@ export class ValidatorUtils extends CacheModule {
     private async getMapWithoutDeleted(storageKey) {
         const local = await this.getMap(storageKey)
         const deleted = await this.getDeletedSet(storageKey)
-        for (const locallyDeleted of deleted) {
-            local.delete(locallyDeleted)
+        if (await this.storage.isLoggedIn()) {
+            for (const locallyDeleted of deleted) {
+                local.delete(locallyDeleted)
+            }
         }
         return local
     }
@@ -113,7 +115,8 @@ export class ValidatorUtils extends CacheModule {
         return new Set<string>()
     }
 
-    public setDeleteSet(storageKey: string, list: Set<string>) {
+    public async setDeleteSet(storageKey: string, list: Set<string>) {
+        if (!(await this.storage.isLoggedIn())) return
         this.storage.setObject(storageKey + "_deleted", [...list])
     }
 
@@ -486,7 +489,7 @@ export function getValidatorQueryString(validators: any[], getParamMaxLimit: num
     if (erg.length > 1) {
         return erg.substr(0, erg.length - 1)
     }
-
+    
     return erg
 }
 
