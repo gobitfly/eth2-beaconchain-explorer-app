@@ -97,7 +97,7 @@ export const MAP: ApiNetwork[] = [
     {
         key: "local dev",
         protocol: "http",
-        host: "192.168.0.124:3333",
+        host: "192.168.103.224:3333",
         net: "",
         endpoint: "/api/",
         version: "v1",
