@@ -289,8 +289,8 @@ export default class OverviewController {
                 "This validator is waiting for activation",
                 foreignValidator
             ),
-            extendedDescriptionPre: "Estimated on ",
-            extendedDescription: this.getEpochDate(awaitingActivation.activationepoch, currentEpoch),
+            extendedDescriptionPre: "Waiting for ",
+            extendedDescription: "activation",
             iconCss: "waiting"
         }
     }
