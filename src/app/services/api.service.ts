@@ -64,7 +64,7 @@ export class ApiService extends CacheModule {
   constructor(
     private storage: StorageService
   ) {
-    super("api", 5 * 60 * 1000, storage)
+    super("api", 6 * 60 * 1000, storage)
     this.isDebugMode().then((result) => {
       this.debug = result
       window.localStorage.setItem("debug", this.debug ? "true" : "false") 

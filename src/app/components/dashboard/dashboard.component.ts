@@ -101,7 +101,10 @@ export class DashboardComponent implements OnInit {
         this.beaconChainUrl = await this.getBaseBrowserUrl()
 
         if (!this.data.foreignValidator) {
-          this.checkForFinalization()
+          setTimeout(() => {
+            this.checkForFinalization()
+          }, 4000)
+          
           this.checkForGenesisOccured()
         }
       }
@@ -124,14 +127,24 @@ export class DashboardComponent implements OnInit {
   }
 
   async checkForFinalization() {
+    const cachedFinalizationIssue = await this.storage.getObject("finalization_issues")
+    if (cachedFinalizationIssue) {
+      if (cachedFinalizationIssue.ts && cachedFinalizationIssue.ts + 4 * 60 * 60 * 1000 > Date.now()) {
+        console.log("returning cached finalization issue state", cachedFinalizationIssue)
+        this.finalizationIssue = cachedFinalizationIssue.value;
+        return
+      }
+    }
+
     const olderEpoch = new EpochRequest((this.data.currentEpoch.epoch - 6).toString())
-    olderEpoch.maxCacheAge = 2 * 60 * 60 * 1000
+    olderEpoch.maxCacheAge = 4 * 60 * 60 * 1000
     const response = await this.api.execute(olderEpoch).catch((error) => { return null })
     const olderResult = olderEpoch.parse(response)[0]
 
     if (!this.data || !this.data.currentEpoch || !olderResult) return
     console.log("checkForFinalization", olderResult)
     this.finalizationIssue = new BigNumber(olderResult.globalparticipationrate).isLessThan("0.664") && olderResult.epoch > 7
+    this.storage.setObject("finalization_issues", { ts: Date.now(), value: this.finalizationIssue})
   }
 
   async getChartData(data: ('balances' | 'proposals')) {

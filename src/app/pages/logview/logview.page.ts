@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { arrayMax } from 'highcharts';
+import { Toast } from '@capacitor/toast';
 
 @Component({
   selector: 'app-logview',
@@ -40,6 +40,17 @@ export class LogviewPage implements OnInit {
 
   expandAll() {
     this.openAll = !this.openAll
+  }
+
+  copyToClipboard() {
+    var result = ""
+    this.logs.forEach(data => {
+      result += data.text +"\n"+data.extra
+    })
+    navigator.clipboard.writeText(result);
+    Toast.show({
+      text: 'Copied to clipboard'
+    });
   }
 
 }

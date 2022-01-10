@@ -156,7 +156,7 @@ export class ValidatorSyncUtils {
                 temp.delete(value)
                 this.validator.setDeleteSet(storageKey, temp)
 
-                await this.delay(1000 + (count > 3 ? 15000 : 0))
+                await this.delay(10000 + (count > 3 ? 15000 : 0))
             } else {
                 console.log("== failed to delete " + value + " ==")
                 finished = false

@@ -76,7 +76,7 @@ export abstract class APIRequest<T> {
   requiresAuth = false
   updatesLastRefreshState = false
   ignoreFails = false
-  maxCacheAge = 5 * 60 * 1000
+  maxCacheAge = 6 * 60 * 1000
   nativeHttp = true // TODO: for some reason, native HTTP Post doesnt work on iOS..
  
 }
@@ -293,6 +293,9 @@ export class EpochRequest extends APIRequest<EpochResponse> {
 
   constructor(epoch: string = "latest") {
     super()
+    if (epoch != "latest") {
+      this.ignoreFails = true
+    }
     this.resource += epoch;
   }
 }
@@ -543,7 +546,7 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
   resource = "v2/prices/";
   method = Method.GET;
   ignoreFails = true
-  maxCacheAge = 20 * 60 * 1000
+  maxCacheAge = 40 * 60 * 1000
 
   parse(response: any): CoinbaseExchangeResponse[] {
     return this.parseBase(response, false);
