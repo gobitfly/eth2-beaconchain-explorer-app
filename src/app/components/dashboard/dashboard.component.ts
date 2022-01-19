@@ -35,6 +35,7 @@ import { Browser } from '@capacitor/browser';
 import { ModalController } from '@ionic/angular';
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
 import { MerchantUtils } from 'src/app/utils/MerchantUtils';
+import { ValidatorUtils } from 'src/app/utils/ValidatorUtils';
 
 @Component({
   selector: 'app-validator-dashboard',
@@ -74,13 +75,21 @@ export class DashboardComponent implements OnInit {
   proposals: Proposals = null
   currentPackageMaxValidators = 100
 
+  rplState = "rpl"
+  rplDisplay
+
+  nextRewardRound = null
+  rplCommission = 0
+  rplApr = ""
+
   constructor(
     public unit: UnitconvService,
     public api: ApiService,
     public theme: ThemeUtils,
     private storage: StorageService,
     private modalController: ModalController,
-    private merchant: MerchantUtils
+    private merchant: MerchantUtils,
+    public validatorUtils: ValidatorUtils
   ) {
     this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
   }
@@ -96,24 +105,59 @@ export class DashboardComponent implements OnInit {
             this.fadeIn = null
           }, 1500)
 
+        this.updateRplDisplay()
         this.drawBalanceChart()
         this.drawProposalChart()
         this.beaconChainUrl = await this.getBaseBrowserUrl()
+        this.updateNextRewardRound()
+        this.updateRplCommission()
+        this.updateRplApr()
 
         if (!this.data.foreignValidator) {
-          setTimeout(() => {
-            this.checkForFinalization()
-          }, 4000)
-          
+          this.checkForFinalization()
+        
           this.checkForGenesisOccured()
         }
       }
     }
   }
 
+
+  updateRplApr() {
+    try {
+      const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(":")[0]
+      const hoursNumber = parseInt(hoursToAdd)
+      this.rplApr = new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards)
+        .dividedBy(new BigNumber(this.validatorUtils.rocketpoolStats.effective_rpl_staked))
+        .dividedBy(new BigNumber(hoursNumber / 24))
+        .multipliedBy(new BigNumber(36500)).decimalPlaces(2).toFixed()
+    } catch (e) {
+      
+    }
+  }
+
+  updateRplCommission() {
+    try {
+      this.rplCommission = Math.round(this.validatorUtils.rocketpoolStats.current_node_fee * 10000) / 100
+    } catch (e) {
+      
+    }
+  }
+
+  updateNextRewardRound() {
+    try {
+      const hoursToAdd =  this.validatorUtils.rocketpoolStats.claim_interval_time.split(":")[0]
+      this.nextRewardRound = this.validatorUtils.rocketpoolStats.claim_interval_time_start * 1000 + parseInt(hoursToAdd) * 60 * 60 * 1000 
+    } catch (e) {
+      
+    }
+   
+  }
+
   ngOnInit() {
     this.doneLoading = false
     this.storage.getBooleanSetting("rank_percent_mode", false).then((result) => this.rankPercentMode = result)
+    this.storage.getItem("rpl_pdisplay_mode").then((result) => this.rplState = result ? result : "rpl")
     highChartOptions(HighCharts)
     highChartOptions(Highstock)
     this.merchant.getCurrentPlanMaxValidator().then((result) => { this.currentPackageMaxValidators = result })
@@ -136,11 +180,7 @@ export class DashboardComponent implements OnInit {
       }
     }
 
-    const olderEpoch = new EpochRequest((this.data.currentEpoch.epoch - 6).toString())
-    olderEpoch.maxCacheAge = 4 * 60 * 60 * 1000
-    const response = await this.api.execute(olderEpoch).catch((error) => { return null })
-    const olderResult = olderEpoch.parse(response)[0]
-
+    const olderResult = await this.validatorUtils.getOlderEpoch()
     if (!this.data || !this.data.currentEpoch || !olderResult) return
     console.log("checkForFinalization", olderResult)
     this.finalizationIssue = new BigNumber(olderResult.globalparticipationrate).isLessThan("0.664") && olderResult.epoch > 7
@@ -177,6 +217,47 @@ export class DashboardComponent implements OnInit {
     else {
       this.currencyPipe = this.unit.pref
       this.unit.pref = "ETHER"
+    }
+  }
+
+  switchCurrencyPipeRocketpool() {
+    if (this.unit.prefRpl == "RPL") {
+      if (this.currencyPipe == null) return
+      this.unit.prefRpl = this.currencyPipe
+    }
+    else {
+      this.currencyPipe = this.unit.pref
+      this.unit.prefRpl = "RPL"
+    }
+  }
+
+  
+  switchRplStake(canPercent = false) {
+    if (this.rplState == "rpl" && canPercent) {
+      // next %
+      this.rplState = "%"
+      this.updateRplDisplay()
+      this.storage.setItem("rpl_pdisplay_mode", this.rplState)
+      return
+    } else if ((this.rplState == "rpl" && !canPercent )|| this.rplState == "%") {
+      // next %
+      this.rplState = "conv"
+      this.updateRplDisplay()
+      this.storage.setItem("rpl_pdisplay_mode", this.rplState)
+      return
+    } else {
+      this.rplState = "rpl"
+      this.updateRplDisplay()
+      this.storage.setItem("rpl_pdisplay_mode", this.rplState)
+      return
+    }
+  }
+
+  updateRplDisplay() {
+    if (this.rplState == "%") {
+      this.rplDisplay = this.data.rocketpool.currentRpl.dividedBy(this.data.rocketpool.maxRpl).multipliedBy(new BigNumber(150)).decimalPlaces(1)
+    } else {
+      this.rplDisplay = this.data.rocketpool.currentRpl
     }
   }
 

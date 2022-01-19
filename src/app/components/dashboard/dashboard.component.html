@@ -83,7 +83,7 @@
 
   </ion-list>
 
-  <ion-list class="first-item-group">
+  <ion-list class="first-item-group" >
 
     <ion-item lines="none">
 
@@ -153,6 +153,8 @@
       </div>
     </ion-item>
 
+    
+
   </ion-list>
 
   <app-text-ad location="dashboard"></app-text-ad>
@@ -182,6 +184,8 @@
 
     </ion-item>
 
+
+    
     <ion-item lines="none" *ngIf="data.attrEffectiveness >= 0">
 
       <ion-label class="stat-title">
@@ -232,6 +236,100 @@
       </ion-label>
 
     </ion-item>
+
+  </ion-list>
+
+
+  <ion-list class="rocketpool" *ngIf="data.rocketpool.currentRpl.toNumber() > 0">
+
+
+    <ion-item lines="none" *ngIf="rplApr">
+
+      <ion-label class="stat-title">
+        <span tooltip="Estimated yearly RPL returns, based on the last 7 days" placement="right" trigger="click"
+          hideDelayAfterClick="5000">RPL APR</span>
+      </ion-label>
+      <ion-label class="value" [class]="rplApr | valuestyle:0">
+        {{ rplApr}} %
+      </ion-label>
+
+    </ion-item>
+
+
+    <ion-item lines="none">
+
+      <ion-label class="stat-title">
+        <span tooltip="Your currently staked rocktpool token colleteral. It must be between max and min to earn interest."
+          placement="right" trigger="click" hideDelayAfterClick="5000">
+          RPL Stake
+        </span>
+       
+      </ion-label>
+      <ion-label *ngIf="rplState == 'rpl'" class="value" [class]="data.rocketpool.currentRpl | valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1 " (click)="switchRplStake(true)">
+        {{ data.rocketpool.currentRpl | mcurrency: "WEI":"RPL_NAKED" }}
+      </ion-label>
+      <ion-label *ngIf="rplState == 'conv'" class="value" [class]="data.rocketpool.currentRpl | valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1 " (click)="switchRplStake(true)">
+        {{ data.rocketpool.currentRpl | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref }}
+      </ion-label>
+      <ion-label *ngIf="rplState == '%'" class="value" [class]="data.rocketpool.currentRpl | valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1 " (click)="switchRplStake(true)">
+        {{ rplDisplay }} %
+      </ion-label>
+    </ion-item>
+    <ion-item lines="none">
+
+      <ion-label class="stat-title">
+        Min RPL
+      </ion-label>
+      <ion-label *ngIf="rplState == 'rpl' || rplState == '%'" class="value" (click)="switchRplStake()">
+        {{ data.rocketpool.minRpl | mcurrency: "WEI":"RPL_NAKED" }}
+      </ion-label>
+      <ion-label *ngIf="rplState == 'conv' " class="value" (click)="switchRplStake()">
+        {{ data.rocketpool.minRpl | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref  }}
+      </ion-label>
+    </ion-item>
+    <ion-item lines="none">
+
+      <ion-label class="stat-title">
+        Max RPL
+      </ion-label>
+      <ion-label *ngIf="rplState == 'rpl' || rplState == '%'"  class="value" (click)="switchRplStake()">
+        {{ data.rocketpool.maxRpl | mcurrency: "WEI":"RPL_NAKED" }}
+      </ion-label>
+      <ion-label *ngIf="rplState == 'conv' "  class="value" (click)="switchRplStake()">
+        {{ data.rocketpool.maxRpl | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label class="stat-title">
+        <span *ngIf="data.foreignValidator" tooltip="The commission fee of this minipool."
+        placement="right" trigger="click" hideDelayAfterClick="5000">
+          Minipool Fee
+      </span>
+      <span *ngIf="!data.foreignValidator" tooltip="Average of all your minipool commission fees"
+      placement="right" trigger="click" hideDelayAfterClick="5000">
+        Avg Fee
+    </span>
+      </ion-label>
+      <ion-label class="value" >
+        {{ data.rocketpool.fee }} %
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="data.rocketpool.depositType && data.foreignValidator">
+
+      <ion-label class="stat-title">
+          Deposit Type
+      </ion-label>
+      <ion-label class="value" >
+        {{ data.rocketpool.depositType }}
+      </ion-label>
+
+    </ion-item>
+
 
   </ion-list>
 
@@ -344,6 +442,21 @@
       </ion-label>
 
     </ion-item>
+
+    <ion-item lines="none" *ngIf="nextRewardRound && data.rocketpool.currentRpl.toNumber() > 0">
+
+      <ion-label class="stat-title">
+        <span
+          tooltip="With the start of a new rocketpool reward round, rewards from the previous round can be claimed."
+          placement="right" trigger="click" hideDelayAfterClick="5000">
+          Next RPL Round
+        </span>
+      </ion-label>
+      <ion-label class="value" >
+        {{ nextRewardRound | date:'MMM d, y, h:mm a'}}
+      </ion-label>
+
+    </ion-item>
   </ion-list>
 
 
@@ -359,6 +472,30 @@
       </ion-label>
 
     </ion-item>
+
+    <ion-item lines="none" *ngIf="data.rocketpool.currentRpl.toNumber() > 0">
+
+      <ion-label class="stat-title">
+        RPL Price
+      </ion-label>
+      <ion-label class="value" (click)="switchCurrencyPipe()">
+        {{ 1 | mcurrency: "ETHER":"RPL":false | mcurrency: "ETHER":unit.pref }}
+      </ion-label>
+
+    </ion-item>
+
+
+    <ion-item lines="none" *ngIf="data.rocketpool.currentRpl.toNumber() > 0">
+
+      <ion-label class="stat-title">
+        RPL Commission
+      </ion-label>
+      <ion-label class="value" (click)="switchCurrencyPipe()">
+        {{ rplCommission }} %
+      </ion-label>
+
+    </ion-item>
+
 
 
     <ion-item lines="none">

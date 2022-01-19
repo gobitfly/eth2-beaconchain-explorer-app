@@ -651,3 +651,84 @@ body.ethpool.dark {
 
 
 
+
+
+body.rocketpool {
+  --tab-top-border: 0px; 
+  --ion-color-primary: #f76f75;
+  --ion-color-primary-rgb: 247,111,117;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e97112;
+  --ion-color-primary-tint: #0e0b0a;
+
+  --status-bg-image: linear-gradient(180deg, rgba(253,153,103,1) 16%, rgba(255,110,104,1) 100%);
+  --button-bg-image: linear-gradient(180deg, rgba(253,153,103,1) 16%, rgba(255,110,104,1) 100%);
+  --ion-toolbar-background: #fd9967; // //2f2e42
+  --x-alert-primary: rgb(255, 125, 50);;
+  --x-update-messages-background: #fd9967;
+  --x-update-messages-background-selected: rgb(255, 125, 50);
+
+  --ion-color-success: #7f43e7;
+  --ion-color-warning: rgb(223, 132, 29);
+  --ion-color-danger: rgb(230, 59, 59);
+
+  
+  --chart-default: #fd9967;
+  
+  --ion-background-color: #f2f5f6;
+  --ion-background-color-rgb: 242,245,246;
+  /*--ion-item-background: #f5f3f3;
+  --ion-card-background: #f5f3f3;
+  --background-color: #f5f3f3;*/
+
+  --ion-tab-bar-background: #f76f75; // f8f8f8
+  --ion-tab-button-color-selected: #fff;
+  --ion-tab-button-color: #fff;
+
+  --status-ok: white;
+  --status-warn: white;
+  --status-danger: white;
+  --status-secondary: white;
+  /*--status-ok: var(--ion-color-success);
+  --status-warn: var(--ion-color-warning);
+  --status-danger: var(--ion-color-danger);
+  --status-secondary: var(--ion-color-secondary);*/
+
+
+  --x-toolbar-title-color: #FFF;
+}
+
+
+body.rocketpool.dark {
+  --tab-top-border: 0px; 
+  --ion-toolbar-background: #262327 !important; // //2f2e42
+  
+  --status-bg-image: linear-gradient(180deg, rgba(253,153,103,0) 16%, rgba(255,110,104,0.01) 100%);
+
+  --x-update-messages-background: #24201f !important;
+  --x-update-messages-background-selected: rgb(26, 22, 21) !important;
+
+  --ion-item-background: #262327;
+  
+  --ion-background-color: #211E22;
+  --ion-background-color-rgb: 33, 30, 34;
+  
+  --ion-card-background: #262327;
+  --background-color: #262327;
+
+  --ion-color-success: #fd9967;
+
+
+  --ion-color-primary: #fd9967;
+  --ion-color-primary-rgb:253,153,103;
+  
+
+  --ion-tab-bar-background: rgb(26, 26, 26); // f8f8f8
+  --ion-tab-button-color-selected: #fd9967;
+  --ion-tab-button-color: #fd9967;
+
+  --x-toolbar-title-color: #fff;
+}
+
+

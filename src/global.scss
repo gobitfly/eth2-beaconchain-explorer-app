@@ -220,7 +220,7 @@ ion-back-button {
 ion-tab-button.tab-selected {
 
   .opacity-icon {
-    color: #000;
+    color: var(--ion-tab-button-color);;
     opacity: 0.95;
   }
 }
@@ -229,8 +229,8 @@ body.dark {
 
   ion-tab-button.tab-selected {
     .opacity-icon {
-      color: #fff;
-      opacity: 0.95;
+      color: var(--ion-tab-button-color);;
+      opacity: 0.99;
     }
   }
 
@@ -240,7 +240,7 @@ body.dark {
 
     color: var(--ion-tab-button-color);
     .opacity-icon {
-      color: #fff;
+      color: var(--ion-tab-button-color);;
       opacity: 0.6;
     }
   }
@@ -253,7 +253,7 @@ ion-tab-button {
   color: var(--ion-tab-button-color);
 
   .opacity-icon {
-    color: #000;
+    color: var(--ion-tab-button-color);;
     opacity: 0.6;
   }
 }

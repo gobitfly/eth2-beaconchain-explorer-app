@@ -21,10 +21,12 @@
 import { ApiService } from '../services/api.service';
 import { StorageService } from '../services/storage.service';
 import { Injectable } from '@angular/core';
-import { EpochRequest, EpochResponse, PerformanceRequest, RemoveMyValidatorsRequest, PerformanceResponse, AttestationPerformanceRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse } from '../requests/requests';
+import { EpochRequest, EpochResponse, RemoveMyValidatorsRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse, DashboardRequest, DashboardResponse, RocketPoolResponse, RocketPoolNetworkStats } from '../requests/requests';
 import { AlertService } from '../services/alert.service';
 import { CacheModule } from './CacheModule';
 import { MerchantUtils } from './MerchantUtils';
+import BigNumber from 'bignumber.js';
+import { UnitconvService } from '../services/unitconv.service';
 
 export const SAVED = 0 // stored locally
 export const MEMORY = 1 // Search results etc
@@ -39,6 +41,7 @@ const cachePerformanceKeyBare = "performance";
 const cacheAttestationKeyBare = "attestationperformance";
 const epochCachedKeyBare = "epochcached"
 const allMyKeyBare = "allmy"
+const cacheValidatorsKeyBare = "validators_"
 
 export enum ValidatorState {
     ACTIVE, OFFLINE, SLASHED, WAITING, ELIGABLE, EXITED, UNKNOWN
@@ -53,7 +56,8 @@ export interface Validator {
     version: number,
     data: ValidatorResponse,
     state: ValidatorState,
-    searchAttrEffectiveness: number
+    attrEffectiveness: number
+    rocketpool: RocketPoolResponse
 }
 
 @Injectable({
@@ -63,11 +67,16 @@ export class ValidatorUtils extends CacheModule {
 
     private listeners: (() => void)[] = []
 
+    private currentEpoch: EpochResponse
+    private olderEpoch: EpochResponse
+    rocketpoolStats: RocketPoolNetworkStats
+
     constructor(
         private api: ApiService,
         private storage: StorageService,
         private alerts: AlertService,
-        private merchantUtils: MerchantUtils
+        private merchantUtils: MerchantUtils,
+        private unitConversion: UnitconvService
     ) {
         super("vu") // initialize cache module with vu prefix
     }
@@ -180,70 +189,29 @@ export class ValidatorUtils extends CacheModule {
         return erg
     }
 
-    async getAllMyPerformances(): Promise<PerformanceResponse[]> {
-        const storageKey = await this.getStorageKey()
-        const local = await this.getMap(storageKey)
-
-        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator() - 1)
-
-        const cachePerformanceKey = await this.getCachedPerformanceKey()
-        const cached = await this.getMultipleCached(cachePerformanceKey, validatorString.split(","))
-        if (cached != null && cached.length > 0) return cached
-
-        const remoteUpdates = await this.getRemoteValidatorPerformance(
-            validatorString
-        )
-
-        this.cacheMultiple(cachePerformanceKey, remoteUpdates)
-
-        return remoteUpdates
-    }
-
-    async getAllMyAttestationPerformances(): Promise<AttestationPerformanceResponse[]> {
-        const storageKey = await this.getStorageKey()
-        const local = await this.getMap(storageKey)
-
-        const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator() - 1)
-
-        const cacheAttestationKey = await this.getCachedAttestationKey()
-        const cached = await this.getMultipleCached(cacheAttestationKey, validatorString.split(","))
-        if (cached != null && cached.length > 0) return cached
-
-        const remoteUpdates = await this.getRemoteValidatorAttestationPerformance(
-            validatorString
-        )
-
-        this.cacheMultiple(cacheAttestationKey, remoteUpdates)
-        return remoteUpdates
-    }
-
 
     async getAllMyValidators(): Promise<Validator[]> {
         const storageKey = await this.getStorageKey()
         const local = await this.getMapWithoutDeleted(storageKey)
-        const epochPromise = this.getRemoteCurrentEpoch()
+      
         const validatorString = getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator() - 1)
 
-        const cached = await this.getMultipleCached(allMyKeyBare, validatorString.split(","))
+        // TODO::
+       /* const cached = await this.getMultipleCached(allMyKeyBare, validatorString.split(","))
         if (cached != null) {
             console.log("return my validators from cache")
             return cached
-        }
+        }*/
 
-        const remoteUpdatesPromise = this.getRemoteValidatorInfo(
+        const remoteUpdatesPromise = this.getDashboardDataValidators(SAVED,
             validatorString
-        ).catch(err => { return null })
-        if(remoteUpdatesPromise == null) return null
-
-        const epoch = await epochPromise
+        ).catch(err => { return [] })
+        if (remoteUpdatesPromise == null) return null
+        
         const remoteUpdates = await remoteUpdatesPromise
 
-        // applying new remote infos to local
         remoteUpdates.forEach((item) => {
-            const current = local.get(item.pubkey)
-            current.data = item
-            current.state = ValidatorState.UNKNOWN
-            current.state = this.getValidatorState(current, epoch)
+            local.set(item.pubkey, item)
         })
 
         // update local info
@@ -312,21 +280,85 @@ export class ValidatorUtils extends CacheModule {
         return result
     }
 
-    async getRemoteCurrentEpoch(epoch = "latest"): Promise<EpochResponse> {
-        const cached = await this.getCache(await this.getCachedEpochKey())
-        if (cached != null) return cached
-
-        const request = new EpochRequest(epoch)
+    
+    private lastFreshTime = 0
+    async getDashboardDataValidators(storage: (0 | 1), ...validators): Promise<Validator[]> {
+        /*const cacheKey = await this.getCachedValidatorKey()
+        // if request is cached, return processed cached data
+        const cached = await this.getMultipleCached(cacheKey, validators)
+        console.log("request cached, return processed cached data", cached)
+        if (cached != null && cached.length > 0 && this.lastFreshTime + 6 * 60 * 1000 > Date.now()) return cached
+*/
+        const request = new DashboardRequest(validators)
         const response = await this.api.execute(request)
+       
+        if (!request.wasSuccessfull(response)) {
+            return []
+        }
+
         const result = request.parse(response)[0]
+        this.lastFreshTime = Date.now()
+        this.currentEpoch = result.currentEpoch[0]
+        this.olderEpoch = result.olderEpoch[0]
+        this.rocketpoolStats = result.rocketpool_network_stats[0]
+        const validatorEffectivenessResponse = result.effectiveness
+        const validatorsResponse = result.validators
+ 
+        this.updateRplAndRethPrice()
 
         if (response.cached != true) { 
             await this.storage.setLastEpochRequestTime(Date.now())
+        } else {
+            const lastCachedTime = await this.storage.getLastEpochRequestTime()
+            this.currentEpoch.lastCachedTimestamp = lastCachedTime
         }
-        const lastCachedTime = await this.storage.getLastEpochRequestTime()
-        result.lastCachedTimestamp = lastCachedTime
 
-        this.putCache(await this.getCachedEpochKey(), result)
+        const temp = this.convertToValidatorModel({ synced: false, storage: storage, validatorResponse: validatorsResponse })
+        await this.updateValidatorStates(temp)
+        for (let vali of temp) {
+            vali.attrEffectiveness = this.findAttributionEffectiveness(validatorEffectivenessResponse, vali.index)
+            vali.rocketpool = this.findRocketpoolResponse(result.rocketpool_validators, vali.index)
+        }
+
+       // this.cacheMultiple(cacheKey, temp)
+        return temp
+    }
+
+    private updateRplAndRethPrice() {
+        if (!this.rocketpoolStats) return
+        this.unitConversion.setRPLPrice(new BigNumber(this.rocketpoolStats.rpl_price))
+        this.unitConversion.setRETHPrice(new BigNumber(this.rocketpoolStats.reth_exchange_rate))
+    }
+
+
+    private findRocketpoolResponse(list: RocketPoolResponse[], index: number): RocketPoolResponse {
+        for (let attr of list) {
+          if (attr.index == index) {
+            return attr
+          }
+        }
+        return null
+      }
+
+    private findAttributionEffectiveness(list: AttestationPerformanceResponse[], index: number): number {
+        for (let attr of list) {
+          if (attr.validatorindex == index) {
+            return new BigNumber(1).dividedBy(attr.attestation_efficiency).multipliedBy(100).decimalPlaces(1).toNumber()
+          }
+        }
+        return -1
+      }
+
+    async getOlderEpoch(): Promise<EpochResponse> {
+        return this.olderEpoch
+    }
+    
+    async getRemoteCurrentEpoch(): Promise<EpochResponse> {
+
+        const result = this.currentEpoch
+
+
+
         return result
     }
 
@@ -341,7 +373,7 @@ export class ValidatorUtils extends CacheModule {
         }
     }
 
-    async getRemoteValidatorViaETH1(arg: string, enforceMax: number = -1): Promise<ValidatorResponse[]> {
+    async getRemoteValidatorViaETH1(arg: string, enforceMax: number = -1): Promise<Validator[]> {
         if (!arg) return []
         const request = new ValidatorETH1Request(arg)
         const response = await this.api.execute(request)
@@ -350,42 +382,13 @@ export class ValidatorUtils extends CacheModule {
             const eth1ValidatorList = request.parse(response)
             const queryString = getValidatorQueryString(eth1ValidatorList, 2000, enforceMax)
 
-            return await this.getRemoteValidatorInfo(
+            return await this.getDashboardDataValidators(MEMORY,
                 queryString
             )
         } else {
             return this.apiStatusHandler(response)
         }
     }
-
-    async getRemoteValidatorPerformance(...args: any): Promise<PerformanceResponse[]> {
-        if (!args || args[0] === undefined) return []
-
-        const cachePerformanceKey = await this.getCachedPerformanceKey()
-        const cached = await this.getMultipleCached(cachePerformanceKey, args)
-        if (cached != null && cached.length > 0) return cached
-
-        const request = new PerformanceRequest(args)
-        const response = await this.api.execute(request)
-        const result = request.parse(response)
-        this.cacheMultiple(cachePerformanceKey, result)
-        return result
-    }
-
-    async getRemoteValidatorAttestationPerformance(...args: any): Promise<AttestationPerformanceResponse[]> {
-        if (!args || args[0] === undefined) return []
-
-        const cacheAttestationKey = await this.getCachedAttestationKey()
-        const cached = await this.getMultipleCached(cacheAttestationKey, args)
-        if (cached != null && cached.length > 0) return cached
-
-        const request = new AttestationPerformanceRequest(args)
-        const response = await this.api.execute(request)
-        const result = request.parse(response)
-        this.cacheMultiple(cacheAttestationKey, result)
-        return result
-    }
-
     private async apiStatusHandler(response) {
         if (response && response.data && response.data.status) {
             return Promise.reject(new Error(response.data.status))
@@ -399,6 +402,10 @@ export class ValidatorUtils extends CacheModule {
 
     async getCachedPerformanceKey() {
         return cachePerformanceKeyBare + await this.api.getNetworkName()
+    }
+
+    async getCachedValidatorKey() {
+        return cacheValidatorsKeyBare + await this.api.getNetworkName()
     }
 
     async getCachedEpochKey() {
@@ -438,19 +445,15 @@ export class ValidatorUtils extends CacheModule {
     }
 
     async searchValidators(search: string): Promise<Validator[]> {
-        const result = await this.getRemoteValidatorInfo(search).catch(err => { return null })
+        const result = await this.getDashboardDataValidators(MEMORY, search).catch(err => { return null })
         if(result == null) return []
-        const temp = this.convertToValidatorModel({ synced: false, storage: MEMORY, validatorResponse: result })
-        await this.updateValidatorStates(temp)
-        return temp
+        return result
     }
 
     async searchValidatorsViaETH1(search: string, enforceMax: number = -1): Promise<Validator[]> {
         const result = await this.getRemoteValidatorViaETH1(search, enforceMax)
         if(result == null) return []
-        const temp = this.convertToValidatorModel({ synced: false, storage: MEMORY, validatorResponse: result })
-        await this.updateValidatorStates(temp)
-        return temp
+        return result
     }
 
     private getName(validator: ValidatorResponse): string {

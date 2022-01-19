@@ -73,6 +73,7 @@ export abstract class APIRequest<T> {
     }
   }
 
+  cacheablePOST = false 
   requiresAuth = false
   updatesLastRefreshState = false
   ignoreFails = false
@@ -136,16 +137,11 @@ export interface ValidatorResponse {
   withdrawableepoch: number;
   withdrawalcredentials: string;
   status: string;
-}
-
-export interface PerformanceResponse {
-  balance: BigNumber;
   performance1d: BigNumber;
   performance31d: BigNumber;
   performance365d: BigNumber;
   performance7d: BigNumber;
   rank7d: number;
-  validatorindex: number;
 }
 
 export interface AttestationPerformanceResponse {
@@ -196,7 +192,59 @@ export interface CoinzillaAdResponse {
   impressionUrl: string
 }
 
+export interface DashboardResponse {
+  validators: ValidatorResponse[],
+  effectiveness: AttestationPerformanceResponse[],
+  currentEpoch: EpochResponse[],
+  olderEpoch: EpochResponse[],
+  rocketpool_validators: RocketPoolResponse[]
+  rocketpool_network_stats: RocketPoolNetworkStats[]
+}
+
+
+export interface RocketPoolNetworkStats {
+  rpl_price: BigNumber;
+  claim_interval_time: string; // TODO?
+  claim_interval_time_start: number; // TODO?
+  current_node_fee: number,
+  current_node_demand: BigNumber,
+  reth_supply: BigNumber,
+  reth_apr: number,
+  effective_rpl_staked: BigNumber,
+  node_operator_rewards: BigNumber,
+  reth_exchange_rate: BigNumber,
+}
+
+export interface RocketPoolResponse {
+  index: number;
+  minipool_address: string;
+  minipool_deposit_type: string;
+  minipool_node_fee: number,
+  minipool_status: string,
+  minipool_status_time: number,
+  node_address: string,
+  node_max_rpl_stake: BigNumber,
+  node_min_rpl_stake: BigNumber,
+  node_rpl_stake: BigNumber,
+  node_timezone_location: string
+}
+
 // ------------- Reqests -------------
+
+export class DashboardRequest extends APIRequest<DashboardResponse> {
+  resource = "app/dashboard";
+  method = Method.POST;
+  updatesLastRefreshState = true
+  cacheablePOST = true
+
+  /**
+   * @param validator Index or PubKey
+   */
+  constructor(...validator: any) {
+    super()
+    this.postData = { indicesOrPubkey: validator.join().replace(/\s/g, "") }
+  }
+}
 
 export class ValidatorRequest extends APIRequest<ValidatorResponse>  {
   resource = "validator/";
@@ -223,20 +271,19 @@ export class ValidatorETH1Request extends APIRequest<ETH1ValidatorResponse> {
     this.resource += ethAddress.replace(/\s/g, "")
   }
 }
-
+/*
 export class PerformanceRequest extends APIRequest<PerformanceResponse> {
   resource = "validator/";
   method = Method.GET;
   updatesLastRefreshState = true
 
-  /**
-   * @param validator Index or PubKey
-   */
+
   constructor(...validator: any) {
     super()
     this.resource += validator.join().replace(/\s/g, "") + "/performance";
   }
 }
+*/
 
 export class AttestationPerformanceRequest extends APIRequest<AttestationPerformanceResponse> {
   resource = "validator/";

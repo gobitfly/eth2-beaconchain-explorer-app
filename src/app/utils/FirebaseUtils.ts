@@ -60,6 +60,7 @@ export default class FirebaseUtils {
   }
 
   async registerPush(iosTriggerConsent = false) {
+    if (!this.platform.is("ios") && !this.platform.is("android")) { return }
     console.log(LOGTAG+ "registerPush", iosTriggerConsent)
     if (this.alreadyRegistered) return
 

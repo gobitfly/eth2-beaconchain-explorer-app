@@ -31,10 +31,12 @@
         <ion-text class="title">{{ name }}</ion-text>
         <ion-label> {{ data.balance | mcurrency: "GWEI":unit.pref }} </ion-label>
 
-        <ion-label class="smaller-info" [class]="stateCss">{{ state }}</ion-label>
-        <ion-label class="smaller-info"
-          *ngIf="validator.searchAttrEffectiveness && validator.searchAttrEffectiveness != -1">Effectiveness:
-          {{ validator.searchAttrEffectiveness }}%</ion-label>
+        <ion-label class="smaller-info" style="padding-bottom: 6px;"
+        *ngIf="validator.attrEffectiveness && validator.attrEffectiveness != -1">Effectiveness:
+        {{ validator.attrEffectiveness }}%</ion-label>
+        <span >
+        <ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge><ion-badge class="rpl" *ngIf="validator.rocketpool">Rocketpool</ion-badge></span>
+
 
         <!--<ion-label class="smaller-info"
           *ngIf="validator.data.lastattestationslot">Last Attestation:

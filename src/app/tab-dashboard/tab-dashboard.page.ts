@@ -113,10 +113,8 @@ export class Tab1Page {
       return
     }
 
-    const validators = this.validatorUtils.getAllMyValidators().catch((error) => { return [] })
-    const performances = this.validatorUtils.getAllMyPerformances().catch((error) => { return [] })
-    const epoch = this.validatorUtils.getRemoteCurrentEpoch().catch((error) => { return null })
-    const attestationPerformance = this.validatorUtils.getAllMyAttestationPerformances().catch((error) => { return null })
+    const validators = await this.validatorUtils.getAllMyValidators().catch((error) => { return [] })
+    const epoch = await this.validatorUtils.getRemoteCurrentEpoch().catch((error) => { return null })
     const overviewController = new OverviewController(() => {
       if (this.lastRefreshTs + 60 > this.getUnixSeconds()) return
       this.api.invalidateCache()
@@ -124,10 +122,8 @@ export class Tab1Page {
     }, await this.merchant.getCurrentPlanMaxValidator())
     this.updates.checkUpdates()
     this.overallData = overviewController.proccessDashboard(
-      await validators,
-      await performances,
-      await epoch,
-      await attestationPerformance,
+      validators,
+      epoch,
       await this.storage.getStakingShare()
     )
     this.lastRefreshTs = this.getUnixSeconds()
