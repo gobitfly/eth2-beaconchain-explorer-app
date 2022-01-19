@@ -85,19 +85,40 @@ ion-icon {
 }
 
 .online {
+  --color: #ffffff;
+  color: #ffffff;
+  --background: var(--ion-color-success);
 }
 
 .offline {
-  color: var(--ion-color-warning);
+  --color: #ffffff;
+  color: #ffffff;
+  --background: var(--ion-color-warning);
 }
 
 .slashed {
-  color: var(--ion-color-danger);
+  --color: #ffffff;
+  color: #ffffff;
+  --background: var(--ion-color-danger);
 }
 
 .exited {
+  --color: #ffffff;
+  color: #ffffff;
+  --background: var(--ion-color-medium);
 }
 
 .waiting {
-  color: var(--ion-color-secondary);
+  --color: #ffffff;
+  color: #ffffff;
+  --background: var(--ion-color-secondary);
+}
+
+.rpl {
+  --background: #e17959;
+ 
+}
+
+.onlinestate {
+  margin-right: 5px;
 }

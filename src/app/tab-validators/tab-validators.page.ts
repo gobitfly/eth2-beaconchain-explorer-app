@@ -118,11 +118,6 @@ export class Tab2Page {
       return []
     })
 
-    const attrEffectiveness = await this.validatorUtils.getAllMyAttestationPerformances()
-    for (let vali of temp) {
-      vali.searchAttrEffectiveness = this.findAttributionEffectiveness(attrEffectiveness, vali.index)
-    }
-
     this.items = temp
     this.setLoading(false)
     Tab2Page.itemCount = this.items.length
@@ -148,15 +143,6 @@ export class Tab2Page {
         this.loading = false
       }
     }
-  }
-
-  private findAttributionEffectiveness(list: AttestationPerformanceResponse[], index: number): number {
-    for (let attr of list) {
-      if (attr.validatorindex == index) {
-        return new BigNumber(1).dividedBy(attr.attestation_efficiency).multipliedBy(100).decimalPlaces(1).toNumber()
-      }
-    }
-    return -1
   }
 
   async removeAllDialog() {
@@ -228,7 +214,7 @@ export class Tab2Page {
       console.warn("search error", error)
       return []
     })
-    this.items = await this.applyAttestationEffectiveness(temp, target)
+    this.items = temp
     Tab2Page.itemCount = this.items.length
   }
 
@@ -247,17 +233,6 @@ export class Tab2Page {
     Tab2Page.itemCount = this.items.length
   }
 
-  async applyAttestationEffectiveness(list: Validator[], search: string): Promise<Validator[]> {
-    const attrEffectiveness = await this.validatorUtils.getRemoteValidatorAttestationPerformance(search).catch((error) => {
-      return []
-    })
-    if (!attrEffectiveness || attrEffectiveness.length <= 0) return list;
-
-    for (let vali of list) {
-      vali.searchAttrEffectiveness = this.findAttributionEffectiveness(attrEffectiveness, vali.index)
-    }
-    return list
-  }
 
   cancelSearch() {
     if (this.searchResultMode) {

@@ -19,7 +19,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import Unit, { convertDisplayable, MAPPING } from '../utils/EthereumUnits';
+import Unit, { convertDisplayable, MAPPING, convertEthUnits } from '../utils/EthereumUnits';
 import { StorageService } from './storage.service';
 import BigNumber from "bignumber.js";
 import { ApiService } from './api.service';
@@ -30,6 +30,7 @@ interface UnitStorage {
 }
 
 const STORAGE_KEY = "prefered_unit"
+const STORAGE_KEY_ROCKETPOOL = "prefered_unit_rocketpool"
 
 @Injectable({
   providedIn: 'root'
@@ -37,11 +38,15 @@ const STORAGE_KEY = "prefered_unit"
 export class UnitconvService {
 
   pref: string = "ETHER"
+  prefRpl: string = "RPL"
   lastPrice: BigNumber
 
   constructor(private storage: StorageService, private api: ApiService) {
     this.storage.getObject(STORAGE_KEY).then(
       (unitPref) => this.init(unitPref)
+    )
+    this.storage.getObject(STORAGE_KEY_ROCKETPOOL).then(
+      (unitPref) => this.prefRpl = this.getPref(unitPref, "RPL")
     )
   }
 
@@ -102,9 +107,26 @@ export class UnitconvService {
   }
 
   private getCurrentPrefAsUnit() {
-    const unitStored: Unit = MAPPING.get(this.pref)
+    return this.getCurrentyAsUnit(this.pref)
+  }
+
+  private getCurrentyAsUnit(currency) {
+    const unitStored: Unit = MAPPING.get(currency)
     return unitStored ? unitStored : Unit.ETHER
   }
+
+  setRPLPrice(price: BigNumber) {
+    const unitStored: Unit = MAPPING.get("RPL")
+    if (!unitStored) return
+    unitStored.value = convertEthUnits(price, MAPPING.get("WEI"), Unit.ETHER)
+  }
+
+  setRETHPrice(price: BigNumber) {
+    const unitStored: Unit = MAPPING.get("RETH")
+    if(!unitStored) return
+    unitStored.value = convertEthUnits(price, Unit.WEI, Unit.ETHER)
+  }
+
 
   async updatePriceData() {
     console.log("updatePriceData currency")
@@ -135,33 +157,47 @@ export class UnitconvService {
     this.pref = "ETHER"
     this.pref = "FINNEY"
 
+
+    const temp2 = this.prefRpl
+    this.prefRpl = "ETHER"
+    this.prefRpl = "RPL"
+
+
     setTimeout(() => {
       this.pref = temp
+      this.prefRpl = temp2
       this.triggeredChange = false
     }, 450)
   }
 
-  private getPref(unitPref) {
+  private getPref(unitPref, defaultva = "ETHER") {
     if (unitPref) {
       return unitPref.prefered
     }
-    return "ETHER"
+    return defaultva
   }
 
   convertToPref(value: BigNumber, from) {
     return this.convert(value, from, this.pref)
   }
 
-  convert(value: BigNumber, from, to) {
+  convert(value: BigNumber, from, to, displayable = true) {
     if (!value || !from || !to) return value
 
     const tempValue = value instanceof BigNumber ? value : new BigNumber(value)
-    return convertDisplayable(tempValue, MAPPING.get(from), MAPPING.get(to))
+    if (displayable) {
+      return convertDisplayable(tempValue, MAPPING.get(from), MAPPING.get(to))
+    } else {
+      return convertEthUnits(tempValue, MAPPING.get(from), MAPPING.get(to), false)
+    }
   }
 
   save() {
     if (this.triggeredChange) return
     const unit = this.getCurrentPrefAsUnit()
     this.storage.setObject(STORAGE_KEY, { prefered: this.pref, coinbaseSpot: unit.coinbaseSpot, symbol: unit.display, rounding: unit.rounding })
+    
+    const rplUnit = this.getCurrentyAsUnit(this.prefRpl)
+    this.storage.setObject(STORAGE_KEY_ROCKETPOOL, { prefered: this.prefRpl, coinbaseSpot: rplUnit.coinbaseSpot, symbol: rplUnit.display, rounding: rplUnit.rounding })
   }
 }

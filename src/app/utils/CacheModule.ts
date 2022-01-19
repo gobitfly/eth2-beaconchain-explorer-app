@@ -78,6 +78,7 @@ export class CacheModule {
 
     protected async getCache(key: string) {
         await this.initialized
+        if(!key) return null
         const cacheKey = this.getKey(key)
         
         // rationale: don't store big data objects in hardStorage due to severe performance impacts

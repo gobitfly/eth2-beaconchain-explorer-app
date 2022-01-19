@@ -64,7 +64,7 @@ describe('ValidatordetailPage', () => {
         withdrawalcredentials: "BBBBBBB"
       },
       state: ValidatorState.ACTIVE,
-      searchAttrEffectiveness: 100
+      attrEffectiveness: 100
     })
 
     fixture.detectChanges();

@@ -91,11 +91,9 @@ export class ValidatordetailPage implements OnInit {
   async updateDetails(item: Validator) {
     this.name = getDisplayName(item)
 
-    const performances = await this.validatorUtils.getRemoteValidatorPerformance(item.index)
     const epoch = await this.validatorUtils.getRemoteCurrentEpoch()
-    const attestationPerformance = await this.validatorUtils.getRemoteValidatorAttestationPerformance(item.index).catch((error) => { return null })
     const overviewController = new OverviewController(null, await this.merchant.getCurrentPlanMaxValidator())
-    this.data = overviewController.proccessDetail([item], performances, epoch, attestationPerformance)
+    this.data = overviewController.proccessDetail([item], epoch)
   }
 
   tag(event) {
