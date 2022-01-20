@@ -32,8 +32,12 @@ export default class Unit {
     public static GWEI = new Unit("Gwei", new BigNumber("1000000000"))
     public static SZABO = new Unit("Szabo", new BigNumber("1000000"))
     public static FINNEY = new Unit("Finney", new BigNumber("1000"), 2, null, "Finney")
+
     public static ETHER = new Unit("Ether", new BigNumber("1"), 5, null, "Ether")
     public static KETHER = new Unit("Kether", new BigNumber("0.001"))
+    public static RPL = new Unit("RPL", new BigNumber("1"), 1) // RPL TO ETH
+    public static RPL_NAKED = new Unit("RPL", new BigNumber("1"), 1)
+    public static RETH = new Unit("RETH", new BigNumber("1"), 1)
 
     public static USDETH = new Unit("$", new BigNumber("388.43"), 2, "ETH-USD", "Dollar")
     public static EURETH = new Unit("€", new BigNumber("329.22"), 2, "ETH-EUR", "Euro")
@@ -77,6 +81,9 @@ export const MAPPING = new Map([
     ["WEI", Unit.WEI],
     ["GWEI", Unit.GWEI],
     ["SZABO", Unit.SZABO],
+    ["RPL", Unit.RPL],
+    ["RPL_NAKED", Unit.RPL_NAKED],
+    ["RETH", Unit.RETH],
 
     ["RUBLE", Unit.RUBETH],
     ["YEN", Unit.JPYETH],
@@ -89,13 +96,19 @@ export const MAPPING = new Map([
     ["HKD", Unit.HKDETH],
     ["CNY", Unit.CNYETH],
     ["NZD", Unit.NZDETH],
-    
-    
     ["BTC", Unit.BTCETH],
+
+
 ])
 
-export function convertEthUnits(value: BigNumber, from: Unit, to: Unit): BigNumber {
-    return value.multipliedBy(to.value).dividedBy(from.value).decimalPlaces(to.rounding)
+export function convertEthUnits(value: BigNumber, from: Unit, to: Unit, enforceDecimalPlaces = true): BigNumber {
+
+    var temp = value.multipliedBy(to.value).dividedBy(from.value)
+        
+    if(enforceDecimalPlaces) temp = temp.decimalPlaces(to.rounding)
+    
+
+    return temp
 }
 
 export function convertDisplayable(value: BigNumber, from: Unit, to: Unit): string {

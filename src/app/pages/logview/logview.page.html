@@ -7,6 +7,9 @@
     </ion-buttons>
     <ion-title>Logview</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="copyToClipboard()">
+        <ion-icon size="large" name="clipboard-outline"></ion-icon>
+      </ion-button>
       <ion-button (click)="expandAll()">
         <ion-icon size="large" [name]="openAll ? 'contract-outline' : 'expand-outline'"></ion-icon>
       </ion-button>

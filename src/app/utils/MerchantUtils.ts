@@ -20,7 +20,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { IAPProduct, IAPProducts, InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
+import { IAPProduct, IAPProducts, InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
 import { Platform } from '@ionic/angular';
 import { PostMobileSubscription, SubscriptionData } from '../requests/requests';
 import { AlertService, PURCHASEUTILS } from '../services/alert.service';
@@ -191,7 +191,6 @@ export class MerchantUtils {
     this.store
       .when("product")
       .loaded((p: IAPProduct) => {
-        console.log("product remote", p)
         this.updatePrice(p.id, p.price)
       })
       .approved((p: IAPProduct) => {
@@ -249,8 +248,6 @@ export class MerchantUtils {
       this.alertService.showError("Purchase Error", "Invalid product, try again later or report this issue to us if persistent.", PURCHASEUTILS + 4)
       return;
     }
-
-    console.log("purchase made, product info", product)
   
         const isIOS = this.platform.is("ios")
         const purchaseData = {

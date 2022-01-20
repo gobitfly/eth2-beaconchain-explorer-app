@@ -64,7 +64,7 @@ export class ApiService extends CacheModule {
   constructor(
     private storage: StorageService
   ) {
-    super("api", 5 * 60 * 1000, storage)
+    super("api", 6 * 60 * 1000, storage)
     this.isDebugMode().then((result) => {
       this.debug = result
       window.localStorage.setItem("debug", this.debug ? "true" : "false") 
@@ -188,7 +188,12 @@ export class ApiService extends CacheModule {
   }
 
   private async getCacheKey(request: APIRequest<any>): Promise<string> {
-    return request.method + await this.getResourceUrl(request.resource, request.endPoint)
+    if (request.method == Method.GET) {
+      return request.method + await this.getResourceUrl(request.resource, request.endPoint)
+    } else if (request.cacheablePOST) {
+      return request.method + await this.getResourceUrl(request.resource, request.endPoint) + JSON.stringify(request.postData)
+    }
+    return null
   }
 
   async execute(request: APIRequest<any>) {
@@ -253,7 +258,7 @@ export class ApiService extends CacheModule {
     }
 
     const result = await response
-    if (request.method == Method.GET && result && result.status == 200 && result.data) {
+    if ((request.method == Method.GET || request.cacheablePOST )&& result && result.status == 200 && result.data) {
       this.putCache(await this.getCacheKey(request), result, request.maxCacheAge)
     }
 

@@ -64,7 +64,7 @@ export default class ThemeUtils {
                 setTimeout(() => {
                     this.colorHandler()
                     splashScreenCallback()
-                }, 1200)
+                }, 1000)
                 return preferenceDarkMode
             }
         )
@@ -189,6 +189,9 @@ export default class ThemeUtils {
             if (themeColor == "ethpool") {
                 if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#24201f' });
                 else NavigationBar.setBackgroundColor({ color: '#e1d8d8' });
+            } else if (themeColor == "rocketpool") {
+                if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#1a1a1a' });
+                else NavigationBar.setBackgroundColor({ color: '#f76f75' });
             } else {
                 if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#000000' });
                 else NavigationBar.setBackgroundColor({ color: '#f7f7f7' });
@@ -203,7 +206,10 @@ export default class ThemeUtils {
             var darker = isDarkThemed ? "#000000" : color;//this.shadeColor(color, -12)
             if (themeColor == "ethpool") {
                 darker = isDarkThemed ? '#262327' : '#e1d8d8'
-            } 
+            }
+            if (themeColor == "rocketpool") {
+                darker = isDarkThemed ? '#262327' : '#fd9967'
+            }
             
             console.log("statusbar color", darker)
             StatusBar.setStyle({

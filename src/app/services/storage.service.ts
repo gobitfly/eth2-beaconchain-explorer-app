@@ -45,9 +45,20 @@ export const SETTING_NOTIFY_HDD_WARN = "setting_notify_hddwarn"
 export const SETTING_NOTIFY_CPU_WARN = "setting_notify_cpuwarn"
 export const SETTING_NOTIFY_MEMORY_WARN = "setting_notify_memorywarn"
 
+export const SETTING_NOTIFY_RPL_COMMISSION = "setting_notify_rplcommission"
+export const SETTING_NOTIFY_RPL_MAX_COLL = "setting_notify_rplmaxcoll"
+export const SETTING_NOTIFY_RPL_MIN_COLL = "setting_notify_rplmincoll"
+
+export const SETTING_NOTIFY_SYNC_DUTY = "setting_notify_syncduty"
+export const SETTING_NOTIFY_RPL_NEWROUND = "setting_notify_newround"
+
 export const CPU_THRESHOLD = "cpu_usage_threshold"
 export const HDD_THRESHOLD = "hdd_usage_threshold"
 export const RAM_THRESHOLD = "ram_usage_threshold"
+
+export const RPL_COMMISSION_THRESHOLD = "rpl_commission_threshold"
+export const RPL_COLLATERAL_MAX_THRESHOLD = "rpl_collateral_max_threshold"
+export const RPL_COLLATERAL_MIN_THRESHOLD = "rpl_collateral_min_threshold"
 
 export const DEBUG_SETTING_OVERRIDE_PACKAGE = "debug_setting_override_package"
 
@@ -130,6 +141,14 @@ export class StorageService extends CacheModule {
     const notifyMachineCpuWarn = await this.getBooleanSetting(SETTING_NOTIFY_CPU_WARN, false)
     const notifyMachineMemoryLoad = await this.getBooleanSetting(SETTING_NOTIFY_MEMORY_WARN, false)
 
+
+    const notifyRPLCommission = await this.getBooleanSetting(SETTING_NOTIFY_RPL_COMMISSION, false)
+    const notifyRPLMaxColletaral = await this.getBooleanSetting(SETTING_NOTIFY_RPL_MAX_COLL, false)
+    const notifyRPLMinColletaral = await this.getBooleanSetting(SETTING_NOTIFY_RPL_MIN_COLL, false)
+
+    const notifySyncDuty = await this.getBooleanSetting(SETTING_NOTIFY_SYNC_DUTY, false)
+    const notifyRPLNewRewardRound = await this.getBooleanSetting(SETTING_NOTIFY_RPL_NEWROUND, false)
+    
     const notifyLocal = await this.getBooleanSetting(network + SETTING_NOTIFY, null)
     return {
       notify: notifyLocal,
@@ -142,7 +161,12 @@ export class StorageService extends CacheModule {
       notifyMachineOffline: notifyMachineOffline,
       notifyMachineHddWarn: notifyMachineHddWarn,
       notifyMachineCpuWarn: notifyMachineCpuWarn,
-      notifyMachineMemoryLoad: notifyMachineMemoryLoad
+      notifyMachineMemoryLoad: notifyMachineMemoryLoad,
+      notifyRPLCommission: notifyRPLCommission,
+      notifyRPLMaxColletaral: notifyRPLMaxColletaral,
+      notifyRPLMinColletaral: notifyRPLMinColletaral,
+      notifySyncDuty: notifySyncDuty,
+      notifyRPLNewRewardRound: notifyRPLNewRewardRound
     }
   }
 
@@ -338,4 +362,9 @@ interface NotificationToggles {
   notifyMachineHddWarn: boolean;
   notifyMachineCpuWarn: boolean;
   notifyMachineMemoryLoad: boolean;
+  notifyRPLCommission: boolean,
+  notifyRPLMaxColletaral: boolean,
+  notifyRPLMinColletaral: boolean,
+  notifySyncDuty: boolean
+  notifyRPLNewRewardRound: boolean
 }

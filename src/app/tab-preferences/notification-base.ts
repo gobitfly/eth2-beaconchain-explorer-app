@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
-import { SETTING_NOTIFY, SETTING_NOTIFY_ATTESTATION_MISSED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_SLASHED, StorageService } from 'src/app/services/storage.service';
+import { SETTING_NOTIFY, SETTING_NOTIFY_ATTESTATION_MISSED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_RPL_COMMISSION, SETTING_NOTIFY_RPL_MAX_COLL, SETTING_NOTIFY_RPL_MIN_COLL, SETTING_NOTIFY_SLASHED, SETTING_NOTIFY_SYNC_DUTY, StorageService } from 'src/app/services/storage.service';
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
@@ -24,11 +24,17 @@ export class NotificationBase implements OnInit {
   notifyProposalsSubmitted: boolean
   notifyProposalsMissed: boolean
   notifyAttestationsMissed: boolean
+  notifySyncDuty: boolean
 
   notifyMachineOffline: boolean
   notifyMachineDiskFull: boolean
   notifyMachineCpuLoad: boolean
   notifyMachineMemoryLoad: boolean
+
+  notifyRPLNewRewardRound: boolean
+  notifyRPLCommission: boolean
+  notifyRPLMaxColletaral: boolean
+  notifyRPLMinColletaral: boolean
 
   constructor(
     protected api: ApiService,
@@ -85,6 +91,7 @@ export class NotificationBase implements OnInit {
     this.notifySlashed = preferences.notifySlashed
 
     this.notifyDecreased = preferences.notifyDecreased
+    this.notifySyncDuty = preferences.notifySyncDuty
 
     this.notifyClientUpdate = preferences.notifyClientUpdate
 
@@ -97,6 +104,10 @@ export class NotificationBase implements OnInit {
     this.notifyMachineDiskFull = preferences.notifyMachineHddWarn
     this.notifyMachineOffline = preferences.notifyMachineOffline
     this.notifyMachineMemoryLoad = preferences.notifyMachineMemoryLoad
+    this.notifyRPLCommission = preferences.notifyRPLCommission
+    this.notifyRPLMaxColletaral = preferences.notifyRPLMaxColletaral
+    this.notifyRPLMinColletaral = preferences.notifyRPLMinColletaral
+    this.notifyRPLNewRewardRound = preferences.notifyRPLNewRewardRound
 
     if (await this.api.isNotMainnet()) {
       this.lockedToggle = true
@@ -146,10 +157,15 @@ export class NotificationBase implements OnInit {
       this.notifyProposalsMissed = this.notify
       this.notifyProposalsSubmitted = this.notify
       this.notifySlashed = this.notify
+      this.notifySyncDuty = this.notify
       this.notifyClientUpdate = this.notify
       this.notifyMachineCpuLoad = this.notify
       this.notifyMachineDiskFull = this.notify
       this.notifyMachineOffline = this.notify
+      this.notifyRPLCommission = this.notify
+      this.notifyRPLMaxColletaral = this.notify
+      this.notifyRPLMinColletaral = this.notify
+      this.notifyRPLNewRewardRound = this.notify
     }
 
     const net = (await this.api.networkConfig).net
@@ -211,6 +227,12 @@ export class NotificationBase implements OnInit {
       case "monitoring_cpu_load": return SETTING_NOTIFY_CPU_WARN
       case "monitoring_hdd_almostfull": return SETTING_NOTIFY_HDD_WARN
       case "monitoring_memory_usage": return SETTING_NOTIFY_MEMORY_WARN
+
+      case "validator_synccommittee_soon": return SETTING_NOTIFY_SYNC_DUTY
+      case "rocketpool_commision_threshold": return SETTING_NOTIFY_RPL_COMMISSION
+      case "rocketpool_new_claimround": return SETTING_NOTIFY_HDD_WARN
+      case "rocketpool_colleteral_min": return SETTING_NOTIFY_RPL_MIN_COLL
+      case "rocketpool_colleteral_max": return SETTING_NOTIFY_RPL_MAX_COLL
       default: return null
     }
   }
@@ -226,6 +248,12 @@ export class NotificationBase implements OnInit {
       case "monitoring_cpu_load": return this.notifyMachineCpuLoad
       case "monitoring_hdd_almostfull": return this.notifyMachineDiskFull
       case "monitoring_memory_usage": return this.notifyMachineMemoryLoad
+
+      case "validator_synccommittee_soon": return this.notifySyncDuty
+      case "rocketpool_commision_threshold": return this.notifyRPLCommission
+      case "rocketpool_new_claimround": return this.notifyRPLNewRewardRound
+      case "rocketpool_colleteral_min": return this.notifyRPLMinColletaral
+      case "rocketpool_colleteral_max": return this.notifyRPLMaxColletaral
       default: return null
     }
   }

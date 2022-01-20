@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochResponse, PerformanceResponse, ValidatorResponse, AttestationPerformanceResponse } from '../requests/requests';
+import { EpochResponse, ValidatorResponse } from '../requests/requests';
 import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
 import Unit, { convertEthUnits } from '../utils/EthereumUnits'
 import BigNumber from "bignumber.js";
@@ -52,6 +52,16 @@ export type OverviewData = {
     apr: number
     effectiveBalance: BigNumber
     currentEpoch: EpochResponse
+    rocketpool: Rocketpool
+}
+
+export type Rocketpool = {
+    minRpl: BigNumber
+    maxRpl: BigNumber
+    currentRpl: BigNumber
+    fee: number
+    status: string
+    depositType: string
 }
 
 export type DashboardStatus = {
@@ -74,28 +84,22 @@ export default class OverviewController {
 
     proccessDashboard(
         validators: Validator[],
-        performance: PerformanceResponse[],
         currentEpoch: EpochResponse,
-        attestationPerformance: AttestationPerformanceResponse[],
         share: BigNumber
     ) {
-        return this.process(validators, performance, currentEpoch, attestationPerformance, false, share)
+        return this.process(validators, currentEpoch, false, share)
     }
 
     proccessDetail(
         validators: Validator[],
-        performance: PerformanceResponse[],
         currentEpoch: EpochResponse,
-        attestationPerformance: AttestationPerformanceResponse[]
     ) {
-        return this.process(validators, performance, currentEpoch, attestationPerformance, true, null)
+        return this.process(validators, currentEpoch, true, null)
     }
 
     private process(
         validators: Validator[],
-        performance: PerformanceResponse[],
         currentEpoch: EpochResponse,
-        attestationPerformance: AttestationPerformanceResponse[],
         foreignValidator = false,
         share: BigNumber
     ): OverviewData {
@@ -113,23 +117,28 @@ export default class OverviewController {
         
         const validatorCount = validators.length
 
-        const performance1d = sumBigInt(performance, cur => cur.performance1d);
-        const performance31d = sumBigInt(performance, cur => cur.performance31d)
-        const performance7d = sumBigInt(performance, cur => cur.performance7d);
-        const performance365d = sumBigInt(performance, cur => cur.performance365d)
+        const performance1d = sumBigInt(validators, cur => cur.data.performance1d);
+        const performance31d = sumBigInt(validators, cur => cur.data.performance31d)
+        const performance7d = sumBigInt(validators, cur => cur.data.performance7d);
+        const performance365d = sumBigInt(validators, cur => cur.data.performance365d)
 
         var attrEffectiveness = -1
-        if (attestationPerformance) {
-            attrEffectiveness = sumBigInt(attestationPerformance, cur => {
-                return new BigNumber(1).dividedBy(cur.attestation_efficiency).multipliedBy(100)
-            })
-                .dividedBy(attestationPerformance.length)
-                .decimalPlaces(1).toNumber();
+       
+        attrEffectiveness = sumBigInt(validators, cur => new BigNumber(cur.attrEffectiveness))
+            .dividedBy(validators.length)
+            .decimalPlaces(1).toNumber();
+        
+
+        const bestRank = findLowest(validators, cur => cur.data.rank7d)
+        const worstRank = findHighest(validators, cur => cur.data.rank7d)
+
+        const rocketpoolValiCount = sumBigInt(validators, cur => cur.rocketpool ? new BigNumber(1) : new BigNumber(0))
+        const feeSum = sumBigInt(validators, cur => cur.rocketpool ? new BigNumber(100 * cur.rocketpool.minipool_node_fee) : new BigNumber(0))
+        var feeAvg = 0
+        if (feeSum.toNumber() != 0) {
+            feeAvg = feeSum.dividedBy(rocketpoolValiCount).decimalPlaces(1).toNumber()
         }
-
-        const bestRank = findLowest(performance, cur => cur.rank7d)
-        const worstRank = findHighest(performance, cur => cur.rank7d)
-
+        
         return {
             overallBalance: overallBalance.multipliedBy(sharePercentage),
             validatorCount: validatorCount,
@@ -148,10 +157,28 @@ export default class OverviewController {
             foreignValidatorItem: foreignValidator ? validators[0] : null,
             effectiveBalance: effectiveBalance,
             currentEpoch: currentEpoch,
-            apr: this.getAPR(effectiveBalanceActive, performance7d)
+            apr: this.getAPR(effectiveBalanceActive, performance7d),
+            rocketpool: {
+                minRpl: this.sumRocketpoolBigIntPerNodeAddress(validators, cur => cur.rocketpool.node_min_rpl_stake),
+                maxRpl: this.sumRocketpoolBigIntPerNodeAddress(validators, cur => cur.rocketpool.node_max_rpl_stake),
+                currentRpl: this.sumRocketpoolBigIntPerNodeAddress(validators, cur => cur.rocketpool.node_rpl_stake),
+                fee: feeAvg,
+                status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
+                depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
+            }
         } as OverviewData;
     }
 
+    sumRocketpoolBigIntPerNodeAddress<T>(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
+        const nodesAdded = new Set()
+       
+        return sumBigInt(validators, cur => {
+            if (!cur.rocketpool) return new BigNumber(0)
+            if (nodesAdded.has(cur.rocketpool.node_address)) return new BigNumber(0)
+            nodesAdded.add(cur.rocketpool.node_address)
+            return field(cur)
+        })
+    }
 
     getAPR(effectiveBalance, performance) {
         return new BigNumber(performance * 5214 / effectiveBalance).decimalPlaces(1).toNumber()
@@ -281,6 +308,7 @@ export default class OverviewController {
 
     private getAwaitingActivationState(activeValidatorCount, validatorCount, awaitingActivation: ValidatorResponse, currentEpoch: EpochResponse, foreignValidator, allAffected: boolean): DashboardStatus {
         const pre = allAffected ? "All" : "Some"
+        const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, currentEpoch)
         return {
             icon: "timer-outline",
             title: activeValidatorCount + " / " + validatorCount,
@@ -289,14 +317,15 @@ export default class OverviewController {
                 "This validator is waiting for activation",
                 foreignValidator
             ),
-            extendedDescriptionPre: "Estimated on ",
-            extendedDescription: this.getEpochDate(awaitingActivation.activationepoch, currentEpoch),
+            extendedDescriptionPre: estEta ? "Estimated on " : null,
+            extendedDescription: estEta ? estEta : null,
             iconCss: "waiting"
         }
     }
 
     private getEligbableActivationState(activeValidatorCount, validatorCount, eligbleState: ValidatorResponse, currentEpoch: EpochResponse, foreignValidator, allAffected: boolean): DashboardStatus {
         const pre = allAffected ? "All" : "Some"
+        const estEta =  this.getEpochDate(eligbleState.activationeligibilityepoch, currentEpoch)
         return {
             icon: "timer-outline",
             title: activeValidatorCount + " / " + validatorCount,
@@ -305,8 +334,8 @@ export default class OverviewController {
                 "This validators deposit is being processed",
                 foreignValidator
             ),
-            extendedDescriptionPre: "Estimated on ",
-            extendedDescription: this.getEpochDate(eligbleState.activationeligibilityepoch, currentEpoch),
+            extendedDescriptionPre: estEta ? "Estimated on " : null,
+            extendedDescription: estEta ? estEta : null,
             iconCss: "waiting"
         }
     }
@@ -343,20 +372,25 @@ export default class OverviewController {
     }
 
     private getEpochDate(activationEpoch, currentEpoch: EpochResponse) {
-        const diff = activationEpoch - currentEpoch.epoch
-        if (diff <= 0) {
-            if(this.refreshCallback) this.refreshCallback()
+        try {
+            const diff = activationEpoch - currentEpoch.epoch
+            if (diff <= 0) {
+                if (this.refreshCallback) this.refreshCallback()
+                return null
+            }
+
+            var date = new Date(currentEpoch.lastCachedTimestamp);
+
+            const inEpochOffset = (32 - currentEpoch.scheduledblocks) * 12 // block time 12s
+
+            date.setSeconds(diff * 6.4 * 60 - inEpochOffset);
+
+            var timeString = formatDate(date, "medium", "en-US")
+            return timeString
+        } catch (e) {
+            console.warn("could not get activation time", e)
             return null
         }
-
-        var date = new Date(currentEpoch.lastCachedTimestamp);
-
-        const inEpochOffset = (32 - currentEpoch.scheduledblocks) * 12 // block time 12s
-
-        date.setSeconds(diff * 6.4 * 60 - inEpochOffset);
-
-        var timeString = formatDate(date, "medium", "en-US")
-        return timeString
     }
 
     private getActiveValidators(validators: Validator[]) {

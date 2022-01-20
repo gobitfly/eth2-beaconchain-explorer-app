@@ -30,15 +30,22 @@ const NEGATIVE = "negative-value"
 })
 export class ValuestylePipe implements PipeTransform {
 
-  transform(tempvalue: any, ...args: number[]): string {
+  transform(tempvalue: any, ...args: any[]): string {
     const value = tempvalue instanceof BigNumber ? tempvalue : new BigNumber(tempvalue)
-    const firstDrop = new BigNumber(args[0])
+    const firstDrop = args[0] instanceof BigNumber ? args[0] : new BigNumber(args[0])
 
     if (args.length == 2) {
-      const secondDrop = new BigNumber(args[1])
+      const secondDrop = args[1] instanceof BigNumber ? args[1] : new BigNumber(args[1])
       if (value.isGreaterThanOrEqualTo(firstDrop)) return POSITIVE
       else if (value.isLessThanOrEqualTo(secondDrop)) return WARNING
       else return NEGATIVE
+    } else if (args.length == 3) {
+      if (args[2] == -1) { // between
+        const secondDrop = args[1] instanceof BigNumber ? args[1] : new BigNumber(args[1])
+        if (value.isLessThanOrEqualTo(firstDrop)) return NEGATIVE
+        if (value.isGreaterThanOrEqualTo(secondDrop)) return NEGATIVE
+        return POSITIVE
+      }
     }
 
     if (value.isGreaterThanOrEqualTo(firstDrop)) return POSITIVE
