@@ -198,7 +198,7 @@
 
 
 <ion-list>
-  <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
+  <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
   <ion-icon slot="start" name="cash-outline"></ion-icon>
   <ion-label >
     New Reward Round
@@ -208,7 +208,7 @@
   </ion-item>
 
 
-<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
+<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
   <ion-icon slot="start"name="pricetag-outline"></ion-icon>
  
   <ion-label>
@@ -219,7 +219,7 @@
 </ion-item>
 
 
-<ion-item [class]="!canCustomizeThresholds || !authUser || !notify || !notifyInitialized || !notifyRPLCommission" (click)="handleLockedClick()"> 
+<ion-item [class]="!canCustomizeThresholds || !authUser || !notify || !notifyInitialized || !notifyRPLCommission ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
   <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
   <ion-range *ngIf="canCustomizeThresholds" min="5" max="20" step="1" [(ngModel)]="commissionThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeRocketpoolCommission()" (touchend)="changeRocketpoolCommission()">
   </ion-range>
@@ -237,7 +237,7 @@
 <ion-list>
   
 
-<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
+<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
   <ion-icon slot="start"name="umbrella-outline"></ion-icon>
  
   <ion-label>
@@ -248,7 +248,7 @@
 </ion-item>
 
 
-<ion-item [class]="!canCustomizeThresholds || !authUser || !notify || !notifyInitialized || !notifyRPLMaxColletaral" (click)="handleLockedClick()"> 
+<ion-item [class]="!canCustomizeThresholds || !authUser || !notify || !notifyInitialized || !notifyRPLMaxColletaral ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
   <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
   <ion-icon slot="start" style="color: var(--ion-color-danger);" name="chevron-back-outline" *ngIf="canCustomizeThresholds && maxCollateralThreshold < 0"></ion-icon>
   <ion-icon slot="start" style="color: var(--ion-color-success);" name="chevron-forward-outline"  *ngIf="canCustomizeThresholds && maxCollateralThreshold >= 0"></ion-icon>
@@ -261,7 +261,7 @@
   <ion-note slot="end" *ngIf="maxCollateralThreshold < 0" style="color: var(--ion-color-danger);">≤ {{ maxCollateralThreshold*-1/10 + 140}} %</ion-note>
 </ion-item>
 
-<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
+<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
   <ion-icon slot="start"name="thunderstorm-outline"></ion-icon>
  
   <ion-label>
@@ -272,7 +272,7 @@
 </ion-item>
 
 
-<ion-item [class]="!canCustomizeThresholds || !authUser || !notify || !notifyInitialized || !notifyRPLMinColletaral" (click)="handleLockedClick()"> 
+<ion-item [class]="!canCustomizeThresholds || !authUser || !notify || !notifyInitialized || !notifyRPLMinColletaral ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
   <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
   <ion-range *ngIf="canCustomizeThresholds" min="0" max="300" step="10" [(ngModel)]="minCollateralThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeRocketpoolMinCollateral()" (touchend)="changeRocketpoolMinCollateral()">
   </ion-range>

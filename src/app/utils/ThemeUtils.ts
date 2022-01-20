@@ -64,7 +64,7 @@ export default class ThemeUtils {
                 setTimeout(() => {
                     this.colorHandler()
                     splashScreenCallback()
-                }, 1500)
+                }, 1000)
                 return preferenceDarkMode
             }
         )
