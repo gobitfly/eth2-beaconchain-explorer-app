@@ -219,11 +219,10 @@
 </ion-item>
 
 
-<ion-item [class]="!canCustomizeThresholds || !authUser || !notify || !notifyInitialized || !notifyRPLCommission ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
-  <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
-  <ion-range *ngIf="canCustomizeThresholds" min="5" max="20" step="1" [(ngModel)]="commissionThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeRocketpoolCommission()" (touchend)="changeRocketpoolCommission()">
+<ion-item [class]="!authUser || !notify || !notifyInitialized || !notifyRPLCommission ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+  <ion-range min="5" max="20" step="1" [(ngModel)]="commissionThreshold" class="range" (mouseup)="changeRocketpoolCommission()" (touchend)="changeRocketpoolCommission()">
   </ion-range>
-  <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="commissionThreshold" _ngcontent-ves-c134="" min="5" max="20" step="1" ng-reflect-min="5" ng-reflect-max="20" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="20" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="20"></ion-range>
+ 
 
   <ion-note slot="end">≥ {{ commissionThreshold }} %</ion-note>
 </ion-item>
@@ -248,14 +247,13 @@
 </ion-item>
 
 
-<ion-item [class]="!canCustomizeThresholds || !authUser || !notify || !notifyInitialized || !notifyRPLMaxColletaral ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
-  <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
-  <ion-icon slot="start" style="color: var(--ion-color-danger);" name="chevron-back-outline" *ngIf="canCustomizeThresholds && maxCollateralThreshold < 0"></ion-icon>
-  <ion-icon slot="start" style="color: var(--ion-color-success);" name="chevron-forward-outline"  *ngIf="canCustomizeThresholds && maxCollateralThreshold >= 0"></ion-icon>
+<ion-item [class]="!authUser || !notify || !notifyInitialized || !notifyRPLMaxColletaral ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+  <ion-icon slot="start" style="color: var(--ion-color-danger);" name="chevron-back-outline" *ngIf="maxCollateralThreshold < 0"></ion-icon>
+  <ion-icon slot="start" style="color: var(--ion-color-success);" name="chevron-forward-outline"  *ngIf="maxCollateralThreshold >= 0"></ion-icon>
 
-  <ion-range style="padding-left:0px; margin-left: 10px !important" *ngIf="canCustomizeThresholds" min="-600" max="600" step="10" [(ngModel)]="maxCollateralThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeRocketpoolMaxCollateral()" (touchend)="changeRocketpoolMaxCollateral()">
+  <ion-range style="padding-left:0px; margin-left: 10px !important"  min="-600" max="600" step="10" class="range" [(ngModel)]="maxCollateralThreshold" (mouseup)="changeRocketpoolMaxCollateral()" (touchend)="changeRocketpoolMaxCollateral()">
   </ion-range>
-  <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="maxCollateralThreshold" _ngcontent-ves-c134="" min="10" max="150" step="1" ng-reflect-min="5" ng-reflect-max="20" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="20" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="150"></ion-range>
+
 
   <ion-note slot="end" *ngIf="maxCollateralThreshold >= 0" style="color: var(--ion-color-success);">≥ {{ maxCollateralThreshold/10 + 140}} %</ion-note>
   <ion-note slot="end" *ngIf="maxCollateralThreshold < 0" style="color: var(--ion-color-danger);">≤ {{ maxCollateralThreshold*-1/10 + 140}} %</ion-note>
@@ -272,11 +270,11 @@
 </ion-item>
 
 
-<ion-item [class]="!canCustomizeThresholds || !authUser || !notify || !notifyInitialized || !notifyRPLMinColletaral ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
-  <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
-  <ion-range *ngIf="canCustomizeThresholds" min="0" max="300" step="10" [(ngModel)]="minCollateralThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeRocketpoolMinCollateral()" (touchend)="changeRocketpoolMinCollateral()">
+<ion-item [class]="!authUser || !notify || !notifyInitialized || !notifyRPLMinColletaral ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+
+  <ion-range min="0" max="300" step="10" [(ngModel)]="minCollateralThreshold" class="range" (mouseup)="changeRocketpoolMinCollateral()" (touchend)="changeRocketpoolMinCollateral()">
   </ion-range>
-  <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="minCollateralThreshold" _ngcontent-ves-c134="" min="10" max="150" step="1" ng-reflect-min="5" ng-reflect-max="20" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="20" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="10"></ion-range>
+ 
 
   <ion-note slot="end" *ngIf="minCollateralThreshold >= 0">≤ {{ minCollateralThreshold/10 + 10 }} %</ion-note>
 
