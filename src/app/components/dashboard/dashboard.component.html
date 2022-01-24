@@ -78,8 +78,13 @@
 
     <app-message title="Limited to 100 validators." icon="rocket-outline" iconStyle="genesis" 
       (click)="upgrade()"
-       *ngIf="(data.validatorCount >= currentPackageMaxValidators)">
+       *ngIf="(data.validatorCount >= currentPackageMaxValidators) && data.validatorCount <= 100">
      </app-message>
+
+     <app-message title="Limited to 280 validators." icon="rocket-outline" iconStyle="genesis" 
+      *ngIf="(data.validatorCount >= currentPackageMaxValidators) && data.validatorCount > 100">
+    </app-message>
+
 
   </ion-list>
 
