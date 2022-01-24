@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
-import { SETTING_NOTIFY, SETTING_NOTIFY_ATTESTATION_MISSED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_RPL_COMMISSION, SETTING_NOTIFY_RPL_MAX_COLL, SETTING_NOTIFY_RPL_MIN_COLL, SETTING_NOTIFY_SLASHED, SETTING_NOTIFY_SYNC_DUTY, StorageService } from 'src/app/services/storage.service';
+import { SETTING_NOTIFY, SETTING_NOTIFY_ATTESTATION_MISSED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_RPL_COMMISSION, SETTING_NOTIFY_RPL_MAX_COLL, SETTING_NOTIFY_RPL_MIN_COLL, SETTING_NOTIFY_RPL_NEWROUND, SETTING_NOTIFY_SLASHED, SETTING_NOTIFY_SYNC_DUTY, StorageService } from 'src/app/services/storage.service';
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
@@ -230,7 +230,7 @@ export class NotificationBase implements OnInit {
 
       case "validator_synccommittee_soon": return SETTING_NOTIFY_SYNC_DUTY
       case "rocketpool_commision_threshold": return SETTING_NOTIFY_RPL_COMMISSION
-      case "rocketpool_new_claimround": return SETTING_NOTIFY_HDD_WARN
+      case "rocketpool_new_claimround": return SETTING_NOTIFY_RPL_NEWROUND
       case "rocketpool_colleteral_min": return SETTING_NOTIFY_RPL_MIN_COLL
       case "rocketpool_colleteral_max": return SETTING_NOTIFY_RPL_MAX_COLL
       default: return null

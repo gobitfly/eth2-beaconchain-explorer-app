@@ -266,7 +266,7 @@ export class Tab2Page {
 
   itemHeightFn(item, index) {
     if (index == Tab2Page.itemCount - 1) return 210;
-    return 132;
+    return 144;
   }
 
   async upgrade() {
