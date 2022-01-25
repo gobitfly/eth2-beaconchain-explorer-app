@@ -342,7 +342,7 @@ export class ValidatorUtils extends CacheModule {
 
     private findAttributionEffectiveness(list: AttestationPerformanceResponse[], index: number): number {
         for (let attr of list) {
-          if (attr.validatorindex == index) {
+          if (attr.validatorindex == index && attr.attestation_efficiency) {
             return new BigNumber(1).dividedBy(attr.attestation_efficiency).multipliedBy(100).decimalPlaces(1).toNumber()
           }
         }

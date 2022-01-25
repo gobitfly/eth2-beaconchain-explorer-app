@@ -103,6 +103,7 @@ export default class OverviewController {
         foreignValidator = false,
         share: BigNumber
     ): OverviewData {
+        BigNumber.DEBUG = true
         if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
         const effectiveBalance = sumBigInt(validators, cur => cur.data.effectivebalance);
@@ -118,27 +119,26 @@ export default class OverviewController {
         const validatorCount = validators.length
 
         const performance1d = sumBigInt(validators, cur => cur.data.performance1d);
+
         const performance31d = sumBigInt(validators, cur => cur.data.performance31d)
         const performance7d = sumBigInt(validators, cur => cur.data.performance7d);
         const performance365d = sumBigInt(validators, cur => cur.data.performance365d)
 
         var attrEffectiveness = -1
-       
-        attrEffectiveness = sumBigInt(validators, cur => new BigNumber(cur.attrEffectiveness))
+        attrEffectiveness = sumBigInt(validators, cur => cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()): new BigNumber(0))
             .dividedBy(validators.length)
             .decimalPlaces(1).toNumber();
         
 
         const bestRank = findLowest(validators, cur => cur.data.rank7d)
         const worstRank = findHighest(validators, cur => cur.data.rank7d)
-
         const rocketpoolValiCount = sumBigInt(validators, cur => cur.rocketpool ? new BigNumber(1) : new BigNumber(0))
-        const feeSum = sumBigInt(validators, cur => cur.rocketpool ? new BigNumber(100 * cur.rocketpool.minipool_node_fee) : new BigNumber(0))
+        const feeSum = sumBigInt(validators, cur => cur.rocketpool ? new BigNumber(cur.rocketpool.minipool_node_fee).multipliedBy("100") : new BigNumber("0"))
         var feeAvg = 0
-        if (feeSum.toNumber() != 0) {
+        if (feeSum.decimalPlaces(3).toNumber() != 0) {
             feeAvg = feeSum.dividedBy(rocketpoolValiCount).decimalPlaces(1).toNumber()
         }
-        
+
         return {
             overallBalance: overallBalance.multipliedBy(sharePercentage),
             validatorCount: validatorCount,
@@ -174,6 +174,7 @@ export default class OverviewController {
        
         return sumBigInt(validators, cur => {
             if (!cur.rocketpool) return new BigNumber(0)
+            if (!cur.rocketpool.node_address) return new BigNumber(0)
             if (nodesAdded.has(cur.rocketpool.node_address)) return new BigNumber(0)
             nodesAdded.add(cur.rocketpool.node_address)
             return field(cur)
@@ -181,7 +182,7 @@ export default class OverviewController {
     }
 
     getAPR(effectiveBalance, performance) {
-        return new BigNumber(performance * 5214 / effectiveBalance).decimalPlaces(1).toNumber()
+        return new BigNumber(performance.toString()).multipliedBy("5214").dividedBy(effectiveBalance).decimalPlaces(1).toNumber()
     }
 
     getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {

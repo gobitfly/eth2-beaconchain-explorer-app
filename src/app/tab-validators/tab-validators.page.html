@@ -52,7 +52,7 @@
   
   <app-message title="Upgrade for more validators." icon="rocket-outline" iconStyle="genesis" 
    (click)="upgrade()"
-    *ngIf="(items && items.length >= currentPackageMaxValidators) || reachedMaxValidators">
+    *ngIf="((items && items.length >= currentPackageMaxValidators) || reachedMaxValidators) && currentPackageMaxValidators < 280">
   </app-message>
 
   <app-text-ad location="validator" style="margin-top:10px;" *ngIf="items && items.length > 0 && !loading"></app-text-ad>     

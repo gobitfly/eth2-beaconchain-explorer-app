@@ -219,7 +219,7 @@ export interface RocketPoolResponse {
   index: number;
   minipool_address: string;
   minipool_deposit_type: string;
-  minipool_node_fee: number,
+  minipool_node_fee: string,
   minipool_status: string,
   minipool_status_time: number,
   node_address: string,
