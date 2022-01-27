@@ -103,7 +103,6 @@ export default class OverviewController {
         foreignValidator = false,
         share: BigNumber
     ): OverviewData {
-        BigNumber.DEBUG = true
         if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
         const effectiveBalance = sumBigInt(validators, cur => cur.data.effectivebalance);
@@ -114,15 +113,16 @@ export default class OverviewController {
         const effectiveBalanceInEth = convertEthUnits(effectiveBalance, Unit.GWEI, Unit.ETHER)
         const sharePercentage = share ? share.dividedBy(effectiveBalanceInEth).decimalPlaces(4) : new BigNumber(1)
 
-        const overallBalance = sumBigInt(validators, cur => cur.data.balance)
+        const overallBalance = this.sumBigIntPerformanceRpl(validators, cur => cur.data.balance)
         
         const validatorCount = validators.length
 
-        const performance1d = sumBigInt(validators, cur => cur.data.performance1d);
+        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => cur.data.performance1d);
+        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => cur.data.performance31d)
+        const performance7d = this.sumBigIntPerformanceRpl(validators, cur => cur.data.performance7d);
+        const performance365d = this.sumBigIntPerformanceRpl(validators, cur => cur.data.performance365d)
 
-        const performance31d = sumBigInt(validators, cur => cur.data.performance31d)
-        const performance7d = sumBigInt(validators, cur => cur.data.performance7d);
-        const performance365d = sumBigInt(validators, cur => cur.data.performance365d)
+        const aprPerformance7d = sumBigInt(validators, cur => cur.data.performance7d);
 
         var attrEffectiveness = -1
         attrEffectiveness = sumBigInt(validators, cur => cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()): new BigNumber(0))
@@ -157,7 +157,7 @@ export default class OverviewController {
             foreignValidatorItem: foreignValidator ? validators[0] : null,
             effectiveBalance: effectiveBalance,
             currentEpoch: currentEpoch,
-            apr: this.getAPR(effectiveBalanceActive, performance7d),
+            apr: this.getAPR(effectiveBalanceActive, aprPerformance7d),
             rocketpool: {
                 minRpl: this.sumRocketpoolBigIntPerNodeAddress(validators, cur => cur.rocketpool.node_min_rpl_stake),
                 maxRpl: this.sumRocketpoolBigIntPerNodeAddress(validators, cur => cur.rocketpool.node_max_rpl_stake),
@@ -169,15 +169,24 @@ export default class OverviewController {
         } as OverviewData;
     }
 
-    sumRocketpoolBigIntPerNodeAddress<T>(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
-        const nodesAdded = new Set()
+    sumBigIntPerformanceRpl<T>(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
        
+        return sumBigInt(validators, cur => {
+            if (!cur.rocketpool) return field(cur)
+            if (!cur.rocketpool.node_address) return field(cur)
+          
+            return new BigNumber(field(cur).toString()).multipliedBy(new BigNumber("1").plus(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))).dividedBy("2")
+        })
+    }
+
+    sumRocketpoolBigIntPerNodeAddress<T>(validators: Validator[], field: (cur: Validator) => string): BigNumber {
+        const nodesAdded = new Set()
         return sumBigInt(validators, cur => {
             if (!cur.rocketpool) return new BigNumber(0)
             if (!cur.rocketpool.node_address) return new BigNumber(0)
             if (nodesAdded.has(cur.rocketpool.node_address)) return new BigNumber(0)
             nodesAdded.add(cur.rocketpool.node_address)
-            return field(cur)
+            return new BigNumber(field(cur).toString())
         })
     }
 

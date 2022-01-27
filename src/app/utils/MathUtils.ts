@@ -25,8 +25,8 @@ export function sumBigInt<T>(validators: T[], field: (cur: T) => BigNumber) {
 
   validators.forEach((cur) => { 
     const value = field(cur)
-    if (value && sum) {
-      sum = sum.plus(field(cur))  
+    if (value) {
+      sum = sum.plus(value)  
     }
     
    

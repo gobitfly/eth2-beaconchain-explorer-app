@@ -81,6 +81,7 @@ export class DashboardComponent implements OnInit {
   nextRewardRound = null
   rplCommission = 0
   rplApr = ""
+  rplProjectedClaim = null
 
   constructor(
     public unit: UnitconvService,
@@ -112,6 +113,8 @@ export class DashboardComponent implements OnInit {
         this.updateNextRewardRound()
         this.updateRplCommission()
         this.updateRplApr()
+        this.updateRplProjectedClaim()
+        console.log("dashboard data", this.data)
 
         if (!this.data.foreignValidator) {
           this.checkForFinalization()
@@ -122,6 +125,19 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  updateRplProjectedClaim(){
+    try {
+      const temp = this.data.rocketpool.currentRpl
+      .dividedBy(new BigNumber(this.validatorUtils.rocketpoolStats.effective_rpl_staked))
+      .multipliedBy(new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards))
+
+      this.rplProjectedClaim = temp
+      if(temp.isLessThanOrEqualTo(new BigNumber("0"))) { this.rplProjectedClaim = null }
+     
+    } catch {
+      
+    }
+  }
 
   updateRplApr() {
     try {

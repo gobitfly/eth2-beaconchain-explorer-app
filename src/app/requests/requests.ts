@@ -203,16 +203,16 @@ export interface DashboardResponse {
 
 
 export interface RocketPoolNetworkStats {
-  rpl_price: BigNumber;
+  rpl_price: string;
   claim_interval_time: string; // TODO?
   claim_interval_time_start: number; // TODO?
   current_node_fee: number,
-  current_node_demand: BigNumber,
-  reth_supply: BigNumber,
+  current_node_demand: string,
+  reth_supply: string,
   reth_apr: number,
-  effective_rpl_staked: BigNumber,
-  node_operator_rewards: BigNumber,
-  reth_exchange_rate: BigNumber,
+  effective_rpl_staked: string,
+  node_operator_rewards: string,
+  reth_exchange_rate: string,
 }
 
 export interface RocketPoolResponse {
@@ -223,9 +223,9 @@ export interface RocketPoolResponse {
   minipool_status: string,
   minipool_status_time: number,
   node_address: string,
-  node_max_rpl_stake: BigNumber,
-  node_min_rpl_stake: BigNumber,
-  node_rpl_stake: BigNumber,
+  node_max_rpl_stake: string,
+  node_min_rpl_stake: string,
+  node_rpl_stake: string,
   node_timezone_location: string
 }
 
