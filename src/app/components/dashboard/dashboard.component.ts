@@ -25,7 +25,7 @@ import { DasboardDataRequest, EpochRequest, EpochResponse } from '../../requests
 import * as HighCharts from 'highcharts';
 import * as Highstock from "highcharts/highstock";
 import BigNumber from "bignumber.js";
-import { OverviewData } from '../../controllers/OverviewController';
+import { OverviewData, Rocketpool } from '../../controllers/OverviewController';
 import { Release } from '../../utils/ClientUpdateUtils';
 import ThemeUtils from 'src/app/utils/ThemeUtils';
 import { highChartOptions } from 'src/app/utils/HighchartOptions';
@@ -127,9 +127,23 @@ export class DashboardComponent implements OnInit {
 
   updateRplProjectedClaim(){
     try {
-      const temp = this.data.rocketpool.currentRpl
-      .dividedBy(new BigNumber(this.validatorUtils.rocketpoolStats.effective_rpl_staked))
-      .multipliedBy(new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards))
+      /*const inflationIntervalRate = new BigNumber("1000133680617113500")
+      const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(":")[0]
+      const hoursNumber = parseInt(hoursToAdd)
+      const rewardsIntervalDays = hoursNumber / 24
+      const inflationPerDay = inflationIntervalRate.dividedBy(Unit.WEI.value) //eth.WeiToEth(inflationInterval)
+
+      const totalRplSupply = new BigNumber("18203250540089170224426290")
+      const totalRplSupplyEth = totalRplSupply.dividedBy(Unit.WEI.value).toNumber()
+      var totalRplAtNextCheckpoint = 1 - (Math.pow(inflationPerDay.toNumber(), rewardsIntervalDays) - 1)
+      if (totalRplAtNextCheckpoint < 0) {
+          totalRplAtNextCheckpoint = 0
+      }*/
+
+      const temp = this.getEffectiveRplStake(this.data.rocketpool)
+        .dividedBy(new BigNumber(this.validatorUtils.rocketpoolStats.effective_rpl_staked))
+        //.multipliedBy(new BigNumber(totalRplAtNextCheckpoint.toString()))
+        .multipliedBy(new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards))
 
       this.rplProjectedClaim = temp
       if(temp.isLessThanOrEqualTo(new BigNumber("0"))) { this.rplProjectedClaim = null }
@@ -137,6 +151,12 @@ export class DashboardComponent implements OnInit {
     } catch {
       
     }
+  }
+
+  getEffectiveRplStake(data: Rocketpool): BigNumber {
+    if (data.currentRpl.isGreaterThanOrEqualTo(data.maxRpl)) return data.maxRpl
+    if(data.currentRpl.isLessThanOrEqualTo(data.minRpl)) return data.minRpl
+    return data.currentRpl
   }
 
   updateRplApr() {

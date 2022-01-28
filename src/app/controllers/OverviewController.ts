@@ -113,7 +113,7 @@ export default class OverviewController {
         const effectiveBalanceInEth = convertEthUnits(effectiveBalance, Unit.GWEI, Unit.ETHER)
         const sharePercentage = share ? share.dividedBy(effectiveBalanceInEth).decimalPlaces(4) : new BigNumber(1)
 
-        const overallBalance = this.sumBigIntPerformanceRpl(validators, cur => cur.data.balance)
+        const overallBalance = this.sumBigIntBalanceRpl(validators, cur => cur.data.balance)
         
         const validatorCount = validators.length
 
@@ -168,6 +168,19 @@ export default class OverviewController {
             }
         } as OverviewData;
     }
+
+    sumBigIntBalanceRpl<T>(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
+       
+        return sumBigInt(validators, cur => {
+            if (!cur.rocketpool) return field(cur)
+            if (!cur.rocketpool.node_address) return field(cur)
+          
+            const rewards = new BigNumber(field(cur).toString()).minus(new BigNumber("32000000000"))
+            const nodeOperatorRewards = new BigNumber(rewards).multipliedBy(new BigNumber("1").plus(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))).dividedBy("2")
+            return new BigNumber("16000000000").plus(nodeOperatorRewards)
+        })
+    }
+
 
     sumBigIntPerformanceRpl<T>(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
        
