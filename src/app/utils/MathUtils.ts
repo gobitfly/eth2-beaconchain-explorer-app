@@ -21,8 +21,16 @@
 import BigNumber from "bignumber.js";
 
 export function sumBigInt<T>(validators: T[], field: (cur: T) => BigNumber) {
-  let sum = new BigNumber(0);
-  validators.forEach((cur) => sum = sum.plus(field(cur)));
+  let sum = new BigNumber("0");
+
+  validators.forEach((cur) => { 
+    const value = field(cur)
+    if (value) {
+      sum = sum.plus(value)  
+    }
+    
+   
+  });
   return sum;
 }
 

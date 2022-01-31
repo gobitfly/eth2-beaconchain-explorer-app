@@ -115,17 +115,18 @@ export class TextAdComponent implements OnInit {
   }
 
   async sendImpression() {
-    try {
+
       if (!this.ad.impressionUrl) return;
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', this.ad.impressionUrl, true);
-      xhr.onload = function () {
-        console.log("ad impression reported")
-      };
-      xhr.send(null);
-    } catch (e) {
-      console.warn("ad impression reporting failed", e)
-    }
+      fetch(this.ad.impressionUrl, {
+        method: 'get'
+      })
+      .then(response => {
+        console.log("ad impression response", response)
+      })
+      .catch((e) => {
+        console.warn("ad impression reporting failed", e)
+      })
+      
   }
 
 }

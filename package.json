@@ -42,7 +42,7 @@
     "@ionic/angular": "^6.0.1",
     "async-mutex": "^0.2.6",
     "axios": "^0.21.3",
-    "bignumber.js": "^9.0.1",
+    "bignumber.js": "^9.0.2",
     "canvas-confetti": "^1.3.3",
     "capacitor-navigationbarnx": "0.1.5",
     "cordova-plugin-purchase": "git+https://github.com/wazooinc/cordova-plugin-purchase.git",

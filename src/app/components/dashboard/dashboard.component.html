@@ -78,8 +78,13 @@
 
     <app-message title="Limited to 100 validators." icon="rocket-outline" iconStyle="genesis" 
       (click)="upgrade()"
-       *ngIf="(data.validatorCount >= currentPackageMaxValidators)">
+       *ngIf="(data.validatorCount >= currentPackageMaxValidators) && data.validatorCount <= 100">
      </app-message>
+
+     <app-message title="Limited to 280 validators." icon="rocket-outline" iconStyle="genesis" 
+      *ngIf="(data.validatorCount >= currentPackageMaxValidators) && data.validatorCount > 100">
+    </app-message>
+
 
   </ion-list>
 
@@ -240,10 +245,26 @@
   </ion-list>
 
 
-  <ion-list class="rocketpool" *ngIf="data.rocketpool.currentRpl.toNumber() > 0">
+  <ion-list class="performances" *ngIf="rplProjectedClaim">
+
+    
+    <ion-item lines="none" >
+
+      <ion-label class="stat-title">
+        <span tooltip="Estimated claim amount based on current network state." placement="right" trigger="click"
+          hideDelayAfterClick="5000">Next Claim</span>
+      </ion-label>
+      <ion-label *ngIf="rplState == 'rpl' || rplState == '%' " class="value" [class]="rplProjectedClaim | valuestyle:0" (click)="switchRplStake(true)">
+        {{ rplProjectedClaim  | mcurrency: "WEI":"RPL_NAKED"}} 
+      </ion-label>
+      <ion-label *ngIf="rplState == 'conv'" class="value" [class]="rplProjectedClaim | valuestyle:0" (click)="switchRplStake(true)">
+        {{ rplProjectedClaim  | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref  }} 
+      </ion-label>
+
+    </ion-item>
 
 
-    <ion-item lines="none" *ngIf="rplApr">
+    <ion-item lines="none" >
 
       <ion-label class="stat-title">
         <span tooltip="Estimated yearly RPL returns, based on the last 7 days" placement="right" trigger="click"
@@ -443,7 +464,7 @@
 
     </ion-item>
 
-    <ion-item lines="none" *ngIf="nextRewardRound && data.rocketpool.currentRpl.toNumber() > 0">
+    <ion-item lines="none" *ngIf="nextRewardRound && rplProjectedClaim">
 
       <ion-label class="stat-title">
         <span
@@ -453,7 +474,7 @@
         </span>
       </ion-label>
       <ion-label class="value" >
-        {{ nextRewardRound | date:'MMM d, y, h:mm a'}}
+        {{ nextRewardRound | date:'MMM dd, h:mm a'}}
       </ion-label>
 
     </ion-item>
@@ -473,7 +494,7 @@
 
     </ion-item>
 
-    <ion-item lines="none" *ngIf="data.rocketpool.currentRpl.toNumber() > 0">
+    <ion-item lines="none" *ngIf="rplProjectedClaim">
 
       <ion-label class="stat-title">
         RPL Price
@@ -485,7 +506,7 @@
     </ion-item>
 
 
-    <ion-item lines="none" *ngIf="data.rocketpool.currentRpl.toNumber() > 0">
+    <ion-item lines="none" *ngIf="rplProjectedClaim">
 
       <ion-label class="stat-title">
         RPL Commission

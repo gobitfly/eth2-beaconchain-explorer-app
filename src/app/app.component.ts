@@ -24,6 +24,7 @@ import { ModalController, Platform } from '@ionic/angular';
 import ThemeUtils from './utils/ThemeUtils';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { StorageService } from './services/storage.service';
+import BigNumber from 'bignumber.js';
 
 @Component({
   selector: 'app-root',
@@ -43,6 +44,7 @@ export class AppComponent {
   initializeApp() {
     this.platform.ready().then(() => {
       this.storage.migrateToCapacitor3().then(() => {
+        BigNumber.config({ DECIMAL_PLACES: 25 })
         this.theme.init(() => {
           SplashScreen.hide()
         }); // just initialize the theme service

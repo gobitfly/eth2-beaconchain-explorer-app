@@ -326,8 +326,8 @@ export class ValidatorUtils extends CacheModule {
 
     private updateRplAndRethPrice() {
         if (!this.rocketpoolStats) return
-        this.unitConversion.setRPLPrice(new BigNumber(this.rocketpoolStats.rpl_price))
-        this.unitConversion.setRETHPrice(new BigNumber(this.rocketpoolStats.reth_exchange_rate))
+        this.unitConversion.setRPLPrice(new BigNumber(this.rocketpoolStats.rpl_price.toString()))
+        this.unitConversion.setRETHPrice(new BigNumber(this.rocketpoolStats.reth_exchange_rate.toString()))
     }
 
 
@@ -342,7 +342,7 @@ export class ValidatorUtils extends CacheModule {
 
     private findAttributionEffectiveness(list: AttestationPerformanceResponse[], index: number): number {
         for (let attr of list) {
-          if (attr.validatorindex == index) {
+          if (attr.validatorindex == index && attr.attestation_efficiency) {
             return new BigNumber(1).dividedBy(attr.attestation_efficiency).multipliedBy(100).decimalPlaces(1).toNumber()
           }
         }
@@ -445,7 +445,8 @@ export class ValidatorUtils extends CacheModule {
     }
 
     async searchValidators(search: string): Promise<Validator[]> {
-        const result = await this.getDashboardDataValidators(MEMORY, search).catch(err => { return null })
+        const result = await this.getDashboardDataValidators(MEMORY, search).catch(err => { 
+            return null })
         if(result == null) return []
         return result
     }
