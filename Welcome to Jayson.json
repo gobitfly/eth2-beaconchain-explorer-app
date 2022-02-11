@@ -1,0 +1,18 @@
+{
+  "greeting": "Hi! Thank you for downloading Jayson.",
+  "message": "Jayson is a simple yet powerful JSON viewer that makes it easy to browse JSON.\n\nJayson was designed to make it easy to import JSON from any part of iOS. For more information on this, navigate to the \"view_from_sources\" key of this document.",
+  "release_year": 2019,
+  "view_from_sources": [{
+    "title": "Clipboard",
+    "description": "When you open Jayson, you'll see a clipboard icon in the upper right corner. Press it to parse the contents of your clipboard as JSON. If you have a link in your clipboard, Jayson will ask if you want to load the contents of the link and parse it as JSON."
+  }, {
+    "title": "Shortcuts",
+    "description": "Jayson was designed to integrate well with the Shortcuts app. For more information on this, please visit settings and see the videos in the \"Getting Started with Siri Shortcuts\" guide."
+  }, {
+    "title": "Share Sheet",
+    "description": "You can view JSON text and files from any app that use the Share Sheet. For more information on this, please visit settings and see the videos in the \"Using the Share Sheet Actions\" guide."
+  }, {
+    "title": "URL Scheme",
+    "description": "Jayson has a URL scheme that supports parsing text, reading contents of the clipboard as JSON and loading a URL and parsing its contents as JSON. You can find the documentation of the URL scheme in settings."
+  }]
+}
