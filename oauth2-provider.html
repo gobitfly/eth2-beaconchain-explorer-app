@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta property="og:title" content="OAuth2 provider - Docs"></meta>
+ 		
+		<meta property="og:description" content="" />
+		
+		<meta property="og:type" content="article"></meta>
+		<meta property="og:url" content="https://docs.gitea.io/en-us/oauth2-provider/"></meta>
+		<meta property="og:image" content="https://docs.gitea.io/images/gitea.png"></meta>
+		<meta name="generator" content="Hugo 0.70.0" />
+
+		<title>OAuth2 provider - Docs</title>
+
+		
+		
+
+		
+
+		<link rel="canonical" href="https://docs.gitea.io/en-us/oauth2-provider/">
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />
+		<link rel="stylesheet" href="https://docs.gitea.io/styles/main.css">
+
+		<link rel="shortcut icon" type="image/x-icon" href="https://docs.gitea.io/images/favicon.png">
+		<link rel="icon" type="image/x-icon" href="https://docs.gitea.io/images/favicon.png">
+	</head>
+	<body>
+
+<nav class="navbar">
+	<div class="container">
+		<div class="navbar-brand">
+			<a class="navbar-item" href="https://docs.gitea.io/">
+				<img src="https://docs.gitea.io/images/gitea.png" alt="Docs">
+			</a>
+			<span class="navbar-burger burger" data-target="navMenu" aria-label="menu" aria-expanded="false">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+		</div>
+		<div class="navbar-menu" id="navMenu">
+			<div class="navbar-end">
+				<span class="navbar-item logo"><img src="https://docs.gitea.io/images/gitea.png" alt="Docs"></span>
+
+	<a class="navbar-item" href="https://gitea.io/en-us/">
+		<i class="fa fa-home"></i>&nbsp;
+		Website
+	</a>
+
+	<a class="navbar-item" href="/en-us/">
+		<i class="fa fa-question"></i>&nbsp;
+		Docs
+	</a>
+
+	<a class="navbar-item" href="https://blog.gitea.io/">
+		<i class="fa fa-rss"></i>&nbsp;
+		Blog
+	</a>
+
+	<a class="navbar-item" href="https://shop.gitea.io/">
+		<i class="fa fa-shopping-cart"></i>&nbsp;
+		Shop
+	</a>
+
+	<a class="navbar-item" href="https://crowdin.com/project/gitea">
+		<i class="fa fa-language"></i>&nbsp;
+		Translation
+	</a>
+
+	<a class="navbar-item" href="https://try.gitea.io/api/swagger">
+		<i class="fa fa-plug"></i>&nbsp;
+		API
+	</a>
+
+	<a class="navbar-item" href="https://dl.gitea.io/">
+		<i class="fa fa-download"></i>&nbsp;
+		Downloads
+	</a>
+
+	<a class="navbar-item" href="https://github.com/go-gitea/">
+		<i class="fa fa-github"></i>&nbsp;
+		GitHub
+	</a>
+
+	<a class="navbar-item" href="https://discord.gg/Gitea">
+		<i class="fa fa-comment"></i>&nbsp;
+		Discord Chat
+	</a>
+
+	<a class="navbar-item" href="https://discourse.gitea.io/">
+		<i class="fa fa-group"></i>&nbsp;
+		Forum
+	</a>
+
+
+			</div>
+		</div>
+		<div class="navbar-background" id="navbar-background"></div>
+	</div>
+</nav>
+
+<section class="section">
+	<div class="container is-centered page">
+		<div class="columns">
+			<div class="column is-one-quarter">
+				<aside class="menu">
+	
+		
+			<p class="menu-label">
+				
+				Help
+			</p>
+			<ul class="menu-list">
+				
+					<li>
+						<a href="/en-us/search/" >
+							
+							Search
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/faq/" >
+							
+							FAQ
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/seek-help/" >
+							
+							Support Options
+						</a>
+					</li>
+				
+			</ul>
+		
+	
+		
+			<p class="menu-label">
+				
+				Installation
+			</p>
+			<ul class="menu-list">
+				
+					<li>
+						<a href="/en-us/install-with-docker/" >
+							
+							With Docker
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/install-with-docker-rootless/" >
+							
+							With Docker Rootless
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/database-prep/" >
+							
+							Database preparation
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/install-from-binary/" >
+							
+							From binary
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/install-from-package/" >
+							
+							From package
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/linux-service/" >
+							
+							Linux service
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/install-on-cloud-provider/" >
+							
+							On cloud provider
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/install-from-source/" >
+							
+							From source
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/windows-service/" >
+							
+							Windows Service
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/install-on-kubernetes/" >
+							
+							Kubernetes
+						</a>
+					</li>
+				
+			</ul>
+		
+	
+		
+			<p class="menu-label">
+				
+				Upgrade
+			</p>
+			<ul class="menu-list">
+				
+					<li>
+						<a href="/en-us/upgrade-from-gitea/" >
+							
+							From Gitea
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/upgrade-from-gogs/" >
+							
+							From Gogs
+						</a>
+					</li>
+				
+			</ul>
+		
+	
+		
+			<p class="menu-label">
+				
+				Features
+			</p>
+			<ul class="menu-list">
+				
+					<li>
+						<a href="/en-us/comparison/" >
+							
+							Comparison
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/authentication/" >
+							
+							Authentication
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/localization/" >
+							
+							Localization
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/webhooks/" >
+							
+							Webhooks
+						</a>
+					</li>
+				
+			</ul>
+		
+	
+		
+			<p class="menu-label">
+				
+				Usage
+			</p>
+			<ul class="menu-list">
+				
+					<li>
+						<a href="/en-us/command-line/" >
+							
+							Command Line
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/backup-and-restore/" >
+							
+							Backup and Restore
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/email-setup/" >
+							
+							Email setup
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/git-lfs-setup/" >
+							
+							Git LFS setup
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/https-setup/" >
+							
+							HTTPS setup
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/pull-request/" >
+							
+							Pull Request
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/permissions/" >
+							
+							Permissions
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/template-repositories/" >
+							
+							Template Repositories
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/automatically-linked-references/" >
+							
+							Automatically Linked References
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/issue-pull-request-templates/" >
+							
+							Issue and Pull Request templates
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/push-options/" >
+							
+							Push Options
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/fail2ban-setup/" >
+							
+							Fail2ban setup
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/reverse-proxies/" >
+							
+							Reverse Proxies
+						</a>
+					</li>
+				
+			</ul>
+		
+	
+		
+			<p class="menu-label">
+				
+				Advanced
+			</p>
+			<ul class="menu-list">
+				
+					<li>
+						<a href="/en-us/adding-legal-pages/" >
+							
+							Adding Legal Pages
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/customizing-gitea/" >
+							
+							Customizing Gitea
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/config-cheat-sheet/" >
+							
+							Config Cheat Sheet
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/environment-variables/" >
+							
+							Environment variables
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/signing/" >
+							
+							GPG Commit Signatures
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/clone-filters/" >
+							
+							Clone filters
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/cmd-embedded/" >
+							
+							Embedded data extraction tool
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/external-renderers/" >
+							
+							External renderers
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/mail-templates/" >
+							
+							Mail templates
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/protected-tags/" >
+							
+							Protected tags
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/repo-indexer/" >
+							
+							Repository indexer
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/repo-mirror/" >
+							
+							Repository Mirror
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/logging-configuration/" >
+							
+							Logging Configuration
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/search-engines-indexation/" >
+							
+							Search Engines Indexation
+						</a>
+					</li>
+				
+			</ul>
+		
+	
+		
+			<p class="menu-label">
+				
+				Translation
+			</p>
+			<ul class="menu-list">
+				
+					<li>
+						<a href="/en-us/translation-guidelines/" >
+							
+							Translation Guidelines
+						</a>
+					</li>
+				
+			</ul>
+		
+	
+		
+			<p class="menu-label">
+				
+				Developers
+			</p>
+			<ul class="menu-list">
+				
+					<li>
+						<a href="/en-us/hacking-on-gitea/" >
+							
+							Hacking on Gitea
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/guidelines-backend/" >
+							
+							Guidelines for Backend
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/guidelines-frontend/" >
+							
+							Guidelines for Frontend
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/api-usage/" >
+							
+							API Usage
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/oauth2-provider/" class="is-active">
+							
+							OAuth2 Provider
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/migrations-interfaces/" >
+							
+							Migrations Interfaces
+						</a>
+					</li>
+				
+					<li>
+						<a href="/en-us/integrations/" >
+							
+							Integrations
+						</a>
+					</li>
+				
+			</ul>
+		
+	
+	</ul>
+</aside>
+
+
+
+
+			</div>
+			<div class="column is-three-quarters">
+				<div class="content">
+					<h1 id="oauth2-provider">OAuth2 provider</h1>
+<p><strong>Table of Contents</strong></p>
+<div class="toc">
+	<nav id="TableOfContents">
+  <ul>
+    <li><a href="#endpoints">Endpoints</a></li>
+    <li><a href="#supported-oauth2-grants">Supported OAuth2 Grants</a></li>
+    <li><a href="#scopes">Scopes</a></li>
+    <li><a href="#example">Example</a></li>
+  </ul>
+</nav>
+</div>
+
+<p>Gitea supports acting as an OAuth2 provider to allow third party applications to access its resources with the user&rsquo;s consent. This feature is available since release 1.8.0.</p>
+<h2 id="endpoints">Endpoints</h2>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenID Connect Discovery</td>
+<td><code>/.well-known/openid-configuration</code></td>
+</tr>
+<tr>
+<td>Authorization Endpoint</td>
+<td><code>/login/oauth/authorize</code></td>
+</tr>
+<tr>
+<td>Access Token Endpoint</td>
+<td><code>/login/oauth/access_token</code></td>
+</tr>
+<tr>
+<td>OpenID Connect UserInfo</td>
+<td><code>/login/oauth/userinfo</code></td>
+</tr>
+<tr>
+<td>JSON Web Key Set</td>
+<td><code>/login/oauth/keys</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="supported-oauth2-grants">Supported OAuth2 Grants</h2>
+<p>At the moment Gitea only supports the <a href="https://tools.ietf.org/html/rfc6749#section-1.3.1"><strong>Authorization Code Grant</strong></a> standard with additional support of the following extensions:</p>
+<ul>
+<li><a href="https://tools.ietf.org/html/rfc7636">Proof Key for Code Exchange (PKCE)</a></li>
+<li><a href="https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth">OpenID Connect (OIDC)</a></li>
+</ul>
+<p>To use the Authorization Code Grant as a third party application it is required to register a new application via the &ldquo;Settings&rdquo; (<code>/user/settings/applications</code>) section of the settings.</p>
+<h2 id="scopes">Scopes</h2>
+<p>Currently Gitea does not support scopes (see <a href="https://github.com/go-gitea/gitea/issues/4300">#4300</a>) and all third party applications will be granted access to all resources of the user and his/her organizations.</p>
+<h2 id="example">Example</h2>
+<p><strong>Note:</strong> This example does not use PKCE.</p>
+<ol>
+<li>
+<p>Redirect to user to the authorization endpoint in order to get his/her consent for accessing the resources:</p>
+<pre><code class="language-curl" data-lang="curl">https://[YOUR-GITEA-URL]/login/oauth/authorize?client_id=CLIENT_ID&amp;redirect_uri=REDIRECT_URI&amp; response_type=code&amp;state=STATE
+</code></pre><p>The <code>CLIENT_ID</code> can be obtained by registering an application in the settings. The <code>STATE</code> is a random string that will be send back to your application after the user authorizes. The <code>state</code> parameter is optional but should be used to prevent CSRF attacks.</p>
+<p><img src="/authorize.png" alt="Authorization Page"></p>
+<p>The user will now be asked to authorize your application. If they authorize it, the user will be redirected to the <code>REDIRECT_URL</code>, for example:</p>
+<pre><code class="language-curl" data-lang="curl">https://[REDIRECT_URI]?code=RETURNED_CODE&amp;state=STATE
+</code></pre></li>
+<li>
+<p>Using the provided <code>code</code> from the redirect, you can request a new application and refresh token. The access token endpoints accepts POST requests with <code>application/json</code> and <code>application/x-www-form-urlencoded</code> body, for example:</p>
+<pre><code class="language-curl" data-lang="curl">POST https://[YOUR-GITEA-URL]/login/oauth/access_token
+</code></pre><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;client_id&#34;</span>: <span style="color:#e6db74">&#34;YOUR_CLIENT_ID&#34;</span>,
+  <span style="color:#f92672">&#34;client_secret&#34;</span>: <span style="color:#e6db74">&#34;YOUR_CLIENT_SECRET&#34;</span>,
+  <span style="color:#f92672">&#34;code&#34;</span>: <span style="color:#e6db74">&#34;RETURNED_CODE&#34;</span>,
+  <span style="color:#f92672">&#34;grant_type&#34;</span>: <span style="color:#e6db74">&#34;authorization_code&#34;</span>,
+  <span style="color:#f92672">&#34;redirect_uri&#34;</span>: <span style="color:#e6db74">&#34;REDIRECT_URI&#34;</span>
+}
+</code></pre></div><p>Response:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+  <span style="color:#f92672">&#34;access_token&#34;</span>: <span style="color:#e6db74">&#34;eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJnbnQiOjIsInR0IjowLCJleHAiOjE1NTUxNzk5MTIsImlhdCI6MTU1NTE3NjMxMn0.0-iFsAwBtxuckA0sNZ6QpBQmywVPz129u75vOM7wPJecw5wqGyBkmstfJHAjEOqrAf_V5Z-1QYeCh_Cz4RiKug&#34;</span>,
+  <span style="color:#f92672">&#34;token_type&#34;</span>: <span style="color:#e6db74">&#34;bearer&#34;</span>,
+  <span style="color:#f92672">&#34;expires_in&#34;</span>: <span style="color:#ae81ff">3600</span>,
+  <span style="color:#f92672">&#34;refresh_token&#34;</span>: <span style="color:#e6db74">&#34;eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJnbnQiOjIsInR0IjoxLCJjbnQiOjEsImV4cCI6MTU1NzgwNDMxMiwiaWF0IjoxNTU1MTc2MzEyfQ.S_HZQBy4q9r5SEzNGNIoFClT43HPNDbUdHH-GYNYYdkRfft6XptJBkUQscZsGxOW975Yk6RbgtGvq1nkEcklOw&#34;</span>
+}
+</code></pre></div><p>The <code>CLIENT_SECRET</code> is the unique secret code generated for this application. Please note that the secret will only be visible after you created/registered the application with Gitea and cannot be recovered. If you lose the secret you must regenerate the secret via the application&rsquo;s settings.</p>
+<p>The <code>REDIRECT_URI</code> in the <code>access_token</code> request must match the <code>REDIRECT_URI</code> in the <code>authorize</code> request.</p>
+</li>
+<li>
+<p>Use the <code>access_token</code> to make <a href="https://docs.gitea.io/en-us/api-usage#oauth2">API requests</a> to access the user&rsquo;s resources.</p>
+</li>
+</ol>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+		<footer class="footer">
+			<div class="container">
+				<div class="content has-text-centered">
+					<p>
+						Copyright &copy; 2022 <a href="https://docs.gitea.io">The Gitea Authors</a>. All rights reserved. Made with <i class="fa fa-heart" aria-hidden="true"></i> and <a href="https://gohugo.io">Hugo</a>.
+					</p>
+					<p>
+						 Sponsored by <a href="http://inblockchain.com">INBlockchain</a>, <a href="https://metal.equinix.com/">Equinix Metal</a>, <a href="https://digitalocean.com">DigitalOcean</a>, <a href="https://soebes.io/">SoEBeS</a>, <a href="https://www.cloudron.io/">Cloudron</a>, and all of our backers on <a href="https://opencollective.com/gitea">Open Collective</a>.
+					</p>
+					<p>
+						
+						<a class="nav-link" href="https://docs.gitea.io/zh-cn" hreflang="zh-cn">中文(简体)</a>
+						
+						<a class="nav-link" href="https://docs.gitea.io/zh-tw" hreflang="zh-tw">中文(繁體)</a>
+						
+						<a class="nav-link" href="https://docs.gitea.io/pt-br" hreflang="pt-br">Português Brasileiro</a>
+						
+						<a class="nav-link" href="https://docs.gitea.io/en-us" hreflang="en-us">English</a>
+						
+						<a class="nav-link" href="https://docs.gitea.io/nl-nl" hreflang="nl-nl">Nederlands</a>
+						
+						<a class="nav-link" href="https://docs.gitea.io/fr-fr" hreflang="fr-fr">Français</a>
+						
+						<a class="nav-link" href="https://docs.gitea.io/de-de" hreflang="de-de">Deutsch</a>
+						
+					</p>
+				</div>
+			</div>
+		</footer>
+
+		<script>
+            document.addEventListener('DOMContentLoaded', function () {
+
+                
+                var $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+                
+                if ($navbarBurgers.length > 0) {
+
+                    
+                    $navbarBurgers.forEach(function ($el) {
+                        $el.addEventListener('click', function () {
+
+                            
+                            var target = $el.dataset.target;
+                            var $target = document.getElementById(target);
+
+                            
+                            $el.classList.toggle('is-active');
+                            $target.classList.toggle('is-active');
+
+
+                            document.getElementById('navbar-background').classList.toggle('is-active');
+
+
+                        });
+                    });
+                }
+
+				
+				
+				let svg = '  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" style="fill: currentColor; vertical-align: bottom;" width="24" height="24" viewBox="0 0 32 32"><title>gitea</title><path d="M5.583 7.229c-2.464-0.005-5.755 1.557-5.573 5.479 0.281 6.125 6.557 6.693 9.068 6.745 0.271 1.146 3.224 5.109 5.411 5.318h9.573c5.74-0.38 10.036-17.365 6.854-17.427-5.271 0.25-8.396 0.375-11.073 0.396v5.297l-0.839-0.365-0.005-4.932c-3.073 0-5.781-0.141-10.917-0.396-0.646-0.005-1.542-0.115-2.5-0.115zM5.927 9.396h0.297c0.349 3.141 0.917 4.974 2.068 7.781-2.938-0.349-5.432-1.198-5.891-4.38-0.24-1.646 0.563-3.365 3.526-3.401zM17.339 12.479c0.198 0.005 0.406 0.042 0.594 0.13l1 0.432-0.714 1.302c-0.109 0-0.219 0.016-0.323 0.052-0.464 0.151-0.708 0.604-0.542 1.021 0.036 0.083 0.089 0.161 0.151 0.229l-1.234 2.25c-0.099 0-0.203 0.016-0.297 0.052-0.464 0.146-0.708 0.604-0.542 1.016 0.172 0.417 0.682 0.63 1.151 0.479 0.464-0.146 0.703-0.604 0.536-1.021-0.047-0.109-0.115-0.208-0.208-0.292l1.203-2.188c0.13 0.010 0.26 0 0.391-0.042 0.104-0.031 0.198-0.083 0.281-0.151 0.464 0.198 0.844 0.354 1.12 0.49 0.406 0.203 0.552 0.339 0.599 0.49 0.042 0.146-0.005 0.427-0.24 0.922-0.172 0.37-0.458 0.896-0.797 1.51-0.115 0-0.229 0.016-0.333 0.052-0.469 0.151-0.708 0.604-0.542 1.021 0.167 0.411 0.682 0.625 1.146 0.479 0.469-0.151 0.708-0.604 0.542-1.021-0.042-0.099-0.104-0.193-0.182-0.271 0.333-0.609 0.62-1.135 0.807-1.526 0.25-0.536 0.38-0.938 0.266-1.323s-0.469-0.635-0.932-0.865c-0.307-0.151-0.693-0.313-1.146-0.505 0.005-0.109-0.010-0.214-0.052-0.318s-0.109-0.198-0.193-0.281l0.703-1.281 3.901 1.682c0.703 0.307 0.995 1.057 0.651 1.682l-2.682 4.906c-0.339 0.625-1.182 0.885-1.885 0.578l-5.516-2.38c-0.703-0.307-0.995-1.057-0.656-1.682l2.682-4.906c0.234-0.432 0.708-0.688 1.208-0.708h0.083z"></path></svg>';
+				let contents = document.getElementsByClassName("content");
+				if (contents.length > 0) {
+					let content = contents[0];
+					for (let level = 1; level <= 4; level++) {
+						let elems = content.getElementsByTagName("h" + level);
+						for (let i = 0; i < elems.length; i++) {
+							let elem = elems[i];
+							if (elem.id !== "undefined" && elem.id !== "") {
+								let anchorId = elem.id + "-anchor";
+								elem.addEventListener("mouseover", () => {
+									document.getElementById(anchorId).style.display = "initial";
+								});
+								elem.addEventListener("mouseout", () => {
+									document.getElementById(anchorId).style.display = "none";
+								});
+								let anchor = document.createElement("a");
+								anchor.id = anchorId;
+								anchor.href = "#" + elem.id;
+								anchor.innerHTML = svg;
+								anchor.style.display = "none";
+								elem.appendChild(anchor);
+							}
+						}
+					}
+				}
+
+            });
+		</script>
+
+		</body>
+</html>
+
