@@ -486,7 +486,7 @@
     <ion-item lines="none" *ngIf="(unit.pref != 'ETHER' && unit.pref != 'FINNEY') || currencyPipe != null">
 
       <ion-label class="stat-title">
-        Ethereum Price
+        Ether Price
       </ion-label>
       <ion-label class="value" (click)="switchCurrencyPipe()">
         {{ 1 | mcurrency: "ETHER":unit.pref }}
