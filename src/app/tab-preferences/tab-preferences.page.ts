@@ -85,6 +85,8 @@ export class Tab3Page {
 
   premiumLabel: string = ""
 
+  smartnode: boolean
+
   constructor(
     protected api: ApiService,
     protected oauth: OAuthUtils,
@@ -107,8 +109,10 @@ export class Tab3Page {
   ngOnInit() {
     
     this.theme.isDarkThemed().then((result) => this.darkMode = result)
+    
     this.theme.getThemeColor().then((result) => this.themeColor = result)
 
+    this.updateUtils.getOtherClient().then((result) => this.smartnode = result == "ROCKETPOOL")
     this.updateUtils.getETH1Client().then((result) => this.eth1client = result)
     this.updateUtils.getETH2Client().then((result) => this.eth2client = result)
     this.updateUtils.getUpdateChannel().then((result) => this.updateChannel = result)
@@ -251,6 +255,20 @@ export class Tab3Page {
     }
 
     this.updateUtils.setUpdateChannel(this.updateChannel)
+    this.updateUtils.checkUpdates()
+  }
+
+  async smartNodeToggle() {
+    if (this.notificationBase.lockedToggle) {
+      return;
+    }
+
+    if (this.smartnode) {
+      this.sync.changeOtherClient("Rocketpool")
+    } else {
+      this.sync.changeOtherClient(null)
+    }
+    
     this.updateUtils.checkUpdates()
   }
 

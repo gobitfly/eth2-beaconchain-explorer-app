@@ -22,7 +22,7 @@ dependencies {
     implementation project(':capacitor-storage')
     implementation project(':capacitor-toast')
     implementation project(':capacitor-navigationbarnx')
-    implementation "com.android.billingclient:billing:3.0.3"
+    implementation "com.android.billingclient:billing:4.0.0"
 }
 
 

@@ -20,10 +20,10 @@
 
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
-import { SETTING_NOTIFY, SETTING_NOTIFY_CLIENTUPDATE, StorageService } from './storage.service';
+import { SETTING_NOTIFY, StorageService } from './storage.service';
 import { Mutex } from 'async-mutex';
 import { BundleSub, NotificationBundleSubsRequest, SetMobileSettingsRequest } from '../requests/requests';
-import ClientUpdateUtils, { ETH1_CLIENT_SAVED, ETH2_CLIENT_SAVED } from '../utils/ClientUpdateUtils';
+import ClientUpdateUtils, { ETH1_CLIENT_SAVED, ETH2_CLIENT_SAVED, OTHER_CLIENT_SAVED } from '../utils/ClientUpdateUtils';
 import { ValidatorSyncUtils } from '../utils/ValidatorSyncUtils';
 
 const NOTIFY_SYNCCHANGE = "notify_syncchange_"
@@ -44,6 +44,7 @@ enum SyncActionEvent {
   NOTIFY_CLIENTUPDATE,
   ETH1_UPDATE,
   ETH2_UPDATE,
+  OTHER_CLIENT_UPDATE,
   NOTIFICATIONS
 }
 
@@ -173,6 +174,8 @@ export class SyncService {
       return this.getClientUpdateSyncAction(ETH2_CLIENT_SAVED)
     } else if (actionEvent == SyncActionEvent.ETH1_UPDATE) {
       return this.getClientUpdateSyncAction(ETH1_CLIENT_SAVED)
+    } else if (actionEvent == SyncActionEvent.OTHER_CLIENT_UPDATE) {
+      return this.getClientUpdateSyncAction(OTHER_CLIENT_SAVED)
     }
 
     return this.getNotifySubSyncAction(key, null)
@@ -222,28 +225,34 @@ export class SyncService {
   getSyncActionEvent(key: string) {
     if (key.endsWith(SETTING_NOTIFY)) {
       return SyncActionEvent.NOTIFY_GLOBAL
-    } else if (key.endsWith(SETTING_NOTIFY_CLIENTUPDATE)) {
+    } else if (key.endsWith("eth_client_update")) {
       return SyncActionEvent.NOTIFY_CLIENTUPDATE
     } else if (key.endsWith(ETH2_CLIENT_SAVED)) {
       return SyncActionEvent.ETH2_UPDATE
     } else if (key.endsWith(ETH1_CLIENT_SAVED)) {
       return SyncActionEvent.ETH1_UPDATE
+    }  else if (key.endsWith(OTHER_CLIENT_SAVED)) {
+      return SyncActionEvent.OTHER_CLIENT_UPDATE
     }
 
     return SyncActionEvent.NOTIFICATIONS
   }
 
   private getClientUpdateNotifySyncAction() {
-    const eth2Success = this.getNotifySubSyncAction(SETTING_NOTIFY_CLIENTUPDATE,
+    const eth2Success = this.getNotifySubSyncAction("eth_client_update",
       this.getClientUpdateFilter(ETH2_CLIENT_SAVED)
     )
 
-    const eth1Success = this.getNotifySubSyncAction(SETTING_NOTIFY_CLIENTUPDATE,
+    const eth1Success = this.getNotifySubSyncAction("eth_client_update",
       this.getClientUpdateFilter(ETH1_CLIENT_SAVED)
     )
 
+    const otherSuccess = this.getNotifySubSyncAction("eth_client_update",
+      this.getClientUpdateFilter(OTHER_CLIENT_SAVED)
+    )
+
     return async (syncChange, onComplete): Promise<boolean> => {
-      return await eth1Success(syncChange, onComplete) && await eth2Success(syncChange, onComplete)
+      return await eth1Success(syncChange, onComplete) && await eth2Success(syncChange, onComplete) && await otherSuccess(syncChange, onComplete)
     }
   }
 
@@ -266,7 +275,7 @@ export class SyncService {
         )        
       }
       const filter = this.getClientUpdateFilter(key)
-      return this.getNotifySubSyncAction(SETTING_NOTIFY_CLIENTUPDATE, filter)(syncChange, superOnComplete)
+      return this.getNotifySubSyncAction("eth_client_update", filter)(syncChange, superOnComplete)
     }
   }
 
@@ -376,6 +385,17 @@ export class SyncService {
     return false
   }
 
+  async changeOtherClient(value) {
+    const oldValue = await this.updateUtils.getOtherClient()
+    const changed = await this.updateUtils.setOtherClient(value)
+    if (changed) {
+      if (value) {
+        this.setLastChanged(OTHER_CLIENT_SAVED, "eth_client_update", null, null)
+      }
+      this.setDeleteOldClient(OTHER_CLIENT_SAVED, oldValue)
+    }
+  }
+
   async changeETH2Client(value: string) {
     const oldValue = await this.updateUtils.getETH2Client()
     const changed = await this.updateUtils.setETH2Client(value)
@@ -420,19 +440,19 @@ export class SyncService {
     this.setLastChanged( key, event, filter, threshold)
   }
 
-  async reapplyNotifyEvent(key: string, event: string, filter: string = null): Promise<boolean> {
-    const currentKey = await this.findSimilarChanged(key)
+  async reapplyNotifyEvent(event: string, filter: string = null): Promise<boolean> {
+    const currentKey = await this.findSimilarChanged(event)
     if (currentKey == null) {
-      console.log("ignoring reapplyNotifyEvent, no key with similar name found", key, event)
+      console.log("ignoring reapplyNotifyEvent, no key with similar name found", event, event)
       return false
     }
 
     const current = await this.getChanged(currentKey)
     if (current.eventName == "") {
-      console.log("ignoring reapplyNotifyEvent since no previous setting change has been found for event", key, event)
+      console.log("ignoring reapplyNotifyEvent since no previous setting change has been found for event", event, event)
       return false
     }
-    this.setLastChanged(key + filter, event, filter, current.eventThreshold)
+    this.setLastChanged(event + filter, event, filter, current.eventThreshold)
     return true
   }
 

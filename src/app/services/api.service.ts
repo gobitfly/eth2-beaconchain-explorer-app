@@ -276,6 +276,10 @@ export class ApiService extends CacheModule {
     return result
   }
 
+  async clearSpecificCache(request: APIRequest<any>) {
+    this.putCache(await this.getCacheKey(request), null, request.maxCacheAge)
+  }
+
   private updateLastRefreshed(response: Response) {
     if (response && response.status == 200) {
         this.lastRefreshed = Date.now()

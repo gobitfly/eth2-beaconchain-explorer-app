@@ -229,6 +229,14 @@ export interface RocketPoolResponse {
   node_timezone_location: string
 }
 
+export interface NotificationGetResponse {
+  CreatedEpoch: number;
+  CreatedTime: string;
+  EventFilter: string;
+  EventName: string,
+  EventThreshold: string,
+}
+
 // ------------- Reqests -------------
 
 export class DashboardRequest extends APIRequest<DashboardResponse> {
@@ -470,6 +478,24 @@ export class AddMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
   constructor(indices: string[]) {
     super()
     this.postData = indices
+  }
+}
+
+export class NotificationGetRequest extends APIRequest<NotificationGetResponse> {
+
+  resource = "user/notifications";
+  method = Method.GET;
+  requiresAuth = true
+  postData: any = {}
+  ignoreFails = true
+
+  constructor() {
+    super()
+  }
+
+  parse(response: any): NotificationGetResponse[] {
+    if (!response || !response.data || !response.data.data) return null
+    return response.data.data as NotificationGetResponse[];
   }
 }
 

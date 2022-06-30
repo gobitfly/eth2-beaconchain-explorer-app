@@ -348,7 +348,7 @@ export class DashboardComponent implements OnInit {
   async drawBalanceChart() {
     this.chartData = await this.getChartData("balances")
 
-    if (!this.chartData || this.chartData.length <= 3) {
+    if (!this.chartData || this.chartData.length < 3) {
       this.chartError = true;
       this.doneLoading = true
       return

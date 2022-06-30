@@ -55,18 +55,12 @@ export class TabsPage {
       this.firebaseUtils.pushLastTokenUpstream(false)
       await this.sync.mightSyncUpAndSyncDelete()
       await this.sync.syncAllSettings()
-    }, 6000)
+    }, 5000)
 
     // lazy ionic speed optimizations
     setTimeout(() => {
       this.hackyIonicPreloads()
     }, 200)
-
-    // lazy settings toggle preload (slow storage)
-    setTimeout(async () => {
-      const net = (await this.api.networkConfig).net
-      this.storage.getNotificationTogglePreferences(net) // preloading toggle settings
-    }, 350)
 
     // Validate licence and reset theme accordingly
     setTimeout(() => { this.validateTheming() }, 600)

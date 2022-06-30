@@ -34,32 +34,10 @@ const AUTH_USER = "auth_user";
 const PREFERENCES = "network_preferences";
 
 export const SETTING_NOTIFY = "setting_notify"
-export const SETTING_NOTIFY_SLASHED = "setting_notify_slashed"
-export const SETTING_NOTIFY_DECREASED = "setting_notify_decreased"
-export const SETTING_NOTIFY_PROPOSAL_SUBMITTED = "setting_notify_proposalsubmitted"
-export const SETTING_NOTIFY_PROPOSAL_MISSED = "setting_notify_proposalsmissed"
-export const SETTING_NOTIFY_ATTESTATION_MISSED = "setting_notify_attestationsmissed"
-export const SETTING_NOTIFY_CLIENTUPDATE = "setting_notify_clientupdate"
-export const SETTING_NOTIFY_MACHINE_OFFLINE = "setting_notify_machineoffline"
-export const SETTING_NOTIFY_HDD_WARN = "setting_notify_hddwarn"
-export const SETTING_NOTIFY_CPU_WARN = "setting_notify_cpuwarn"
-export const SETTING_NOTIFY_MEMORY_WARN = "setting_notify_memorywarn"
-
-export const SETTING_NOTIFY_RPL_COMMISSION = "setting_notify_rplcommission"
-export const SETTING_NOTIFY_RPL_MAX_COLL = "setting_notify_rplmaxcoll"
-export const SETTING_NOTIFY_RPL_MIN_COLL = "setting_notify_rplmincoll"
-
-export const SETTING_NOTIFY_SYNC_DUTY = "setting_notify_syncduty"
-export const SETTING_NOTIFY_RPL_NEWROUND = "setting_notify_newround"
 
 export const CPU_THRESHOLD = "cpu_usage_threshold"
 export const HDD_THRESHOLD = "hdd_usage_threshold"
 export const RAM_THRESHOLD = "ram_usage_threshold"
-
-export const RPL_COMMISSION_THRESHOLD = "rpl_commission_threshold"
-export const RPL_COLLATERAL_MAX_THRESHOLD = "rpl_collateral_max_threshold"
-export const RPL_COLLATERAL_MIN_THRESHOLD = "rpl_collateral_min_threshold"
-
 export const DEBUG_SETTING_OVERRIDE_PACKAGE = "debug_setting_override_package"
 
 @Injectable({
@@ -123,51 +101,10 @@ export class StorageService extends CacheModule {
     return this.getObject("PREMIUM")
   }
 
-  async getNotificationTogglePreferences(network: string): Promise<NotificationToggles> {
-    const notificationtoggles = await this.loadPreferencesToggles(network)
-    this.putCache(network + "toggle_preferences", notificationtoggles)
-    return notificationtoggles
-  }
+  async loadPreferencesToggles(network: string): Promise<boolean> {
 
-  async loadPreferencesToggles(network: string): Promise<NotificationToggles> {
-    const notifySlashed = await this.getBooleanSetting(network + SETTING_NOTIFY_SLASHED, false)
-    const notifyDecreased = await this.getBooleanSetting(network + SETTING_NOTIFY_DECREASED, false)
-    const notifyClientUpdate = await this.getBooleanSetting(network + SETTING_NOTIFY_CLIENTUPDATE, false)
-    const notifyProposalsSubmitted = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_SUBMITTED, false)
-    const notifyProposalsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_PROPOSAL_MISSED, false)
-    const notifyAttestationsMissed = await this.getBooleanSetting(network + SETTING_NOTIFY_ATTESTATION_MISSED, false)
-    const notifyMachineOffline = await this.getBooleanSetting(SETTING_NOTIFY_MACHINE_OFFLINE, false)
-    const notifyMachineHddWarn = await this.getBooleanSetting(SETTING_NOTIFY_HDD_WARN, false)
-    const notifyMachineCpuWarn = await this.getBooleanSetting(SETTING_NOTIFY_CPU_WARN, false)
-    const notifyMachineMemoryLoad = await this.getBooleanSetting(SETTING_NOTIFY_MEMORY_WARN, false)
-
-
-    const notifyRPLCommission = await this.getBooleanSetting(SETTING_NOTIFY_RPL_COMMISSION, false)
-    const notifyRPLMaxColletaral = await this.getBooleanSetting(SETTING_NOTIFY_RPL_MAX_COLL, false)
-    const notifyRPLMinColletaral = await this.getBooleanSetting(SETTING_NOTIFY_RPL_MIN_COLL, false)
-
-    const notifySyncDuty = await this.getBooleanSetting(SETTING_NOTIFY_SYNC_DUTY, false)
-    const notifyRPLNewRewardRound = await this.getBooleanSetting(SETTING_NOTIFY_RPL_NEWROUND, false)
-    
     const notifyLocal = await this.getBooleanSetting(network + SETTING_NOTIFY, null)
-    return {
-      notify: notifyLocal,
-      notifySlashed: notifySlashed,
-      notifyDecreased: notifyDecreased,
-      notifyClientUpdate: notifyClientUpdate,
-      notifyProposalsSubmitted: notifyProposalsSubmitted,
-      notifyProposalsMissed: notifyProposalsMissed,
-      notifyAttestationsMissed: notifyAttestationsMissed,
-      notifyMachineOffline: notifyMachineOffline,
-      notifyMachineHddWarn: notifyMachineHddWarn,
-      notifyMachineCpuWarn: notifyMachineCpuWarn,
-      notifyMachineMemoryLoad: notifyMachineMemoryLoad,
-      notifyRPLCommission: notifyRPLCommission,
-      notifyRPLMaxColletaral: notifyRPLMaxColletaral,
-      notifyRPLMinColletaral: notifyRPLMinColletaral,
-      notifySyncDuty: notifySyncDuty,
-      notifyRPLNewRewardRound: notifyRPLNewRewardRound
-    }
+    return notifyLocal
   }
 
   setBooleanSetting(key, value) {
@@ -362,7 +299,6 @@ interface NotificationToggles {
   notifyMachineHddWarn: boolean;
   notifyMachineCpuWarn: boolean;
   notifyMachineMemoryLoad: boolean;
-  notifyRPLCommission: boolean,
   notifyRPLMaxColletaral: boolean,
   notifyRPLMinColletaral: boolean,
   notifySyncDuty: boolean

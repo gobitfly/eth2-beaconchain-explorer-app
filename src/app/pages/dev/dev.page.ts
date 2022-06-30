@@ -38,7 +38,7 @@ export class DevPage extends Tab3Page implements OnInit {
   }
 
   clearApiCache() {
-    this.storage.setObject("cachemodule_api", null)
+    this.api.clearCache()
     this.alerts.confirmDialog("Restart", "API requests cache cleared, restart?", "OK", () => { this.restartApp() })
   }
 

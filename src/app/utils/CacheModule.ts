@@ -76,6 +76,10 @@ export class CacheModule {
         }
     }
 
+    clearCache() {
+        this.hardStorage.setObject("cachemodule2_"+this.keyPrefix, null)
+    }
+
     protected async getCache(key: string) {
         await this.initialized
         if(!key) return null

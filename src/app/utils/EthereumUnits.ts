@@ -37,6 +37,7 @@ export default class Unit {
     public static KETHER = new Unit("Kether", new BigNumber("0.001"))
     public static RPL = new Unit("RPL", new BigNumber("1"), 1) // RPL TO ETH
     public static RPL_NAKED = new Unit("RPL", new BigNumber("1"), 2)
+    public static NO_CURRENCY = new Unit("", new BigNumber("1"), 0)
     public static RETH = new Unit("RETH", new BigNumber("1"), 2)
 
     public static USDETH = new Unit("$", new BigNumber("388.43"), 2, "ETH-USD", "Dollar")
@@ -83,6 +84,7 @@ export const MAPPING = new Map([
     ["SZABO", Unit.SZABO],
     ["RPL", Unit.RPL],
     ["RPL_NAKED", Unit.RPL_NAKED],
+    ["NO_CURRENCY", Unit.NO_CURRENCY],
     ["RETH", Unit.RETH],
 
     ["RUBLE", Unit.RUBETH],

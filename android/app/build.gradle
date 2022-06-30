@@ -12,8 +12,8 @@ android {
         applicationId "in.beaconcha.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 64
-        versionName "3.1.1"
+        versionCode 65
+        versionName "3.2.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -49,11 +49,11 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
-    implementation "androidx.core:core-ktx:1.6.0"
+    implementation "androidx.core:core-ktx:1.8.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "com.squareup.okhttp3:okhttp:4.9.0"
-    implementation 'com.google.code.gson:gson:2.8.6'
-    def work_version = "2.5.0"
+    implementation 'com.google.code.gson:gson:2.8.9'
+    def work_version = "2.7.1"
 
     implementation "androidx.work:work-runtime-ktx:$work_version"
 
