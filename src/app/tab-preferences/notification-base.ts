@@ -253,7 +253,8 @@ export class NotificationBase implements OnInit {
     var parts = eventNameTagges.split(":")
     var eventName = eventNameTagges
     if (parts.length == 2) {
-      if (parts[0] != network) return;
+      if (parts[0] != network) { return }
+      if (parts[1].indexOf("monitoring_") >= 0) { return; }
       eventName = parts[1]
     }
 
