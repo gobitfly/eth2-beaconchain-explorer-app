@@ -53,7 +53,7 @@
     </div>
   </ion-list>
 
-  <ion-list class="updates">
+  <ion-list class="updates" *ngIf="!data.foreignValidator">
 
 
     <span *ngFor="let update of updates">
@@ -62,6 +62,9 @@
 
     <app-message title="Network struggles with finality" icon="alert-circle-outline" iconStyle="alert"
       [openUrl]="beaconChainUrl" *ngIf="finalizationIssue"></app-message>
+
+    <app-message title="Merge Checklist" icon="clipboard-outline" iconStyle="info"
+      mergeChecklist="true" *ngIf="showMergeChecklist" (onResult)="onDismissed($event)"></app-message>
 
     <app-message title="Network is preparing for liftoff" icon="time-outline" iconStyle="genesis"
       [openUrl]="beaconChainUrl" *ngIf="awaitGenesis"></app-message>
