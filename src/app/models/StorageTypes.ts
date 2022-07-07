@@ -33,7 +33,6 @@ export interface ApiNetwork {
   version: string
   onlyDebug: boolean
   active: boolean
-  genesisTs: number
 }
 
 export interface NetworkPreferences {
