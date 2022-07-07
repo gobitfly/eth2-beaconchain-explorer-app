@@ -93,8 +93,11 @@ export class ApiService extends CacheModule {
     await this.networkConfig
   }
 
+  networkName = null
   async getNetworkName(): Promise<string> {
-    return (await this.networkConfig).key
+    const temp = (await this.networkConfig).key
+    this.networkName = temp;
+    return temp
   }
 
   private async getAuthHeader(isTokenRefreshCall: boolean) {

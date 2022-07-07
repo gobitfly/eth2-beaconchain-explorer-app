@@ -82,6 +82,8 @@ export class NotificationBase implements OnInit {
 
   remoteNotifyLoadedOnce = false
   public async loadNotifyToggles() {
+    if (!(await this.storage.isLoggedIn())) return
+    
     const net = (await this.api.networkConfig).net
 
     const request = new NotificationGetRequest()
@@ -93,8 +95,10 @@ export class NotificationBase implements OnInit {
       network = "mainnet"
     }
     console.log("result", results, network)
+
+    var containsRocketpoolUpdateSub = false
     for (const result of results) {
-      this.setToggleFromEvent(result.EventName, network, true)
+      this.setToggleFromEvent(result.EventName, network, true, net)
       if (result.EventName == "monitoring_cpu_load") {
         this.cpuThreshold = Math.round(parseFloat(result.EventThreshold) * 100)
         this.storage.setSetting(CPU_THRESHOLD, this.cpuThreshold)
@@ -115,16 +119,25 @@ export class NotificationBase implements OnInit {
         } else {
           this.maxCollateralThreshold = Math.round(((1-(threshold * -1))*1000) - 100) //(1 - ((this.maxCollateralThreshold + 100) / 1000)) * -1
         }
-        console.log("maxCollateralThreshold", result.EventThreshold, this.maxCollateralThreshold)
-        
+
       }
       else if(result.EventName == network+":rocketpool_colleteral_min") {
-        this.minCollateralThreshold =  Math.round((parseFloat(result.EventThreshold)-1) *100)//1 + this.minCollateralThreshold / 100 
+        this.minCollateralThreshold = Math.round((parseFloat(result.EventThreshold)-1) *100) //1 + this.minCollateralThreshold / 100 
         console.log("minCollateralThreshold", result.EventThreshold, this.minCollateralThreshold)
       } else if (result.EventName == "eth_client_update") {
-        this.clientUpdate.setUnknownLayerClient(result.EventFilter)
+        if (result.EventFilter && result.EventFilter.length >= 1 && result.EventFilter.charAt(0).toUpperCase() != result.EventFilter.charAt(0) && result.EventFilter != "null" && result.EventFilter != "none") {
+          this.clientUpdate.setUnknownLayerClient(result.EventFilter)
+          if (result.EventFilter == "rocketpool") {
+            containsRocketpoolUpdateSub = true
+          }
+        }
       }
   
+    }
+
+    if (!containsRocketpoolUpdateSub) {
+      console.log("disabling rocketpool smartnode updates")
+      this.clientUpdate.setOtherClient(null)
     }
     
     // locking toggle so we dont execute onChange when setting initial values
@@ -188,6 +201,8 @@ export class NotificationBase implements OnInit {
     }
 
     if (this.notify) this.firebaseUtils.registerPush(true)
+
+    this.api.clearSpecificCache(new NotificationGetRequest())
   }
     
   private async getRemoteNotificationSetting(notifyLocalStore): Promise<boolean> {
@@ -225,6 +240,7 @@ export class NotificationBase implements OnInit {
       "eth_client_update",
       this.notifyTogglesMap.get("eth_client_update")
     )
+    this.api.clearSpecificCache(new NotificationGetRequest())
   }
 
   private getToggleFromEvent(eventName) {
@@ -249,18 +265,21 @@ export class NotificationBase implements OnInit {
     }*/
   }
 
-  private setToggleFromEvent(eventNameTagges, network, value) {
+  private setToggleFromEvent(eventNameTagges, network, value, net) {
     var parts = eventNameTagges.split(":")
     var eventName = eventNameTagges
     if (parts.length == 2) {
       if (parts[0] != network) { return }
       if (parts[1].indexOf("monitoring_") >= 0) { return; }
+      if (parts[1].indexOf("eth_client_update") >= 0) { return; }
       eventName = parts[1]
     }
 
     this.notifyTogglesMap.set(eventName, value)
     const count = this.activeSubscriptionsPerEventMap.get(eventName)
     this.activeSubscriptionsPerEventMap.set(eventName, count ? count + 1 : 1)
+    
+    this.storage.setBooleanSetting(net + eventName, value)
   }
 
   getCount(eventName) {

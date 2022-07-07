@@ -77,7 +77,11 @@ export class CacheModule {
     }
 
     clearCache() {
-        this.hardStorage.setObject("cachemodule2_"+this.keyPrefix, null)
+        if (this.hardStorage) {
+            this.hardStorage.setObject("cachemodule2_"+this.keyPrefix, null)
+        }
+        this.cache.clear()
+        this.hotOnly.clear()
     }
 
     protected async getCache(key: string) {

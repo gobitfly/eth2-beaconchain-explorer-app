@@ -197,7 +197,7 @@ export default class ClientUpdateUtils {
 
     private async setClient(storageKey: string, value: string): Promise<boolean> {
         const old = await this.storage.getItem(storageKey)
-        if (old && old == value) return false
+        if (old == value) return false
         this.storage.setItem(storageKey, value)
         return true
     }
@@ -259,25 +259,25 @@ export default class ClientUpdateUtils {
     public setUnknownLayerClient(client: string) {
         client = client.toUpperCase()
         ETH1Clients.forEach((data) => { 
-            if (data.key == client) {
+            if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
                 console.log("setting ETH1 client to", client)
-                this.setETH1Client(client)
+                this.setETH1Client(data.key)
                 return
             }
         })
 
         ETH2Clients.forEach((data) => { 
-            if (data.key == client) {
+            if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
                 console.log("setting ETH2 client to", client)
-                this.setETH2Client(client)
+                this.setETH2Client(data.key)
                 return
             }
         })
 
         OtherClients.forEach((data) => { 
-            if (data.key == client) {
+            if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
                 console.log("setting Other client to", client)
-                this.setOtherClient(client)
+                this.setOtherClient(data.key)
                 return
             }
         })
