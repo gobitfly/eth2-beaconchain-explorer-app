@@ -31,6 +31,12 @@ ion-searchbar {
   --placeholder-opacity: 0.8;
 }
 
+.toolbar-btn::part(native) {
+  --ion-color-contrast: var(--x-toolbar-title-color);
+  --color: var(--x-toolbar-title-color);
+  color: var(--x-toolbar-title-color);
+}
+
 .nothingfound ion-icon {
   width: 100%;
   display: flex;

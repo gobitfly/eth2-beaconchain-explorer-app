@@ -19,32 +19,57 @@
  -->
 
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
+  <ion-toolbar [style.--background]="selectMode ? 'var(--ion-color-primary)' : 'var(--ion-toolbar-background)'">
+    <ion-buttons slot="start" *ngIf="selectMode">
+      <ion-button (click)="cancelSelect()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title *ngIf="!selectMode">
       Validators
     </ion-title>
+    <ion-title *ngIf="selectMode">
+      Edit Mode
+    </ion-title>
+   
   </ion-toolbar>
-  <ion-toolbar>
-    <ion-searchbar showCancelButton="focus" enterkeyhint="search" (search)="searchEvent($event)"
+
+
+
+  <ion-toolbar [style.--background]="selectMode ? 'var(--ion-color-primary)' : 'var(--ion-toolbar-background)'">
+    <ion-searchbar *ngIf="!selectMode" showCancelButton="focus" enterkeyhint="search" (search)="searchEvent($event)"
       (ionClear)="cancelSearch()" (ionCancel)="cancelSearch()" placeholder="Public Key / Index / ETH1 Address" animated>
     </ion-searchbar>
+   
+
+    <ion-button slot="start" *ngIf="selectMode" class="toolbar-btn" style="padding: 0 10px;" (click)="setShares()">
+     Stake Share
+    </ion-button>
+    <ion-button slot="end" *ngIf="selectMode" class="toolbar-btn" style="padding: 0 10px; " (click)="setRPLShares()">
+     RPL Share
+    </ion-button>
+
+
   </ion-toolbar>
   <app-offline *ngIf="!api.connectionStateOK"></app-offline>
 
   <ion-item *ngIf="items && !loading && initialized" class="top-bar" [class]="fadeIn">
     <ion-label *ngIf="searchResultMode" >Search Results</ion-label>
     <ion-label *ngIf="!searchResultMode" >My Validators</ion-label>
+    <ion-icon class="opacity-icon" slot="end" name="list-circle-outline" (click)="selectValidator(null)"
+    *ngIf="!searchResultMode && this.items && items.length >= 0"></ion-icon>
     <ion-icon class="opacity-icon" slot="end" name="bookmarks-outline" (click)="addAllDialog()"
-      *ngIf="searchResultMode && this.items && items.length > 1"></ion-icon>
+      *ngIf="searchResultMode && this.items && items.length > 1 && !selectMode"></ion-icon>
     <ion-icon class="opacity-icon" slot="end" name="close-circle-outline" (click)="removeAllDialog()"
-      *ngIf="!searchResultMode && this.items && items.length > 1"></ion-icon>
+      *ngIf="!searchResultMode && this.items && items.length > 1 && !selectMode"></ion-icon>
     <ion-icon class="opacity-icon" slot="end" name="sync-circle-outline" (click)="syncRemote()"
-      *ngIf="isLoggedIn && !searchResultMode && this.items && items.length >= 0"></ion-icon>
+      *ngIf="isLoggedIn && !searchResultMode && this.items && items.length >= 0 && !selectMode"></ion-icon>
   </ion-item>
 
 </ion-header>
 
 <ion-content [fullscreen]="true">
+
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -57,14 +82,17 @@
 
   <app-text-ad location="validator" style="margin-top:10px;" *ngIf="items && items.length > 0 && !loading"></app-text-ad>     
 
-  <ion-virtual-scroll [items]="items" approxItemHeight="160px" [itemHeight]="itemHeightFn"
+  <ion-virtual-scroll [items]="items" approxItemHeight="150px" [itemHeight]="itemHeightFn"
     *ngIf="items && items.length > 0 && !loading">
     
     
-    <div *virtualItem="let item; let idx = index;"> 
-      <app-validator [validator]="item" (click)="presentModal(item)"></app-validator>
+    <div *virtualItem="let item; let idx = index;" style="background-color: var(--ion-card-background);" [ngStyle]="{'border-left': selected.get(item.index) ? '6px solid var(--ion-color-primary)' : 'none'}"> 
+      
+      <app-validator [validator]="item" (click)="clickValidator(item)" (press)="selectValidator(item)" ></app-validator>
      
     </div>
+
+
     
   </ion-virtual-scroll>
 
