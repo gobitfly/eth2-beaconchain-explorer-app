@@ -19,7 +19,9 @@
   <ion-list>
     <ion-item *ngFor="let entry of todo" [ngStyle]="{'opacity' : entry.isChecked ? 0.8 : 1}">
       <ion-checkbox slot="start" [(ngModel)]="entry.isChecked" [value]="entry" (ionChange)="change($event)"></ion-checkbox>
-      <ion-label class="ion-text-wrap">{{entry.val}}</ion-label>
+      <ion-label class="ion-text-wrap">{{entry.val}}
+        <ion-label class="ion-text-wrap hint">{{entry.timing}}</ion-label>
+      </ion-label>
      
     </ion-item>
   </ion-list>

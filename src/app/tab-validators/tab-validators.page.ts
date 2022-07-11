@@ -278,7 +278,7 @@ export class Tab2Page {
 
   itemHeightFn(item, index) {
     if (index == Tab2Page.itemCount - 1) return 210;
-    return 140;
+    return 144;
   }
 
   async upgrade() {
@@ -431,7 +431,7 @@ export class Tab2Page {
               return
             }
 
-            if (shares > maxStakeShare) {
+            if (shares > maxStakeShare.toNumber()) {
               Toast.show({
                 text: 'Share amount is higher than your RPL collateral.'
               });

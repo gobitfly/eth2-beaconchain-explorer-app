@@ -14,11 +14,11 @@ export class MergeChecklistPage implements OnInit {
   @Input() fromSettings: boolean = false
 
   public todo = [
-    { val: 'Run your own execution client', isChecked: false, key:"cl_own_client" },
-    { val: 'Update execution & consensus client', isChecked: false, key: "cl_update" },
-    { val: 'JWT authentication for Engine API', isChecked: false, key:"cl_auth"  },
-    { val: 'Set fee recipient address', isChecked: false, key:"cl_fee_recipient"  },
-    { val: 'Remove external execution client fallbacks like Infura.', isChecked: false, key:"cl_no_ext_fallbacks"  },
+    { val: 'Run your own execution client', isChecked: false, key:"cl_own_client", timing: "Timing: Do this now" },
+    { val: 'Update execution & consensus client', isChecked: false, key: "cl_update", timing: "Timing: Do this after TTD client releases" },
+    { val: 'JWT authentication for Engine API', isChecked: false, key:"cl_auth", timing: "Timing: Do this after TTD client releases"  },
+    { val: 'Set fee recipient address', isChecked: false, key:"cl_fee_recipient", timing: "Timing: Do this after TTD client releases"  },
+    { val: 'Remove external execution client fallbacks like Infura.', isChecked: false, key:"cl_no_ext_fallbacks", timing: "Timing: Do this after TTD client releases"  },
   ];
 
   public optional = [
