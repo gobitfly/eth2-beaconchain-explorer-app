@@ -34,8 +34,6 @@ import { MerchantUtils } from '../utils/MerchantUtils';
 
 import { Keyboard } from '@capacitor/keyboard';
 
-import "hammerjs"
-
 import { Toast } from '@capacitor/toast';
 import ThemeUtils from '../utils/ThemeUtils';
 

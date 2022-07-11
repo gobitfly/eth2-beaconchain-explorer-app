@@ -29,7 +29,21 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { PipesModule } from './pipes/pipes.module'
 import { InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
+import {
+  HammerGestureConfig,
+  HAMMER_GESTURE_CONFIG,
+} from '@angular/platform-browser';
+import "hammerjs"
 
+declare var Hammer: any;
+export class MyHammerConfig extends HammerGestureConfig  {
+  buildHammer(element: HTMLElement) {
+    let mc = new Hammer(element, {
+      touchAction: "auto",
+    });
+    return mc;
+  }
+}
 
 @NgModule({
   declarations: [AppComponent],
@@ -38,7 +52,12 @@ import { InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx';
   providers: [
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    InAppPurchase2
+    InAppPurchase2,
+    {
+      // hammer instantion with custom config
+      provide: HAMMER_GESTURE_CONFIG,
+      useClass: MyHammerConfig ,
+    }
   ],
   bootstrap: [AppComponent]
 })

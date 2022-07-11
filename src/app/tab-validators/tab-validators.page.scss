@@ -35,6 +35,8 @@ ion-searchbar {
   --ion-color-contrast: var(--x-toolbar-title-color);
   --color: var(--x-toolbar-title-color);
   color: var(--x-toolbar-title-color);
+  background: transparent !important;
+  --background: transparent !important;
 }
 
 .nothingfound ion-icon {
