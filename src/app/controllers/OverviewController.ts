@@ -109,14 +109,14 @@ export default class OverviewController {
         });
 
 
-        const overallBalance = this.sumBigIntBalanceRpl(validators, cur => new BigNumber(cur.data.balance).multipliedBy(new BigNumber(cur.share || 1)))
+        const overallBalance = this.sumBigIntBalanceRpl(validators, cur => new BigNumber(cur.data.balance).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)))
         
         const validatorCount = validators.length
 
-        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share || 1)));
-        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share || 1)))
-        const performance7d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance7d).multipliedBy(new BigNumber(cur.share || 1)));
-        const performance365d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share || 1)))
+        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)));
+        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)))
+        const performance7d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance7d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)));
+        const performance365d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)))
 
         const aprPerformance7d = sumBigInt(validators, cur => cur.data.performance7d);
 
@@ -197,7 +197,7 @@ export default class OverviewController {
             nodesAdded.add(cur.rocketpool.node_address)
             const temp = new BigNumber(field(cur).toString())
             if (applyShare) {
-                return temp.multipliedBy(cur.rplshare || 1)
+                return temp.multipliedBy(cur.rplshare == null ? 1 : cur.rplshare)
             }
             return temp
         })

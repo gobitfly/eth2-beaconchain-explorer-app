@@ -318,6 +318,10 @@ export class ValidatorUtils extends CacheModule {
         const response = await this.api.execute(request)
        
         if (!request.wasSuccessfull(response)) {
+            if (response && response.data && response.data.status && response.data.status.indexOf("only a maximum of") >= 0) {
+                throw new Error(response.data.status);
+            }
+            
             return []
         }
 
