@@ -1,6 +1,6 @@
 @import "../../../theme/variables.scss";
 
-ion-button {
+.purchase-btn{
   --border-radius: var(--button-border-radius);
   text-transform: none;
   width: 70%;
@@ -40,7 +40,7 @@ ion-content {
 }
 
 ion-toolbar {
-  height: 40px !important;
+  height: 55px !important;
 }
 
 .packages-selected {

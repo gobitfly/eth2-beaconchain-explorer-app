@@ -159,9 +159,9 @@
       14 day trial.</ion-label>
 
     <div>
-      <ion-button (click)="purchase()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Subscribe for {{
+      <ion-button class="purchase-btn" (click)="purchase()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Subscribe for {{
         selectedPackage.price }} / month</ion-button>
-      <ion-button *ngIf="activeUserPackageName == selectedPackage.purchaseKey" disabled>You own this package
+      <ion-button class="purchase-btn" *ngIf="activeUserPackageName == selectedPackage.purchaseKey" disabled>You own this package
       </ion-button>
     </div>
 
