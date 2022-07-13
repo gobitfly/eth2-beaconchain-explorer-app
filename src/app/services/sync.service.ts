@@ -20,11 +20,12 @@
 
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
-import { SETTING_NOTIFY, SETTING_NOTIFY_CLIENTUPDATE, StorageService } from './storage.service';
+import { SETTING_NOTIFY, StorageService } from './storage.service';
 import { Mutex } from 'async-mutex';
-import { BundleSub, NotificationBundleSubsRequest, SetMobileSettingsRequest } from '../requests/requests';
-import ClientUpdateUtils, { ETH1_CLIENT_SAVED, ETH2_CLIENT_SAVED } from '../utils/ClientUpdateUtils';
+import { BundleSub, NotificationBundleSubsRequest, NotificationGetRequest, SetMobileSettingsRequest } from '../requests/requests';
+import ClientUpdateUtils, { ETH1_CLIENT_SAVED, ETH2_CLIENT_SAVED, OTHER_CLIENT_SAVED } from '../utils/ClientUpdateUtils';
 import { ValidatorSyncUtils } from '../utils/ValidatorSyncUtils';
+import { NotificationBase } from '../tab-preferences/notification-base';
 
 const NOTIFY_SYNCCHANGE = "notify_syncchange_"
 
@@ -41,9 +42,7 @@ interface SyncChanged {
 
 enum SyncActionEvent {
   NOTIFY_GLOBAL,
-  NOTIFY_CLIENTUPDATE,
-  ETH1_UPDATE,
-  ETH2_UPDATE,
+  CLIENT_UPDATE_GENERAL,
   NOTIFICATIONS
 }
 
@@ -77,6 +76,7 @@ export class SyncService {
     private storage: StorageService,
     private validatorSyncUtils: ValidatorSyncUtils,
     private updateUtils: ClientUpdateUtils,
+    protected notificationBase: NotificationBase,
   ) { }
 
   public async mightSyncUpAndSyncDelete() {
@@ -101,12 +101,17 @@ export class SyncService {
 
     if (this.syncLock.isLocked()) return
 
-    if (this.lastNotifySync + (2 * 60 * 1000) > Date.now()) {
-      console.log("Syncing notify cancelled, last update was less than 2 minutes ago")
+    if (this.lastNotifySync + (15 * 1000) > Date.now()) {
+      console.log("Syncing notify cancelled, last update was less than 15 seconds ago")
       return;
     }
 
     console.log("== Syncing notify ==")
+
+    console.log("== Step 1: Loading notification preferences from beaconcha.in ==")
+    await this.notificationBase.loadNotifyToggles()
+
+    console.log("== Step 2: Sync changes ==")
 
     const unlock = await this.syncLock.acquire();
     this.bundleList = []
@@ -126,9 +131,19 @@ export class SyncService {
 
     unlock();
 
+    if (allNotifyKeys.length > 0) { 
+      this.api.clearSpecificCache(new NotificationGetRequest())
+    } 
+
+    this.deleteAllTemp()
+
     console.log("== Syncing notify completed ==")
   }
 
+  /**
+   * Stale all validator specific notifications so they can be reapplied according to the current settings.
+   * This is needed when we add a new validators and want to apply the notification settings for them
+   */
   async syncAllSettingsForceStaleNotifications() {
     const loggedIn = await this.storage.isLoggedIn()
     if (!loggedIn) return false
@@ -136,7 +151,19 @@ export class SyncService {
     const allNotifyKeys = await this.getAllSyncChangeKeys()
     for (const key of allNotifyKeys) {
       const cleanKey = key.replace(NOTIFY_SYNCCHANGE, "")
+      if (cleanKey.indexOf("monitoring_") >= 0) continue
+      if (cleanKey.indexOf("setting_notify_newround") >= 0) continue
+      if (cleanKey.indexOf("setting_notify_clientupdate") >= 0) continue;
+      if (cleanKey.indexOf("rocketpool_new_claimround") >= 0) continue
+      if (cleanKey.indexOf("eth_client_update") >= 0) continue;
+      if (cleanKey.indexOf("setting_notify_machineoffline") >= 0) continue;
+      if (cleanKey.indexOf("setting_notify_hddwarn") >= 0) continue;
+      if (cleanKey.indexOf("setting_notify_cpuwarn") >= 0) continue;
+      if (cleanKey.indexOf("setting_notify_memorywarn") >= 0) continue;
+      if (cleanKey.indexOf("setting_notify_rplcommission") >= 0) continue;
+     
       const syncAction = this.getSyncActionEvent(cleanKey)
+      if(syncAction != SyncActionEvent.NOTIFICATIONS) continue
       console.log("STALE CHECK " + cleanKey, syncAction)
 
       if (syncAction == SyncActionEvent.NOTIFICATIONS) {
@@ -149,9 +176,16 @@ export class SyncService {
     this.syncAllSettings()
   }
 
-  async developDeleteQueue() {
-    if (!this.api.debug) return false
+  async deleteAllTemp() {
+    const allNotifyKeys = await this.getAllSyncChangeKeys()
+    for (const key of allNotifyKeys) {
+      if (key.indexOf("temponly") >= 0) {
+        this.storage.remove(key)
+      }
+    }
+  }
 
+  async developDeleteQueue() {
     const allNotifyKeys = await this.getAllSyncChangeKeys()
     for (const key of allNotifyKeys) {
       this.storage.remove(key)
@@ -162,20 +196,17 @@ export class SyncService {
     const actionEvent = this.getSyncActionEvent(key)
 
     if (actionEvent == SyncActionEvent.NOTIFY_GLOBAL) {
-      return async (_) => {
+      return async (_, onComplete) => {
         const currentValue = await this.storage.getBooleanSetting(key)
-        return this.updateRemoteGeneralNotifySettings(currentValue)
+        const result = await this.updateRemoteGeneralNotifySettings(currentValue)
+        onComplete(result)
+        return result
       }
-    } else if (actionEvent == SyncActionEvent.NOTIFY_CLIENTUPDATE) {
-     return this.getClientUpdateNotifySyncAction()
+    } else if (actionEvent == SyncActionEvent.CLIENT_UPDATE_GENERAL) {
+      return this.getClientUpdateSyncAction()
     } 
-    else if (actionEvent == SyncActionEvent.ETH2_UPDATE) {
-      return this.getClientUpdateSyncAction(ETH2_CLIENT_SAVED)
-    } else if (actionEvent == SyncActionEvent.ETH1_UPDATE) {
-      return this.getClientUpdateSyncAction(ETH1_CLIENT_SAVED)
-    }
 
-    return this.getNotifySubSyncAction(key, null)
+    return this.getNotifySubSyncAction(key)
   }
 
   async getClientUpdateFilter(clientKey): Promise<any> {
@@ -190,83 +221,45 @@ export class SyncService {
     return item.eventFilter
   }
 
-  getNotifySubSyncAction (key, oldFilter: Promise<any> | null) {
-    return async (syncChange: SyncChanged, superOnComplete: (boolean) => void) => {
-      const currentValue = await this.storage.getBooleanSetting(key)
-
-      // Filter handler for client updates
-      // TODO: refactor to use new the new simpler filter handler
-      var resolvedFilter = oldFilter ? await oldFilter : null
-      if(resolvedFilter && resolvedFilter instanceof Error){
-        console.log("Error resolving filter", resolvedFilter)
-        // this case only fails if no eth clients are configured and we want to sync
-        // client update notification settings. In this case, we drop the sync request
-        // since there is nothing to sync (returning true)
-        return true
-      }
-      // ^== TODO
-
-      if (resolvedFilter == null) {
-        resolvedFilter = this.getGeneralFilter(syncChange)
+  getNotifySubSyncAction (key) {
+    return async (syncChange: SyncChanged, superOnComplete: (boolean) => void) => { 
+      var currentValue = await this.storage.getBooleanSetting(key)
+      if (syncChange.eventFilter && syncChange.eventFilter.indexOf("sub_") >= 0) {
+        currentValue = syncChange.eventFilter.indexOf("unsub_") < 0
       }
 
+      var eventFilter = syncChange.eventFilter
+      if (eventFilter) {
+        eventFilter = eventFilter.replace("unsub_", "").replace("sub_", "")
+      }
       this.queueForPost(currentValue, syncChange.network, {
         event_name: syncChange.eventName,
-        event_filter: resolvedFilter,
+        event_filter: eventFilter,
         event_threshold: syncChange.eventThreshold,
         onComplete: superOnComplete
       })
+      return true
     }
   }
 
   getSyncActionEvent(key: string) {
     if (key.endsWith(SETTING_NOTIFY)) {
       return SyncActionEvent.NOTIFY_GLOBAL
-    } else if (key.endsWith(SETTING_NOTIFY_CLIENTUPDATE)) {
-      return SyncActionEvent.NOTIFY_CLIENTUPDATE
     } else if (key.endsWith(ETH2_CLIENT_SAVED)) {
-      return SyncActionEvent.ETH2_UPDATE
+      return SyncActionEvent.CLIENT_UPDATE_GENERAL
     } else if (key.endsWith(ETH1_CLIENT_SAVED)) {
-      return SyncActionEvent.ETH1_UPDATE
+      return SyncActionEvent.CLIENT_UPDATE_GENERAL
+    }  else if (key.endsWith(OTHER_CLIENT_SAVED)) {
+      return SyncActionEvent.CLIENT_UPDATE_GENERAL
     }
 
     return SyncActionEvent.NOTIFICATIONS
   }
 
-  private getClientUpdateNotifySyncAction() {
-    const eth2Success = this.getNotifySubSyncAction(SETTING_NOTIFY_CLIENTUPDATE,
-      this.getClientUpdateFilter(ETH2_CLIENT_SAVED)
-    )
 
-    const eth1Success = this.getNotifySubSyncAction(SETTING_NOTIFY_CLIENTUPDATE,
-      this.getClientUpdateFilter(ETH1_CLIENT_SAVED)
-    )
-
-    return async (syncChange, onComplete): Promise<boolean> => {
-      return await eth1Success(syncChange, onComplete) && await eth2Success(syncChange, onComplete)
-    }
-  }
-
-  private getClientUpdateSyncAction(key){
+  private getClientUpdateSyncAction(){
     return async (syncChange: SyncChanged, superOnComplete: (boolean) => void) => {
-      const oldClient = await this.getDeleteOldClient(key)
-      if (oldClient) {
-        this.queueForPost(
-          false, syncChange.network, {
-            event_name: syncChange.eventName,
-            event_filter: oldClient.toLocaleLowerCase(),
-            event_threshold: syncChange.eventThreshold, 
-            onComplete: (success) => {
-              superOnComplete(success)
-
-              if (!success) return
-              this.setDeleteOldClient(key, null)
-            }
-          }
-        )        
-      }
-      const filter = this.getClientUpdateFilter(key)
-      return this.getNotifySubSyncAction(SETTING_NOTIFY_CLIENTUPDATE, filter)(syncChange, superOnComplete)
+      return this.getNotifySubSyncAction(syncChange.eventName)(syncChange, superOnComplete)
     }
   }
 
@@ -362,7 +355,7 @@ export class SyncService {
     }
 
     if (syncChange.lastChanged > syncChange.lastSynced) {
-      console.log("== Syncing notify: " + key + " changed, updating on remote... ==")
+      console.log("== Syncing notify: " + key + " changed, updating on remote... ==", syncChange.lastChanged, syncChange.lastSynced)
       const actionPromise = syncAction(syncChange, (success) => {
         if (success) {
           console.log("== Syncing notify: " + key + " synced successfully! ==")
@@ -376,12 +369,30 @@ export class SyncService {
     return false
   }
 
+  async changeOtherClient(value) {
+    const oldValue = await this.updateUtils.getOtherClient()
+    const changed = await this.updateUtils.setOtherClient(value)
+    if (changed) {
+      if (value && value != 'null') {
+        this.setLastChanged(OTHER_CLIENT_SAVED, "eth_client_update", "sub_" + value.toLocaleLowerCase(), null)
+      }
+      if (oldValue) {
+        this.setLastChanged("UN"+OTHER_CLIENT_SAVED, "eth_client_update", "unsub_" + oldValue.toLocaleLowerCase(), null)
+      }
+    }
+  }
+
   async changeETH2Client(value: string) {
     const oldValue = await this.updateUtils.getETH2Client()
     const changed = await this.updateUtils.setETH2Client(value)
     if (changed) {
-      this.setLastChanged(ETH2_CLIENT_SAVED, "eth_client_update", null, null)
-      this.setDeleteOldClient(ETH2_CLIENT_SAVED, oldValue)
+      if (value != "none") {
+        this.setLastChanged(ETH2_CLIENT_SAVED, "eth_client_update", "sub_" + value.toLocaleLowerCase(), null)
+      }
+      
+      if (oldValue) {
+        this.setLastChanged("UN"+ETH2_CLIENT_SAVED, "eth_client_update", "unsub_" + oldValue.toLocaleLowerCase(), null)
+      }
     }
   }
 
@@ -389,24 +400,20 @@ export class SyncService {
     const oldValue = await this.updateUtils.getETH1Client()
     const changed = await this.updateUtils.setETH1Client(value)
     if (changed) {
-      this.setLastChanged(ETH1_CLIENT_SAVED, "eth_client_update", null, null)
-      this.setDeleteOldClient(ETH1_CLIENT_SAVED, oldValue)
+      if (value != "none") {
+        this.setLastChanged(ETH1_CLIENT_SAVED, "eth_client_update", "sub_" + value.toLocaleLowerCase(), null)
+      }
+      if (oldValue) {
+        this.setLastChanged("UN"+ETH1_CLIENT_SAVED, "eth_client_update", "unsub_" + oldValue.toLocaleLowerCase(), null)
+      }
     }
   }
 
-  private async getDeleteOldClient(key: string): Promise<string> {
-    const temp = await this.storage.getItem("UNSYNCED_OLD" + key)
-    if (temp && temp.length >= 1) return temp
-    return null
-  }
-
-  private setDeleteOldClient(key: string, value: string) {
-    this.storage.setItem("UNSYNCED_OLD" + key, value)
-  }
 
   async changeGeneralNotify(value: boolean, filter: string = null) {
     this.storage.setBooleanSetting(SETTING_NOTIFY, value)
     this.setLastChanged(SETTING_NOTIFY, SETTING_NOTIFY, filter, null)
+   
   }
 
   async changeNotifyEvent(key: string, event: string, value: boolean, filter: string = null, threshold: number = null) {
@@ -420,25 +427,39 @@ export class SyncService {
     this.setLastChanged( key, event, filter, threshold)
   }
 
-  async reapplyNotifyEvent(key: string, event: string, filter: string = null): Promise<boolean> {
-    const currentKey = await this.findSimilarChanged(key)
+  async reapplyNotifyEvent(event: string, filter: string = null): Promise<boolean> {
+    const currentKey = await this.findSimilarChanged(event)
     if (currentKey == null) {
-      console.log("ignoring reapplyNotifyEvent, no key with similar name found", key, event)
+      console.log("ignoring reapplyNotifyEvent, no key with similar name found", event, event)
       return false
     }
 
     const current = await this.getChanged(currentKey)
     if (current.eventName == "") {
-      console.log("ignoring reapplyNotifyEvent since no previous setting change has been found for event", key, event)
+      console.log("ignoring reapplyNotifyEvent since no previous setting change has been found for event", event, event)
       return false
     }
-    this.setLastChanged(key + filter, event, filter, current.eventThreshold)
+    this.setLastChanged(event + filter, event, filter, current.eventThreshold)
     return true
   }
 
-  changeNotifyClientUpdate(key: string, value: boolean, filter: string = null) {
+  async changeNotifyClientUpdate(key: string, value: boolean, filter: string = null) {
     this.storage.setBooleanSetting(key, value)
-    this.setLastChanged(key, "eth_client_update", filter, null)
+    var subOrUnsub = value ? "sub_" : "unsub_"
+    var client = await this.updateUtils.getETH1Client()
+    if (client && client != "none") {
+      this.setLastChanged(ETH1_CLIENT_SAVED, "eth_client_update", subOrUnsub + client.toLocaleLowerCase(), null)
+    }
+    
+    client = await this.updateUtils.getETH2Client()
+    if (client && client != "none") {
+      this.setLastChanged(ETH2_CLIENT_SAVED, "eth_client_update", subOrUnsub + client.toLocaleLowerCase(), null)
+    }
+
+    client = await this.updateUtils.getOtherClient()
+    if (client && client != "null") {
+      this.setLastChanged(OTHER_CLIENT_SAVED, "eth_client_update", subOrUnsub + client.toLocaleLowerCase(), null)
+    }
   }
 
   private async setLastSynced(key: string, event: string, value: number = Date.now()) {

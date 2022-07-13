@@ -40,9 +40,9 @@
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="close-circle-outline"></ion-icon>
       <ion-label>
-        Validator Slashed
+        Validator Slashed <span class="active-count">({{ getCount('validator_got_slashed') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifySlashed"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_got_slashed')" (ngModelChange)="setToggle('validator_got_slashed', $event)"
         (ionChange)="notifyEventToggle('validator_got_slashed')" slot="end"></ion-toggle>
     </ion-item>
 
@@ -50,27 +50,27 @@
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="information-circle-outline"></ion-icon>
       <ion-label>
-        Submitted Proposals
+        Submitted Proposals <span class="active-count">({{ getCount('validator_proposal_submitted') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyProposalsSubmitted"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_proposal_submitted')"  (ngModelChange)="setToggle('validator_proposal_submitted', $event)"
         (ionChange)="notifyEventToggle('validator_proposal_submitted')" slot="end"></ion-toggle>
     </ion-item>
 
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="remove-circle-outline"></ion-icon>
       <ion-label>
-        Missed Proposals
+        Missed Proposals <span class="active-count">({{ getCount('validator_proposal_missed') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyProposalsMissed"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_proposal_missed')" (ngModelChange)="setToggle('validator_proposal_missed', $event)"
         (ionChange)="notifyEventToggle('validator_proposal_missed')" slot="end"></ion-toggle>
     </ion-item>
 
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="remove-circle-outline"></ion-icon>
       <ion-label >
-        Missed Attestations
+        Missed Attestations <span class="active-count">({{ getCount('validator_attestation_missed') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyAttestationsMissed"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_attestation_missed')"  (ngModelChange)="setToggle('validator_attestation_missed', $event)"
         (ionChange)="notifyEventToggle('validator_attestation_missed')" slot="end"></ion-toggle>
     </ion-item>
 
@@ -78,9 +78,9 @@
     <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
       <ion-icon slot="start" name="sync-outline"></ion-icon>
       <ion-label >
-        Sync Committee Duty
+        Sync Committee Duty <span class="active-count">({{ getCount('validator_synccommittee_soon') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifySyncDuty"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_synccommittee_soon')"  (ngModelChange)="setToggle('validator_synccommittee_soon', $event)"
         (ionChange)="notifyEventToggle('validator_synccommittee_soon')" slot="end"></ion-toggle>
     </ion-item>
     </ion-list>
@@ -97,8 +97,8 @@
       <ion-label>
         Client Updates
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyClientUpdate" (ionChange)="notifyClientUpdates()"
-        slot="end"></ion-toggle>
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('eth_client_update')"  (ngModelChange)="setToggle('eth_client_update', $event)"
+       (ionChange)="notifyClientUpdates()" slot="end"></ion-toggle>
     </ion-item>
   </ion-list>
 
@@ -113,7 +113,8 @@
     <ion-label>
       Machine Offline
     </ion-label>
-    <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyMachineOffline" (ionChange)="notifyEventToggleAllMachines('monitoring_machine_offline')"
+    <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_machine_offline')" (ngModelChange)="setToggle('monitoring_machine_offline', $event)"
+     (ionChange)="notifyEventToggleAllMachines('monitoring_machine_offline')"
       slot="end"></ion-toggle>
   </ion-item>
 
@@ -135,12 +136,13 @@
     <ion-label>
       Storage Usage 
     </ion-label>
-    <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyMachineDiskFull" (ionChange)="changeDiskNotification()"
+    <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_hdd_almostfull')" (ngModelChange)="setToggle('monitoring_hdd_almostfull', $event)"
+     (ionChange)="changeDiskNotification()"
       slot="end"></ion-toggle>
       
   </ion-item>
 
-  <ion-item [class]="!notifyMachineDiskFull || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+  <ion-item [class]="!notifyTogglesMap.get('monitoring_hdd_almostfull') || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
     <ion-range *ngIf="canCustomizeThresholds" min="10" max="99" step="1" [(ngModel)]="storageThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeDiskNotification()" (touchend)="changeDiskNotification()">
     </ion-range>
     <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="storageThreshold" _ngcontent-ves-c134="" min="10" max="99" step="1" ng-reflect-min="10" ng-reflect-max="99" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="90" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="90"></ion-range>
@@ -155,11 +157,12 @@
     <ion-label>
       CPU Usage
     </ion-label>
-    <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyMachineCpuLoad" (ionChange)="changeCPUNotification()"
+    <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_cpu_load')" (ngModelChange)="setToggle('monitoring_cpu_load', $event)"
+    (ionChange)="changeCPUNotification()"
       slot="end"></ion-toggle>
   </ion-item>
 
-  <ion-item [class]="!notifyMachineCpuLoad || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+  <ion-item [class]="!notifyTogglesMap.get('monitoring_cpu_load') || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
     <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
     <ion-range *ngIf="canCustomizeThresholds" min="5" max="99" step="1" [(ngModel)]="cpuThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeCPUNotification()" (touchend)="changeCPUNotification()">
     </ion-range>
@@ -174,12 +177,13 @@
   <ion-label>
     Memory Usage
   </ion-label>
-  <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyMachineMemoryLoad" (ionChange)="changeMemoryNotification()"
+  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_memory_usage')" (ngModelChange)="setToggle('monitoring_memory_usage', $event)"
+   (ionChange)="changeMemoryNotification()"
     slot="end"></ion-toggle>
 </ion-item>
 
 
-<ion-item [class]="!notifyMachineMemoryLoad || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+<ion-item [class]="!notifyTogglesMap.get('monitoring_memory_usage') || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized || noMachines ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
   <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
   <ion-range *ngIf="canCustomizeThresholds" min="10" max="99" step="1" [(ngModel)]="memoryThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeMemoryNotification()" (touchend)="changeMemoryNotification()">
   </ion-range>
@@ -203,29 +207,11 @@
   <ion-label >
     New Reward Round
   </ion-label>
-  <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyRPLNewRewardRound"
+  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('rocketpool_new_claimround')" (ngModelChange)="setToggle('rocketpool_new_claimround', $event)"
     (ionChange)="notifyEventToggle('rocketpool_new_claimround')" slot="end"></ion-toggle>
   </ion-item>
 
 
-<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
-  <ion-icon slot="start"name="pricetag-outline"></ion-icon>
- 
-  <ion-label>
-    Current Commission
-  </ion-label>
-  <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyRPLCommission" (ionChange)="changeRocketpoolCommission()"
-    slot="end"></ion-toggle>
-</ion-item>
-
-
-<ion-item [class]="!authUser || !notify || !notifyInitialized || !notifyRPLCommission ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
-  <ion-range min="5" max="20" step="1" [(ngModel)]="commissionThreshold" class="range" (mouseup)="changeRocketpoolCommission()" (touchend)="changeRocketpoolCommission()">
-  </ion-range>
- 
-
-  <ion-note slot="end">≥ {{ commissionThreshold }} %</ion-note>
-</ion-item>
 
 </ion-list>
 
@@ -242,12 +228,13 @@
   <ion-label>
     Max Collateral
   </ion-label>
-  <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyRPLMaxColletaral" (ionChange)="changeRocketpoolMaxCollateral()"
+  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('rocketpool_colleteral_max')" (ngModelChange)="setToggle('rocketpool_colleteral_max', $event)"
+   (ionChange)="changeRocketpoolMaxCollateral()"
     slot="end"></ion-toggle>
 </ion-item>
 
 
-<ion-item [class]="!authUser || !notify || !notifyInitialized || !notifyRPLMaxColletaral ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+<ion-item [class]="!authUser || !notify || !notifyInitialized || !notifyTogglesMap.get('rocketpool_colleteral_max') ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
   <ion-icon slot="start" style="color: var(--ion-color-danger);" name="chevron-back-outline" *ngIf="maxCollateralThreshold < 0"></ion-icon>
   <ion-icon slot="start" style="color: var(--ion-color-success);" name="chevron-forward-outline"  *ngIf="maxCollateralThreshold >= 0"></ion-icon>
 
@@ -265,12 +252,13 @@
   <ion-label>
     Min Collateral
   </ion-label>
-  <ion-toggle checked id="notifyToggle" [(ngModel)]="notifyRPLMinColletaral" (ionChange)="changeRocketpoolMinCollateral()"
+  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('rocketpool_colleteral_min')" (ngModelChange)="setToggle('rocketpool_colleteral_min', $event)"
+   (ionChange)="changeRocketpoolMinCollateral()"
     slot="end"></ion-toggle>
 </ion-item>
 
 
-<ion-item [class]="!authUser || !notify || !notifyInitialized || !notifyRPLMinColletaral ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+<ion-item [class]="!authUser || !notify || !notifyInitialized || !notifyTogglesMap.get('rocketpool_colleteral_min') ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
 
   <ion-range min="0" max="300" step="10" [(ngModel)]="minCollateralThreshold" class="range" (mouseup)="changeRocketpoolMinCollateral()" (touchend)="changeRocketpoolMinCollateral()">
   </ion-range>

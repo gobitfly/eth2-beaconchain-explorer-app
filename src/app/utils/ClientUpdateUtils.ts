@@ -19,7 +19,7 @@
  */
 
 import { ApiService } from '../services/api.service';
-import { StorageService, SETTING_NOTIFY_CLIENTUPDATE } from '../services/storage.service';
+import { StorageService } from '../services/storage.service';
 import { Injectable } from '@angular/core';
 import { GithubReleaseRequest, GithubReleaseResponse } from '../requests/requests';
 
@@ -82,12 +82,28 @@ export const ETH1Clients: ETHClient[] = [
         name: "Besu",
         repo: "hyperledger/besu",
     },
+    {
+        key: "ERIGON",
+        name: "Erigon",
+        repo: "ledgerwatch/erigon",
+    },
 ]
+
+export const OtherClients: ETHClient[] = [
+
+    {
+        key: "ROCKETPOOL",
+        name: "Rocketpool",
+        repo: "rocket-pool/smartnode-install",
+    },
+]
+
 
 
 const LOCAL_UPDATED_KEY = "mark_clientupdate_completed"
 export const ETH1_CLIENT_SAVED = "setting_client_eth1"
 export const ETH2_CLIENT_SAVED = "setting_client_eth2"
+export const OTHER_CLIENT_SAVED = "smart_node_updates"
 const SETTINGS_UPDATECHANNEL = "setting_client_updatechannel"
 
 const UPDATE_LOCK = "last_github_update"
@@ -115,6 +131,10 @@ export default class ClientUpdateUtils {
 
         this.append(
             this.checkUpdateFor(ETH1Clients, await this.storage.getItem(ETH1_CLIENT_SAVED))
+        )
+
+        this.append(
+            this.checkUpdateFor(OtherClients, await this.storage.getItem(OTHER_CLIENT_SAVED))
         )
 
         this.storage.setObject(UPDATE_LOCK, { ts: Date.now() })
@@ -177,10 +197,19 @@ export default class ClientUpdateUtils {
 
     private async setClient(storageKey: string, value: string): Promise<boolean> {
         const old = await this.storage.getItem(storageKey)
-        if (old && old == value) return false
+        if (old == value) return false
         this.storage.setItem(storageKey, value)
         return true
     }
+
+    async setOtherClient(key: string): Promise<boolean> {
+        return await this.setClient(OTHER_CLIENT_SAVED, key)
+    }
+
+    getOtherClient() {
+        return this.storage.getItem(OTHER_CLIENT_SAVED)
+    }
+
 
     async setETH2Client(key: string): Promise<boolean> {
         return await this.setClient(ETH2_CLIENT_SAVED, key)
@@ -206,10 +235,6 @@ export default class ClientUpdateUtils {
         this.storage.setObject(LOCAL_UPDATED_KEY + release.client.key, { clientKey: release.client.key, version: release.data.id })
     }
 
-    private async areClientUpdatesNotified() {
-        return await this.storage.getBooleanSetting(SETTING_NOTIFY_CLIENTUPDATE)
-    }
-
     // Used when talking to remote (0 means no change)
     async getLastClosedVersionOrZero(clientKey) {
         const temp = await this.getLastClosedVersion(clientKey)
@@ -228,6 +253,34 @@ export default class ClientUpdateUtils {
         if (temp.length <= 0) return null
         console.log("Client updates data", response, temp)
         return new Release(client, temp[0])
+    }
+
+    // Set client if only name of client is known and not whether execution or consensus. For example when setting client from /user/notifications
+    public setUnknownLayerClient(client: string) {
+        client = client.toUpperCase()
+        ETH1Clients.forEach((data) => { 
+            if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
+                console.log("setting ETH1 client to", client)
+                this.setETH1Client(data.key)
+                return
+            }
+        })
+
+        ETH2Clients.forEach((data) => { 
+            if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
+                console.log("setting ETH2 client to", client)
+                this.setETH2Client(data.key)
+                return
+            }
+        })
+
+        OtherClients.forEach((data) => { 
+            if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
+                console.log("setting Other client to", client)
+                this.setOtherClient(data.key)
+                return
+            }
+        })
     }
 
 }

@@ -93,8 +93,11 @@ export class ApiService extends CacheModule {
     await this.networkConfig
   }
 
+  networkName = null
   async getNetworkName(): Promise<string> {
-    return (await this.networkConfig).key
+    const temp = (await this.networkConfig).key
+    this.networkName = temp;
+    return temp
   }
 
   private async getAuthHeader(isTokenRefreshCall: boolean) {
@@ -274,6 +277,10 @@ export class ApiService extends CacheModule {
     result.cached = false
 
     return result
+  }
+
+  async clearSpecificCache(request: APIRequest<any>) {
+    this.putCache(await this.getCacheKey(request), null, request.maxCacheAge)
   }
 
   private updateLastRefreshed(response: Response) {

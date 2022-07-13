@@ -112,7 +112,7 @@ export class Tab1Page {
       this.initialized = false
       return
     }
-
+    this.updates.checkUpdates()
     const validators = await this.validatorUtils.getAllMyValidators().catch((error) => { return [] })
     const epoch = await this.validatorUtils.getRemoteCurrentEpoch().catch((error) => { return null })
     const overviewController = new OverviewController(() => {
@@ -120,11 +120,10 @@ export class Tab1Page {
       this.api.invalidateCache()
       this.refresh()
     }, await this.merchant.getCurrentPlanMaxValidator())
-    this.updates.checkUpdates()
+    
     this.overallData = overviewController.proccessDashboard(
       validators,
-      epoch,
-      await this.storage.getStakingShare()
+      epoch
     )
     this.lastRefreshTs = this.getUnixSeconds()
   }

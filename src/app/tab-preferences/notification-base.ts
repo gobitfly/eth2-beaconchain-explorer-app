@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
-import { SETTING_NOTIFY, SETTING_NOTIFY_ATTESTATION_MISSED, SETTING_NOTIFY_CLIENTUPDATE, SETTING_NOTIFY_CPU_WARN, SETTING_NOTIFY_DECREASED, SETTING_NOTIFY_HDD_WARN, SETTING_NOTIFY_MACHINE_OFFLINE, SETTING_NOTIFY_MEMORY_WARN, SETTING_NOTIFY_PROPOSAL_MISSED, SETTING_NOTIFY_PROPOSAL_SUBMITTED, SETTING_NOTIFY_RPL_COMMISSION, SETTING_NOTIFY_RPL_MAX_COLL, SETTING_NOTIFY_RPL_MIN_COLL, SETTING_NOTIFY_RPL_NEWROUND, SETTING_NOTIFY_SLASHED, SETTING_NOTIFY_SYNC_DUTY, StorageService } from 'src/app/services/storage.service';
+import { CPU_THRESHOLD, HDD_THRESHOLD, RAM_THRESHOLD, SETTING_NOTIFY, StorageService } from 'src/app/services/storage.service';
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
-import { GetMobileSettingsRequest, MobileSettingsResponse } from '../requests/requests';
+import { GetMobileSettingsRequest, MobileSettingsResponse, NotificationGetRequest } from '../requests/requests';
 import { Injectable } from '@angular/core';
+import ClientUpdateUtils from '../utils/ClientUpdateUtils';
 
 const LOCKED_STATE = "locked_v2"
 
@@ -17,24 +18,17 @@ export class NotificationBase implements OnInit {
 
   notifyInitialized = false
 
-  notify: boolean
-  notifySlashed: boolean
-  notifyDecreased: boolean
-  notifyClientUpdate: boolean
-  notifyProposalsSubmitted: boolean
-  notifyProposalsMissed: boolean
-  notifyAttestationsMissed: boolean
-  notifySyncDuty: boolean
+  notify: boolean  = false
 
-  notifyMachineOffline: boolean
-  notifyMachineDiskFull: boolean
-  notifyMachineCpuLoad: boolean
-  notifyMachineMemoryLoad: boolean
+  storageThreshold = 90
+  cpuThreshold = 60
+  memoryThreshold = 80
 
-  notifyRPLNewRewardRound: boolean
-  notifyRPLCommission: boolean
-  notifyRPLMaxColletaral: boolean
-  notifyRPLMinColletaral: boolean
+  maxCollateralThreshold = 100
+  minCollateralThreshold = 0
+
+  activeSubscriptionsPerEventMap = new Map<String, number>() // map storing the count of subscribed validators per event
+  notifyTogglesMap = new Map<String, boolean>()
 
   constructor(
     protected api: ApiService,
@@ -42,11 +36,17 @@ export class NotificationBase implements OnInit {
     protected firebaseUtils: FirebaseUtils,
     protected platform: Platform,
     protected alerts: AlertService,
-    protected sync: SyncService
+    protected sync: SyncService,
+    protected clientUpdate: ClientUpdateUtils
   ) { }
 
   ngOnInit() {
     this.notifyInitialized = false
+  }
+
+  setToggle(eventName, event) {
+    console.log("change toggle", eventName, event)
+    this.notifyTogglesMap.set(eventName, event)
   }
 
   // changes a toggle without triggering onChange
@@ -82,42 +82,78 @@ export class NotificationBase implements OnInit {
 
   remoteNotifyLoadedOnce = false
   public async loadNotifyToggles() {
+    if (!(await this.storage.isLoggedIn())) return
+    
     const net = (await this.api.networkConfig).net
+
+    const request = new NotificationGetRequest()
+    const response = await this.api.execute(request)
+    const results = request.parse(response)
+   
+    var network = await this.api.getNetworkName()
+    if (network == "main") {
+      network = "mainnet"
+    }
+    console.log("result", results, network)
+
+    var containsRocketpoolUpdateSub = false
+    for (const result of results) {
+      this.setToggleFromEvent(result.EventName, network, true, net)
+      if (result.EventName == "monitoring_cpu_load") {
+        this.cpuThreshold = Math.round(parseFloat(result.EventThreshold) * 100)
+        this.storage.setSetting(CPU_THRESHOLD, this.cpuThreshold)
+      }
+      else if (result.EventName == "monitoring_hdd_almostfull") {
+        this.storageThreshold = Math.round(100 - (parseFloat(result.EventThreshold) * 100))
+        this.storage.setSetting(HDD_THRESHOLD, this.storageThreshold)
+      }
+      else if (result.EventName == "monitoring_memory_usage") {
+        
+        this.memoryThreshold = Math.round(parseFloat(result.EventThreshold) * 100)
+        this.storage.setSetting(RAM_THRESHOLD, this.memoryThreshold)
+      }
+      else if (result.EventName == network+":rocketpool_colleteral_max") {
+        const threshold =  parseFloat(result.EventThreshold)
+        if (threshold >= 0) {
+          this.maxCollateralThreshold = Math.round(((threshold-1)*1000) + 100) //1 + ((this.maxCollateralThreshold - 100) / 1000)
+        } else {
+          this.maxCollateralThreshold = Math.round(((1-(threshold * -1))*1000) - 100) //(1 - ((this.maxCollateralThreshold + 100) / 1000)) * -1
+        }
+
+      }
+      else if(result.EventName == network+":rocketpool_colleteral_min") {
+        this.minCollateralThreshold = Math.round((parseFloat(result.EventThreshold)-1) *100) //1 + this.minCollateralThreshold / 100 
+        console.log("minCollateralThreshold", result.EventThreshold, this.minCollateralThreshold)
+      } else if (result.EventName == "eth_client_update") {
+        if (result.EventFilter && result.EventFilter.length >= 1 && result.EventFilter.charAt(0).toUpperCase() != result.EventFilter.charAt(0) && result.EventFilter != "null" && result.EventFilter != "none") {
+          this.clientUpdate.setUnknownLayerClient(result.EventFilter)
+          if (result.EventFilter == "rocketpool") {
+            containsRocketpoolUpdateSub = true
+          }
+        }
+      }
+  
+    }
+
+    if (!containsRocketpoolUpdateSub) {
+      console.log("disabling rocketpool smartnode updates")
+      this.clientUpdate.setOtherClient(null)
+    }
     
     // locking toggle so we dont execute onChange when setting initial values
-    const preferences = await this.storage.getNotificationTogglePreferences(net)
+    const preferences = await this.storage.loadPreferencesToggles(net)
 
     this.lockedToggle = true
-    this.notifySlashed = preferences.notifySlashed
-
-    this.notifyDecreased = preferences.notifyDecreased
-    this.notifySyncDuty = preferences.notifySyncDuty
-
-    this.notifyClientUpdate = preferences.notifyClientUpdate
-
-    this.notifyProposalsSubmitted = preferences.notifyProposalsSubmitted
-    this.notifyProposalsMissed = preferences.notifyProposalsMissed
-
-    this.notifyAttestationsMissed = preferences.notifyAttestationsMissed
-
-    this.notifyMachineCpuLoad = preferences.notifyMachineCpuWarn
-    this.notifyMachineDiskFull = preferences.notifyMachineHddWarn
-    this.notifyMachineOffline = preferences.notifyMachineOffline
-    this.notifyMachineMemoryLoad = preferences.notifyMachineMemoryLoad
-    this.notifyRPLCommission = preferences.notifyRPLCommission
-    this.notifyRPLMaxColletaral = preferences.notifyRPLMaxColletaral
-    this.notifyRPLMinColletaral = preferences.notifyRPLMinColletaral
-    this.notifyRPLNewRewardRound = preferences.notifyRPLNewRewardRound
 
     if (await this.api.isNotMainnet()) {
       this.lockedToggle = true
-      this.notify = preferences.notify
+      this.notify = preferences
       this.notifyInitialized = true;
       this.disableToggleLock()
       return;
     }
 
-    await this.getNotificationSetting(preferences.notify).then((result) => {
+    await this.getNotificationSetting(preferences).then((result) => {
       this.lockedToggle = true
       this.notify = result
       this.disableToggleLock()
@@ -128,7 +164,7 @@ export class NotificationBase implements OnInit {
     this.notifyInitialized = true;
 
     if (!this.remoteNotifyLoadedOnce) {
-      const remoteNofiy = await this.getRemoteNotificationSetting(preferences.notify)
+      const remoteNofiy = await this.getRemoteNotificationSetting(preferences)
       if (remoteNofiy != this.notify) {
         this.lockedToggle = true
         this.notify = remoteNofiy
@@ -152,20 +188,9 @@ export class NotificationBase implements OnInit {
     }
 
     if (this.notify == false) {
-      this.notifyAttestationsMissed = this.notify
-      this.notifyDecreased = this.notify
-      this.notifyProposalsMissed = this.notify
-      this.notifyProposalsSubmitted = this.notify
-      this.notifySlashed = this.notify
-      this.notifySyncDuty = this.notify
-      this.notifyClientUpdate = this.notify
-      this.notifyMachineCpuLoad = this.notify
-      this.notifyMachineDiskFull = this.notify
-      this.notifyMachineOffline = this.notify
-      this.notifyRPLCommission = this.notify
-      this.notifyRPLMaxColletaral = this.notify
-      this.notifyRPLMinColletaral = this.notify
-      this.notifyRPLNewRewardRound = this.notify
+      for (const [key, value] of this.notifyTogglesMap) {
+        this.notifyTogglesMap.set(key, this.notify)
+      }
     }
 
     const net = (await this.api.networkConfig).net
@@ -176,6 +201,8 @@ export class NotificationBase implements OnInit {
     }
 
     if (this.notify) this.firebaseUtils.registerPush(true)
+
+    this.api.clearSpecificCache(new NotificationGetRequest())
   }
     
   private async getRemoteNotificationSetting(notifyLocalStore): Promise<boolean> {
@@ -210,35 +237,16 @@ export class NotificationBase implements OnInit {
     }
 
     this.sync.changeNotifyClientUpdate(
-      SETTING_NOTIFY_CLIENTUPDATE,
-      this.notifyClientUpdate
+      "eth_client_update",
+      this.notifyTogglesMap.get("eth_client_update")
     )
-  }
-
-
-  private getNotifySettingName(eventName: string): string {
-    switch (eventName) {
-      case "validator_balance_decreased": return SETTING_NOTIFY_DECREASED
-      case "validator_got_slashed": return SETTING_NOTIFY_SLASHED
-      case "validator_proposal_submitted": return SETTING_NOTIFY_PROPOSAL_SUBMITTED
-      case "validator_proposal_missed": return SETTING_NOTIFY_PROPOSAL_MISSED
-      case "validator_attestation_missed": return SETTING_NOTIFY_ATTESTATION_MISSED
-      case "monitoring_machine_offline": return SETTING_NOTIFY_MACHINE_OFFLINE
-      case "monitoring_cpu_load": return SETTING_NOTIFY_CPU_WARN
-      case "monitoring_hdd_almostfull": return SETTING_NOTIFY_HDD_WARN
-      case "monitoring_memory_usage": return SETTING_NOTIFY_MEMORY_WARN
-
-      case "validator_synccommittee_soon": return SETTING_NOTIFY_SYNC_DUTY
-      case "rocketpool_commision_threshold": return SETTING_NOTIFY_RPL_COMMISSION
-      case "rocketpool_new_claimround": return SETTING_NOTIFY_RPL_NEWROUND
-      case "rocketpool_colleteral_min": return SETTING_NOTIFY_RPL_MIN_COLL
-      case "rocketpool_colleteral_max": return SETTING_NOTIFY_RPL_MAX_COLL
-      default: return null
-    }
+    this.api.clearSpecificCache(new NotificationGetRequest())
   }
 
   private getToggleFromEvent(eventName) {
-    switch (eventName) {
+    const toggle = this.notifyTogglesMap.get(eventName)
+    return toggle
+    /*switch (eventName) {
       case "validator_balance_decreased": return this.notifyDecreased
       case "validator_got_slashed": return this.notifySlashed
       case "validator_proposal_submitted": return this.notifyProposalsSubmitted
@@ -248,14 +256,35 @@ export class NotificationBase implements OnInit {
       case "monitoring_cpu_load": return this.notifyMachineCpuLoad
       case "monitoring_hdd_almostfull": return this.notifyMachineDiskFull
       case "monitoring_memory_usage": return this.notifyMachineMemoryLoad
-
+      case "eth_client_update": return this.notifyClientUpdate 
       case "validator_synccommittee_soon": return this.notifySyncDuty
-      case "rocketpool_commision_threshold": return this.notifyRPLCommission
       case "rocketpool_new_claimround": return this.notifyRPLNewRewardRound
       case "rocketpool_colleteral_min": return this.notifyRPLMinColletaral
       case "rocketpool_colleteral_max": return this.notifyRPLMaxColletaral
       default: return null
+    }*/
+  }
+
+  private setToggleFromEvent(eventNameTagges, network, value, net) {
+    var parts = eventNameTagges.split(":")
+    var eventName = eventNameTagges
+    if (parts.length == 2) {
+      if (parts[0] != network) { return }
+      if (parts[1].indexOf("monitoring_") >= 0) { return; }
+      if (parts[1].indexOf("eth_client_update") >= 0) { return; }
+      eventName = parts[1]
     }
+
+    this.notifyTogglesMap.set(eventName, value)
+    const count = this.activeSubscriptionsPerEventMap.get(eventName)
+    this.activeSubscriptionsPerEventMap.set(eventName, count ? count + 1 : 1)
+    
+    this.storage.setBooleanSetting(net + eventName, value)
+  }
+
+  getCount(eventName) {
+    const count = this.activeSubscriptionsPerEventMap.get(eventName)
+    return count ? count : 0
   }
 
   async notifyEventToggle(eventName, filter = null, threshold = null) {
@@ -265,12 +294,13 @@ export class NotificationBase implements OnInit {
     }
 
     this.sync.changeNotifyEvent(
-      this.getNotifySettingName(eventName),
+      eventName,
       eventName,
       this.getToggleFromEvent(eventName),
       filter,
       threshold
     )
+    this.api.clearSpecificCache(new NotificationGetRequest())
   }
 
   // include filter in key (fe used by machine toggles)
@@ -279,10 +309,10 @@ export class NotificationBase implements OnInit {
     if (this.lockedToggle) {
       return;
     }
-    let key = this.getNotifySettingName(eventName) + filter
+    let key = eventName + filter
     let value = this.getToggleFromEvent(eventName)
 
-    this.storage.setBooleanSetting(this.getNotifySettingName(eventName), value)
+    this.storage.setBooleanSetting(eventName, value)
 
     this.sync.changeNotifyEventUser(
       key,
@@ -291,6 +321,7 @@ export class NotificationBase implements OnInit {
       filter,
       threshold
     )
+    this.api.clearSpecificCache(new NotificationGetRequest())
   }
     
     
@@ -301,3 +332,4 @@ export class NotificationBase implements OnInit {
   }
 
 }
+

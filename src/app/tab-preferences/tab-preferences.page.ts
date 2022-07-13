@@ -46,6 +46,7 @@ import { Router } from '@angular/router';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { Toast } from '@capacitor/toast';
+import { MergeChecklistPage } from '../pages/merge-checklist/merge-checklist.page';
 
 @Component({
   selector: 'app-tab3',
@@ -77,13 +78,14 @@ export class Tab3Page {
 
   snowing: boolean
 
-  stakingShare = null
 
   themeColor: string
   //widgetThemeColor: string
   currentPlan: string
 
   premiumLabel: string = ""
+
+  smartnode: boolean
 
   constructor(
     protected api: ApiService,
@@ -107,8 +109,12 @@ export class Tab3Page {
   ngOnInit() {
     
     this.theme.isDarkThemed().then((result) => this.darkMode = result)
+    
     this.theme.getThemeColor().then((result) => this.themeColor = result)
 
+    this.updateUtils.getOtherClient().then((result) => {
+      this.smartnode = result && result.toUpperCase() == "ROCKETPOOL"
+    })
     this.updateUtils.getETH1Client().then((result) => this.eth1client = result)
     this.updateUtils.getETH2Client().then((result) => this.eth2client = result)
     this.updateUtils.getUpdateChannel().then((result) => this.updateChannel = result)
@@ -121,8 +127,6 @@ export class Tab3Page {
     })
 
     App.getInfo().then((result) => this.appVersion = result.version)
-
-    this.storage.getStakingShare().then((result) => this.stakingShare = result)
 
     this.merchant.getCurrentPlanConfirmed().then((result) => {
       this.currentPlan = result
@@ -254,6 +258,20 @@ export class Tab3Page {
     this.updateUtils.checkUpdates()
   }
 
+  async smartNodeToggle() {
+    if (this.notificationBase.lockedToggle) {
+      return;
+    }
+
+    if (this.smartnode) {
+      this.sync.changeOtherClient("Rocketpool")
+    } else {
+      this.sync.changeOtherClient(null)
+    }
+    
+    this.updateUtils.checkUpdates()
+  }
+
   async changeETH2Client() {
     if (this.notificationBase.lockedToggle) {
       return;
@@ -307,7 +325,11 @@ export class Tab3Page {
 
   async changeNetwork() {
     const newConfig = findConfigForKey(this.network)
-    await this.sync.fullSync()
+    await this.storage.clearCache()
+    await this.api.clearCache()
+    await this.validatorUtils.clearCache()
+
+
     await this.storage.setNetworkPreferences(newConfig)
     await this.api.updateNetworkConfig()
     await this.notificationBase.loadNotifyToggles()
@@ -319,6 +341,17 @@ export class Tab3Page {
       cssClass: 'my-custom-class',
       header: 'App Icon Credit',
       message: 'Satellite dish by Font Awesome.<br/>Licensed under the Creative Commons Attribution 4.0 International.<br/><a href="https://fontawesome.com/license">https://fontawesome.com/license</a>',
+      buttons: ['OK']
+    });
+
+    await alert.present();
+  }
+
+  async partialStake() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Define stake share',
+      message: 'If you own partial amounts of a validator, you can define your share on a per validator basis. To do that, go to the validators tab, select your validators by holding down and set the stake share.',
       buttons: ['OK']
     });
 
@@ -357,64 +390,20 @@ export class Tab3Page {
     this.merchant.manageSubscriptions()
   }
 
-  async partialStake() {
-    const validatorCount = await this.validatorUtils.localValidatorCount()
-    const shares = await this.storage.getStakingShare()
-
-    const minShareStake = 0.01 * validatorCount
-    const maxStakeShare = 32 * validatorCount
-    
-    const alert = await this.alertController.create({
-      cssClass: 'my-custom-class',
-      header: 'Define stake share',
-      message: 'If you own partial amounts of a validator, specify the amount of ether for a custom dashboard.',
-      inputs: [
-        {
-          name: 'share',
-          type: 'number',
-          placeholder: minShareStake + ' - ' + maxStakeShare + " Ether",
-          value: shares
-        }
-      ],
-      buttons: [
-        {
-          text: 'Remove',
-          handler: async (_) => {
-            this.stakingShare = null
-            await this.storage.setStakingShare(this.stakingShare)
-            this.validatorUtils.notifyListeners()
-          }
-        }, {
-          text: 'Save',
-          handler: async (alertData) => {
-            const shares = alertData.share
-            if (shares < minShareStake) {
-              Toast.show({
-                text: 'Share must be at least ' + minShareStake + ' ETH or more'
-              });
-              return
-            }
-
-            if (shares > maxStakeShare) {
-              Toast.show({
-                text: 'Share amount is higher than all of your added validators.'
-              });
-              return
-            }
-            console.log("save staking_share", alertData.share)
-            this.stakingShare = new BigNumber(alertData.share).decimalPlaces(4)
-            await this.storage.setStakingShare(this.stakingShare)
-            this.validatorUtils.notifyListeners()
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-  }
-
   toggleSnow() {
     this.theme.toggleWinter(this.snowing)
+  }
+
+  async openMergeChecklist() {
+    const modal = await this.modalController.create({
+      component: MergeChecklistPage,
+      cssClass: 'my-custom-class',
+      componentProps: {
+        'fromSettings': true,
+      }
+    });
+
+    return await modal.present();
   }
 
   versionClickCount = 0;

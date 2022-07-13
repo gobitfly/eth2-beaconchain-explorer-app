@@ -48,16 +48,18 @@ export enum ValidatorState {
 }
 
 export interface Validator {
-    index: number,
-    pubkey: string,
-    name: string,
+    index: number
+    pubkey: string
+    name: string
     storage: (typeof SAVED | typeof MEMORY)
-    synced: boolean,
-    version: number,
-    data: ValidatorResponse,
-    state: ValidatorState,
+    synced: boolean
+    version: number
+    data: ValidatorResponse
+    state: ValidatorState
     attrEffectiveness: number
     rocketpool: RocketPoolResponse
+    share: number 
+    rplshare: number
 }
 
 @Injectable({
@@ -78,7 +80,7 @@ export class ValidatorUtils extends CacheModule {
         private merchantUtils: MerchantUtils,
         private unitConversion: UnitconvService
     ) {
-        super("vu") // initialize cache module with vu prefix
+        super("vu_") // initialize cache module with vu prefix
     }
 
     notifyListeners() {
@@ -99,6 +101,15 @@ export class ValidatorUtils extends CacheModule {
 
     public async getStorageKey(): Promise<string> {
         return KEYPREFIX + await this.api.getNetworkName()
+    }
+
+    async migrateTo3Dot2() {
+        const share = await this.storage.getStakingShare()
+        var valis = await this.getAllValidatorsLocal()
+        for (var i = 0; i < valis.length; i++) {
+            valis[i].share = share.toNumber()
+        }
+        this.saveValidatorsLocal(valis)
     }
 
     public async getMap(storageKey: string): Promise<Map<String, Validator>> {
@@ -164,18 +175,32 @@ export class ValidatorUtils extends CacheModule {
         this.storage.setObject(LAST_TIME_REMOVED_KEY, { timestamp: Date.now() })
     }
 
-    private async saveValidatorsLocal(validators: Validator[]) {
+    async saveValidatorsLocal(validators: Validator[]) {
         const storageKey = await this.getStorageKey()
 
-        const current = await this.getMap(storageKey)
+        var current = await this.getMap(storageKey)
+        var newMap = new Map<String, Validator>()
 
         validators.forEach((validator) => {
-            current.set(validator.pubkey, validator)
+            newMap.set(validator.pubkey, validator)
         })
 
-        this.storage.setObject(storageKey, current)
+        current.forEach((value, key) => {
+            if(!newMap.has(key)) newMap.set(key, value)
+        })
 
+        this.storage.setObject(storageKey, newMap)
         this.notifyListeners()
+    }
+
+    async saveRocketpoolCollateralShare(nodeAddress: string, sharePercent: number) {
+        this.storage.setObject("rpl_share_" + nodeAddress, { share: sharePercent })
+    }
+
+    async getRocketpoolCollateralShare(nodeAddress: string): Promise<number> {
+        const temp = await this.storage.getObject("rpl_share_" + nodeAddress)
+        if (!temp) return null
+        return temp.share
     }
 
     async getValidatorLocal(pubkey: string): Promise<Validator> {
@@ -313,11 +338,25 @@ export class ValidatorUtils extends CacheModule {
             this.currentEpoch.lastCachedTimestamp = lastCachedTime
         }
 
+        var local = null
+        if (storage == SAVED) {
+            local = await this.getMapWithoutDeleted(await this.getStorageKey())
+        }
+
         const temp = this.convertToValidatorModel({ synced: false, storage: storage, validatorResponse: validatorsResponse })
         await this.updateValidatorStates(temp)
         for (let vali of temp) {
             vali.attrEffectiveness = this.findAttributionEffectiveness(validatorEffectivenessResponse, vali.index)
             vali.rocketpool = this.findRocketpoolResponse(result.rocketpool_validators, vali.index)
+            if (local) {
+                const found = local.get(vali.pubkey)
+                if (found) {
+                    vali.share =  found.share
+                }
+            }
+            if (vali.rocketpool) {
+                vali.rplshare = await this.getRocketpoolCollateralShare(vali.rocketpool.node_address)
+            }
         }
 
        // this.cacheMultiple(cacheKey, temp)
@@ -422,6 +461,7 @@ export class ValidatorUtils extends CacheModule {
         this.saveValidatorsLocal(this.convertToValidatorModel({ synced, storage: SAVED, validatorResponse: validator }))
         if (!synced) {
             this.storage.setObject(LAST_TIME_ADDED_KEY, { timestamp: Date.now() })
+            this.clearCache()
         }
     }
 
@@ -436,7 +476,9 @@ export class ValidatorUtils extends CacheModule {
                 synced: synced,
                 version: VERSION,
                 data: validator,
-                state: ValidatorState.UNKNOWN
+                state: ValidatorState.UNKNOWN,
+                share: null,
+                rplshare: null,
             } as Validator
 
             erg.push(temp)
@@ -491,7 +533,7 @@ export function getValidatorQueryString(validators: any[], getParamMaxLimit: num
     })
 
     if (erg.length > 1) {
-        return erg.substr(0, erg.length - 1)
+        return erg.substring(0, erg.length - 1)
     }
     
     return erg

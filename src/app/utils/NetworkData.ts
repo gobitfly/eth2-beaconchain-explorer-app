@@ -21,7 +21,6 @@
 import { ApiNetwork } from "../models/StorageTypes"
 
 export const MAP: ApiNetwork[] = [
-
     {
         key: "main",
         protocol: "https",
@@ -30,10 +29,8 @@ export const MAP: ApiNetwork[] = [
         endpoint: "/api/",
         version: "v1",
         onlyDebug: false,
-        active: true,
-        genesisTs: 1606824023
+        active: true
     },
-  
     {
         key: "prater",
         protocol: "https",
@@ -42,22 +39,28 @@ export const MAP: ApiNetwork[] = [
         endpoint: "/api/",
         version: "v1",
         onlyDebug: false,
-        active: true,
-        genesisTs: 1614588812
+        active: true
     },
-
     {
-        key: "pyrmont",
+        key: "ropsten",
         protocol: "https",
         host: "beaconcha.in",
-        net: "pyrmont.",
+        net: "ropsten.",
         endpoint: "/api/",
         version: "v1",
         onlyDebug: false,
-        active: true,
-        genesisTs: 1605700807
+        active: true
     },
-
+    {
+        key: "sepolia",
+        protocol: "https",
+        host: "beaconcha.in",
+        net: "sepolia.",
+        endpoint: "/api/",
+        version: "v1",
+        onlyDebug: false,
+        active: true
+    },
     {
         key: "local dev",
         protocol: "http",
@@ -66,22 +69,8 @@ export const MAP: ApiNetwork[] = [
         endpoint: "/api/",
         version: "v1",
         onlyDebug: true,
-        active: true,
-        genesisTs: 1605009608 // Arbitrary, doesnt matter on local
+        active: true
     },
-
-  /*  {
-        key: "local dev office",
-        protocol: "http",
-        host: "192.168.103.224:3333",
-        net: "",
-        endpoint: "/api/",
-        version: "v1",
-        onlyDebug: true,
-        active: true,
-        genesisTs: 1605009608 // Arbitrary, doesnt matter on local
-    },*/
-
     {
         key: "invalid (no connection)",
         protocol: "http",
@@ -90,8 +79,7 @@ export const MAP: ApiNetwork[] = [
         endpoint: "/api/",
         version: "v1",
         onlyDebug: true,
-        active: true,
-        genesisTs: 1605009608 // Arbitrary, doesnt matter on invalid connection
+        active: true
     },
 ]
 

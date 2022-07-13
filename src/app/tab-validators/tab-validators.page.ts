@@ -34,6 +34,11 @@ import { MerchantUtils } from '../utils/MerchantUtils';
 
 import { Keyboard } from '@capacitor/keyboard';
 
+import { Toast } from '@capacitor/toast';
+import ThemeUtils from '../utils/ThemeUtils';
+
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
 @Component({
   selector: 'app-tab2',
   templateUrl: 'tab-validators.page.html',
@@ -60,6 +65,10 @@ export class Tab2Page {
 
   currentPackageMaxValidators: number = 100
 
+  selectMode = false
+
+  selected = new Map<number, boolean>()
+
   constructor(
     private validatorUtils: ValidatorUtils,
     public modalController: ModalController,
@@ -68,7 +77,8 @@ export class Tab2Page {
     private storage: StorageService,
     private alerts: AlertService,
     private sync: SyncService,
-    private merchant: MerchantUtils
+    private merchant: MerchantUtils,
+    private themeUtils: ThemeUtils
   ) {
     this.validatorUtils.registerListener(() => {
       this.refresh()
@@ -278,6 +288,249 @@ export class Tab2Page {
       }
     });
     return await modal.present();
+  }
+
+  private clickBlocked = false
+  blockClick(forTime) {
+    this.clickBlocked = true
+    setTimeout(() => {
+      this.clickBlocked = false
+    }, forTime)
+  }
+
+  selectValidator(item: Validator) {
+    this.selectMode = !this.selectMode
+    if (!this.selectMode) {
+      this.cancelSelect()
+    } else {
+      this.blockClick(250)
+      const color = getComputedStyle(document.body).getPropertyValue("--ion-color-primary")
+      this.themeUtils.setStatusBarColor(color)
+      Haptics.selectionStart();
+   
+      if (item) {
+        this.selected.set(item.index, true)
+        Haptics.selectionChanged();
+      }
+    }
+  }
+
+  clickValidator(item: Validator) {
+    if(this.clickBlocked) return
+    if (this.selectMode) {
+      if (this.selected.get(item.index)) {
+        this.selected.delete(item.index)
+      } else {
+        this.selected.set(item.index, true)
+      }
+      Haptics.selectionChanged();
+    } else {
+      this.presentModal(item)
+    }
+  }
+
+  cancelSelect() {
+    this.selectMode = false
+    this.selected = new Map<number, boolean>()
+    this.themeUtils.revertStatusBarColor()
+    Haptics.selectionEnd();
+  }
+
+  getValidatorsByIndex(indexMap): Validator[] {
+    var result = []
+    indexMap.forEach((value, key) => {
+      const temp = this.items.find((item) => { return item.index == key })
+      if (temp) {
+        result.push(temp)
+      }
+    })
+    return result
+  }
+
+  /**
+   * Returns the current stake share for the provided validator set. Returns the stake share if all share the same or null otherwise.
+   * @param subArray 
+   */
+  getCurrentShare(subArray: Validator[]): number {
+    if(subArray.length <= 0) return null
+    var lastShare = subArray[0].share
+    for (var i = 1; i < subArray.length; i++){
+      if(lastShare != subArray[i].share) return null
+    }
+    return lastShare
+  }
+
+  async setRPLShares() {
+    if (this.selected.size <= 0) {
+      Toast.show({
+        text: 'Select the validators you want to apply this setting to.'
+      });
+      return
+    }
+
+    const validatorSubArray = this.getValidatorsByIndex(this.selected).filter((item) => { return item.rocketpool != null })
+   
+    if (validatorSubArray.length <= 0) {
+      console.log("You did not select any Rocketpool validator.")
+      Toast.show({
+        text: 'You did not select any Rocketpool validator.'
+      });
+      return
+    }
+
+    const onlyOneNodeAddress = validatorSubArray.reduce((prev, cur) => { return prev && prev.rocketpool.node_address == cur.rocketpool.node_address ? cur : null })
+    if (!onlyOneNodeAddress) {
+      console.log("You selected validators belonging to multiple node addresses. Currently only one at a time can be edited.")
+      Toast.show({
+        text: 'You selected validators belonging to multiple node addresses. Currently only one at a time can be edited.'
+      });
+      return
+    }
+
+    const minShareStake = 0.01
+    const maxStakeShare = new BigNumber(onlyOneNodeAddress.rocketpool.node_rpl_stake).dividedBy(new BigNumber(1e18)).decimalPlaces(2)
+
+    var currentShares = await this.validatorUtils.getRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address)
+    var current = null
+    if (currentShares) {
+      current = new BigNumber(currentShares).multipliedBy(new BigNumber(maxStakeShare)).decimalPlaces(4)
+    }
+    
+    console.log("change RPL", onlyOneNodeAddress, current, maxStakeShare)
+
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Define RPL share',
+      message: 'If you own partial amounts of the collateral of the selected Rocketpool node address ('+onlyOneNodeAddress.rocketpool.node_address.substring(0, 8)+'), specify the amount of RPL for a custom dashboard.',
+      inputs: [
+        {
+          name: 'share',
+          type: 'number',
+          placeholder: minShareStake + ' - ' + maxStakeShare + " RPL",
+          value: current 
+        }
+      ],
+      buttons: [
+        {
+          text: 'Remove',
+          handler: async (_) => {
+            this.validatorUtils.saveRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address, null)
+            this.cancelSelect()
+            this.validatorUtils.notifyListeners()
+          }
+        }, {
+          text: 'Save',
+          handler: async (alertData) => {
+            const shares = alertData.share
+            if (shares < minShareStake) {
+              Toast.show({
+                text: 'Share must be at least ' + minShareStake + ' RPL or more.'
+              });
+              return
+            }
+
+            if (shares > maxStakeShare.toNumber()) {
+              Toast.show({
+                text: 'Share amount is higher than your RPL collateral.'
+              });
+              return
+            }
+
+            const share = new BigNumber(alertData.share).div(new BigNumber(maxStakeShare))
+            this.validatorUtils.saveRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address, share.toNumber())
+
+            this.cancelSelect()
+            this.validatorUtils.notifyListeners()
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async setShares() {
+    if (this.selected.size <= 0) {
+      Toast.show({
+        text: 'Select the validators you want to apply this setting to.'
+      });
+      return
+    }
+
+    const validatorSubArray = this.getValidatorsByIndex(this.selected)
+    console.log("selected", this.selected, validatorSubArray)
+
+    var sum = new BigNumber("0")
+    for (const val of validatorSubArray) {
+      var temp = new BigNumber(val.data.effectivebalance)
+      if (val.rocketpool) {
+        temp = temp.dividedBy(2)
+      }
+      sum = sum.plus(temp)
+    }
+  
+    const minShareStake = 0.005 * this.selected.size
+    const maxStakeShare = sum.dividedBy(1e9).decimalPlaces(0).toNumber()
+
+    const current = new BigNumber(this.getCurrentShare(validatorSubArray)).multipliedBy(new BigNumber(maxStakeShare)).decimalPlaces(4)
+    
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Define stake share',
+      message: 'If you own partial amounts of these validators, specify the amount of ether for a custom dashboard.',
+      inputs: [
+        {
+          name: 'share',
+          type: 'number',
+          placeholder: minShareStake + ' - ' + maxStakeShare + " Ether",
+          value: current 
+        }
+      ],
+      buttons: [
+        {
+          text: 'Remove',
+          handler: async (_) => {
+            for (var i = 0; i < validatorSubArray.length; i++){
+              validatorSubArray[i].share = null
+            }
+            this.validatorUtils.saveValidatorsLocal(validatorSubArray)
+            this.cancelSelect()
+            this.validatorUtils.notifyListeners()
+          }
+        }, {
+          text: 'Save',
+          handler: async (alertData) => {
+            const shares = alertData.share
+            if (shares < minShareStake) {
+              Toast.show({
+                text: 'Share must be at least ' + minShareStake + ' ETH or more'
+              });
+              return
+            }
+
+            if (shares > maxStakeShare) {
+              Toast.show({
+                text: 'Share amount is higher than all of your added validators.'
+              });
+              return
+            }
+
+            const share = new BigNumber(alertData.share).div(new BigNumber(maxStakeShare))
+            
+            for (var i = 0; i < validatorSubArray.length; i++){
+              validatorSubArray[i].share = share.toNumber()
+            }
+
+            this.validatorUtils.saveValidatorsLocal(validatorSubArray)
+
+            this.cancelSelect()
+            this.validatorUtils.notifyListeners()
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
 }

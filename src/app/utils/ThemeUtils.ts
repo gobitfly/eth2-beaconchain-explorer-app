@@ -52,6 +52,8 @@ export default class ThemeUtils {
 
     private snowFlakes
 
+    private currentStatusBarColor = null
+
     constructor(
         private storage: StorageService,
         private platform: Platform
@@ -218,7 +220,23 @@ export default class ThemeUtils {
             StatusBar.setBackgroundColor({
                 color: darker
             })
+            this.currentStatusBarColor = darker
         }
+    }
+
+    setStatusBarColor(color) {
+        if (this.platform.is("android")) {
+            StatusBar.setStyle({
+                style: Style.Dark
+            });
+            StatusBar.setBackgroundColor({
+                color: color
+            })
+        }
+    }
+
+    revertStatusBarColor() {
+        this.setStatusBarColor(this.currentStatusBarColor )
     }
 
     private getSnowFlakeColor(darkTheme: boolean) {

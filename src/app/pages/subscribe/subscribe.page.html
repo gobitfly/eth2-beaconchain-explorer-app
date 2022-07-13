@@ -156,12 +156,12 @@
 
   <div class="detail-container" *ngIf="selectedPackage.purchaseKey != null">
     <ion-label class="link" (click)="trial()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Start with a
-      14 day free trial.</ion-label>
+      14 day trial.</ion-label>
 
     <div>
-      <ion-button (click)="purchase()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Subscribe for {{
+      <ion-button class="purchase-btn" (click)="purchase()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Subscribe for {{
         selectedPackage.price }} / month</ion-button>
-      <ion-button *ngIf="activeUserPackageName == selectedPackage.purchaseKey" disabled>You own this package
+      <ion-button class="purchase-btn" *ngIf="activeUserPackageName == selectedPackage.purchaseKey" disabled>You own this package
       </ion-button>
     </div>
 

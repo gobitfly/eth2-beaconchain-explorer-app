@@ -27,6 +27,7 @@
   border-radius: 20%;
   height: 59px;
   width: 56px;
+  image-rendering: pixelated;
 }
 
 .container {
@@ -80,7 +81,7 @@ ion-icon {
 }
 
 .smaller-info {
-  font-size: 0.89rem;
+  font-size: 0.8rem;
   color: var(--ion-text-color-secondary);
 }
 

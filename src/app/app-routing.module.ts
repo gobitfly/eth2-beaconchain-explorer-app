@@ -57,6 +57,10 @@ const routes: Routes = [
   {
     path: 'logview',
     loadChildren: () => import('./pages/logview/logview.module').then( m => m.LogviewPageModule)
+  },
+  {
+    path: 'merge-checklist',
+    loadChildren: () => import('./pages/merge-checklist/merge-checklist.module').then( m => m.MergeChecklistPageModule)
   }
 ];
 @NgModule({

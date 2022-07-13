@@ -36,6 +36,7 @@ import { ModalController } from '@ionic/angular';
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
 import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils';
+import { MergeChecklistPage } from 'src/app/pages/merge-checklist/merge-checklist.page';
 
 @Component({
   selector: 'app-validator-dashboard',
@@ -69,6 +70,7 @@ export class DashboardComponent implements OnInit {
   selectedChart = "chartIncome"
 
   showFirstProposalMsg = false
+  showMergeChecklist = false
   firstCelebrate = true
 
   doneLoading = false
@@ -93,6 +95,25 @@ export class DashboardComponent implements OnInit {
     public validatorUtils: ValidatorUtils
   ) {
     this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
+    //this.storage.setBooleanSetting("merge_list_dismissed", false)
+    this.updateMergeListDismissed()
+  }
+
+  updateMergeListDismissed() {
+    this.storage.getBooleanSetting("merge_list_dismissed", false).then((result) => {
+      if (this.isAfterPotentialMergeTarget()) {
+        this.showMergeChecklist = false
+      } else {
+        this.showMergeChecklist = !result
+      }
+    })
+  }
+
+  isAfterPotentialMergeTarget() {
+    const now = Date.now()
+    const target = 1664616277000 // target oct 1th to dismiss merge checklist
+    console.log("afterPotentialMerge", now, target, now >= target)
+    return now >= target
   }
 
   async ngOnChanges(event) {
@@ -139,6 +160,10 @@ export class DashboardComponent implements OnInit {
       if (totalRplAtNextCheckpoint < 0) {
           totalRplAtNextCheckpoint = 0
       }*/
+      if (this.data.rocketpool.currentRpl.isLessThanOrEqualTo(this.data.rocketpool.minRpl)) {
+        this.rplProjectedClaim = 0
+        return
+      }
 
       const temp = this.getEffectiveRplStake(this.data.rocketpool)
         .dividedBy(new BigNumber(this.validatorUtils.rocketpoolStats.effective_rpl_staked))
@@ -348,7 +373,7 @@ export class DashboardComponent implements OnInit {
   async drawBalanceChart() {
     this.chartData = await this.getChartData("balances")
 
-    if (!this.chartData || this.chartData.length <= 3) {
+    if (!this.chartData || this.chartData.length < 3) {
       this.chartError = true;
       this.doneLoading = true
       return
@@ -468,8 +493,6 @@ export class DashboardComponent implements OnInit {
   }
 
   async createBalanceChart(income) {
-    const genesisTs = (await this.api.networkConfig).genesisTs
-
     // @ts-ignore     ¯\_(ツ)_/¯
     Highstock.stockChart('highcharts' + this.randomChartId, {
 
@@ -542,6 +565,9 @@ export class DashboardComponent implements OnInit {
     })
   }
 
+  onDismissed(event) {
+    this.updateMergeListDismissed()
+  }
 
   async openBrowser() {
     await Browser.open({ url: await this.getBrowserURL(), toolbarColor: "#2f2e42" });
@@ -560,16 +586,6 @@ export class DashboardComponent implements OnInit {
     return "https://" + net + "beaconcha.in"
   }
 
-}
-
-function timeToEpoch(genesisTs, ts) {
-  var gts = genesisTs
-  var sps = 12
-  var spe = 32
-  var slot = Math.floor((ts / 1000 - gts) / sps)
-  var epoch = Math.floor(slot / spe)
-  if (epoch < 0) return 0
-  return epoch
 }
 
 function getRandomInt(max) {

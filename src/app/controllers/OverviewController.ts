@@ -85,23 +85,21 @@ export default class OverviewController {
     proccessDashboard(
         validators: Validator[],
         currentEpoch: EpochResponse,
-        share: BigNumber
     ) {
-        return this.process(validators, currentEpoch, false, share)
+        return this.process(validators, currentEpoch, false)
     }
 
     proccessDetail(
         validators: Validator[],
         currentEpoch: EpochResponse,
     ) {
-        return this.process(validators, currentEpoch, true, null)
+        return this.process(validators, currentEpoch, true)
     }
 
     private process(
         validators: Validator[],
         currentEpoch: EpochResponse,
         foreignValidator = false,
-        share: BigNumber
     ): OverviewData {
         if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
@@ -110,17 +108,15 @@ export default class OverviewController {
             return cur.data.activationepoch <= currentEpoch.epoch ? cur.data.effectivebalance : new BigNumber(0)
         });
 
-        const effectiveBalanceInEth = convertEthUnits(effectiveBalance, Unit.GWEI, Unit.ETHER)
-        const sharePercentage = share ? share.dividedBy(effectiveBalanceInEth).decimalPlaces(4) : new BigNumber(1)
 
-        const overallBalance = this.sumBigIntBalanceRpl(validators, cur => cur.data.balance)
+        const overallBalance = this.sumBigIntBalanceRpl(validators, cur => new BigNumber(cur.data.balance).multipliedBy(new BigNumber(cur.share || 1)))
         
         const validatorCount = validators.length
 
-        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => cur.data.performance1d);
-        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => cur.data.performance31d)
-        const performance7d = this.sumBigIntPerformanceRpl(validators, cur => cur.data.performance7d);
-        const performance365d = this.sumBigIntPerformanceRpl(validators, cur => cur.data.performance365d)
+        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share || 1)));
+        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share || 1)))
+        const performance7d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance7d).multipliedBy(new BigNumber(cur.share || 1)));
+        const performance365d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share || 1)))
 
         const aprPerformance7d = sumBigInt(validators, cur => cur.data.performance7d);
 
@@ -140,16 +136,16 @@ export default class OverviewController {
         }
 
         return {
-            overallBalance: overallBalance.multipliedBy(sharePercentage),
+            overallBalance: overallBalance,
             validatorCount: validatorCount,
             bestRank: bestRank,
             worstRank: worstRank,
 
             attrEffectiveness: attrEffectiveness,
-            performance1d: performance1d.multipliedBy(sharePercentage),
-            performance31d: performance31d.multipliedBy(sharePercentage),
-            performance7d: performance7d.multipliedBy(sharePercentage),
-            performance365d: performance365d.multipliedBy(sharePercentage),
+            performance1d: performance1d,
+            performance31d: performance31d,
+            performance7d: performance7d,
+            performance365d: performance365d,
             dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator),
             lazyLoadChart: true,
             lazyChartValidators: getValidatorQueryString(validators, 2000, this.userMaxValidators - 1), 
@@ -159,9 +155,9 @@ export default class OverviewController {
             currentEpoch: currentEpoch,
             apr: this.getAPR(effectiveBalanceActive, aprPerformance7d),
             rocketpool: {
-                minRpl: this.sumRocketpoolBigIntPerNodeAddress(validators, cur => cur.rocketpool.node_min_rpl_stake),
-                maxRpl: this.sumRocketpoolBigIntPerNodeAddress(validators, cur => cur.rocketpool.node_max_rpl_stake),
-                currentRpl: this.sumRocketpoolBigIntPerNodeAddress(validators, cur => cur.rocketpool.node_rpl_stake),
+                minRpl: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.node_min_rpl_stake),
+                maxRpl: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.node_max_rpl_stake),
+                currentRpl: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.node_rpl_stake),
                 fee: feeAvg,
                 status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
                 depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
@@ -192,14 +188,18 @@ export default class OverviewController {
         })
     }
 
-    sumRocketpoolBigIntPerNodeAddress<T>(validators: Validator[], field: (cur: Validator) => string): BigNumber {
+    sumRocketpoolBigIntPerNodeAddress<T>(applyShare: boolean, validators: Validator[], field: (cur: Validator) => string): BigNumber {
         const nodesAdded = new Set()
         return sumBigInt(validators, cur => {
             if (!cur.rocketpool) return new BigNumber(0)
             if (!cur.rocketpool.node_address) return new BigNumber(0)
             if (nodesAdded.has(cur.rocketpool.node_address)) return new BigNumber(0)
             nodesAdded.add(cur.rocketpool.node_address)
-            return new BigNumber(field(cur).toString())
+            const temp = new BigNumber(field(cur).toString())
+            if (applyShare) {
+                return temp.multipliedBy(cur.rplshare || 1)
+            }
+            return temp
         })
     }
 
