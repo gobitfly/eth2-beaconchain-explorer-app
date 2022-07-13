@@ -589,6 +589,21 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 
 // ------------ Special external api requests -----------------
 
+export class AdSeenRequest extends APIRequest<any> {
+  endPoint = "https://request-global.czilladx.com"
+
+  resource = "";
+  method = Method.GET;
+  ignoreFails = true
+  maxCacheAge = 0
+
+  constructor(url : string) {
+    super()
+    this.resource = url.replace("https://request-global.czilladx.com/", "")
+  }
+}
+
+
 export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
   endPoint = "https://request-global.czilladx.com"
 

@@ -2,7 +2,8 @@ import { ThrowStmt } from '@angular/compiler';
 import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
 import { Animation, AnimationController, ModalController } from '@ionic/angular';
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
-import { CoinzillaAdResponse } from 'src/app/requests/requests';
+import { AdSeenRequest, CoinzillaAdResponse } from 'src/app/requests/requests';
+import { ApiService } from 'src/app/services/api.service';
 import AdUtils, { AdLocation, BEACONCHAIN_AD_ACTION } from 'src/app/utils/AdUtils';
 
 const TRANSITION_SPEED = 650
@@ -29,7 +30,8 @@ export class TextAdComponent implements OnInit {
   constructor(
     private animationCtrl: AnimationController,
     private adUtils: AdUtils,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private api: ApiService
   ) { }
 
   ngOnInit() {
@@ -116,16 +118,10 @@ export class TextAdComponent implements OnInit {
 
   async sendImpression() {
 
-      if (!this.ad.impressionUrl) return;
-      fetch(this.ad.impressionUrl, {
-        method: 'get'
-      })
-      .then(response => {
-        console.log("ad impression response", response)
-      })
-      .catch((e) => {
-        console.warn("ad impression reporting failed", e)
-      })
+    if (!this.ad.impressionUrl) return;
+    
+    const result = await this.api.execute(new AdSeenRequest(this.ad.impressionUrl))
+    console.log("ad impression response", result)
       
   }
 
