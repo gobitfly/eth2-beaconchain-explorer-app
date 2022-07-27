@@ -59,6 +59,7 @@ export type Rocketpool = {
     minRpl: BigNumber
     maxRpl: BigNumber
     currentRpl: BigNumber
+    totalClaims: BigNumber
     fee: number
     status: string
     depositType: string
@@ -109,7 +110,7 @@ export default class OverviewController {
         });
 
 
-        const overallBalance = this.sumBigIntBalanceRpl(validators, cur => new BigNumber(cur.data.balance).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)))
+        const overallBalance = this.sumBigIntBalanceRpl(validators, cur => new BigNumber(cur.data.balance))
         
         const validatorCount = validators.length
 
@@ -158,6 +159,7 @@ export default class OverviewController {
                 minRpl: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.node_min_rpl_stake),
                 maxRpl: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.node_max_rpl_stake),
                 currentRpl: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.node_rpl_stake),
+                totalClaims: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.rpl_cumulative_rewards),
                 fee: feeAvg,
                 status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
                 depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
@@ -168,12 +170,13 @@ export default class OverviewController {
     sumBigIntBalanceRpl<T>(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
        
         return sumBigInt(validators, cur => {
-            if (!cur.rocketpool) return field(cur)
-            if (!cur.rocketpool.node_address) return field(cur)
+            if (!cur.rocketpool) return field(cur).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+            if (!cur.rocketpool.node_address) return field(cur).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
           
-            const rewards = new BigNumber(field(cur).toString()).minus(new BigNumber("32000000000"))
+            const rewards = new BigNumber(field(cur).toString()).minus(cur.data.effectivebalance)
             const nodeOperatorRewards = new BigNumber(rewards).multipliedBy(new BigNumber("1").plus(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))).dividedBy("2")
-            return new BigNumber("16000000000").plus(nodeOperatorRewards)
+            const wholeBalance = new BigNumber("16000000000").plus(nodeOperatorRewards)
+            return wholeBalance.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
         })
     }
 
@@ -220,7 +223,7 @@ export default class OverviewController {
         const slashedCount = slashedValidators.length
 
         if (slashedCount > 0) {
-            return this.getSlashedState(slashedCount,
+            return this.getSlashedState(activeValidatorCount,
                 validatorCount,
                 foreignValidator,
                 slashedValidators[0].data,

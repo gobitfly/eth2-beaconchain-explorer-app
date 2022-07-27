@@ -226,6 +226,7 @@ export interface RocketPoolResponse {
   node_max_rpl_stake: string,
   node_min_rpl_stake: string,
   node_rpl_stake: string,
+  rpl_cumulative_rewards: string,
   node_timezone_location: string
 }
 

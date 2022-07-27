@@ -29,7 +29,7 @@
 
       <div class="info">
         <ion-text class="title">{{ name }}</ion-text>
-        <ion-label> {{ data.balance | mcurrency: "GWEI":unit.pref }} </ion-label>
+        <ion-label> {{ balance | mcurrency: "GWEI":unit.pref }} </ion-label>
 
         <ion-label class="smaller-info" style="padding-bottom: 6px;">
           {{ validator.attrEffectiveness && validator.attrEffectiveness != -1 ? ("Eff.:" + validator.attrEffectiveness + "%") : ""}}
