@@ -596,6 +596,7 @@ export class AdSeenRequest extends APIRequest<any> {
   method = Method.GET;
   ignoreFails = true
   maxCacheAge = 0
+  nativeHttp = false
 
   constructor(url : string) {
     super()
@@ -607,13 +608,14 @@ export class AdSeenRequest extends APIRequest<any> {
 export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
   endPoint = "https://request-global.czilladx.com"
 
-  resource = "/serve/native-app.php?z=";
+  resource = "serve/native-app.php?z=";
   method = Method.GET;
   ignoreFails = true
   maxCacheAge = 4 * 60 * 1000
+  nativeHttp = false
 
   parse(response: any): CoinzillaAdResponse[] {
-    if (!this.wasSuccessfull(response, false) || !response.data.ad) {
+    if (!this.wasSuccessfull(response, false) || (!response || !response.data || !response.data.ad)) {
       return []
     }
 
