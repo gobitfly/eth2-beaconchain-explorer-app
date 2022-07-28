@@ -261,6 +261,15 @@ export class ApiService extends CacheModule {
     }
 
     const result = await response
+    if (!result) {
+      this.unlock(request.resource)
+      console.log(
+        LOGTAG + " Empty Response: " + request.resource,
+        Date.now() - startTs
+      );
+      return result
+    }
+
     if ((request.method == Method.GET || request.cacheablePOST )&& result && result.status == 200 && result.data) {
       this.putCache(await this.getCacheKey(request), result, request.maxCacheAge)
     }
@@ -384,7 +393,14 @@ export class ApiService extends CacheModule {
   private validateResponseLegacy(ignoreFails, response: AxiosResponse<any>): Response {
     if (!response || !response.data) { // || !response.data.data
       this.updateConnectionState(ignoreFails, false)
-      return
+     
+      return {
+        cached: false,
+        data: null,
+        status: response.status,
+        headers: response.headers,
+        url: null,
+      }
     }
     this.updateConnectionState(ignoreFails, true)
     return {

@@ -279,6 +279,44 @@
 
         </div>
 
+        <div class="grid-cell" (click)="switchRplStake(true)" >
+
+
+          <div>
+            <ion-label class="value" *ngIf="rplState == 'rpl' || rplState == '%' " [class]=" data.rocketpool.totalClaims | valuestyle:0" >
+              {{ data.rocketpool.totalClaims  | mcurrency: "WEI":"RPL_NAKED"}} 
+            </ion-label>
+            <ion-label class="value" *ngIf="rplState == 'conv'" [class]=" data.rocketpool.totalClaims | valuestyle:0" >
+              {{ data.rocketpool.totalClaims  | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref  }} 
+            </ion-label>
+          
+          </div>
+          <div>
+            
+            <ion-label class="income-title right">
+              <span tooltip="Estimated yearly RPL returns, based on the last 7 days"  trigger="click"
+                hideDelayAfterClick="5000">Total Claimed</span>
+            </ion-label>
+          </div>
+
+        </div>
+
+        <div class="grid-cell left" (click)="switchCurrencyPipe()">
+
+          <div class="grid">
+            <ion-label class="value left" (click)="switchCurrencyPipe()">
+              {{ 1 | mcurrency: "ETHER":"RPL":false | mcurrency: "ETHER":unit.pref }}
+            </ion-label>
+            
+          </div>
+          <div class="grid">
+            <ion-label class="income-title">
+               RPL Price
+            </ion-label>
+          </div>
+
+        </div>
+
         <div class="grid-cell" >
 
           <div>
@@ -568,17 +606,6 @@
       </ion-label>
       <ion-label class="value" (click)="switchCurrencyPipe()">
         {{ 1 | mcurrency: "ETHER":unit.pref }}
-      </ion-label>
-
-    </ion-item>
-
-    <ion-item lines="none" *ngIf="rplProjectedClaim">
-
-      <ion-label class="stat-title">
-        RPL Price
-      </ion-label>
-      <ion-label class="value" (click)="switchCurrencyPipe()">
-        {{ 1 | mcurrency: "ETHER":"RPL":false | mcurrency: "ETHER":unit.pref }}
       </ion-label>
 
     </ion-item>

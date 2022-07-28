@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { IonRange, ModalController, Platform } from '@ionic/angular';
 import { NotificationGetRequest } from 'src/app/requests/requests';
 import { AlertService } from 'src/app/services/alert.service';
@@ -41,9 +42,15 @@ export class NotificationsPage extends NotificationBase implements OnInit {
     private merchantUtils: MerchantUtils,
     private modalController: ModalController,
     private machineUtils: MachineUtils,
-    protected clientUpdateUtils: ClientUpdateUtils
+    protected clientUpdateUtils: ClientUpdateUtils,
+    private router: Router
   ) {
     super(api, storage, firebaseUtils, platform, alerts, sync, clientUpdateUtils)
+  }
+
+  saveAndBack() {
+    this.sync.syncAllSettings()
+    this.router.navigate(['/tabs/preferences'])
   }
 
   handleLockedClick() {

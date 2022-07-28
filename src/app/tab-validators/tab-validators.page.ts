@@ -19,8 +19,8 @@
  */
 
 import { Component } from '@angular/core';
-import { ValidatorUtils, Validator } from '../utils/ValidatorUtils';
-import { ModalController } from '@ionic/angular';
+import { ValidatorUtils, Validator, ValidatorState } from '../utils/ValidatorUtils';
+import { ModalController, Platform } from '@ionic/angular';
 import { ValidatordetailPage } from '../pages/validatordetail/validatordetail.page';
 import { ApiService } from '../services/api.service';
 import { AlertController } from '@ionic/angular';
@@ -78,7 +78,8 @@ export class Tab2Page {
     private alerts: AlertService,
     private sync: SyncService,
     private merchant: MerchantUtils,
-    private themeUtils: ThemeUtils
+    private themeUtils: ThemeUtils,
+    private platform: Platform
   ) {
     this.validatorUtils.registerListener(() => {
       this.refresh()
@@ -124,10 +125,40 @@ export class Tab2Page {
 
     this.setLoading(true)
 
-    const temp = await this.validatorUtils.getAllMyValidators().catch((error) => {
-      return []
+    var temp = await this.validatorUtils.getAllMyValidators().catch((error) => {
+      return [] as Validator[]
     })
 
+    temp = temp.sort((a, b) => {
+      if (a.state == ValidatorState.SLASHED && b.state != ValidatorState.SLASHED) {
+        return -1
+      }
+      if (b.state == ValidatorState.SLASHED && a.state != ValidatorState.SLASHED) {
+        return 1
+      }
+
+      if (a.state == ValidatorState.OFFLINE && b.state == ValidatorState.OFFLINE ) {
+        return -1
+      }
+      if (b.state == ValidatorState.OFFLINE && a.state == ValidatorState.OFFLINE ) {
+        return 1
+      }
+
+      if (a.state == ValidatorState.WAITING && b.state == ValidatorState.WAITING ) {
+        return -1
+      }
+      if (b.state == ValidatorState.WAITING && a.state == ValidatorState.WAITING ) {
+        return 1
+      }
+
+      if (a.index > b.index) {
+        return 1
+      } else if (a.index == b.index) {
+        return 0
+      } else {
+        return -1
+      }
+    })
     this.items = temp
     this.setLoading(false)
     Tab2Page.itemCount = this.items.length
@@ -208,7 +239,9 @@ export class Tab2Page {
 
   async searchFor(searchString) {
     if (!searchString || searchString.length < 0) return
-    Keyboard.hide();
+    if (this.platform.is("ios") || this.platform.is("android")) {
+      Keyboard.hide();
+    }
 
     this.searchResultMode = true
     this.loading = true
@@ -230,10 +263,9 @@ export class Tab2Page {
 
   async searchETH1(target) {
     const temp = await this.validatorUtils.searchValidatorsViaETH1(target).catch(async (error) => {
-      if (error && error.message && error.message.indexOf("maximum of 100") > 0) {
+      if (error && error.message && error.message.indexOf("only a maximum of") > 0) {
         console.log("SET reachedMaxValidators to true")
         this.reachedMaxValidators = true
-
         return await this.validatorUtils.searchValidatorsViaETH1(target, this.currentPackageMaxValidators -1)
       }
       return []
@@ -387,7 +419,7 @@ export class Tab2Page {
       return
     }
 
-    const minShareStake = 0.01
+    const minShareStake = 0
     const maxStakeShare = new BigNumber(onlyOneNodeAddress.rocketpool.node_rpl_stake).dividedBy(new BigNumber(1e18)).decimalPlaces(2)
 
     var currentShares = await this.validatorUtils.getRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address)
@@ -469,7 +501,7 @@ export class Tab2Page {
       sum = sum.plus(temp)
     }
   
-    const minShareStake = 0.005 * this.selected.size
+    const minShareStake = 0
     const maxStakeShare = sum.dividedBy(1e9).decimalPlaces(0).toNumber()
 
     const current = new BigNumber(this.getCurrentShare(validatorSubArray)).multipliedBy(new BigNumber(maxStakeShare)).decimalPlaces(4)

@@ -226,6 +226,7 @@ export interface RocketPoolResponse {
   node_max_rpl_stake: string,
   node_min_rpl_stake: string,
   node_rpl_stake: string,
+  rpl_cumulative_rewards: string,
   node_timezone_location: string
 }
 
@@ -589,17 +590,33 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 
 // ------------ Special external api requests -----------------
 
+export class AdSeenRequest extends APIRequest<any> {
+  endPoint = "https://request-global.czilladx.com"
+
+  resource = "";
+  method = Method.GET;
+  ignoreFails = true
+  maxCacheAge = 0
+  nativeHttp = false
+
+  constructor(url : string) {
+    super()
+    this.resource = url.replace("https://request-global.czilladx.com/", "")
+  }
+}
+
+
 export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
   endPoint = "https://request-global.czilladx.com"
 
-  resource = "/serve/native-app.php?z=";
+  resource = "serve/native-app.php?z=";
   method = Method.GET;
   ignoreFails = true
   maxCacheAge = 4 * 60 * 1000
-  nativeHttp = true
+  nativeHttp = false
 
   parse(response: any): CoinzillaAdResponse[] {
-    if (!this.wasSuccessfull(response, false) || !response.data.ad) {
+    if (!this.wasSuccessfull(response, false) || (!response || !response.data || !response.data.ad)) {
       return []
     }
 
