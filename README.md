@@ -3,7 +3,7 @@
 
 # Beaconchain Dashboard App
 
-Beaconchain Dashboard is an open source ethereum 2.0 validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
+Beaconchain Dashboard is an open source ethereum validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
 
 
 [![Get it on Google Play](https://beaconcha.in/img/android.png)](https://play.google.com/store/apps/details?id=in.beaconcha.mobile)
@@ -17,8 +17,11 @@ Beaconchain Dashboard is an Angular app written in Typescript, HTML & CSS. It ut
 
 - Keep track on your validators online status, balances, returns and more  
 - Various notification alerts for your validators  
+- Machine monitoring (CPU usage, network usage and more)
+- Rocketpool support
+- Customize stake share if you only partially own a validator
 - Combined dashboard view  
-- Support for up to 100 validators  
+- Support for up to 280 validators  
 - Ethereum client update notifications  
 - Network warnings  
 - Support for multiple currencies  
@@ -29,7 +32,7 @@ Beaconchain Dashboard is an Angular app written in Typescript, HTML & CSS. It ut
 ## Device support
 
 - Android 5.0 or newer
-- iOS 11 or newer
+- iOS 12 or newer
 
 ## Development
 ### Getting started
