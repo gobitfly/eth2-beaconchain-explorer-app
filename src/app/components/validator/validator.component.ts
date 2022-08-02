@@ -25,7 +25,8 @@ import { ValidatorUtils, SAVED, getDisplayName, Validator, ValidatorState } from
 import { UnitconvService } from '../../services/unitconv.service';
 import { AlertController } from '@ionic/angular';
 import { AlertService } from 'src/app/services/alert.service';
-
+import BigNumber from "bignumber.js";
+import OverviewController from 'src/app/controllers/OverviewController';
 declare const Buffer
 
 @Component({
@@ -49,6 +50,9 @@ export class ValidatorComponent implements OnInit {
 
   stateCss: string
 
+  balance = null
+
+  overviewController = new OverviewController()
 
   constructor(
     private validatorUtils: ValidatorUtils,
@@ -58,6 +62,7 @@ export class ValidatorComponent implements OnInit {
 
   ngOnChanges() {
     this.data = this.validator.data
+    this.balance = this.calculateBalanceShare(this.validator)
 
     this.name = getDisplayName(this.validator)
     this.imgData = this.getBlockies()
@@ -69,6 +74,11 @@ export class ValidatorComponent implements OnInit {
   setInput(validator: any) {
     this.validator = validator
     this.data = validator.data
+    this.balance = this.calculateBalanceShare(this.validator)
+  }
+
+  calculateBalanceShare(validator) {
+    return this.overviewController.sumBigIntBalanceRpl([validator], cur => new BigNumber(cur.data.balance))
   }
 
   ngOnInit() {

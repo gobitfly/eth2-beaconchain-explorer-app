@@ -29,13 +29,13 @@
 
       <div class="info">
         <ion-text class="title">{{ name }}</ion-text>
-        <ion-label> {{ data.balance | mcurrency: "GWEI":unit.pref }} </ion-label>
+        <ion-label> {{ balance | mcurrency: "GWEI":unit.pref }} </ion-label>
 
         <ion-label class="smaller-info" style="padding-bottom: 6px;">
-          {{ validator.attrEffectiveness && validator.attrEffectiveness != -1 ? ("Eff.:" + validator.attrEffectiveness + "%") : ""}}
-          <span *ngIf="validator.share != null || validator.rplshare != null"><span *ngIf="validator.attrEffectiveness && validator.attrEffectiveness != -1"> | </span>Share: </span>
-          <span *ngIf="validator.share != null">{{ validator.share | percent: "1.0-1" }}</span>
-          <span *ngIf="validator.rocketpool && validator.rplshare != null"><span *ngIf="validator.share != null">, </span>RPL: {{validator.rplshare | percent: "1.0-1" }} </span>
+          {{ validator.attrEffectiveness && validator.attrEffectiveness !== -1 ? ("Eff.:" + validator.attrEffectiveness + "%") : ""}}
+          <span *ngIf="validator.share !== null || validator.rplshare !== null"><span *ngIf="validator.attrEffectiveness && validator.attrEffectiveness !== -1"> | </span>Share: </span>
+          <span *ngIf="validator.share !== null">{{ validator.share | percent: "1.0-1" }}</span>
+          <span *ngIf="validator.rocketpool && validator.rplshare !== null"><span *ngIf="validator.share !== null">, </span>RPL: {{validator.rplshare | percent: "1.0-1" }} </span>
         </ion-label>
         <span >
         <ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge><ion-badge class="rpl" *ngIf="validator.rocketpool">Rocketpool</ion-badge></span>
