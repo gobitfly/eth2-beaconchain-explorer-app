@@ -60,6 +60,14 @@
                 android:resource="@xml/widgetinfo_long" />
         </receiver>
 
+        <receiver android:exported="false" android:name="in.beaconcha.mobile.widget.WidgetProviderLargeRpl">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/widgetinfo_long_rpl" />
+        </receiver>
+
        <!-- <receiver android:name="in.beaconcha.mobile.utils.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
