@@ -38,6 +38,7 @@ import { Toast } from '@capacitor/toast';
 import ThemeUtils from '../utils/ThemeUtils';
 
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import EnsUtils from '../utils/EnsUtils';
 
 @Component({
   selector: 'app-tab2',
@@ -79,7 +80,8 @@ export class Tab2Page {
     private sync: SyncService,
     private merchant: MerchantUtils,
     private themeUtils: ThemeUtils,
-    private platform: Platform
+    private platform: Platform,
+    private ens: EnsUtils
   ) {
     this.validatorUtils.registerListener(() => {
       this.refresh()
@@ -247,9 +249,15 @@ export class Tab2Page {
     this.loading = true
 
     const isETH1Address = searchString.startsWith("0x") && searchString.length == 42
+    const isEnsDomain = searchString.endsWith(".eth")
 
-    if (isETH1Address) this.searchETH1(searchString).then(() => this.loading = false)
-    else this.searchByPubKeyOrIndex(searchString).then(() => this.loading = false)
+    if (isEnsDomain) {
+      this.searchEns(searchString).then(() => this.loading = false)
+    } else if (isETH1Address) {
+      this.searchETH1(searchString).then(() => this.loading = false)
+    } else {
+      this.searchByPubKeyOrIndex(searchString).then(() => this.loading = false)
+    }
   }
 
   async searchByPubKeyOrIndex(target) {
@@ -259,6 +267,19 @@ export class Tab2Page {
     })
     this.items = temp
     Tab2Page.itemCount = this.items.length
+  }
+
+  async searchEns(target) {
+    const temp = await this.ens.getAddressForEns(target).catch((error) => {
+      console.warn(error)
+      return []
+    })
+    if (temp.length >= 1) {
+      return await this.searchETH1(temp[0].address)
+    } else {
+      this.items = []
+      Tab2Page.itemCount = 0
+    }
   }
 
   async searchETH1(target) {

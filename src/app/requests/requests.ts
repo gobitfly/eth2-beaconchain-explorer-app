@@ -238,6 +238,11 @@ export interface NotificationGetResponse {
   EventThreshold: string,
 }
 
+export interface GetAddressForEnsResponse {
+  address: string
+  domain: string
+}
+
 // ------------- Reqests -------------
 
 export class DashboardRequest extends APIRequest<DashboardResponse> {
@@ -353,6 +358,16 @@ export class EpochRequest extends APIRequest<EpochResponse> {
       this.ignoreFails = true
     }
     this.resource += epoch;
+  }
+}
+
+export class GetAddressForEnsRequest extends APIRequest<GetAddressForEnsResponse> {
+  resource = "ens/domain_lookup/"
+  method = Method.GET;
+
+  constructor(domain: string) {
+    super()
+    this.resource += domain
   }
 }
 

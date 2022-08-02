@@ -38,7 +38,7 @@
 
   <ion-toolbar [style.--background]="selectMode ? 'var(--ion-color-primary)' : 'var(--ion-toolbar-background)'">
     <ion-searchbar *ngIf="!selectMode" showCancelButton="focus" enterkeyhint="search" (search)="searchEvent($event)"
-      (ionClear)="cancelSearch()" (ionCancel)="cancelSearch()" placeholder="Public Key / Index / ETH1 Address" animated>
+      (ionClear)="cancelSearch()" (ionCancel)="cancelSearch()" placeholder="Public Key / Index / ETH1 Address / ENS" animated>
     </ion-searchbar>
    
 
@@ -100,14 +100,14 @@
     <ion-icon name="telescope-outline"></ion-icon>
     <h2 >Nothing found</h2>
     <ion-label >We couldn't find the validators you are looking for.
-      Try searching by Index, Public Key or ETH1 address.</ion-label>
+      Try searching by Index, Public Key, ENS domain or ETH1 address.</ion-label>
   </div>
 
   <div class="nothingfound" *ngIf="items && items.length <= 0 && !searchResultMode && !loading && initialized">
     <ion-icon name="arrow-up-circle-outline"></ion-icon>
     <h2>Add Validators</h2>
     <ion-label >
-      You can add your validators by searching for a public key, validator index or your eth 1 address.
+      You can add your validators by searching for a public key, validator index, or your ETH1 address / ENS domain.
     </ion-label>
   </div>
 
