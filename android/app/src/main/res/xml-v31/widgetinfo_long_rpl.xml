@@ -2,12 +2,14 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="290dp"
     android:minHeight="70dp"
-
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
     android:updatePeriodMillis="86400000"
 
-    android:initialLayout="@layout/widget_long"
-    android:previewImage="@drawable/widget_preview_long"
+    android:initialLayout="@layout/widget_long_rpl"
+    android:previewLayout="@layout/widget_long_rpl"
     android:resizeMode="vertical|horizontal"
+    android:description="@string/widget_large_rpl_desc"
     android:widgetCategory="home_screen">
 </appwidget-provider>
 

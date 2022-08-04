@@ -114,10 +114,10 @@ export default class OverviewController {
         
         const validatorCount = validators.length
 
-        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share === null ? 1 : cur.share)));
-        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share === null ? 1 : cur.share)))
-        const performance7d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance7d).multipliedBy(new BigNumber(cur.share === null ? 1 : cur.share)));
-        const performance365d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share === null ? 1 : cur.share)))
+        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)));
+        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)))
+        const performance7d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance7d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)));
+        const performance365d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)))
 
         const aprPerformance7d = sumBigInt(validators, cur => cur.data.performance7d);
 
@@ -170,13 +170,13 @@ export default class OverviewController {
     sumBigIntBalanceRpl<T>(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
        
         return sumBigInt(validators, cur => {
-            if (!cur.rocketpool) return field(cur).multipliedBy(new BigNumber(cur.share === null ? 1 : cur.share))
-            if (!cur.rocketpool.node_address) return field(cur).multipliedBy(new BigNumber(cur.share === null ? 1 : cur.share))
+            if (!cur.rocketpool) return field(cur).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+            if (!cur.rocketpool.node_address) return field(cur).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
           
             const rewards = new BigNumber(field(cur).toString()).minus(cur.data.effectivebalance)
             const nodeOperatorRewards = new BigNumber(rewards).multipliedBy(new BigNumber("1").plus(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))).dividedBy("2")
             const wholeBalance = new BigNumber("16000000000").plus(nodeOperatorRewards)
-            return wholeBalance.multipliedBy(new BigNumber(cur.share === null ? 1 : cur.share))
+            return wholeBalance.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
         })
     }
 
