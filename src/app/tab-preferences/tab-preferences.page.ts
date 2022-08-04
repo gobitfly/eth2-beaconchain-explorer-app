@@ -147,7 +147,8 @@ export class Tab3Page {
     
   }
 
-  gotoNotificationPage() {
+  async gotoNotificationPage() {
+    await this.sync.syncAllSettings()
     this.router.navigate(['/notifications'])
   }
 
