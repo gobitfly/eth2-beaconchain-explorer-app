@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { Toast } from '@capacitor/toast';
+import { Clipboard } from '@capacitor/clipboard';
 
 @Component({
   selector: 'app-logview',
@@ -43,14 +44,24 @@ export class LogviewPage implements OnInit {
   }
 
   copyToClipboard() {
-    var result = ""
+    var result = "```\n"
     this.logs.forEach(data => {
       result += data.text +"\n"+data.extra
     })
-    navigator.clipboard.writeText(result);
-    Toast.show({
-      text: 'Copied to clipboard'
-    });
+    result += "\n```"
+    Clipboard
+      .write({string: result})
+      .then(() => {
+        Toast.show({
+          text: 'Copied to clipboard'
+        });
+      })
+      .catch((err) => {
+        Toast.show({
+          text: 'Failed to copy to clipboard, please copy manually!'
+        });
+        console.error(err)
+      });
   }
 
 }
