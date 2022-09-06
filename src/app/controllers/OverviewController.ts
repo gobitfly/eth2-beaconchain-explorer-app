@@ -113,6 +113,7 @@ export default class OverviewController {
         const overallBalance = this.sumBigIntBalanceRpl(validators, cur => new BigNumber(cur.data.balance))
         
         const validatorCount = validators.length
+        const activeValidators = this.getActiveValidators(validators)
 
         const performance1d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)));
         const performance31d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)))
@@ -123,7 +124,7 @@ export default class OverviewController {
 
         var attrEffectiveness = -1
         attrEffectiveness = sumBigInt(validators, cur => cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()): new BigNumber(0))
-            .dividedBy(validators.length)
+            .dividedBy(activeValidators.length)
             .decimalPlaces(1).toNumber();
         
 
