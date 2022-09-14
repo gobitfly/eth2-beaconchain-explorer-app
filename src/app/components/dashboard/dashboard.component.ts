@@ -74,7 +74,10 @@ export class DashboardComponent implements OnInit {
   firstCelebrate = true
 
   doneLoading = false
-  proposals: Proposals = null
+  proposals: Proposals = {
+    good: 0,
+    bad: 0,
+  }
   currentPackageMaxValidators = 100
 
   rplState = "rpl"
@@ -84,6 +87,11 @@ export class DashboardComponent implements OnInit {
   rplCommission = 0
   rplApr = ""
   rplProjectedClaim = null
+
+  displaySmoothingPool: boolean
+  smoothingClaimed: BigNumber
+  smoothingUnclaimed: BigNumber
+  unclaimedRpl: BigNumber
 
   constructor(
     public unit: UnitconvService,
@@ -111,7 +119,7 @@ export class DashboardComponent implements OnInit {
 
   isAfterPotentialMergeTarget() {
     const now = Date.now()
-    const target = 1664616277000 // target oct 1th to dismiss merge checklist
+    const target = 1663624800000 // target sept 20th to dismiss merge checklist
     console.log("afterPotentialMerge", now, target, now >= target)
     return now >= target
   }
@@ -135,6 +143,7 @@ export class DashboardComponent implements OnInit {
         this.updateRplCommission()
         this.updateRplApr()
         this.updateRplProjectedClaim()
+        this.updateSmoothingPool()
         console.log("dashboard data", this.data)
 
         if (!this.data.foreignValidator) {
@@ -143,6 +152,17 @@ export class DashboardComponent implements OnInit {
           this.checkForGenesisOccured()
         }
       }
+    }
+  }
+
+  updateSmoothingPool() {
+    try {
+      this.displaySmoothingPool = this.data.rocketpool.smoothingPool
+      this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber("1e9")),
+      this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber("1e9")),
+      this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
+    } catch (e) {
+      
     }
   }
 

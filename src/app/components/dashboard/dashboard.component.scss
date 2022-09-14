@@ -115,7 +115,9 @@ ion-segment-button {
 }
 
 .performances {
-  margin-top: 12px;
+  //margin-top: 12px;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
 }
 
 ion-list {
@@ -150,7 +152,7 @@ ion-item {
 }
 
 .first-item-group {
-  margin-top: var(--x-first-item-group-margin-top);
+  
 }
 
 .status-container {

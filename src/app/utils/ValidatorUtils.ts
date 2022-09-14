@@ -21,7 +21,7 @@
 import { ApiService } from '../services/api.service';
 import { StorageService } from '../services/storage.service';
 import { Injectable } from '@angular/core';
-import { EpochRequest, EpochResponse, RemoveMyValidatorsRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse, DashboardRequest, DashboardResponse, RocketPoolResponse, RocketPoolNetworkStats } from '../requests/requests';
+import { EpochRequest, EpochResponse, RemoveMyValidatorsRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse, DashboardRequest, DashboardResponse, RocketPoolResponse, RocketPoolNetworkStats, ExecutionResponse } from '../requests/requests';
 import { AlertService } from '../services/alert.service';
 import { CacheModule } from './CacheModule';
 import { MerchantUtils } from './MerchantUtils';
@@ -58,6 +58,7 @@ export interface Validator {
     state: ValidatorState
     attrEffectiveness: number
     rocketpool: RocketPoolResponse
+    execution: ExecutionResponse
     share: number 
     rplshare: number
 }
@@ -352,6 +353,7 @@ export class ValidatorUtils extends CacheModule {
         for (let vali of temp) {
             vali.attrEffectiveness = this.findAttributionEffectiveness(validatorEffectivenessResponse, vali.index)
             vali.rocketpool = this.findRocketpoolResponse(result.rocketpool_validators, vali.index)
+            vali.execution = this.findExecutionResponse(result.execution_performance, vali.index)
             if (local) {
                 const found = local.get(vali.pubkey)
                 if (found) {
@@ -373,6 +375,16 @@ export class ValidatorUtils extends CacheModule {
         this.unitConversion.setRETHPrice(new BigNumber(this.rocketpoolStats.reth_exchange_rate.toString()))
     }
 
+
+    private findExecutionResponse(list: ExecutionResponse[], index: number): ExecutionResponse {
+        if(list == null || list.length == 0) return null
+        for (let attr of list) {
+            if (attr.validatorindex == index) {
+              return attr
+            }
+          }
+          return null
+    }
 
     private findRocketpoolResponse(list: RocketPoolResponse[], index: number): RocketPoolResponse {
         for (let attr of list) {

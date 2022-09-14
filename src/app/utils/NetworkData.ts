@@ -42,16 +42,6 @@ export const MAP: ApiNetwork[] = [
         active: true
     },
     {
-        key: "ropsten",
-        protocol: "https",
-        host: "beaconcha.in",
-        net: "ropsten.",
-        endpoint: "/api/",
-        version: "v1",
-        onlyDebug: false,
-        active: true
-    },
-    {
         key: "sepolia",
         protocol: "https",
         host: "beaconcha.in",

@@ -198,6 +198,7 @@ export interface DashboardResponse {
   currentEpoch: EpochResponse[],
   olderEpoch: EpochResponse[],
   rocketpool_validators: RocketPoolResponse[]
+  execution_performance: ExecutionResponse[]
   rocketpool_network_stats: RocketPoolNetworkStats[]
 }
 
@@ -228,7 +229,20 @@ export interface RocketPoolResponse {
   node_rpl_stake: string,
   rpl_cumulative_rewards: string,
   node_timezone_location: string
+  unclaimed_rpl_rewards: string,
+  unclaimed_smoothing_pool: string,
+  claimed_smoothing_pool: string,
+  smoothing_pool_opted_in: boolean
+  penalty_count: number
 }
+
+export interface ExecutionResponse {
+  validatorindex: number
+  performance1d: number
+  performance7d: number
+  performance31d: number
+}
+
 
 export interface NotificationGetResponse {
   CreatedEpoch: number;
