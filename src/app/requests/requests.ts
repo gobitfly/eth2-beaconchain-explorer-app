@@ -48,7 +48,7 @@ export abstract class APIRequest<T> {
       if (!response || !response.status) return false
       return response.status == 200 && (response.data.status == "OK" || !hasDataStatus)
     } else {
-      return response && (response.status == "OK" || !hasDataStatus)
+      return response && (response.status == "OK" || response.status == 200 || !hasDataStatus)
     }
   }
 

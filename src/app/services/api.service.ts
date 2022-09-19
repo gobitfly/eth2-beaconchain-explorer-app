@@ -261,6 +261,8 @@ export class ApiService extends CacheModule {
     }
 
     const result = await response
+    this.updateConnectionState(request.ignoreFails, result && result.data && !!result.url);
+
     if (!result) {
       this.unlock(request.resource)
       console.log(
@@ -345,9 +347,17 @@ export class ApiService extends CacheModule {
   }
 
   private async legacyPost(resource: string, data: any, endpoint: string = "default", ignoreFails = false, options = { headers: {} }) {
-    if(!options.headers.hasOwnProperty("Content-Type")){
+    if (!options.headers.hasOwnProperty("Content-Type")) {
       options.headers = { ...options.headers, ...{ 'Content-Type':this.getContentType(data)}}
     }
+   /* return this.httpLegacy
+      .post(await this.getResourceUrl(resource, endpoint),JSON.stringify(this.formatPostData(data)), options)
+    .catch((err) => {
+      this.updateConnectionState(ignoreFails, false);
+      console.warn("Connection err", err)
+    })
+    .then((response: AxiosResponse<any>) => this.validateResponseLegacy(ignoreFails, response));
+    */
     const resp = await fetch(
       await this.getResourceUrl(resource, endpoint),
        {
