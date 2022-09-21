@@ -92,6 +92,7 @@ export class DashboardComponent implements OnInit {
   smoothingClaimed: BigNumber
   smoothingUnclaimed: BigNumber
   unclaimedRpl: BigNumber
+  hasNonSmoothingPoolAsWell: boolean
 
   constructor(
     public unit: UnitconvService,
@@ -157,6 +158,7 @@ export class DashboardComponent implements OnInit {
 
   updateSmoothingPool() {
     try {
+      this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
       this.displaySmoothingPool = this.data.rocketpool.smoothingPool
       this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber("1e9")),
       this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber("1e9")),

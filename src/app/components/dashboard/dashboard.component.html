@@ -92,7 +92,7 @@
   </ion-list>
 
   <!--<ion-list-header>
-    <ion-label>Consensus & Execution</ion-label>
+    <ion-label>Staking & Transactions</ion-label>
   </ion-list-header>
   <ion-list class="performances" >
 
@@ -284,12 +284,12 @@
 
     <app-text-ad location="dashboard"></app-text-ad>
 
-    <ion-list-header >
+    <ion-list-header *ngIf="hasNonSmoothingPoolAsWell">
       <ion-label>Transaction Fees</ion-label>
     </ion-list-header>
   
 
-    <ion-list class="performances" >
+    <ion-list class="performances" *ngIf="hasNonSmoothingPoolAsWell" >
 
       <ion-item lines="none">
   

@@ -75,6 +75,7 @@ export type Rocketpool = {
     smoothingPoolUnclaimed: BigNumber
     rplUnclaimed: BigNumber
     smoothingPool: boolean
+    hasNonSmoothingPoolAsWell: boolean
     cheatingStatus: RocketpoolCheatingStatus
 }
 
@@ -125,9 +126,8 @@ export default class OverviewController {
             return cur.data.activationepoch <= currentEpoch.epoch ? new BigNumber(cur.data.effectivebalance.toString()) : new BigNumber(0)
         });
 
-        
         const aprPerformance31dConsensus = sumBigInt(validators, cur => cur.data.performance31d);
-        const aprPerformance31dExecution = sumBigInt(validators, cur => cur.execution ? new BigNumber(cur.execution.performance31d.toString()).dividedBy(new BigNumber("1e9")) : new BigNumber(0));
+        const aprPerformance31dExecution = sumBigInt(validators, cur => this.sumExcludeSmoothingPool(cur, cur => cur.execution.performance31d.toString()));
 
         const overallBalance = this.sumBigIntBalanceRpl(validators, cur => new BigNumber(cur.data.balance))
         const validatorCount = validators.length
@@ -155,8 +155,6 @@ export default class OverviewController {
             apr: this.getAPRFromMonth(effectiveBalanceActive, aprPerformance31dExecution.plus(aprPerformance31dConsensus)),
             total:  consensusPerf.total.plus(executionPerf.total),
         }
-
-       
 
         var attrEffectiveness = -1
         attrEffectiveness = sumBigInt(validators, cur => cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()): new BigNumber(0))
@@ -202,25 +200,35 @@ export default class OverviewController {
                 smoothingPoolUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.unclaimed_smoothing_pool),
                 rplUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.unclaimed_rpl_rewards),
                 smoothingPool: validators.find(cur => cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == true : false) != null ? true : false,
+                hasNonSmoothingPoolAsWell: validators.find(cur => cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == false : true) != null ? true : false,
                 cheatingStatus: this.getRocketpoolCheatingStatus(validators),
             }
         } as OverviewData;
     }
 
     private getExecutionPerformance(validators: Validator[], effectiveBalanceActive: BigNumber, aprPerformance31dExecution: BigNumber, total: BigNumber) {
-        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => cur.execution ? new BigNumber(cur.execution.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)) : new BigNumber(0));
-        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => cur.execution ? new BigNumber(cur.execution.performance31d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)) : new BigNumber(0))
-        const performance7d = this.sumBigIntPerformanceRpl(validators, cur =>  cur.execution ? new BigNumber(cur.execution.performance7d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)) : new BigNumber(0));
+        
+        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => this.sumExcludeSmoothingPool(cur, cur => cur.execution.performance1d.toString()));
+        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => this.sumExcludeSmoothingPool(cur, cur => cur.execution.performance31d.toString()))
+        const performance7d = this.sumBigIntPerformanceRpl(validators, cur =>  this.sumExcludeSmoothingPool(cur, cur => cur.execution.performance7d.toString()));
 
         const aprExecution = this.getAPRFromMonth(effectiveBalanceActive, aprPerformance31dExecution) // todo
         return {
-            performance1d: performance1d.dividedBy(new BigNumber("1e9")),
-            performance31d: performance31d.dividedBy(new BigNumber("1e9")),
-            performance7d: performance7d.dividedBy(new BigNumber("1e9")),
+            performance1d: performance1d,
+            performance31d: performance31d,
+            performance7d: performance7d,
             performance365d: new BigNumber(0), // not yet implemented
             apr: aprExecution,
             total: total
         }
+    }
+
+    sumExcludeSmoothingPool(cur: Validator, field: (cur: Validator) => string) {
+        // Exclude rocketpool minipool from execution rewards collection
+        if (!cur.rocketpool || !cur.rocketpool.smoothing_pool_opted_in) {
+            return cur.execution ? new BigNumber(field(cur)).dividedBy(new BigNumber("1e9")) : new BigNumber(0)
+        }
+        return new BigNumber(0)
     }
 
     private getConsensusPerformance(validators: Validator[], effectiveBalanceActive: BigNumber, aprPerformance31dConsensus: BigNumber, total: BigNumber) {
@@ -302,11 +310,9 @@ export default class OverviewController {
         })
     }
 
-    getAPR(effectiveBalance, performance) {
-        return new BigNumber(performance.toString()).multipliedBy("5214").dividedBy(effectiveBalance).decimalPlaces(1).toNumber()
-    }
 
-    getAPRFromMonth(effectiveBalance, performance) {
+    getAPRFromMonth(effectiveBalance: BigNumber, performance: BigNumber): number {
+        if(effectiveBalance.toNumber() == 0) return 0
         return new BigNumber(performance.toString()).multipliedBy("1177").dividedBy(effectiveBalance).decimalPlaces(1).toNumber()
     }
 
