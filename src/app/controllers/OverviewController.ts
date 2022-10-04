@@ -189,16 +189,51 @@ export default class OverviewController {
             currentEpoch: currentEpoch,
             apr: consensusPerf.apr,
             rocketpool: {
-                minRpl: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.node_min_rpl_stake),
-                maxRpl: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.node_max_rpl_stake),
-                currentRpl: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.node_rpl_stake),
-                totalClaims: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.rpl_cumulative_rewards),
+                minRpl: this.sumRocketpoolBigIntPerNodeAddress(
+                    true,
+                    validators,
+                    cur => cur.rocketpool.node_min_rpl_stake,
+                    cur => cur.rplshare
+                ),
+                maxRpl: this.sumRocketpoolBigIntPerNodeAddress(
+                    true,
+                    validators,
+                    cur => cur.rocketpool.node_max_rpl_stake,
+                    cur => cur.rplshare
+                ),
+                currentRpl: this.sumRocketpoolBigIntPerNodeAddress(
+                    true,
+                    validators,
+                    cur => cur.rocketpool.node_rpl_stake,
+                    cur => cur.rplshare
+                ),
+                totalClaims: this.sumRocketpoolBigIntPerNodeAddress(
+                    true,
+                    validators,
+                    cur => cur.rocketpool.rpl_cumulative_rewards,
+                    cur => cur.rplshare
+                ),
                 fee: feeAvg,
                 status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
                 depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
-                smoothingPoolClaimed: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.claimed_smoothing_pool),
-                smoothingPoolUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.unclaimed_smoothing_pool),
-                rplUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(true, validators, cur => cur.rocketpool.unclaimed_rpl_rewards),
+                smoothingPoolClaimed: this.sumRocketpoolBigIntPerNodeAddress(
+                    true,
+                    validators,
+                    cur => cur.rocketpool.claimed_smoothing_pool,
+                    cur => cur.execshare
+                ),
+                smoothingPoolUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(
+                    true,
+                    validators,
+                    cur => cur.rocketpool.unclaimed_smoothing_pool,
+                    cur => cur.execshare
+                ),
+                rplUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(
+                    true,
+                    validators,
+                    cur => cur.rocketpool.unclaimed_rpl_rewards,
+                    cur => cur.execshare
+                ),
                 smoothingPool: validators.find(cur => cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == true : false) != null ? true : false,
                 hasNonSmoothingPoolAsWell: validators.find(cur => cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == false : true) != null ? true : false,
                 cheatingStatus: this.getRocketpoolCheatingStatus(validators),
@@ -208,9 +243,15 @@ export default class OverviewController {
 
     private getExecutionPerformance(validators: Validator[], effectiveBalanceActive: BigNumber, aprPerformance31dExecution: BigNumber, total: BigNumber) {
         
-        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => this.sumExcludeSmoothingPool(cur, cur => cur.execution.performance1d.toString()));
-        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => this.sumExcludeSmoothingPool(cur, cur => cur.execution.performance31d.toString()))
-        const performance7d = this.sumBigIntPerformanceRpl(validators, cur =>  this.sumExcludeSmoothingPool(cur, cur => cur.execution.performance7d.toString()));
+        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => this.sumExcludeSmoothingPool(cur, cur =>
+            cur.execution.performance1d.toString()).multipliedBy(new BigNumber(cur.execshare == null ? 1 : cur.execshare))
+        );
+        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => this.sumExcludeSmoothingPool(cur, cur =>
+            cur.execution.performance31d.toString()).multipliedBy(new BigNumber(cur.execshare == null ? 1 : cur.execshare))
+        )
+        const performance7d = this.sumBigIntPerformanceRpl(validators, cur => this.sumExcludeSmoothingPool(cur, cur =>
+            cur.execution.performance7d.toString()).multipliedBy(new BigNumber(cur.execshare == null ? 1 : cur.execshare))
+        );
 
         const aprExecution = this.getAPRFromMonth(effectiveBalanceActive, aprPerformance31dExecution) // todo
         return {
@@ -232,10 +273,18 @@ export default class OverviewController {
     }
 
     private getConsensusPerformance(validators: Validator[], effectiveBalanceActive: BigNumber, aprPerformance31dConsensus: BigNumber, total: BigNumber) {
-        const performance1d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)));
-        const performance31d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)))
-        const performance7d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance7d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)));
-        const performance365d = this.sumBigIntPerformanceRpl(validators, cur => new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share)))
+        const performance1d = this.sumBigIntPerformanceRpl(validators, cur =>
+            new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+        );
+        const performance31d = this.sumBigIntPerformanceRpl(validators, cur =>
+            new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+        )
+        const performance7d = this.sumBigIntPerformanceRpl(validators, cur =>
+            new BigNumber(cur.data.performance7d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+        );
+        const performance365d = this.sumBigIntPerformanceRpl(validators, cur =>
+            new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+        )
 
         const aprConsensus = this.getAPRFromMonth(effectiveBalanceActive, aprPerformance31dConsensus)
 
@@ -295,7 +344,7 @@ export default class OverviewController {
         })
     }
 
-    sumRocketpoolBigIntPerNodeAddress<T>(applyShare: boolean, validators: Validator[], field: (cur: Validator) => string): BigNumber {
+    sumRocketpoolBigIntPerNodeAddress<T>(applyShare: boolean, validators: Validator[], field: (cur: Validator) => string, share: (cur: Validator) => number): BigNumber {
         const nodesAdded = new Set()
         return sumBigInt(validators, cur => {
             if (!cur.rocketpool) return new BigNumber(0)
@@ -304,7 +353,7 @@ export default class OverviewController {
             nodesAdded.add(cur.rocketpool.node_address)
             const temp = new BigNumber(field(cur).toString())
             if (applyShare) {
-                return temp.multipliedBy(cur.rplshare == null ? 1 : cur.rplshare)
+                return temp.multipliedBy(share(cur) == null ? 1 : share(cur))
             }
             return temp
         })

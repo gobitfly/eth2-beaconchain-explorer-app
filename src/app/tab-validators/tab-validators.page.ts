@@ -392,6 +392,15 @@ export class Tab2Page {
     return lastShare
   }
 
+  getCurrentELShare(subArray: Validator[]): number {
+    if(subArray.length <= 0) return null
+    var lastShare = subArray[0].execshare
+    for (var i = 1; i < subArray.length; i++){
+      if(lastShare != subArray[i].execshare) return null
+    }
+    return lastShare
+  }
+
   async setRPLShares() {
     if (this.selected.size <= 0) {
       Toast.show({
@@ -506,17 +515,25 @@ export class Tab2Page {
 
     const current = new BigNumber(this.getCurrentShare(validatorSubArray)).multipliedBy(new BigNumber(maxStakeShare)).decimalPlaces(4)
     
+    const currentEL = new BigNumber(this.getCurrentELShare(validatorSubArray)).multipliedBy(new BigNumber(maxStakeShare)).decimalPlaces(4)
+
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
       header: 'Define stake share',
-      message: 'If you own partial amounts of these validators, specify the amount of ether for a custom dashboard.',
+      message: 'If you own partial amounts of these validators, specify the amount of ether for a custom dashboard. First value defines your consensus share, second value your execution share.',
       inputs: [
         {
           name: 'share',
           type: 'number',
-          placeholder: minShareStake + ' - ' + maxStakeShare + " Ether",
+          placeholder: 'Consensus Share (' + minShareStake + ' - ' + maxStakeShare + " ETH)",
           value: current 
-        }
+        },
+        {
+          name: 'execshare',
+          type: 'number',
+          placeholder: 'Execution Share ('+minShareStake + ' - ' + maxStakeShare + " ETH)",
+          value: currentEL 
+        },
       ],
       buttons: [
         {
@@ -524,6 +541,7 @@ export class Tab2Page {
           handler: async (_) => {
             for (var i = 0; i < validatorSubArray.length; i++){
               validatorSubArray[i].share = null
+              validatorSubArray[i].execshare = null
             }
             this.validatorUtils.saveValidatorsLocal(validatorSubArray)
             this.cancelSelect()
@@ -533,14 +551,15 @@ export class Tab2Page {
           text: 'Save',
           handler: async (alertData) => {
             const shares = alertData.share
-            if (shares < minShareStake) {
+            const sharesEL = alertData.execshare
+            if ((shares && shares < minShareStake) || (sharesEL  && sharesEL < minShareStake)) {
               Toast.show({
                 text: 'Share must be at least ' + minShareStake + ' ETH or more'
               });
               return
             }
 
-            if (shares > maxStakeShare) {
+            if ((shares &&  shares > maxStakeShare) || (sharesEL &&  shares > maxStakeShare)) {
               Toast.show({
                 text: 'Share amount is higher than all of your added validators.'
               });
@@ -548,9 +567,16 @@ export class Tab2Page {
             }
 
             const share = new BigNumber(alertData.share).div(new BigNumber(maxStakeShare))
+            const shareEL = new BigNumber(alertData.execshare).div(new BigNumber(maxStakeShare))
             
             for (var i = 0; i < validatorSubArray.length; i++){
-              validatorSubArray[i].share = share.toNumber()
+              if (shares && !share.isNaN()) {
+                validatorSubArray[i].share = share.toNumber()
+              }
+              if (shareEL && !shareEL.isNaN()) {
+                validatorSubArray[i].execshare = shareEL.toNumber()
+              }
+
             }
 
             this.validatorUtils.saveValidatorsLocal(validatorSubArray)

@@ -49,7 +49,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
   }
 
   saveAndBack() {
-    this.sync.syncAllSettings()
+    this.sync.syncAllSettings(true)
     this.router.navigate(['/tabs/preferences'])
   }
 
