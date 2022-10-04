@@ -322,7 +322,7 @@ export class ValidatorUtils extends CacheModule {
             if (response && response.data && response.data.status && response.data.status.indexOf("only a maximum of") >= 0) {
                 throw new Error(response.data.status);
             }
-            
+            this.api.clearSpecificCache(request)
             return []
         }
 
