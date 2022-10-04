@@ -61,6 +61,7 @@ export interface Validator {
     execution: ExecutionResponse
     share: number 
     rplshare: number
+    execshare: number 
 }
 
 @Injectable({
@@ -119,7 +120,7 @@ export class ValidatorUtils extends CacheModule {
         return new Map<String, Validator>()
     }
 
-    private async getMapWithoutDeleted(storageKey) {
+    private async getMapWithoutDeleted(storageKey) : Promise<Map<String, Validator>> {
         const local = await this.getMap(storageKey)
         const deleted = await this.getDeletedSet(storageKey)
         if (await this.storage.isLoggedIn()) {
@@ -357,7 +358,8 @@ export class ValidatorUtils extends CacheModule {
             if (local) {
                 const found = local.get(vali.pubkey)
                 if (found) {
-                    vali.share =  found.share
+                    vali.share = found.share
+                    vali.execshare = (found.execshare == null || found.execshare == undefined) ? found.share : found.execshare
                 }
             }
             if (vali.rocketpool) {
