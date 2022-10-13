@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
-import { CPU_THRESHOLD, HDD_THRESHOLD, RAM_THRESHOLD, SETTING_NOTIFY, StorageService } from 'src/app/services/storage.service';
+import { CPU_THRESHOLD, HDD_THRESHOLD, OFFLINE_THRESHOLD, RAM_THRESHOLD, SETTING_NOTIFY, StorageService } from 'src/app/services/storage.service';
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
@@ -26,6 +26,8 @@ export class NotificationBase implements OnInit {
 
   maxCollateralThreshold = 100
   minCollateralThreshold = 0
+
+  offlineThreshold = 3
 
   activeSubscriptionsPerEventMap = new Map<String, number>() // map storing the count of subscribed validators per event
   notifyTogglesMap = new Map<String, boolean>()
@@ -101,7 +103,11 @@ export class NotificationBase implements OnInit {
       this.setToggleFromEvent(result.EventName, network, true, net)
       if (result.EventName == "monitoring_cpu_load") {
         this.cpuThreshold = Math.round(parseFloat(result.EventThreshold) * 100)
-        this.storage.setSetting(CPU_THRESHOLD, this.cpuThreshold)
+        this.storage.setSetting(CPU_THRESHOLD, this.cpuThreshold) 
+      }
+      else if (result.EventName == "validator_is_offline") {
+        this.offlineThreshold = Math.round(parseFloat(result.EventThreshold))
+        this.storage.setSetting(OFFLINE_THRESHOLD, this.offlineThreshold)
       }
       else if (result.EventName == "monitoring_hdd_almostfull") {
         this.storageThreshold = Math.round(100 - (parseFloat(result.EventThreshold) * 100))
