@@ -21,7 +21,7 @@
 import { ApiService } from '../services/api.service';
 import { StorageService } from '../services/storage.service';
 import { Injectable } from '@angular/core';
-import { EpochRequest, EpochResponse, RemoveMyValidatorsRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse, DashboardRequest, DashboardResponse, RocketPoolResponse, RocketPoolNetworkStats, ExecutionResponse } from '../requests/requests';
+import { EpochRequest, EpochResponse, RemoveMyValidatorsRequest, AttestationPerformanceResponse, ValidatorRequest, ValidatorResponse, ValidatorETH1Request, GetMyValidatorsRequest, MyValidatorResponse, DashboardRequest, DashboardResponse, RocketPoolResponse, RocketPoolNetworkStats, ExecutionResponse, SyncCommitteeResponse } from '../requests/requests';
 import { AlertService } from '../services/alert.service';
 import { CacheModule } from './CacheModule';
 import { MerchantUtils } from './MerchantUtils';
@@ -62,6 +62,8 @@ export interface Validator {
     share: number 
     rplshare: number
     execshare: number 
+    currentSyncCommittee: SyncCommitteeResponse
+    nextSyncCommittee: SyncCommitteeResponse
 }
 
 @Injectable({
@@ -216,6 +218,23 @@ export class ValidatorUtils extends CacheModule {
         return erg
     }
 
+    async getLocalValidatorByIndex(index: number) : Promise<Validator> {
+        let localValidators = await this.getAllValidatorsLocal()
+        for (const vali of localValidators) {
+            if (vali.index == index) {
+                return vali
+            }
+        }
+        return null
+    }
+
+    async getLocalValidatorIndexes() : Promise<string> {
+        const storageKey = await this.getStorageKey()
+        const local = await this.getMapWithoutDeleted(storageKey)
+      
+       return getValidatorQueryString([...local.values()], 2000, await this.merchantUtils.getCurrentPlanMaxValidator() - 1)
+    }
+
 
     async getAllMyValidators(): Promise<Validator[]> {
         const storageKey = await this.getStorageKey()
@@ -307,7 +326,6 @@ export class ValidatorUtils extends CacheModule {
         return result
     }
 
-    
     private lastFreshTime = 0
     async getDashboardDataValidators(storage: (0 | 1), ...validators): Promise<Validator[]> {
         /*const cacheKey = await this.getCachedValidatorKey()
@@ -365,10 +383,26 @@ export class ValidatorUtils extends CacheModule {
             if (vali.rocketpool) {
                 vali.rplshare = await this.getRocketpoolCollateralShare(vali.rocketpool.node_address)
             }
+  
+            if (result.current_sync_committee && result.current_sync_committee.length >= 1) {
+                vali.currentSyncCommittee = this.findSyncCommitteeDuty(result.current_sync_committee[0], vali.index)
+            } 
+            if (result.next_sync_committee && result.next_sync_committee.length >= 1) {
+                vali.nextSyncCommittee = this.findSyncCommitteeDuty(result.next_sync_committee[0], vali.index)
+            }
         }
 
        // this.cacheMultiple(cacheKey, temp)
         return temp
+    }
+
+    private findSyncCommitteeDuty(committee: SyncCommitteeResponse, index: number ) : SyncCommitteeResponse{
+        for (const vali of committee.validators) {
+            if (vali == index) {
+                return committee
+            }
+        }
+        return null
     }
 
     private updateRplAndRethPrice() {
@@ -411,10 +445,11 @@ export class ValidatorUtils extends CacheModule {
     }
     
     async getRemoteCurrentEpoch(): Promise<EpochResponse> {
-
         const result = this.currentEpoch
-
-
+        if (result == null) {
+            await this.getAllMyValidators()
+            return this.currentEpoch
+        }
 
         return result
     }
@@ -519,7 +554,7 @@ export class ValidatorUtils extends CacheModule {
 
     private getName(validator: ValidatorResponse): string {
         if (!validator || !validator.name || validator.name.length <= 0) {
-            return "Validator #" + validator.validatorindex
+            return "Validator " + validator.validatorindex
         } else {
             return validator.name
         }
@@ -562,7 +597,7 @@ export function getDisplayName(validator: Validator): string {
         return validator.name
     }
     if (validator.data.name.length <= 0) {
-        return "Validator #" + validator.data.validatorindex
+        return "Validator " + validator.data.validatorindex
     } else {
         return validator.data.name
     }

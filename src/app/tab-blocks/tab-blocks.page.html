@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="switchCurrencyPipe()">
+        <ion-icon size="small" name="swap-vertical-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Blocks</ion-title>
+  </ion-toolbar>
+
+
+  <ion-item  class="top-bar" [class]="fadeIn">
+    <ion-label>Proposal Luck: <span *ngIf="luck" [class]="luck.luckPercentage | valuestyle: 1">{{ luck.luckPercentage*100 | number:'1.0-1' }}%</span>
+      <span *ngIf="!luck">-</span>
+    </ion-label>
+
+    <ion-icon class="opacity-icon" slot="end" name="help-circle-outline" (click)="luckHelp()"></ion-icon>
+  </ion-item>
+</ion-header>
+
+
+<ion-content [fullscreen]="true" role="feed">
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <app-text-ad location="validator" style="margin-top:10px;" *ngIf="items && items.length > 0 && !loading"></app-text-ad>     
+
+  <ion-virtual-scroll [items]="items" approxItemHeight="125px" [itemHeight]="itemHeightFn"
+    *ngIf="items && items.length > 0 && !loading">
+    <div *virtualItem="let item; let idx = index;" style="background-color: var(--ion-card-background);"> 
+      
+      <app-block [block]="item" (click)="clickBlock(item)" role="article"></app-block>
+     
+    </div>
+  </ion-virtual-scroll>
+  <ion-infinite-scroll (ionInfinite)="loadData($event)">
+    <ion-infinite-scroll-content 
+    loadingSpinner="bubbles"
+    loadingText="Loading more blocks..."
+    ></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+  <div class="nothingfound" *ngIf="items && items.length <= 0 && !loading">
+    <ion-icon name="telescope-outline"></ion-icon>
+    <h2 >No Blocks so far</h2>
+    <ion-label>Your proposed blocks will show up here.</ion-label>
+  </div>
+
+  <div id="container" *ngIf="loading" class="fadein fadeout">
+    <div class="center">
+      <ion-spinner class="status-icon loading-spinner"></ion-spinner>
+    </div>
+  </div>
+</ion-content>

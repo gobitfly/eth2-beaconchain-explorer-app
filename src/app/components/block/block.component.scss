@@ -1,0 +1,91 @@
+/* 
+ *  // Copyright (C) 2020 - 2021 Bitfly GmbH
+ *  // Manuel Caspari (manuel@bitfly.at)
+ *  // 
+ *  // This file is part of Beaconchain Dashboard.
+ *  // 
+ *  // Beaconchain Dashboard is free software: you can redistribute it and/or modify
+ *  // it under the terms of the GNU General Public License as published by
+ *  // the Free Software Foundation, either version 3 of the License, or
+ *  // (at your option) any later version.
+ *  // 
+ *  // Beaconchain Dashboard is distributed in the hope that it will be useful,
+ *  // but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  // GNU General Public License for more details.
+ *  // 
+ *  // You should have received a copy of the GNU General Public License
+ *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+ @import "../../../theme/variables.scss";
+
+ .blockie {
+   position: absolute;
+   top: 20px;
+   left: 22px;
+   border-radius: 20%;
+   height: 59px;
+   width: 56px;
+   image-rendering: pixelated;
+ }
+ 
+ .container {
+ }
+ 
+
+ .blocknr {
+    top: 83px;
+    text-align:center;
+    padding-top: 75px;
+    width: 66px;
+    font-size: 0.72rem;
+  }
+
+ .inner {
+   padding-top: 14px;
+   padding-bottom: 14px;
+ }
+ 
+ ion-item {
+   background: var(--ion-card-background);
+ }
+ 
+ ion-icon {
+   position: absolute !important;
+   top: 2px;
+   right: 20px;
+   margin-top: 0px !important;
+   padding-top: 0px !important;
+   margin-bottom: 29px;
+   height: 56px;
+ }
+ 
+ .info {
+   margin-top: 15px;
+   margin-left: 0px;
+   margin-right: 15px;
+   margin-bottom: 15px;
+ }
+ 
+ .balance {
+   font-weight: bold;
+ }
+ 
+ .title {
+   font-size: 17px;
+   font-weight: bold;
+ }
+ 
+ .smaller-info {
+   font-size: 0.8rem;
+   color: var(--ion-text-color-secondary);
+ }
+ 
+ .smoothing {
+    color: #e17959
+ }
+
+ .ethpool {
+    color: #ee7112
+ }

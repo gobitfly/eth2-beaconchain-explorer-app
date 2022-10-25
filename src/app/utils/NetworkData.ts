@@ -29,7 +29,8 @@ export const MAP: ApiNetwork[] = [
         endpoint: "/api/",
         version: "v1",
         onlyDebug: false,
-        active: true
+        active: true,
+        genesisTs: 1606824023
     },
     {
         key: "prater",
@@ -39,7 +40,8 @@ export const MAP: ApiNetwork[] = [
         endpoint: "/api/",
         version: "v1",
         onlyDebug: false,
-        active: true
+        active: true,
+        genesisTs: 1616508000
     },
     {
         key: "sepolia",
@@ -49,7 +51,8 @@ export const MAP: ApiNetwork[] = [
         endpoint: "/api/",
         version: "v1",
         onlyDebug: false,
-        active: true
+        active: true,
+        genesisTs: 1655733600
     },
     {
         key: "local dev",
@@ -59,7 +62,8 @@ export const MAP: ApiNetwork[] = [
         endpoint: "/api/",
         version: "v1",
         onlyDebug: true,
-        active: true
+        active: true,
+        genesisTs: 1606824023
     },
     {
         key: "invalid (no connection)",
@@ -69,11 +73,13 @@ export const MAP: ApiNetwork[] = [
         endpoint: "/api/",
         version: "v1",
         onlyDebug: true,
-        active: true
+        active: true,
+        genesisTs: 1606824023
     },
 ]
 
 export function findConfigForKey(key: string): ApiNetwork {
+    console.log("looking for config", key, MAP)
     for (let entry of MAP) {
         if (entry.key == key) return entry
     }

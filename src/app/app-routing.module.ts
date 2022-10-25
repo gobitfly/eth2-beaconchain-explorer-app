@@ -61,6 +61,14 @@ const routes: Routes = [
   {
     path: 'merge-checklist',
     loadChildren: () => import('./pages/merge-checklist/merge-checklist.module').then( m => m.MergeChecklistPageModule)
+  },
+  {
+    path: 'tab-blocks',
+    loadChildren: () => import('./tab-blocks/tab-blocks.module').then( m => m.TabBlocksPageModule)
+  },
+  {
+    path: 'block-detail',
+    loadChildren: () => import('./pages/block-detail/block-detail.module').then( m => m.BlockDetailPageModule)
   }
 ];
 @NgModule({

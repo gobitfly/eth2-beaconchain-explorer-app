@@ -23,7 +23,7 @@ import { ApiService } from './api.service';
 import { SETTING_NOTIFY, StorageService } from './storage.service';
 import { Mutex } from 'async-mutex';
 import { BundleSub, NotificationBundleSubsRequest, NotificationGetRequest, SetMobileSettingsRequest } from '../requests/requests';
-import ClientUpdateUtils, { ETH1_CLIENT_SAVED, ETH2_CLIENT_SAVED, OTHER_CLIENT_SAVED } from '../utils/ClientUpdateUtils';
+import ClientUpdateUtils, { ETH1_CLIENT_SAVED, ETH2_CLIENT_SAVED, MEVBOOST_CLIENT_SAVED, ROCKETPOOL_CLIENT_SAVED } from '../utils/ClientUpdateUtils';
 import { ValidatorSyncUtils } from '../utils/ValidatorSyncUtils';
 import { NotificationBase } from '../tab-preferences/notification-base';
 
@@ -109,8 +109,7 @@ export class SyncService {
 
     console.log("== Syncing notify ==")
 
-    console.log("== Step 1: Loading notification preferences from beaconcha.in ==")
-    await this.notificationBase.loadNotifyToggles()
+
 
     console.log("== Step 2: Sync changes ==")
 
@@ -135,6 +134,9 @@ export class SyncService {
     if (allNotifyKeys.length > 0) { 
       this.api.clearSpecificCache(new NotificationGetRequest())
     } 
+
+    console.log("== Step 1: Loading notification preferences from beaconcha.in ==")
+    await this.notificationBase.loadNotifyToggles()
 
     this.deleteAllTemp()
 
@@ -245,7 +247,7 @@ export class SyncService {
       return SyncActionEvent.CLIENT_UPDATE_GENERAL
     } else if (key.endsWith(ETH1_CLIENT_SAVED)) {
       return SyncActionEvent.CLIENT_UPDATE_GENERAL
-    }  else if (key.endsWith(OTHER_CLIENT_SAVED)) {
+    }  else if (key.endsWith(ROCKETPOOL_CLIENT_SAVED)) {
       return SyncActionEvent.CLIENT_UPDATE_GENERAL
     }
 
@@ -365,19 +367,42 @@ export class SyncService {
     return false
   }
 
-  async changeOtherClient(value) {
+  async changeMevBoostClient(value) {
     // do not sync to remote if notification for client updates isn't enabled in the first place
     const isEnabled = await this.isNotifyClientUpdatesEnabled()
     if (!isEnabled) return
+
+    if (value) {
+      value = value.toUpperCase()
+    }
     
-    const oldValue = await this.updateUtils.getOtherClient()
-    const changed = await this.updateUtils.setOtherClient(value)
+    const changed = await this.updateUtils.setMevBoostClient(value)
     if (changed) {
       if (value && value != 'null') {
-        this.setLastChanged(OTHER_CLIENT_SAVED, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
+        this.setLastChanged(MEVBOOST_CLIENT_SAVED, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
       }
-      if (oldValue) {
-        this.setLastChanged("UN"+OTHER_CLIENT_SAVED, "eth_client_update", oldValue.toLocaleLowerCase(), null, 'unsubscribe')
+     else {
+        this.setLastChanged("UN"+MEVBOOST_CLIENT_SAVED, "eth_client_update", "mev-boost", null, 'unsubscribe')
+      }
+    }
+  }
+
+
+  async changeRocketpoolClient(value) {
+    // do not sync to remote if notification for client updates isn't enabled in the first place
+    const isEnabled = await this.isNotifyClientUpdatesEnabled()
+    if (!isEnabled) return
+
+    if (value) {
+      value = value.toUpperCase()
+    }
+    
+    const changed = await this.updateUtils.setRocketpoolClient(value)
+    if (changed) {
+      if (value && value != 'null') {
+        this.setLastChanged(ROCKETPOOL_CLIENT_SAVED, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
+      } else {
+        this.setLastChanged("UN"+ROCKETPOOL_CLIENT_SAVED, "eth_client_update", "rocketpool", null, 'unsubscribe')
       }
     }
   }
@@ -478,9 +503,14 @@ export class SyncService {
       this.setLastChanged(ETH2_CLIENT_SAVED, "eth_client_update", client.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
     }
 
-    client = await this.updateUtils.getOtherClient()
+    client = await this.updateUtils.getRocketpoolClient()
     if (client && client != "null") {
-      this.setLastChanged(OTHER_CLIENT_SAVED, "eth_client_update", client.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
+      this.setLastChanged(ROCKETPOOL_CLIENT_SAVED, "eth_client_update", client.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
+    }
+
+    client = await this.updateUtils.getMevBoostClient()
+    if (client && client != "null") {
+      this.setLastChanged(MEVBOOST_CLIENT_SAVED, "eth_client_update", client.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
     }
   }
 

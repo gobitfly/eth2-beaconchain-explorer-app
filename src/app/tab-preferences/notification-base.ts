@@ -32,6 +32,9 @@ export class NotificationBase implements OnInit {
   activeSubscriptionsPerEventMap = new Map<String, number>() // map storing the count of subscribed validators per event
   notifyTogglesMap = new Map<String, boolean>()
 
+  smartnode: boolean
+  mevboost: boolean
+
   constructor(
     protected api: ApiService,
     protected storage: StorageService,
@@ -99,6 +102,7 @@ export class NotificationBase implements OnInit {
     console.log("result", results, network)
 
     var containsRocketpoolUpdateSub = false
+    var containsMevboostUpdateSub = false
     for (const result of results) {
       this.setToggleFromEvent(result.EventName, network, true, net)
       if (result.EventName == "monitoring_cpu_load") {
@@ -134,7 +138,11 @@ export class NotificationBase implements OnInit {
         if (result.EventFilter && result.EventFilter.length >= 1 && result.EventFilter.charAt(0).toUpperCase() != result.EventFilter.charAt(0) && result.EventFilter != "null" && result.EventFilter != "none") {
           this.clientUpdate.setUnknownLayerClient(result.EventFilter)
           if (result.EventFilter == "rocketpool") {
+            this.smartnode = true
             containsRocketpoolUpdateSub = true
+          } else if (result.EventFilter == "mev-boost") {
+            this.mevboost = true
+            containsMevboostUpdateSub = true
           }
         }
       }
@@ -143,7 +151,14 @@ export class NotificationBase implements OnInit {
 
     if (!containsRocketpoolUpdateSub) {
       console.log("disabling rocketpool smartnode updates")
-      this.clientUpdate.setOtherClient(null)
+      this.clientUpdate.setRocketpoolClient(null)
+      this.smartnode = false
+    }
+
+    if (!containsMevboostUpdateSub) {
+      console.log("disabling mev boost updates")
+      this.clientUpdate.setMevBoostClient(null)
+      this.mevboost = false
     }
     
     // locking toggle so we dont execute onChange when setting initial values

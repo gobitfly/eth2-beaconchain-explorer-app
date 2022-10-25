@@ -85,7 +85,7 @@ export class Tab3Page {
 
   premiumLabel: string = ""
 
-  smartnode: boolean
+
 
   constructor(
     protected api: ApiService,
@@ -102,7 +102,7 @@ export class Tab3Page {
     protected alerts: AlertService,
     protected sync: SyncService,
     protected merchant: MerchantUtils,
-    protected notificationBase: NotificationBase,
+    public notificationBase: NotificationBase,
     private router: Router
   ) { }
 
@@ -112,8 +112,11 @@ export class Tab3Page {
     
     this.theme.getThemeColor().then((result) => this.themeColor = result)
 
-    this.updateUtils.getOtherClient().then((result) => {
-      this.smartnode = result && result.toUpperCase() == "ROCKETPOOL"
+    this.updateUtils.getRocketpoolClient().then((result) => {
+      this.notificationBase.smartnode = result && result.toUpperCase() == "ROCKETPOOL"
+    })
+    this.updateUtils.getMevBoostClient().then((result) => {
+      this.notificationBase.mevboost = result && result.toUpperCase() == "MEV-BOOST"
     })
     this.updateUtils.getETH1Client().then((result) => this.eth1client = result)
     this.updateUtils.getETH2Client().then((result) => this.eth2client = result)
@@ -259,18 +262,34 @@ export class Tab3Page {
     this.updateUtils.checkUpdates()
   }
 
+  async mevBoostToggle() {
+    if (this.notificationBase.lockedToggle) {
+      return;
+    }
+
+    if (this.notificationBase.mevboost) {
+      this.sync.changeMevBoostClient("MEV-BOOST")
+    } else {
+      this.sync.changeMevBoostClient(null)
+    }
+    
+    this.updateUtils.checkUpdates()
+    this.sync.syncAllSettings(true)
+  }
+
   async smartNodeToggle() {
     if (this.notificationBase.lockedToggle) {
       return;
     }
 
-    if (this.smartnode) {
-      this.sync.changeOtherClient("Rocketpool")
+    if (this.notificationBase.smartnode) {
+      this.sync.changeRocketpoolClient("ROCKETPOOL")
     } else {
-      this.sync.changeOtherClient(null)
+      this.sync.changeRocketpoolClient(null)
     }
     
     this.updateUtils.checkUpdates()
+    this.sync.syncAllSettings(true)
   }
 
   async changeETH2Client() {

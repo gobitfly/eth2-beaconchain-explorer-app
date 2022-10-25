@@ -38,6 +38,7 @@ import { Toast } from '@capacitor/toast';
 import ThemeUtils from '../utils/ThemeUtils';
 
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { UnitconvService } from '../services/unitconv.service';
 
 @Component({
   selector: 'app-tab2',
@@ -79,7 +80,8 @@ export class Tab2Page {
     private sync: SyncService,
     private merchant: MerchantUtils,
     private themeUtils: ThemeUtils,
-    private platform: Platform
+    private platform: Platform,
+    private unit: UnitconvService
   ) {
     this.validatorUtils.registerListener(() => {
       this.refresh()
@@ -591,5 +593,16 @@ export class Tab2Page {
     await alert.present();
   }
 
+
+  switchCurrencyPipe() {
+    if (this.unit.pref == "ETHER") {
+      if (UnitconvService.currencyPipe == null) return
+      this.unit.pref = UnitconvService.currencyPipe
+    }
+    else {
+      UnitconvService.currencyPipe = this.unit.pref
+      this.unit.pref = "ETHER"
+    }
+  }
 }
 

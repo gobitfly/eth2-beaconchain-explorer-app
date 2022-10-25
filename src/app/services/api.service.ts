@@ -24,7 +24,7 @@ import { StorageService } from './storage.service';
 import { ApiNetwork } from '../models/StorageTypes';
 import { isDevMode } from "@angular/core"
 import { Mutex } from 'async-mutex';
-import { MAP } from '../utils/NetworkData'
+import { findConfigForKey, MAP } from '../utils/NetworkData'
 import { Http, HttpResponse } from '@capacitor-community/http';
 import { CacheModule } from '../utils/CacheModule';
 import axios, { AxiosResponse } from "axios";
@@ -89,7 +89,14 @@ export class ApiService extends CacheModule {
   }
 
   async updateNetworkConfig() {
-    this.networkConfig = this.storage.getNetworkPreferences()
+    this.networkConfig = this.storage.getNetworkPreferences().then((config) => {
+      let temp = findConfigForKey(config.key)
+      if (temp) {
+        return temp
+      }
+      return config
+    })
+    
     await this.networkConfig
   }
 
@@ -97,6 +104,11 @@ export class ApiService extends CacheModule {
   async getNetworkName(): Promise<string> {
     const temp = (await this.networkConfig).key
     this.networkName = temp;
+    return temp
+  }
+
+  async getNetwork(): Promise<ApiNetwork> {
+    const temp = (await this.networkConfig)
     return temp
   }
 

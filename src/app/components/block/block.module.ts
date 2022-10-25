@@ -18,24 +18,18 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export interface AuthUser {
-  accessToken: string
-  refreshToken: string
-  expiresIn: number
-}
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
-export interface ApiNetwork {
-  key: string
-  protocol: string
-  host: string
-  net: string
-  endpoint: string
-  version: string
-  onlyDebug: boolean
-  active: boolean
-  genesisTs: number
-}
+import { IonicModule } from '@ionic/angular';
 
-export interface NetworkPreferences {
-  network: ApiNetwork;
-}
+import { BlockComponent } from './block.component';
+import { PipesModule } from '../../pipes/pipes.module'
+
+@NgModule({
+  imports: [CommonModule, FormsModule, IonicModule, PipesModule],
+  declarations: [BlockComponent],
+  exports: [BlockComponent]
+})
+export class BlockComponentModule { }

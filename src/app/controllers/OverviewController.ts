@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochResponse, ValidatorResponse } from '../requests/requests';
+import { EpochResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests';
 import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
 import Unit, { convertEthUnits } from '../utils/EthereumUnits'
 import BigNumber from "bignumber.js";
@@ -52,6 +52,8 @@ export type OverviewData = {
     effectiveBalance: BigNumber
     currentEpoch: EpochResponse
     rocketpool: Rocketpool
+    currentSyncCommittee: SyncCommitteeResponse
+    nextSyncCommittee: SyncCommitteeResponse
 }
 
 export type Performance = {
@@ -171,6 +173,9 @@ export default class OverviewController {
             feeAvg = feeSum.dividedBy(rocketpoolValiCount).decimalPlaces(1).toNumber()
         }
 
+        const currentSync = validators.find(cur => !!cur.currentSyncCommittee)
+        const nextSync = validators.find(cur => !!cur.nextSyncCommittee)
+
         return {
             overallBalance: overallBalance,
             validatorCount: validatorCount,
@@ -188,6 +193,8 @@ export default class OverviewController {
             effectiveBalance: effectiveBalance,
             currentEpoch: currentEpoch,
             apr: consensusPerf.apr,
+            currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
+            nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
             rocketpool: {
                 minRpl: this.sumRocketpoolBigIntPerNodeAddress(
                     true,
@@ -240,6 +247,7 @@ export default class OverviewController {
             }
         } as OverviewData;
     }
+
 
     private getExecutionPerformance(validators: Validator[], effectiveBalanceActive: BigNumber, aprPerformance31dExecution: BigNumber, total: BigNumber) {
         

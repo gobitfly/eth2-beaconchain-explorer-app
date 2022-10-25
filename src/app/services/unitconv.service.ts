@@ -41,6 +41,8 @@ export class UnitconvService {
   prefRpl: string = "RPL"
   lastPrice: BigNumber
 
+  static currencyPipe = null
+
   constructor(private storage: StorageService, private api: ApiService) {
     this.storage.getObject(STORAGE_KEY).then(
       (unitPref) => this.init(unitPref)

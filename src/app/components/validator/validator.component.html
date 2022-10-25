@@ -38,7 +38,10 @@
           <span *ngIf="validator.rocketpool && validator.rplshare != null"><span *ngIf="validator.share != null">, </span>RPL: {{validator.rplshare | percent: "1.0-1" }} </span>
         </ion-label>
         <span >
-        <ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge><ion-badge class="rpl" *ngIf="validator.rocketpool">Rocketpool</ion-badge></span>
+        <ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge>
+        <ion-badge class="rpl" *ngIf="validator.rocketpool">Rocketpool</ion-badge>
+        <ion-badge class="sync" *ngIf="validator.currentSyncCommittee">Sync</ion-badge>
+      </span>
 
 
         <!--<ion-label class="smaller-info"

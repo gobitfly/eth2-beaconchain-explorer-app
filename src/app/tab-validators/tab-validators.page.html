@@ -25,6 +25,11 @@
         <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="switchCurrencyPipe()">
+        <ion-icon size="small" name="swap-vertical-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title *ngIf="!selectMode">
       Validators
     </ion-title>

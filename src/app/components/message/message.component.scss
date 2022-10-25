@@ -53,3 +53,27 @@ ion-icon {
   background-color: var(--x-update-messages-background);
   --background:  var(--x-update-messages-background) !important;
 }
+
+.sync-active {
+  background-color: var(--ion-color-secondary) !important;
+  --background: var(--ion-color-secondary) !important;
+}
+
+.sync-active .left-icon {
+  -webkit-animation:spin 6s linear infinite;
+  -moz-animation:spin 6s linear infinite;
+  animation:spin 6s linear infinite;
+}
+
+@-moz-keyframes spin { 
+  100% { -moz-transform: rotate(360deg); } 
+}
+@-webkit-keyframes spin { 
+  100% { -webkit-transform: rotate(360deg); } 
+}
+@keyframes spin { 
+  100% { 
+      -webkit-transform: rotate(360deg); 
+      transform:rotate(360deg); 
+  } 
+}
