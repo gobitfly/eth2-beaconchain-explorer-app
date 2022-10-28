@@ -93,11 +93,11 @@ export class TextAdComponent implements OnInit {
   }
 
   private calculateTextSize(text: string) {
-    if (text && text.length > 70) {
-      if (text.length > 110) return "13px"
-      return "14px"
+    if (text && text.length > 60) {
+      if (text.length > 90) return "12px"
+      return "13px"
     }
-    return "16px"
+    return "15px"
   }
 
   openAd() {

@@ -3,8 +3,8 @@
 
   <div class="head" (click)="openAd()">
     <div class="logo-container">
-      <img src="{{ ad.thumbnail }}" class="logo" [class]="!ad.thumbnail ? 'own-ad' : ''"><br/>
-      
+      <img src="{{ ad.thumbnail }}" class="logo" [class]="!ad.thumbnail ? 'own-ad' : ''">
+      <ion-badge color="success">Ad</ion-badge>
     </div>
     <div class="title-container" #titleContainer>
       
@@ -15,9 +15,7 @@
       </ion-label>
 
     </div>
-    <div class="right-container">
-      <ion-badge color="success">Ad</ion-badge>
-    </div>
+  
     
   </div>
 

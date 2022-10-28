@@ -109,7 +109,7 @@ export class NotificationBase implements OnInit {
         this.cpuThreshold = Math.round(parseFloat(result.EventThreshold) * 100)
         this.storage.setSetting(CPU_THRESHOLD, this.cpuThreshold) 
       }
-      else if (result.EventName == "validator_is_offline") {
+      else if (result.EventName == network+":validator_is_offline") {
         this.offlineThreshold = Math.round(parseFloat(result.EventThreshold))
         this.storage.setSetting(OFFLINE_THRESHOLD, this.offlineThreshold)
       }

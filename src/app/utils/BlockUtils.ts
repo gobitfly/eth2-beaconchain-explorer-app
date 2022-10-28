@@ -102,7 +102,9 @@ export class BlockUtils extends CacheModule {
             valis.length
         )
 
-        let timeframe = this.getTimeframe(earliestBlock.timestamp * 1000, blocksIn30d)
+       // var timeframe = this.getTimeframe(earliestBlock.timestamp * 1000, blocksIn30d)
+        var timeframe = this.findTimeFrameNew(earliestBlock.timestamp * 1000, blocksIn30d)
+
         if (timeframe == -1) return null
 
         let blocksAfterTimeframe = this.getBlocksAfterTs(blocks, timeframe)
@@ -121,6 +123,23 @@ export class BlockUtils extends CacheModule {
             userValidators: valis.length,
             proposedBlocksInTimeframe: blocksAfterTimeframe.length
         } as Luck
+    }
+
+    async getNextBlockEstimate(blocks: BlockResponse[]): Promise<number>{
+        if(blocks.length <= 0) return null
+
+        let valis = await this.validatorUtils.getAllValidatorsLocal()
+        if(valis.length <= 0) return null
+        let currentEpoch = await this.validatorUtils.getRemoteCurrentEpoch()
+        
+         let blocksIn30d = this.calculateExpectedBlocksInTimeframe(
+            MONTH,
+            currentEpoch.validatorscount,
+            valis.length
+         )
+        
+        let newBlockOnAvgDays = MONTH / blocksIn30d
+        return (blocks[0].timestamp*1000) + newBlockOnAvgDays
     }
 
     private getProposalLuckTimeframeName(timeframe: number): string {
@@ -152,7 +171,30 @@ export class BlockUtils extends CacheModule {
         return result
     }
 
-    private getTimeframe(earliestBlockTs: number, blocksPer30d: number) : number {
+    private findTimeFrameNew(earliestBlockTs: number, blocksPer30d: number) {
+        let curMilies = Date.now()
+        let diff = curMilies - earliestBlockTs
+
+        if (diff < FIVEDAYS) {
+            return FIVEDAYS
+        } else if (diff < WEEK) {
+            return WEEK
+        } else if (diff < MONTH) {
+            return MONTH
+        } else if (diff < SIXWEEKS && blocksPer30d <= 2.2) {
+            return SIXWEEKS
+        } else if (diff < TWOEMONTH && blocksPer30d <= 1.6) {
+            return TWOEMONTH
+        } else if (diff < THREEMONTH && blocksPer30d <= 0.95) {
+            return THREEMONTH
+        } else if (diff < FOURMONTH && blocksPer30d <= 0.55) {
+            return FOURMONTH
+        }
+
+        return MONTH
+    }
+
+    /*private getTimeframe(earliestBlockTs: number, blocksPer30d: number) : number {
         let curMilies = Date.now()
         let diff = curMilies - earliestBlockTs
         // extend the timeframe if less than 2.2 blocks are found per month. Target at least 2.2 - 3.2 blocks per month
@@ -171,7 +213,7 @@ export class BlockUtils extends CacheModule {
         else if (diff > WEEK) return WEEK
         else if (diff > FIVEDAYS) return FIVEDAYS
         return -1
-    }
+    }*/
  
 }
 

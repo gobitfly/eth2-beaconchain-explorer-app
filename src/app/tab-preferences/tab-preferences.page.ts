@@ -151,7 +151,7 @@ export class Tab3Page {
   }
 
   async gotoNotificationPage() {
-    await this.sync.syncAllSettings()
+    await this.sync.syncAllSettings(true)
     this.router.navigate(['/notifications'])
   }
 
@@ -274,7 +274,6 @@ export class Tab3Page {
     }
     
     this.updateUtils.checkUpdates()
-    this.sync.syncAllSettings(true)
   }
 
   async smartNodeToggle() {
@@ -289,7 +288,6 @@ export class Tab3Page {
     }
     
     this.updateUtils.checkUpdates()
-    this.sync.syncAllSettings(true)
   }
 
   async changeETH2Client() {

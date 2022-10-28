@@ -22,7 +22,7 @@ import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { SETTING_NOTIFY, StorageService } from './storage.service';
 import { Mutex } from 'async-mutex';
-import { BundleSub, NotificationBundleSubsRequest, NotificationGetRequest, SetMobileSettingsRequest } from '../requests/requests';
+import { BundleSub, GetMobileSettingsRequest, NotificationBundleSubsRequest, NotificationGetRequest, SetMobileSettingsRequest } from '../requests/requests';
 import ClientUpdateUtils, { ETH1_CLIENT_SAVED, ETH2_CLIENT_SAVED, MEVBOOST_CLIENT_SAVED, ROCKETPOOL_CLIENT_SAVED } from '../utils/ClientUpdateUtils';
 import { ValidatorSyncUtils } from '../utils/ValidatorSyncUtils';
 import { NotificationBase } from '../tab-preferences/notification-base';
@@ -129,11 +129,12 @@ export class SyncService {
 
     await this.postNotifyBundles()
 
-    unlock();
-
     if (allNotifyKeys.length > 0) { 
-      this.api.clearSpecificCache(new NotificationGetRequest())
+      await this.api.clearSpecificCache(new NotificationGetRequest())
+      await this.api.clearSpecificCache(new GetMobileSettingsRequest())
     } 
+
+    unlock();
 
     console.log("== Step 1: Loading notification preferences from beaconcha.in ==")
     await this.notificationBase.loadNotifyToggles()
@@ -486,8 +487,8 @@ export class SyncService {
   }
 
   async isNotifyClientUpdatesEnabled(): Promise<boolean> {
-    return (await this.storage.getBooleanSetting("eth_client_update", false)) &&
-      (await this.storage.getBooleanSetting(SETTING_NOTIFY, false))
+    return (await this.storage.getBooleanSetting("eth_client_update", true)) &&
+      (await this.storage.getBooleanSetting(SETTING_NOTIFY, true))
   }
 
   async changeNotifyClientUpdate(key: string, value: boolean, filter: string = null) {

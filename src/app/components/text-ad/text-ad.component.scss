@@ -22,6 +22,7 @@
     padding-right: 25px;
 
     margin-top: 13px;
+    margin-bottom: 13px;
     padding-bottom: 10px;
 
     padding-top: 10px;
@@ -32,6 +33,7 @@
     width: 40px;
     display: flex;
     justify-content: flex-start;
+    flex-direction: column;
     //@extend: 15px;
 }
 
@@ -40,8 +42,8 @@
     display: flex;
 
     width: 70%;
-    height: 65px; 
-    max-height: 65px;  
+    height: 70px; 
+    max-height: 70px;  
 }
 
 .logo {
@@ -62,20 +64,16 @@
 
 
 ion-badge {
-    top: 8px;
+    width: 34px;
+    margin-top: 8px;
+    font-size: 11px;
+    height: 15px;
 }
 
 .content {
 
 }
 
-.right-container {
-    position:absolute;
-    right: 35px;
-    //margin-right: 15px;
-    display: inline-block;
-    margin-top: 5px;
-}
 
 .head {
     width: 100%;

@@ -18,6 +18,7 @@ import { ValidatorUtils } from '../utils/ValidatorUtils';
 })
 export class TabBlocksPage implements OnInit {
 
+  public classReference = UnitconvService;
 
   fadeIn = "invisible"
 
@@ -33,11 +34,13 @@ export class TabBlocksPage implements OnInit {
 
   reachedMax = false
 
-  luck : Luck = null
+  luck: Luck = null
+  
+  nextBlockEstimate = null
 
   constructor(
     public api: ApiService,
-    private unit: UnitconvService,
+    public unit: UnitconvService,
     private blockUtils: BlockUtils,
     public modalController: ModalController,
     private validatorUtils: ValidatorUtils,
@@ -79,6 +82,7 @@ export class TabBlocksPage implements OnInit {
       this.items = this.items.concat(blocks)
     }    
     this.luck = await this.blockUtils.getProposalLuck(this.items)
+    this.nextBlockEstimate = await this.blockUtils.getNextBlockEstimate(this.items)
     
     TabBlocksPage.itemCount = this.items.length
     if (blocks.length < 25) {
@@ -158,11 +162,11 @@ export class TabBlocksPage implements OnInit {
   }
 
   luckHelp() {
-    if (!this.luck || this.luck.proposedBlocksInTimeframe < 2) {
+    if (!this.luck) {
       this.alertService.showInfo(
         "Proposal Luck",
         `Compares the number of your actual proposed blocks to the expected average blocks per validator during the last month. 
-        You'll see your luck percentage once you have proposed two blocks or more.`
+        You'll see your luck percentage once you have proposed a block.`
       )
     } else {
       this.alertService.showInfo(

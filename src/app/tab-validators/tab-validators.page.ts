@@ -47,6 +47,8 @@ import { UnitconvService } from '../services/unitconv.service';
 })
 export class Tab2Page {
 
+  public classReference = UnitconvService;
+
   fadeIn = "invisible"
 
   static itemCount = 0
@@ -81,7 +83,7 @@ export class Tab2Page {
     private merchant: MerchantUtils,
     private themeUtils: ThemeUtils,
     private platform: Platform,
-    private unit: UnitconvService
+    public unit: UnitconvService
   ) {
     this.validatorUtils.registerListener(() => {
       this.refresh()

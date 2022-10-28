@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="end">
-      <ion-button (click)="switchCurrencyPipe()">
+      <ion-button (click)="switchCurrencyPipe()" *ngIf="(unit.pref != 'ETHER' && unit.pref != 'FINNEY') || classReference.currencyPipe != null ">
         <ion-icon size="small" name="swap-vertical-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -25,7 +25,17 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <app-text-ad location="validator" style="margin-top:10px;" *ngIf="items && items.length > 0 && !loading"></app-text-ad>     
+  <p class="next-block-hint" *ngIf="nextBlockEstimate">
+    <span *ngIf="!(nextBlockEstimate | timeago).includes('ago')">Next block estimated to arrive in</span>
+    <span *ngIf="(nextBlockEstimate| timeago).includes('ago')">Next block was estimated to arrive</span>
+    <br/>
+    <span style="font-style: normal;">~{{ nextBlockEstimate | timeago }}
+    </span>
+  </p>
+
+  <app-text-ad location="validator" *ngIf="items && items.length > 0 && !loading"></app-text-ad>    
+  
+  
 
   <ion-virtual-scroll [items]="items" approxItemHeight="125px" [itemHeight]="itemHeightFn"
     *ngIf="items && items.length > 0 && !loading">
@@ -42,7 +52,7 @@
     ></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 
-  <div class="nothingfound" *ngIf="items && items.length <= 0 && !loading">
+  <div class="nothingfound" *ngIf="items && items.length <= 0 && !loading && initialized">
     <ion-icon name="telescope-outline"></ion-icon>
     <h2 >No Blocks so far</h2>
     <ion-label>Your proposed blocks will show up here.</ion-label>
