@@ -78,6 +78,7 @@ export class TabBlocksPage implements OnInit {
     let blocks = await this.blockUtils.getMyBlocks(initial ? 0 : this.items.length)
     if (initial) {
       this.items = blocks
+      this.initialized = true
     } else {
       this.items = this.items.concat(blocks)
     }    
@@ -104,24 +105,7 @@ export class TabBlocksPage implements OnInit {
   }
 
   private setLoading(loading: boolean) {
-    if (loading) {
-      // Reasoning: Don't show loading indicator if it takes less than 400ms (already cached locally but storage is slow-ish so we adjust for that)
-      setTimeout(() => {
-        if (!this.items || this.items.length <= 0) {
-          this.loading = true
-        }
-      }, 200)
-    } else {
-      if (this.loading) {
-        setTimeout(() => {
-          this.initialized = true
-          this.loading = false
-        }, 350)
-      } else {
-        this.initialized = true
-        this.loading = false
-      }
-    }
+    this.loading = loading
   }
 
   async clickBlock(item: BlockResponse) {

@@ -125,7 +125,7 @@ export default class OverviewController {
             return cur.data.activationepoch <= currentEpoch.epoch ? cur.data.effectivebalance : new BigNumber(0)
         });
         const investedBalance = this.sumBigIntBalanceRpl(validators, cur => {
-            return cur.data.activationepoch <= currentEpoch.epoch ? new BigNumber(cur.data.effectivebalance.toString()) : new BigNumber(0)
+            return new BigNumber(cur.data.effectivebalance.toString())
         });
 
         const aprPerformance31dConsensus = sumBigInt(validators, cur => cur.data.performance31d);
@@ -158,12 +158,13 @@ export default class OverviewController {
             total:  consensusPerf.total.plus(executionPerf.total),
         }
 
-        var attrEffectiveness = -1
-        attrEffectiveness = sumBigInt(validators, cur => cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()): new BigNumber(0))
+        var attrEffectiveness = 0
+        if (activeValidators.length > 0) {
+            attrEffectiveness = sumBigInt(validators, cur => cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()): new BigNumber(0))
             .dividedBy(activeValidators.length)
             .decimalPlaces(1).toNumber();
+        }
         
-
         const bestRank = findLowest(validators, cur => cur.data.rank7d)
         const worstRank = findHighest(validators, cur => cur.data.rank7d)
         const rocketpoolValiCount = sumBigInt(validators, cur => cur.rocketpool ? new BigNumber(1) : new BigNumber(0))
@@ -296,7 +297,6 @@ export default class OverviewController {
 
         const aprConsensus = this.getAPRFromMonth(effectiveBalanceActive, aprPerformance31dConsensus)
 
-        console.log("stuff", performance365d.toString(), total.toString())
         return {
             performance1d: performance1d,
             performance31d: performance31d,
@@ -331,10 +331,11 @@ export default class OverviewController {
     sumBigIntBalanceRpl<T>(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
        
         return sumBigInt(validators, cur => {
-            if (!cur.rocketpool) return field(cur).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-            if (!cur.rocketpool.node_address) return field(cur).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+            const fieldVal = field(cur)
+            if (!cur.rocketpool) return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+            if (!cur.rocketpool.node_address) return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
           
-            const rewards = new BigNumber(field(cur).toString()).minus(cur.data.effectivebalance)
+            const rewards = new BigNumber(fieldVal.toString()).minus(cur.data.effectivebalance)
             const nodeOperatorRewards = new BigNumber(rewards).multipliedBy(new BigNumber("1").plus(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))).dividedBy("2")
             const wholeBalance = new BigNumber("16000000000").plus(nodeOperatorRewards)
             return wholeBalance.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))

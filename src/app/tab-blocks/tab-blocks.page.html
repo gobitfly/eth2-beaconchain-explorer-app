@@ -26,8 +26,8 @@
   </ion-refresher>
 
   <p class="next-block-hint" *ngIf="nextBlockEstimate">
-    <span *ngIf="!(nextBlockEstimate | timeago).includes('ago')">Next block estimated to arrive in</span>
-    <span *ngIf="(nextBlockEstimate| timeago).includes('ago')">Next block was estimated to arrive</span>
+    <span *ngIf="!(nextBlockEstimate | timeago).includes('ago')">On average next block expected in</span>
+    <span *ngIf="(nextBlockEstimate| timeago).includes('ago')">On average next block was expected</span>
     <br/>
     <span style="font-style: normal;">~{{ nextBlockEstimate | timeago }}
     </span>
@@ -58,7 +58,7 @@
     <ion-label>Your proposed blocks will show up here.</ion-label>
   </div>
 
-  <div id="container" *ngIf="loading" class="fadein fadeout">
+  <div id="container" *ngIf="loading && !initialized" class="fadein fadeout">
     <div class="center">
       <ion-spinner class="status-icon loading-spinner"></ion-spinner>
     </div>
