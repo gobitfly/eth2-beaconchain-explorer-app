@@ -48,7 +48,7 @@ export abstract class APIRequest<T> {
       if (!response || !response.status) return false
       return response.status == 200 && (response.data.status == "OK" || !hasDataStatus)
     } else {
-      return response && (response.status == "OK" || !hasDataStatus)
+      return response && (response.status == "OK" || response.status == 200 || !hasDataStatus)
     }
   }
 
@@ -83,6 +83,39 @@ export abstract class APIRequest<T> {
 }
 
 // ------------- Responses -------------
+
+export interface BlockResponse {
+  baseFee: number
+  blockHash: string
+  blockMevReward: string
+  blockNumber: number
+  blockReward: string
+  consensusAlgorithm: string
+  feeRecipient: string
+  gasLimit: number
+  gasUsed: number
+  internalTxCount: number
+  parentHash: string
+  producerReward: string
+  timestamp: number
+  txCount: number
+  uncleCount: number
+  posConsensus: PoSConsensus
+  relay: Relay
+}
+
+export interface Relay {
+  builderPubkey: string
+  producerFeeRecipient: string
+  tag: string
+}
+
+export interface PoSConsensus {
+  epoch: number
+  slot: number
+  proposerIndex: number
+  finalized: boolean
+}
 
 export interface MyValidatorResponse {
   PubKey: string
@@ -150,6 +183,13 @@ export interface AttestationPerformanceResponse {
   validatorindex: number;
 }
 
+export interface SyncCommitteeResponse {
+  end_epoch: number;
+  period: number
+  start_epoch: number;
+  validators: number[]
+}
+
 export interface EpochResponse {
   attestationscount: number,
   attesterslashingscount: number,
@@ -198,7 +238,10 @@ export interface DashboardResponse {
   currentEpoch: EpochResponse[],
   olderEpoch: EpochResponse[],
   rocketpool_validators: RocketPoolResponse[]
+  execution_performance: ExecutionResponse[]
   rocketpool_network_stats: RocketPoolNetworkStats[]
+  current_sync_committee: SyncCommitteeResponse[]
+  next_sync_committee: SyncCommitteeResponse[]
 }
 
 
@@ -228,7 +271,20 @@ export interface RocketPoolResponse {
   node_rpl_stake: string,
   rpl_cumulative_rewards: string,
   node_timezone_location: string
+  unclaimed_rpl_rewards: string,
+  unclaimed_smoothing_pool: string,
+  claimed_smoothing_pool: string,
+  smoothing_pool_opted_in: boolean
+  penalty_count: number
 }
+
+export interface ExecutionResponse {
+  validatorindex: number
+  performance1d: number
+  performance7d: number
+  performance31d: number
+}
+
 
 export interface NotificationGetResponse {
   CreatedEpoch: number;
@@ -322,6 +378,27 @@ export class BalanceHistoryRequest extends APIRequest<BalanceHistoryResponse> {
   }
 }
 
+export class BlockProducedByRequest extends APIRequest<BlockResponse> {
+  resource = "execution/";
+  method = Method.GET;
+  ignoreFails = true
+
+  parse(response: any): BlockResponse[] {
+    if (!this.wasSuccessfull(response, true)) {
+      return []
+    }
+    return response.data.data;
+  }
+
+  /**
+   * @param validator Index or PubKey
+   */
+  constructor(offset: number, limit: number, ...validator: any) {
+    super()
+    this.resource += validator.join().replace(/\s/g, "") + "/produced?offset="+offset+"&limit="+limit;
+  }
+}
+
 export class DasboardDataRequest extends APIRequest<any> {
   resource = "dashboard/data/";
   method = Method.GET;
@@ -337,7 +414,7 @@ export class DasboardDataRequest extends APIRequest<any> {
   /**
    * @param validator Index or PubKey
    */
-  constructor(data: ('balances' | 'proposals'), ...validator: any) {
+  constructor(data: ('allbalances' | 'proposals'), ...validator: any) {
     super()
     this.resource += data + "?validators=" + validator.join().replace(/\s/g, "");
   }

@@ -44,6 +44,10 @@ const routes: Routes = [
         loadChildren: () => import('../pages/machines/machines.module').then(m => m.MachinesPageModule)
       },
       {
+        path: 'blocks',
+        loadChildren: () => import('../tab-blocks/tab-blocks.module').then(m => m.TabBlocksPageModule)
+      },
+      {
         path: '',
         redirectTo: '/tabs/dashboard',
         pathMatch: 'full'

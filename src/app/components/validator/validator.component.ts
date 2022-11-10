@@ -107,18 +107,6 @@ export class ValidatorComponent implements OnInit {
     this.tagged = false
   }
 
-  private applyName() {
-    if (this.data.name.length <= 0) {
-      this.name = "Validator #" + this.data.validatorindex
-    } else {
-      this.name = this.data.name
-    }
-
-    if (this.validator.name && this.validator.name.length >= 0) {
-      this.name = this.validator.name
-    }
-  }
-
   private getBlockies() {
     // TODO: figure out why the first blockie image is always black
     blockies.create({ seed: this.data.pubkey }).toDataURL();

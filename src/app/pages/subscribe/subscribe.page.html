@@ -12,8 +12,7 @@
   <ion-list class="status">
     <div lines="none" class="status-container">
 
-      <ion-slides pager="false">
-        <ion-slide>
+
 
           <div class="slide-container">
             <ion-icon class="status-icon" name="ribbon-outline" [ngStyle]="{'opacity': currentY | fadeoutpipe: 75 }">
@@ -23,9 +22,6 @@
             </ion-label>
           </div>
 
-        </ion-slide>
-
-      </ion-slides>
 
     </div>
   </ion-list>
@@ -79,7 +75,7 @@
     <ion-item lines="none">
 
       <ion-label>
-        Custom Alerts
+        Custom Notification
       </ion-label>
       <ion-label class="value">
         <ion-icon class="check" name="checkmark-outline" *ngIf="selectedPackage.deviceMonitorAlerts"></ion-icon>
@@ -116,7 +112,7 @@
     <ion-item lines="none">
 
       <ion-label>
-        Widgets <span *ngIf="isiOS">*²</span>
+        Widgets <span *ngIf="isiOS">*¹</span>
       </ion-label>
       <ion-label class="value">
         <ion-icon class="check" name="checkmark-outline" *ngIf="selectedPackage.widgets"></ion-icon>
@@ -129,7 +125,7 @@
     <ion-item lines="none">
 
       <ion-label>
-        Support us *¹
+        Support us
 
       </ion-label>
 
@@ -157,8 +153,7 @@
     <ion-label class="grey-link" (click)="restore()">Restore purchase</ion-label>
     <br/><br/>
 
-    <span class="hint">*¹ 20% will be shared with your selected ETH2 client when using the embedded eth2 client device monitoring.</span><br/><br/>
-    <span class="hint" *ngIf="isiOS">*² Requires iOS 14 or newer.</span>
+    <span class="hint" *ngIf="isiOS">*¹ Requires iOS 14 or newer.</span>
   </div>
 
   

@@ -96,6 +96,11 @@ export const OtherClients: ETHClient[] = [
         name: "Rocketpool",
         repo: "rocket-pool/smartnode-install",
     },
+    {
+        key: "MEV-BOOST",
+        name: "MEV-Boost",
+        repo: "flashbots/mev-boost",
+    },
 ]
 
 
@@ -103,7 +108,8 @@ export const OtherClients: ETHClient[] = [
 const LOCAL_UPDATED_KEY = "mark_clientupdate_completed"
 export const ETH1_CLIENT_SAVED = "setting_client_eth1"
 export const ETH2_CLIENT_SAVED = "setting_client_eth2"
-export const OTHER_CLIENT_SAVED = "smart_node_updates"
+export const ROCKETPOOL_CLIENT_SAVED = "smart_node_updates"
+export const MEVBOOST_CLIENT_SAVED = "mev_boost_updates"
 const SETTINGS_UPDATECHANNEL = "setting_client_updatechannel"
 
 const UPDATE_LOCK = "last_github_update"
@@ -134,7 +140,11 @@ export default class ClientUpdateUtils {
         )
 
         this.append(
-            this.checkUpdateFor(OtherClients, await this.storage.getItem(OTHER_CLIENT_SAVED))
+            this.checkUpdateFor(OtherClients, await this.storage.getItem(ROCKETPOOL_CLIENT_SAVED))
+        )
+
+        this.append(
+            this.checkUpdateFor(OtherClients, await this.storage.getItem(MEVBOOST_CLIENT_SAVED))
         )
 
         this.storage.setObject(UPDATE_LOCK, { ts: Date.now() })
@@ -202,12 +212,28 @@ export default class ClientUpdateUtils {
         return true
     }
 
-    async setOtherClient(key: string): Promise<boolean> {
-        return await this.setClient(OTHER_CLIENT_SAVED, key)
+    async setRocketpoolClient(key: string): Promise<boolean> {
+        return await this.setClient(ROCKETPOOL_CLIENT_SAVED, key)
     }
 
-    getOtherClient() {
-        return this.storage.getItem(OTHER_CLIENT_SAVED)
+    async getRocketpoolClient() {
+        var temp = await this.storage.getItem(ROCKETPOOL_CLIENT_SAVED)
+        if (temp) {
+            return temp.toUpperCase()
+        }
+        return temp
+    }
+
+    async setMevBoostClient(key: string): Promise<boolean> {
+        return await this.setClient(MEVBOOST_CLIENT_SAVED, key)
+    }
+
+    async getMevBoostClient() {
+        var temp = await this.storage.getItem(MEVBOOST_CLIENT_SAVED)
+        if (temp) {
+            return temp.toUpperCase()
+        }
+        return temp
     }
 
 
@@ -276,11 +302,19 @@ export default class ClientUpdateUtils {
 
         OtherClients.forEach((data) => { 
             if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
-                console.log("setting Other client to", client)
-                this.setOtherClient(data.key)
-                return
+                if (data.key == "MEV-BOOST") {
+                    console.log("setting mevboost client to", client)
+                    this.setMevBoostClient(data.key)
+                    return
+                } else {
+                    console.log("setting rocketpool client to", client)
+                    this.setRocketpoolClient(data.key)
+                    return
+                }
+                
             }
         })
+
     }
 
 }

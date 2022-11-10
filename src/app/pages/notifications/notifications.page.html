@@ -86,6 +86,26 @@
     </ion-list>
 
 
+    <ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+      <ion-icon slot="start" name="heart-dislike-circle-outline"></ion-icon>
+      <ion-label>
+        Validator Offline <span class="active-count">({{ getCount('validator_is_offline') }})</span>
+      </ion-label>
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_is_offline')" (ngModelChange)="setToggle('validator_is_offline', $event)"
+      (ionChange)="changeValidatorOffline()"
+        slot="end"></ion-toggle>
+    </ion-item>
+
+    <ion-item [class]="!notifyTogglesMap.get('validator_is_offline') || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized ? 'pseudo-disabled' : ''" (click)="handleLockedClick()"> 
+      <ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
+      <ion-range *ngIf="canCustomizeThresholds" min="3" max="80" step="1" [(ngModel)]="offlineThreshold" [class]="canCustomizeThresholds ? 'range' : 'range-locked'" (mouseup)="changeValidatorOffline()" (touchend)="changeValidatorOffline()">
+      </ion-range>
+      <ion-range *ngIf="!canCustomizeThresholds" [(ngModel)]="offlineThreshold" _ngcontent-ves-c134="" min="-2" max="225" step="1" ng-reflect-min="-2" ng-reflect-max="225" ng-reflect-step="1" class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated" ng-reflect-model="90" ng-reflect-disabled="true" ng-reflect-is-disabled="true"><input type="hidden" class="aux-input" disabled="" name="" value="6"></ion-range>
+
+      <ion-note slot="end">≥ {{ offlineThreshold }} Att. Miss</ion-note>
+  </ion-item>
+
+
     <ion-list-header>
       <ion-label>ETH Client Updates</ion-label>
     </ion-list-header>

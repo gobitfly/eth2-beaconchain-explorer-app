@@ -39,10 +39,6 @@ ion-content {
   padding-top: 6px;
 }
 
-ion-toolbar {
-  height: 55px !important;
-}
-
 .packages-selected {
   background-color: var(--x-update-messages-background-selected) !important;
 }
@@ -118,11 +114,6 @@ ion-label {
 ion-list {
   padding-top: 0px !important;
 }
-
-ion-toolbar ion-button {
-  margin-top: 0px !important;
-}
-
 
 
 .subtitle {

@@ -25,6 +25,11 @@
         <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="switchCurrencyPipe()" *ngIf="(unit.pref != 'ETHER' && unit.pref != 'FINNEY') || classReference.currencyPipe != null">
+        <ion-icon size="small" name="swap-vertical-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title *ngIf="!selectMode">
       Validators
     </ion-title>
@@ -80,7 +85,7 @@
     *ngIf="((items && items.length >= currentPackageMaxValidators) || reachedMaxValidators) && currentPackageMaxValidators < 280">
   </app-message>
 
-  <app-text-ad location="validator" style="margin-top:10px;" *ngIf="items && items.length > 0 && !loading"></app-text-ad>     
+  <app-text-ad location="validator"  *ngIf="items && items.length > 0 && !loading"></app-text-ad>     
 
   <ion-virtual-scroll [items]="items" approxItemHeight="166px" [itemHeight]="itemHeightFn"
     *ngIf="items && items.length > 0 && !loading">

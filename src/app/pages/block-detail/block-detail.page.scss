@@ -1,0 +1,231 @@
+// Copyright (C) 2022 Bitfly GmbH
+// 
+// This file is part of Beaconchain Dashboard.
+// 
+// Beaconchain Dashboard is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Beaconchain Dashboard is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+
+@import "../../../theme/variables.scss";
+
+// Makes the iOS top bounce in our primary color
+// and the bottom bounce in main themes color
+ion-content {
+  --background: linear-gradient(
+    0deg,
+    var(--ion-background-color) 60%,
+    var(--ion-toolbar-background) 40%
+  );
+}
+
+.blockie {
+    border-radius: 20%;
+    height: 89px;
+    width: 86px;
+    image-rendering: pixelated;
+  }
+
+  .check {
+    color: var(--ion-color-success);
+  }
+  
+  .nocheck {
+    color: var(--ion-color-danger);
+  }
+
+ion-refresher-content {
+  --color: #fff !important;
+}
+
+.fee-recipient {
+    opacity: 0.8;
+    font-size: 0.8rem;
+    margin: 0 10px;
+}
+
+
+ion-segment-button {
+    --indicator-height: 0px !important;
+    text-transform: none !important;
+    --ripple-color: transparent !important;
+    //transition: color 0.15s ease;
+    font-size: 1.05em !important;
+    letter-spacing: normal !important;
+    opacity: 1 !important;
+  }
+  
+  .segment-button-checked {
+    color: var(--segment-primary) !important;
+    font-weight: 600 !important;
+  }
+  
+  .status ion-icon {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    padding-bottom: 12px;
+  }
+  
+  .center {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .status {
+    text-align: center;
+    background-color: var(--ion-toolbar-background) !important;
+    background-image: var(--status-bg-image);
+    padding-bottom: 0px;
+  }
+  
+  
+  
+  .status-icon {
+    margin-top: 7px;
+    font-size: 69px;
+  }
+  
+  .rank-ribbon {
+    font-size: 14px;
+    margin-right: 5px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  .rank-text {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  .validator-count {
+    font-size: 20px;
+  }
+  
+  .ok {
+    color: var(--status-ok);
+  }
+  
+  .warn {
+    color: var(--status-warn);
+  }
+  
+  .err {
+    color: var(--status-danger);
+  }
+  
+  .waiting {
+    color: var(--status-secondary);
+  }
+  
+  .ok-proposals {
+    color: var(--ion-color-success);
+  }
+  
+  .err-proposals {
+    color: var(--ion-color-danger);
+  }
+  
+  .status-text {
+    margin-top: 15px;
+    padding-bottom: 7px;
+    color: var(--x-toolbar-title-color);
+  }
+  
+  .skeleton-content {
+    text-align: center;
+  }
+  
+  .performances {
+    //margin-top: 12px;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+  }
+  
+  ion-list {
+  }
+  
+  ion-item {
+    max-width: 92%;
+  
+    margin: auto;
+  }
+  
+  .value {
+    text-align: end;
+    font-weight: bold !important;
+    font-size: 1.1em !important;
+  }
+  
+  .chartcontainer {
+    padding-top: 20px;
+    width: 97%;
+    margin: auto;
+  }
+  
+  .loading-spinner {
+    margin-top: 55px;
+    margin-bottom: 10px;
+  }
+  
+  .updates {
+    padding-top: 0px;
+    padding-bottom: 0px;
+  }
+  
+  .first-item-group {
+    
+  }
+  
+  .status-container {
+    padding-bottom: 6px;
+  }
+  
+  .container {
+    background-color: var(--ion-background-color);
+  }
+  
+  .loading-container {
+    height: 100%;
+  }
+  
+  .grid-cell {
+    width: 50%;
+    float: left;
+    margin-bottom: 7px;
+    margin-top: 7px;
+  }
+  
+  .left {
+    text-align: start !important;
+  }
+  
+  .right {
+    text-align: end !important;
+  }
+  
+  .stat-title {
+    opacity: 0.85;
+  }
+  
+  .income-title {
+    opacity: 0.85;
+    font-size: 1.0em;
+    //color: var(--ion-text-color-lighter);
+  }
+  
+  .grid {
+    width: 100%;
+  }
+  

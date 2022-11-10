@@ -33,12 +33,15 @@
 .container {
 }
 
-.pubkey {
-  position: absolute;
-  top: 83px;
-  left: 34px;
 
-  font-size: 0.79rem;
+
+
+.pubkey {
+top: 83px;
+text-align:center;
+padding-top: 74px;
+width: 66px;
+font-size: 0.79rem;
 }
 
 .bookmarked {
@@ -66,8 +69,8 @@ ion-icon {
 
 .info {
   margin-top: 15px;
-  margin-left: 57px;
-  margin-right: 65px;
+  margin-left: 0px;
+  margin-right: 45px;
   margin-bottom: 15px;
 }
 
@@ -76,7 +79,7 @@ ion-icon {
 }
 
 .title {
-  font-size: 19px;
+  font-size: 16px;
   font-weight: bold;
 }
 
@@ -117,9 +120,13 @@ ion-icon {
 
 .rpl {
   --background: #e17959;
- 
+}
+
+.sync {
+  --background: var(--ion-color-secondary);
 }
 
 .onlinestate {
   margin-right: 5px;
 }
+

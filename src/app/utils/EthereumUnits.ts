@@ -33,8 +33,8 @@ export default class Unit {
     public static SZABO = new Unit("Szabo", new BigNumber("1000000"))
     public static FINNEY = new Unit("Finney", new BigNumber("1000"), 2, null, "Finney")
 
-    public static ETHER = new Unit("Ether", new BigNumber("1"), 5, null, "Ether")
-    public static KETHER = new Unit("Kether", new BigNumber("0.001"))
+    public static ETHER = new Unit("ETH", new BigNumber("1"), 5, null, "Ether")
+    public static KETHER = new Unit("KETH", new BigNumber("0.001"))
     public static RPL = new Unit("RPL", new BigNumber("1"), 1) // RPL TO ETH
     public static RPL_NAKED = new Unit("RPL", new BigNumber("1"), 2)
     public static NO_CURRENCY = new Unit("", new BigNumber("1"), 0)

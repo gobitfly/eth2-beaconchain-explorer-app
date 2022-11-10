@@ -21,7 +21,7 @@
 import { Component, OnInit, Input, SimpleChange } from '@angular/core';
 import { UnitconvService } from '../../services/unitconv.service';
 import { ApiService } from '../../services/api.service';
-import { DasboardDataRequest, EpochRequest, EpochResponse } from '../../requests/requests';
+import { DasboardDataRequest, EpochRequest, EpochResponse, SyncCommitteeResponse } from '../../requests/requests';
 import * as HighCharts from 'highcharts';
 import * as Highstock from "highcharts/highstock";
 import BigNumber from "bignumber.js";
@@ -45,6 +45,8 @@ import { MergeChecklistPage } from 'src/app/pages/merge-checklist/merge-checklis
 })
 export class DashboardComponent implements OnInit {
 
+  public classReference = UnitconvService;
+
   @Input() data?: OverviewData;
   @Input() updates?: Release[];
   @Input() currentY: number;
@@ -61,7 +63,6 @@ export class DashboardComponent implements OnInit {
   chartData
   chartDataProposals
   chartError = false
-  currencyPipe = null
 
   readonly randomChartId
 
@@ -74,7 +75,10 @@ export class DashboardComponent implements OnInit {
   firstCelebrate = true
 
   doneLoading = false
-  proposals: Proposals = null
+  proposals: Proposals = {
+    good: 0,
+    bad: 0,
+  }
   currentPackageMaxValidators = 100
 
   rplState = "rpl"
@@ -84,6 +88,15 @@ export class DashboardComponent implements OnInit {
   rplCommission = 0
   rplApr = ""
   rplProjectedClaim = null
+
+  displaySmoothingPool: boolean
+  smoothingClaimed: BigNumber
+  smoothingUnclaimed: BigNumber
+  unclaimedRpl: BigNumber
+  hasNonSmoothingPoolAsWell: boolean
+
+  currentSyncCommitteeMessage: SyncCommitteeMessage = null
+  nextSyncCommitteeMessage: SyncCommitteeMessage = null
 
   constructor(
     public unit: UnitconvService,
@@ -111,7 +124,7 @@ export class DashboardComponent implements OnInit {
 
   isAfterPotentialMergeTarget() {
     const now = Date.now()
-    const target = 1664616277000 // target oct 1th to dismiss merge checklist
+    const target = 1663624800000 // target sept 20th to dismiss merge checklist
     console.log("afterPotentialMerge", now, target, now >= target)
     return now >= target
   }
@@ -135,6 +148,9 @@ export class DashboardComponent implements OnInit {
         this.updateRplCommission()
         this.updateRplApr()
         this.updateRplProjectedClaim()
+        this.updateSmoothingPool()
+        this.updateActiveSyncCommitteeMessage(this.data.currentSyncCommittee)
+        this.updateNextyncCommitteeMessage(this.data.nextSyncCommittee)
         console.log("dashboard data", this.data)
 
         if (!this.data.foreignValidator) {
@@ -143,6 +159,52 @@ export class DashboardComponent implements OnInit {
           this.checkForGenesisOccured()
         }
       }
+    }
+  }
+
+  async epochToTimestamp(epoch : number) {
+    let network = await this.api.getNetwork()
+    return (network.genesisTs + (epoch * 32 * 12)) * 1000
+  }
+
+  async updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
+    if(!committee) return
+    let endTs = await this.epochToTimestamp(committee.end_epoch)
+    let startTs = await this.epochToTimestamp(committee.start_epoch)
+    this.currentSyncCommitteeMessage = {
+      title: "Sync Committee",
+      text: `Your validator${committee.validators.length > 1 ? 's': ''} ${committee.validators.toString()} ${committee.validators.length > 1 ? 'are': 'is'} currently part of the active sync committee.
+      <br/><br/>This duty started at epoch ${committee.start_epoch} at ${new Date(startTs).toLocaleString()} and 
+      will end at epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
+      <br/><br/>You'll earn extra rewards during this period.
+      `
+    } as SyncCommitteeMessage
+  }
+
+
+  async updateNextyncCommitteeMessage(committee: SyncCommitteeResponse) {
+    if(!committee) return
+    let endTs = await this.epochToTimestamp(committee.end_epoch)
+    let startTs = await this.epochToTimestamp(committee.start_epoch)
+    this.nextSyncCommitteeMessage = {
+      title: "Sync Committee Soon",
+      text: `Your validator${committee.validators.length > 1 ? 's': ''} ${committee.validators.toString()} ${committee.validators.length > 1 ? 'are': 'is'} part of the <strong>next</strong> sync committee.
+      <br/><br/>This duty starts at epoch ${committee.start_epoch} at ${new Date(startTs).toLocaleString()} and 
+      will end at epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
+      <br/><br/>You'll earn extra rewards during this period.
+      `
+    } as SyncCommitteeMessage
+  }
+
+  updateSmoothingPool() {
+    try {
+      this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
+      this.displaySmoothingPool = this.data.rocketpool.smoothingPool
+      this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber("1e9")),
+      this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber("1e9")),
+      this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
+    } catch (e) {
+      
     }
   }
 
@@ -248,7 +310,7 @@ export class DashboardComponent implements OnInit {
     this.storage.setObject("finalization_issues", { ts: Date.now(), value: this.finalizationIssue})
   }
 
-  async getChartData(data: ('balances' | 'proposals')) {
+  async getChartData(data: ('allbalances' | 'proposals')) {
     if (!this.data || !this.data.lazyChartValidators) return null
     const chartReq = new DasboardDataRequest(data, this.data.lazyChartValidators)
     const response = await this.api.execute(chartReq).catch((error) => { return null })
@@ -272,22 +334,22 @@ export class DashboardComponent implements OnInit {
 
   switchCurrencyPipe() {
     if (this.unit.pref == "ETHER") {
-      if (this.currencyPipe == null) return
-      this.unit.pref = this.currencyPipe
+      if (UnitconvService.currencyPipe == null) return
+      this.unit.pref = UnitconvService.currencyPipe
     }
     else {
-      this.currencyPipe = this.unit.pref
+      UnitconvService.currencyPipe= this.unit.pref
       this.unit.pref = "ETHER"
     }
   }
 
   switchCurrencyPipeRocketpool() {
     if (this.unit.prefRpl == "RPL") {
-      if (this.currencyPipe == null) return
-      this.unit.prefRpl = this.currencyPipe
+      if (UnitconvService.currencyPipe == null) return
+      this.unit.prefRpl = UnitconvService.currencyPipe
     }
     else {
-      this.currencyPipe = this.unit.pref
+      UnitconvService.currencyPipe = this.unit.pref
       this.unit.prefRpl = "RPL"
     }
   }
@@ -371,7 +433,7 @@ export class DashboardComponent implements OnInit {
   }
 
   async drawBalanceChart() {
-    this.chartData = await this.getChartData("balances")
+    this.chartData = await this.getChartData("allbalances")
 
     if (!this.chartData || this.chartData.length < 3) {
       this.chartError = true;
@@ -382,30 +444,10 @@ export class DashboardComponent implements OnInit {
     this.chartError = false;
     setTimeout(() => { this.doneLoading = true }, 50)
 
-
-    this.createBalanceChart(this.calculateIncomeData(this.chartData))
-  }
-
-
-  private calculateIncomeData(balance) {
-    var income = [];
-    for (var i = 0; i < balance.length; i++) {
-        let color = balance[i].y < 0 ? "#ff835c" : "var(--chart-default)";
-        income.push({ x: balance[i].x, y: balance[i].y, color: color })
-    }
-    return income;
-  }
-
-  private averageUtilization(data: number[]) {
-    if (!data || data.length <= 0) return -1
-    var sum = 0
-
-    data.forEach((item) => {
-      sum += item[1]
-    })
-    const avg = sum * 100 / data.length
-
-    return avg
+    this.createBalanceChart(
+      this.chartData.consensusChartData,
+      this.chartData.executionChartData
+    )
   }
 
   switchRank() {
@@ -492,7 +534,8 @@ export class DashboardComponent implements OnInit {
     })
   }
 
-  async createBalanceChart(income) {
+  async createBalanceChart(income, execIncome) {
+    execIncome = execIncome || []
     // @ts-ignore     ¯\_(ツ)_/¯
     Highstock.stockChart('highcharts' + this.randomChartId, {
 
@@ -505,11 +548,9 @@ export class DashboardComponent implements OnInit {
       scrollbar: {
         enabled: false
       },
-      navigator: {
-        enabled: true
-      },
       chart: {
         type: 'column',
+        pointInterval: 24 * 3600 * 1000,
       },
       legend: {
         enabled: true
@@ -530,11 +571,35 @@ export class DashboardComponent implements OnInit {
           color: 'var(--text-color)',
           fontWeight: 'bold'
         },
-        formatter: (tooltip) => {
-          const value = new BigNumber(tooltip.chart.hoverPoint.y);
+        formatter: function () {
+          var add = ``
 
-          return `Income: ${value.toFormat(6)} Ether<br/><span style="font-size:11px;">${this.unit.convertToPref(value, "ETHER")}</span><br/><br/><span style="font-size:11px;">${ new Date(tooltip.chart.hoverPoint.x).toLocaleString()}</span>`
+          for (var i = 0; i < this.points.length; i++) {
+              add += `<span style="display: inline-block; width: 130px;">${this.points[i].series.name}: </span><b>${this.points[i].y.toFixed(5)} ETH </b><br/>`
+          }
+          return add
         }
+      },
+      navigator: {
+        enabled: true,
+        series: {
+            data: income,
+            color: '#7cb5ec',
+        }
+      },
+      plotOptions: {
+        column: {
+          stacking: "stacked",
+          dataLabels: {
+            enabled: false,
+          },
+          pointInterval: 24 * 3600 * 1000,
+          // pointIntervalUnit: 'day',
+          dataGrouping: {
+            forced: true,
+            units: [["day", [1]]],
+          },
+        },
       },
       yAxis: [
         {
@@ -558,8 +623,14 @@ export class DashboardComponent implements OnInit {
       series: [
         {
       
-          name: 'Income',
-          data: income
+          name: 'Consensus',
+          data: income,
+          index: 2
+        },
+        {
+          name: 'Execution',
+          data: execIncome,
+          index: 1
         }
       ]
     })
@@ -595,4 +666,9 @@ function getRandomInt(max) {
 interface Proposals {
   good: number
   bad: number
+}
+
+interface SyncCommitteeMessage {
+  title: string
+  text: string
 }

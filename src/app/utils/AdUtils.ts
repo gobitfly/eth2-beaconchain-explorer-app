@@ -90,7 +90,7 @@ export default class AdUtils {
             title: "Upgrade to Beaconcha.in Premium",
             img: null,
             thumbnail: null,
-            description_short: "No ads. Widgets, custom themes, custom notifications, support for more validators and more.",
+            description_short: "No ads. Widgets & themes, custom notifications and more.",
             description: "Support us and help keep beaconcha.in up and running.",
             cta_button: "",
             website: "",
