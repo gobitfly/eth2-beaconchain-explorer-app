@@ -23,7 +23,7 @@ import { StorageService } from '../services/storage.service';
 import { Injectable } from '@angular/core';
 import { MyValidatorResponse, AddMyValidatorsRequest } from '../requests/requests';
 import { Mutex } from 'async-mutex';
-import { ValidatorUtils, LAST_TIME_ADDED_KEY, LAST_TIME_REMOVED_KEY} from './ValidatorUtils';
+import { ValidatorUtils, LAST_TIME_ADDED_KEY, LAST_TIME_REMOVED_KEY } from './ValidatorUtils';
 
 const LAST_TIME_UPSYNCED_KEY = "last_time_upsynced"
 const LAST_TIME_UPDELETED_KEY = "last_time_updeleted"
@@ -55,7 +55,7 @@ export class ValidatorSyncUtils {
 
         const loggedIn = await this.storage.isLoggedIn()
         if (!loggedIn) return
-        console.log("[SYNC] sincing down")
+        console.log("[SYNC] syncing down")
 
         const myRemotes = await this.validator.getMyRemoteValidators()
         if (!myRemotes || myRemotes.length <= 0) return
@@ -71,8 +71,8 @@ export class ValidatorSyncUtils {
         }
 
         const newValidators = await this.validator.getRemoteValidatorInfo(newValidatorIndizes).catch((err) => { return null })
-        if (newValidators == null) return 
-        
+        if (newValidators == null) return
+
         this.validator.convertToValidatorModelsAndSaveLocal(true, newValidators)
     }
 
@@ -173,7 +173,7 @@ export class ValidatorSyncUtils {
 
 
     private async syncUp(syncNotificationsForNewValidators: () => void) {
-        console.log("[SYNC] sincing up")
+        console.log("[SYNC] syncing up")
 
         const storageKey = await this.validator.getStorageKey()
         const current = await this.validator.getMap(storageKey)
