@@ -566,7 +566,7 @@ export class DashboardComponent implements OnInit {
         style: {
           color: 'var(--text-color)',
           display: `inline-block`,
-          width: `180px`
+          width: `200px`
         },
         formatter: (tooltip) => {
           var text = ``
