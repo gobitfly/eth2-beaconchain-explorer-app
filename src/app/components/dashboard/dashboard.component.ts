@@ -135,10 +135,10 @@ export class DashboardComponent implements OnInit {
         this.chartError = false
         this.chartData = null
         this.doneLoading = event.data.currentValue != null
-          this.fadeIn = "fade-in"
-          setTimeout(() => {
-            this.fadeIn = null
-          }, 1500)
+        this.fadeIn = "fade-in"
+        setTimeout(() => {
+          this.fadeIn = null
+        }, 1500)
 
         this.updateRplDisplay()
         this.drawBalanceChart()
@@ -155,25 +155,25 @@ export class DashboardComponent implements OnInit {
 
         if (!this.data.foreignValidator) {
           this.checkForFinalization()
-        
+
           this.checkForGenesisOccured()
         }
       }
     }
   }
 
-  async epochToTimestamp(epoch : number) {
+  async epochToTimestamp(epoch: number) {
     let network = await this.api.getNetwork()
     return (network.genesisTs + (epoch * 32 * 12)) * 1000
   }
 
   async updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
-    if(!committee) return
+    if (!committee) return
     let endTs = await this.epochToTimestamp(committee.end_epoch)
     let startTs = await this.epochToTimestamp(committee.start_epoch)
     this.currentSyncCommitteeMessage = {
       title: "Sync Committee",
-      text: `Your validator${committee.validators.length > 1 ? 's': ''} ${committee.validators.toString()} ${committee.validators.length > 1 ? 'are': 'is'} currently part of the active sync committee.
+      text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${committee.validators.length > 1 ? 'are' : 'is'} currently part of the active sync committee.
       <br/><br/>This duty started at epoch ${committee.start_epoch} at ${new Date(startTs).toLocaleString()} and 
       will end at epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
       <br/><br/>You'll earn extra rewards during this period.
@@ -183,12 +183,12 @@ export class DashboardComponent implements OnInit {
 
 
   async updateNextyncCommitteeMessage(committee: SyncCommitteeResponse) {
-    if(!committee) return
+    if (!committee) return
     let endTs = await this.epochToTimestamp(committee.end_epoch)
     let startTs = await this.epochToTimestamp(committee.start_epoch)
     this.nextSyncCommitteeMessage = {
       title: "Sync Committee Soon",
-      text: `Your validator${committee.validators.length > 1 ? 's': ''} ${committee.validators.toString()} ${committee.validators.length > 1 ? 'are': 'is'} part of the <strong>next</strong> sync committee.
+      text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${committee.validators.length > 1 ? 'are' : 'is'} part of the <strong>next</strong> sync committee.
       <br/><br/>This duty starts at epoch ${committee.start_epoch} at ${new Date(startTs).toLocaleString()} and 
       will end at epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
       <br/><br/>You'll earn extra rewards during this period.
@@ -201,14 +201,14 @@ export class DashboardComponent implements OnInit {
       this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
       this.displaySmoothingPool = this.data.rocketpool.smoothingPool
       this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber("1e9")),
-      this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber("1e9")),
-      this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
+        this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber("1e9")),
+        this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
     } catch (e) {
-      
+
     }
   }
 
-  updateRplProjectedClaim(){
+  updateRplProjectedClaim() {
     try {
       /*const inflationIntervalRate = new BigNumber("1000133680617113500")
       const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(":")[0]
@@ -233,16 +233,16 @@ export class DashboardComponent implements OnInit {
         .multipliedBy(new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards))
 
       this.rplProjectedClaim = temp
-      if(temp.isLessThanOrEqualTo(new BigNumber("0"))) { this.rplProjectedClaim = null }
-     
+      if (temp.isLessThanOrEqualTo(new BigNumber("0"))) { this.rplProjectedClaim = null }
+
     } catch {
-      
+
     }
   }
 
   getEffectiveRplStake(data: Rocketpool): BigNumber {
     if (data.currentRpl.isGreaterThanOrEqualTo(data.maxRpl)) return data.maxRpl
-    if(data.currentRpl.isLessThanOrEqualTo(data.minRpl)) return data.minRpl
+    if (data.currentRpl.isLessThanOrEqualTo(data.minRpl)) return data.minRpl
     return data.currentRpl
   }
 
@@ -255,7 +255,7 @@ export class DashboardComponent implements OnInit {
         .dividedBy(new BigNumber(hoursNumber / 24))
         .multipliedBy(new BigNumber(36500)).decimalPlaces(2).toFixed()
     } catch (e) {
-      
+
     }
   }
 
@@ -263,18 +263,18 @@ export class DashboardComponent implements OnInit {
     try {
       this.rplCommission = Math.round(this.validatorUtils.rocketpoolStats.current_node_fee * 10000) / 100
     } catch (e) {
-      
+
     }
   }
 
   updateNextRewardRound() {
     try {
-      const hoursToAdd =  this.validatorUtils.rocketpoolStats.claim_interval_time.split(":")[0]
-      this.nextRewardRound = this.validatorUtils.rocketpoolStats.claim_interval_time_start * 1000 + parseInt(hoursToAdd) * 60 * 60 * 1000 
+      const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(":")[0]
+      this.nextRewardRound = this.validatorUtils.rocketpoolStats.claim_interval_time_start * 1000 + parseInt(hoursToAdd) * 60 * 60 * 1000
     } catch (e) {
-      
+
     }
-   
+
   }
 
   ngOnInit() {
@@ -307,7 +307,7 @@ export class DashboardComponent implements OnInit {
     if (!this.data || !this.data.currentEpoch || !olderResult) return
     console.log("checkForFinalization", olderResult)
     this.finalizationIssue = new BigNumber(olderResult.globalparticipationrate).isLessThan("0.664") && olderResult.epoch > 7
-    this.storage.setObject("finalization_issues", { ts: Date.now(), value: this.finalizationIssue})
+    this.storage.setObject("finalization_issues", { ts: Date.now(), value: this.finalizationIssue })
   }
 
   async getChartData(data: ('allbalances' | 'proposals')) {
@@ -338,7 +338,7 @@ export class DashboardComponent implements OnInit {
       this.unit.pref = UnitconvService.currencyPipe
     }
     else {
-      UnitconvService.currencyPipe= this.unit.pref
+      UnitconvService.currencyPipe = this.unit.pref
       this.unit.pref = "ETHER"
     }
   }
@@ -354,7 +354,7 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  
+
   switchRplStake(canPercent = false) {
     if (this.rplState == "rpl" && canPercent) {
       // next %
@@ -362,7 +362,7 @@ export class DashboardComponent implements OnInit {
       this.updateRplDisplay()
       this.storage.setItem("rpl_pdisplay_mode", this.rplState)
       return
-    } else if ((this.rplState == "rpl" && !canPercent )|| this.rplState == "%") {
+    } else if ((this.rplState == "rpl" && !canPercent) || this.rplState == "%") {
       // next %
       this.rplState = "conv"
       this.updateRplDisplay()
@@ -559,32 +559,36 @@ export class DashboardComponent implements OnInit {
         text: '' //Balance History for all Validators
       },
       xAxis: {
-
-       // tickInterval: 24 * 3600 * 1000,
-        //tickmarkPlacement: 'on',
-
         range: 32 * 24 * 60 * 60 * 1000,
         type: 'datetime',
       },
       tooltip: {
         style: {
           color: 'var(--text-color)',
-          fontWeight: 'bold'
+          display: `inline-block`,
+          width: `180px`
         },
-        formatter: function () {
-          var add = ``
+        formatter: (tooltip) => {
+          var text = ``
 
-          for (var i = 0; i < this.points.length; i++) {
-              add += `<span style="display: inline-block; width: 130px;">${this.points[i].series.name}: </span><b>${this.points[i].y.toFixed(5)} ETH </b><br/>`
+          for (var i = 0; i < tooltip.chart.hoverPoints.length; i++) {
+            const value = new BigNumber(tooltip.chart.hoverPoints[i].y);
+            text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${value.toFixed(5)} ETH`
+            if (this.unit.pref != "ETHER") {
+              text += ` (${this.unit.convertToPref(value, "ETHER")})`
+            }
+            text += `</b><br/>`
           }
-          return add
+          text += new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString();
+
+          return text
         }
       },
       navigator: {
         enabled: true,
         series: {
-            data: income,
-            color: '#7cb5ec',
+          data: income,
+          color: '#7cb5ec',
         }
       },
       plotOptions: {
@@ -594,7 +598,6 @@ export class DashboardComponent implements OnInit {
             enabled: false,
           },
           pointInterval: 24 * 3600 * 1000,
-          // pointIntervalUnit: 'day',
           dataGrouping: {
             forced: true,
             units: [["day", [1]]],
@@ -622,7 +625,6 @@ export class DashboardComponent implements OnInit {
       ],
       series: [
         {
-      
           name: 'Consensus',
           data: income,
           index: 2
