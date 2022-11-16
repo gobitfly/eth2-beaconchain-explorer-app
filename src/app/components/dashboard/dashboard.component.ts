@@ -561,25 +561,29 @@ export class DashboardComponent implements OnInit {
         text: '' //Balance History for all Validators
       },
       xAxis: {
-
-        // tickInterval: 24 * 3600 * 1000,
-        //tickmarkPlacement: 'on',
-
         range: 32 * 24 * 60 * 60 * 1000,
         type: 'datetime',
       },
       tooltip: {
         style: {
           color: 'var(--text-color)',
-          fontWeight: 'bold'
+          display: `inline-block`,
+          width: `200px`
         },
-        formatter: function () {
-          var add = ``
+        formatter: (tooltip) => {
+          var text = ``
 
-          for (var i = 0; i < this.points.length; i++) {
-            add += `<span style="display: inline-block; width: 130px;">${this.points[i].series.name}: </span><b>${this.points[i].y.toFixed(5)} ETH </b><br/>`
+          for (var i = 0; i < tooltip.chart.hoverPoints.length; i++) {
+            const value = new BigNumber(tooltip.chart.hoverPoints[i].y);
+            text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${value.toFixed(5)} ETH`
+            if (this.unit.pref != "ETHER") {
+              text += ` (${this.unit.convertToPref(value, "ETHER")})`
+            }
+            text += `</b><br/>`
           }
-          return add
+          text += new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString();
+
+          return text
         }
       },
       navigator: {
@@ -596,7 +600,6 @@ export class DashboardComponent implements OnInit {
             enabled: false,
           },
           pointInterval: 24 * 3600 * 1000,
-          // pointIntervalUnit: 'day',
           dataGrouping: {
             forced: true,
             units: [["day", [1]]],
@@ -624,7 +627,6 @@ export class DashboardComponent implements OnInit {
       ],
       series: [
         {
-
           name: 'Consensus',
           data: income,
           index: 2

@@ -61,14 +61,16 @@ ion-button {
 .bigger-alert {
   .alert-message.sc-ion-alert-md {
     max-height: 335px !important;
-  } 
+  }
+
   .alert-message.sc-ion-alert-ios {
     max-height: 335px !important;
-  } 
+  }
 
   .alert-wrapper.sc-ion-alert-md {
     min-width: 340px !important;
   }
+
   .alert-wrapper.sc-ion-alert-ios {
     min-width: 340px !important;
   }
@@ -165,9 +167,11 @@ ion-card {
 .highcharts-background {
   fill: var(--background-color);
 }
+
 .highcharts-container text {
   fill: var(--text-color);
 }
+
 .highcharts-subtitle,
 .highcharts-credits,
 .highcharts-axis-title,
@@ -182,14 +186,17 @@ ion-card {
   stroke-opacity: 1;
   color: var(--text-color) !important;
 }
+
 .highcharts-grid-line {
   stroke: var(--text-color);
   stroke-opacity: 0.2;
 }
+
 .highcharts-tooltip-box,
 .highcharts-label-box {
   fill: var(--background-color) !important;
 }
+
 .highcharts-column-series rect.highcharts-point {
   stroke: var(--background-color);
 }
@@ -220,7 +227,8 @@ ion-back-button {
 ion-tab-button.tab-selected {
 
   .opacity-icon {
-    color: var(--ion-tab-button-color);;
+    color: var(--ion-tab-button-color);
+    ;
     opacity: 0.95;
   }
 }
@@ -229,7 +237,8 @@ body.dark {
 
   ion-tab-button.tab-selected {
     .opacity-icon {
-      color: var(--ion-tab-button-color);;
+      color: var(--ion-tab-button-color);
+      ;
       opacity: 0.99;
     }
   }
@@ -239,8 +248,10 @@ body.dark {
     --color: var(--ion-tab-button-color);
 
     color: var(--ion-tab-button-color);
+
     .opacity-icon {
-      color: var(--ion-tab-button-color);;
+      color: var(--ion-tab-button-color);
+      ;
       opacity: 0.6;
     }
   }
@@ -253,7 +264,8 @@ ion-tab-button {
   color: var(--ion-tab-button-color);
 
   .opacity-icon {
-    color: var(--ion-tab-button-color);;
+    color: var(--ion-tab-button-color);
+    ;
     opacity: 0.6;
   }
 }
@@ -287,10 +299,15 @@ ion-toolbar {
   opacity: 0;
 }
 
+.bottomFiller {
+  height: 40px;
+}
+
 @keyframes fadein {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -301,6 +318,7 @@ ion-toolbar {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -311,6 +329,7 @@ ion-toolbar {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -321,6 +340,7 @@ ion-toolbar {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
