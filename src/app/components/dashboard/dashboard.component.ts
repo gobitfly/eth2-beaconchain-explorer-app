@@ -134,7 +134,6 @@ export class DashboardComponent implements OnInit {
       if (event.data.currentValue) {
         this.chartError = false
         this.chartData = null
-        this.doneLoading = event.data.currentValue != null
         this.fadeIn = "fade-in"
         setTimeout(() => {
           this.fadeIn = null
@@ -150,12 +149,12 @@ export class DashboardComponent implements OnInit {
         this.updateRplProjectedClaim()
         this.updateSmoothingPool()
         this.updateActiveSyncCommitteeMessage(this.data.currentSyncCommittee)
-        this.updateNextyncCommitteeMessage(this.data.nextSyncCommittee)
+        this.updateNextSyncCommitteeMessage(this.data.nextSyncCommittee)
+        this.doneLoading = true
         console.log("dashboard data", this.data)
 
         if (!this.data.foreignValidator) {
           this.checkForFinalization()
-
           this.checkForGenesisOccured()
         }
       }
@@ -168,32 +167,37 @@ export class DashboardComponent implements OnInit {
   }
 
   async updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
-    if (!committee) return
-    let endTs = await this.epochToTimestamp(committee.end_epoch)
-    let startTs = await this.epochToTimestamp(committee.start_epoch)
-    this.currentSyncCommitteeMessage = {
-      title: "Sync Committee",
-      text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${committee.validators.length > 1 ? 'are' : 'is'} currently part of the active sync committee.
+    if (committee) {
+      let endTs = await this.epochToTimestamp(committee.end_epoch)
+      let startTs = await this.epochToTimestamp(committee.start_epoch)
+      this.currentSyncCommitteeMessage = {
+        title: "Sync Committee",
+        text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${committee.validators.length > 1 ? 'are' : 'is'} currently part of the active sync committee.
       <br/><br/>This duty started at epoch ${committee.start_epoch} at ${new Date(startTs).toLocaleString()} and 
       will end at epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
       <br/><br/>You'll earn extra rewards during this period.
       `
-    } as SyncCommitteeMessage
+      } as SyncCommitteeMessage
+    } else {
+      this.currentSyncCommitteeMessage = null
+    }
   }
 
-
-  async updateNextyncCommitteeMessage(committee: SyncCommitteeResponse) {
-    if (!committee) return
-    let endTs = await this.epochToTimestamp(committee.end_epoch)
-    let startTs = await this.epochToTimestamp(committee.start_epoch)
-    this.nextSyncCommitteeMessage = {
-      title: "Sync Committee Soon",
-      text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${committee.validators.length > 1 ? 'are' : 'is'} part of the <strong>next</strong> sync committee.
+  async updateNextSyncCommitteeMessage(committee: SyncCommitteeResponse) {
+    if (committee) {
+      let endTs = await this.epochToTimestamp(committee.end_epoch)
+      let startTs = await this.epochToTimestamp(committee.start_epoch)
+      this.nextSyncCommitteeMessage = {
+        title: "Sync Committee Soon",
+        text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${committee.validators.length > 1 ? 'are' : 'is'} part of the <strong>next</strong> sync committee.
       <br/><br/>This duty starts at epoch ${committee.start_epoch} at ${new Date(startTs).toLocaleString()} and 
       will end at epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
       <br/><br/>You'll earn extra rewards during this period.
       `
-    } as SyncCommitteeMessage
+      } as SyncCommitteeMessage
+    } else {
+      this.nextSyncCommitteeMessage = null
+    }
   }
 
   updateSmoothingPool() {
@@ -437,12 +441,10 @@ export class DashboardComponent implements OnInit {
 
     if (!this.chartData || this.chartData.length < 3) {
       this.chartError = true;
-      this.doneLoading = true
       return
     }
 
     this.chartError = false;
-    setTimeout(() => { this.doneLoading = true }, 50)
 
     this.createBalanceChart(
       this.chartData.consensusChartData,
