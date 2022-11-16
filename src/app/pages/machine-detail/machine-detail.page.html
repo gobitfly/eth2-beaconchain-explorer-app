@@ -53,6 +53,8 @@
     <app-machinechart title="CPU System" [key]="key" [chartData]="data | delegate: cpuSystemDelegate" priority="true"
     [subtitleLeft]="cpuLabelTotal">
     </app-machinechart>
+
+    <div class="bottomFiller"></div>
   </div>
 
   <div id="memory" [hidden]="selectedTab != 'memory'" class="data-container">
@@ -79,6 +81,8 @@
     [subtitleLeft]="memoryLabelFree"
     [subtitleRight]="memoryLabelTotal">
     </app-machinechart>
+
+    <div class="bottomFiller"></div>
   </div>
 
   <div id="network" [hidden]="selectedTab != 'network'" class="data-container">
@@ -90,6 +94,8 @@
     <app-machinechart title="Peers" [key]="key" [chartData]="data | delegate: peerDelegate"
     [subtitleLeft]="peerLabel">
     </app-machinechart>
+
+    <div class="bottomFiller"></div>
   </div>
 
   <div id="disk" [hidden]="selectedTab != 'disk'" class="data-container">
@@ -120,6 +126,8 @@
     <app-machinechart title="Beaconchain" [key]="key" [chartData]="data | delegate: beaconchainSizeDelegate"
     [subtitleLeft]="beaconchainLabel">
     </app-machinechart>
+
+    <div class="bottomFiller"></div>
   </div>
 
   <div id="sync" [hidden]="selectedTab != 'sync'" class="data-container">
@@ -146,6 +154,8 @@
     [subtitleLeft]="validatorLabelActive"
     [subtitleRight]="validatorLabelTotal">
     </app-machinechart>
+
+    <div class="bottomFiller"></div>
   </div>
 
   <div id="gen" [hidden]="selectedTab != 'gen'" class="performances" class="data-container">
@@ -313,7 +323,7 @@
 
       </ion-item>
     </ion-list>
-
+    <div class="bottomFiller"></div>
   </div>
 
 </ion-content>
