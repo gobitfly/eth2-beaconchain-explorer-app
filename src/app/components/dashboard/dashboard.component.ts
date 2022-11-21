@@ -36,7 +36,6 @@ import { ModalController } from '@ionic/angular';
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
 import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils';
-import { MergeChecklistPage } from 'src/app/pages/merge-checklist/merge-checklist.page';
 
 @Component({
   selector: 'app-validator-dashboard',
@@ -278,7 +277,6 @@ export class DashboardComponent implements OnInit {
     } catch (e) {
 
     }
-
   }
 
   ngOnInit() {
@@ -357,7 +355,6 @@ export class DashboardComponent implements OnInit {
       this.unit.prefRpl = "RPL"
     }
   }
-
 
   switchRplStake(canPercent = false) {
     if (this.rplState == "rpl" && canPercent) {

@@ -18,7 +18,7 @@ export class NotificationBase implements OnInit {
 
   notifyInitialized = false
 
-  notify: boolean  = false
+  notify: boolean = false
 
   storageThreshold = 90
   cpuThreshold = 60
@@ -88,13 +88,13 @@ export class NotificationBase implements OnInit {
   remoteNotifyLoadedOnce = false
   public async loadNotifyToggles() {
     if (!(await this.storage.isLoggedIn())) return
-    
+
     const net = (await this.api.networkConfig).net
 
     const request = new NotificationGetRequest()
     const response = await this.api.execute(request)
     const results = request.parse(response)
-   
+
     var network = await this.api.getNetworkName()
     if (network == "main") {
       network = "mainnet"
@@ -107,9 +107,9 @@ export class NotificationBase implements OnInit {
       this.setToggleFromEvent(result.EventName, network, true, net)
       if (result.EventName == "monitoring_cpu_load") {
         this.cpuThreshold = Math.round(parseFloat(result.EventThreshold) * 100)
-        this.storage.setSetting(CPU_THRESHOLD, this.cpuThreshold) 
+        this.storage.setSetting(CPU_THRESHOLD, this.cpuThreshold)
       }
-      else if (result.EventName == network+":validator_is_offline") {
+      else if (result.EventName == network + ":validator_is_offline") {
         this.offlineThreshold = Math.round(parseFloat(result.EventThreshold))
         this.storage.setSetting(OFFLINE_THRESHOLD, this.offlineThreshold)
       }
@@ -118,23 +118,24 @@ export class NotificationBase implements OnInit {
         this.storage.setSetting(HDD_THRESHOLD, this.storageThreshold)
       }
       else if (result.EventName == "monitoring_memory_usage") {
-        
+
         this.memoryThreshold = Math.round(parseFloat(result.EventThreshold) * 100)
         this.storage.setSetting(RAM_THRESHOLD, this.memoryThreshold)
       }
-      else if (result.EventName == network+":rocketpool_colleteral_max") {
-        const threshold =  parseFloat(result.EventThreshold)
+      else if (result.EventName == network + ":rocketpool_colleteral_max") {
+        const threshold = parseFloat(result.EventThreshold)
         if (threshold >= 0) {
-          this.maxCollateralThreshold = Math.round(((threshold-1)*1000) + 100) //1 + ((this.maxCollateralThreshold - 100) / 1000)
+          this.maxCollateralThreshold = Math.round(((threshold - 1) * 1000) + 100) //1 + ((this.maxCollateralThreshold - 100) / 1000)
         } else {
-          this.maxCollateralThreshold = Math.round(((1-(threshold * -1))*1000) - 100) //(1 - ((this.maxCollateralThreshold + 100) / 1000)) * -1
+          this.maxCollateralThreshold = Math.round(((1 - (threshold * -1)) * 1000) - 100) //(1 - ((this.maxCollateralThreshold + 100) / 1000)) * -1
         }
 
       }
-      else if(result.EventName == network+":rocketpool_colleteral_min") {
-        this.minCollateralThreshold = Math.round((parseFloat(result.EventThreshold)-1) *100) //1 + this.minCollateralThreshold / 100 
+      else if (result.EventName == network + ":rocketpool_colleteral_min") {
+        this.minCollateralThreshold = Math.round((parseFloat(result.EventThreshold) - 1) * 100) //1 + this.minCollateralThreshold / 100 
         console.log("minCollateralThreshold", result.EventThreshold, this.minCollateralThreshold)
       } else if (result.EventName == "eth_client_update") {
+
         if (result.EventFilter && result.EventFilter.length >= 1 && result.EventFilter.charAt(0).toUpperCase() != result.EventFilter.charAt(0) && result.EventFilter != "null" && result.EventFilter != "none") {
           this.clientUpdate.setUnknownLayerClient(result.EventFilter)
           if (result.EventFilter == "rocketpool") {
@@ -146,7 +147,7 @@ export class NotificationBase implements OnInit {
           }
         }
       }
-  
+
     }
 
     if (!containsRocketpoolUpdateSub) {
@@ -160,7 +161,7 @@ export class NotificationBase implements OnInit {
       this.clientUpdate.setMevBoostClient(null)
       this.mevboost = false
     }
-    
+
     // locking toggle so we dont execute onChange when setting initial values
     const preferences = await this.storage.loadPreferencesToggles(net)
 
@@ -216,8 +217,8 @@ export class NotificationBase implements OnInit {
 
     const net = (await this.api.networkConfig).net
     this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
-    
-    if(! (await this.api.isNotMainnet())){
+
+    if (!(await this.api.isNotMainnet())) {
       this.sync.changeGeneralNotify(this.notify)
     }
 
@@ -225,7 +226,7 @@ export class NotificationBase implements OnInit {
 
     this.api.clearSpecificCache(new NotificationGetRequest())
   }
-    
+
   private async getRemoteNotificationSetting(notifyLocalStore): Promise<boolean> {
     const local = await this.getNotificationSetting(notifyLocalStore)
     const remote = await this.getRemoteNotificationSettingResponse()
@@ -251,7 +252,7 @@ export class NotificationBase implements OnInit {
     if (result && result.length >= 1) return result[0]
     return null
   }
-    
+
   notifyClientUpdates() {
     if (this.lockedToggle) {
       return;
@@ -299,7 +300,7 @@ export class NotificationBase implements OnInit {
     this.notifyTogglesMap.set(eventName, value)
     const count = this.activeSubscriptionsPerEventMap.get(eventName)
     this.activeSubscriptionsPerEventMap.set(eventName, count ? count + 1 : 1)
-    
+
     this.storage.setBooleanSetting(net + eventName, value)
   }
 
@@ -344,8 +345,8 @@ export class NotificationBase implements OnInit {
     )
     this.api.clearSpecificCache(new NotificationGetRequest())
   }
-    
-    
+
+
   public disableToggleLock() {
     setTimeout(() => {
       this.lockedToggle = false

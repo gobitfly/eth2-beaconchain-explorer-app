@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonRange, ModalController, Platform } from '@ionic/angular';
-import { NotificationGetRequest } from 'src/app/requests/requests';
 import { AlertService } from 'src/app/services/alert.service';
 import { ApiService } from 'src/app/services/api.service';
 import { CPU_THRESHOLD, HDD_THRESHOLD, OFFLINE_THRESHOLD, RAM_THRESHOLD, StorageService } from 'src/app/services/storage.service';
@@ -55,7 +54,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 
   handleLockedClick() {
     if (this.canCustomizeThresholds) return
-    
+
     this.openUpgrades()
   }
 
@@ -63,7 +62,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
     this.initialized = false
 
     this.storage.getBooleanSetting(UNSUPPORTED_PRYSM, false).then((result) => { this.unsupportedPrysm = result })
-    
+
     this.storage.getAuthUser().then((result) => this.authUser = result)
     this.api.getNetworkName().then((result) => {
       this.network = this.api.capitalize(result)
@@ -72,7 +71,6 @@ export class NotificationsPage extends NotificationBase implements OnInit {
       this.canCustomizeThresholds = result
     })
 
- 
     await this.loadNotifyToggles()
     setTimeout(() => { this.initialized = true }, 400)
   }
@@ -80,7 +78,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
   changeValidatorOffline() {
     if (!this.initialized) return
     this.storage.setSetting(OFFLINE_THRESHOLD, this.offlineThreshold)
-    this.notifyEventFilterToggle('validator_is_offline', null,  this.offlineThreshold)
+    this.notifyEventFilterToggle('validator_is_offline', null, this.offlineThreshold)
   }
 
   changeDiskNotification() {
@@ -113,13 +111,13 @@ export class NotificationsPage extends NotificationBase implements OnInit {
     } else {
       thresholdConv = (1 - ((this.maxCollateralThreshold + 100) / 1000)) * -1
     }
-     
+
     this.notifyEventFilterToggle('rocketpool_colleteral_max', null, thresholdConv)
   }
 
   changeRocketpoolMinCollateral() {
     if (!this.initialized) return
-    
+
     const thresholdConv = 1 + this.minCollateralThreshold / 100
     this.notifyEventFilterToggle('rocketpool_colleteral_min', null, thresholdConv)
   }
@@ -132,21 +130,21 @@ export class NotificationsPage extends NotificationBase implements OnInit {
   }
 
   async ngOnInit() {
-    
+
 
     this.allMachines = this.machineUtils.getAllMachineNames()
     let result = await this.allMachines
     this.noMachines = result.length == 0
   }
 
-  changeStorageThreshold($event){
-    this.storageThreshold =  $event.detail.value;
+  changeStorageThreshold($event) {
+    this.storageThreshold = $event.detail.value;
   }
-  
-  changeCPUThreshold($event){
-    this.cpuThreshold =  $event.detail.value;
+
+  changeCPUThreshold($event) {
+    this.cpuThreshold = $event.detail.value;
   }
-  
+
   async openUpgrades() {
     const modal = await this.modalController.create({
       component: SubscribePage,
