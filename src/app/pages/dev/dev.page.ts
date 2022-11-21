@@ -3,7 +3,7 @@ import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from 'src/app/services
 import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils';
 import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page';
 import { Toast } from '@capacitor/toast';
-import { ETHClients, OtherClients } from '../../utils/ClientUpdateUtils';
+import { Clients } from '../../utils/ClientUpdateUtils';
 
 @Component({
   selector: 'app-dev',
@@ -43,14 +43,11 @@ export class DevPage extends Tab3Page implements OnInit {
   // Enables testing of client update messages
   // Once this method is called, every subscribed client will report a new version
   outdateLastClosedForClients() {
-    ETHClients.forEach((client) => {
-      this.updateUtils.dismissRelease(client.key, "0")
-    })
-    OtherClients.forEach((client) => {
+    Clients.forEach((client) => {
       this.updateUtils.dismissRelease(client.key, "0")
     })
 
-    this.updateUtils.checkUpdates()
+    this.updateUtils.checkAllUpdates()
   }
 
   clearSyncQueue() {

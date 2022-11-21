@@ -32,31 +32,31 @@ export class ClientsPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.updateUtils.getETHClient("LIGHTHOUSE").then((result) => {
+    this.updateUtils.getClient("LIGHTHOUSE").then((result) => {
       this.toggleStateLighthouse = (result != "null")
     })
-    this.updateUtils.getETHClient("LODESTAR").then((result) => {
+    this.updateUtils.getClient("LODESTAR").then((result) => {
       this.toggleStateLodestar = (result != "null")
     })
-    this.updateUtils.getETHClient("PRYSM").then((result) => {
+    this.updateUtils.getClient("PRYSM").then((result) => {
       this.toggleStatePrysm = (result != "null")
     })
-    this.updateUtils.getETHClient("NIMBUS").then((result) => {
+    this.updateUtils.getClient("NIMBUS").then((result) => {
       this.toggleStateNimbus = (result != "null")
     })
-    this.updateUtils.getETHClient("TEKU").then((result) => {
+    this.updateUtils.getClient("TEKU").then((result) => {
       this.toggleStateTeku = (result != "null")
     })
-    this.updateUtils.getETHClient("BESU").then((result) => {
+    this.updateUtils.getClient("BESU").then((result) => {
       this.toggleStateBesu = (result != "null")
     })
-    this.updateUtils.getETHClient("ERIGON").then((result) => {
+    this.updateUtils.getClient("ERIGON").then((result) => {
       this.toggleStateErigon = (result != "null")
     })
-    this.updateUtils.getETHClient("GETH").then((result) => {
+    this.updateUtils.getClient("GETH").then((result) => {
       this.toggleStateGeth = (result != "null")
     })
-    this.updateUtils.getETHClient("NETHERMIND").then((result) => {
+    this.updateUtils.getClient("NETHERMIND").then((result) => {
       this.toggleStateNethermind = (result != "null")
     })
   }
@@ -65,12 +65,12 @@ export class ClientsPage implements OnInit {
     this.modalCtrl.dismiss();
   }
 
-  async toggleETHClient(clientKey: string, event: any) {
+  async toggleClient(clientKey: string, event: any) {
     if (event.target.checked) {
-      this.sync.changeETHClient(clientKey, clientKey)
+      this.sync.changeClient(clientKey, clientKey)
     } else {
-      this.sync.changeETHClient(clientKey, null)
+      this.sync.changeClient(clientKey, null)
     }
-    this.updateUtils.checkETHClientUpdate(clientKey)
+    this.updateUtils.checkClientUpdate(clientKey)
   }
 }

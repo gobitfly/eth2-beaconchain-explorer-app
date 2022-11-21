@@ -23,7 +23,7 @@ import { ApiService } from './api.service';
 import { SETTING_NOTIFY, StorageService } from './storage.service';
 import { Mutex } from 'async-mutex';
 import { BundleSub, GetMobileSettingsRequest, NotificationBundleSubsRequest, NotificationGetRequest, SetMobileSettingsRequest } from '../requests/requests';
-import ClientUpdateUtils, { ETHClients, MEVBOOST_CLIENT_SAVED, ROCKETPOOL_CLIENT_SAVED } from '../utils/ClientUpdateUtils';
+import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils';
 import { ValidatorSyncUtils } from '../utils/ValidatorSyncUtils';
 import { NotificationBase } from '../tab-preferences/notification-base';
 
@@ -236,12 +236,8 @@ export class SyncService {
   private getSyncActionEvent(key: string) {
     if (key.endsWith(SETTING_NOTIFY)) {
       return SyncActionEvent.NOTIFY_GLOBAL
-    } else if (key.endsWith(ROCKETPOOL_CLIENT_SAVED)) {
-      return SyncActionEvent.CLIENT_UPDATE_GENERAL
-    } else if (key.endsWith(MEVBOOST_CLIENT_SAVED)) {
-      return SyncActionEvent.CLIENT_UPDATE_GENERAL
     } else {
-      for (const client of ETHClients) {
+      for (const client of Clients) {
         if (key.endsWith(client.key)) {
           return SyncActionEvent.CLIENT_UPDATE_GENERAL
         }
@@ -362,7 +358,7 @@ export class SyncService {
     return false
   }
 
-  async changeMevBoostClient(value) {
+  async changeClient(clientKey: string, value: string) {
     // do not sync to remote if notification for client updates isn't enabled in the first place
     const isEnabled = await this.isNotifyClientUpdatesEnabled()
     if (!isEnabled) return
@@ -371,52 +367,13 @@ export class SyncService {
       value = value.toUpperCase()
     }
 
-    const changed = await this.updateUtils.setMevBoostClient(value)
+    const changed = await this.updateUtils.setClient(clientKey, value)
     if (changed) {
+      const client = this.updateUtils.getClientInfo(clientKey)
       if (value && value != 'null') {
-        this.setLastChanged(MEVBOOST_CLIENT_SAVED, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
-      }
-      else {
-        this.setLastChanged("UN" + MEVBOOST_CLIENT_SAVED, "eth_client_update", "mev-boost", null, 'unsubscribe')
-      }
-    }
-  }
-
-  async changeRocketpoolClient(value) {
-    // do not sync to remote if notification for client updates isn't enabled in the first place
-    const isEnabled = await this.isNotifyClientUpdatesEnabled()
-    if (!isEnabled) return
-
-    if (value) {
-      value = value.toUpperCase()
-    }
-
-    const changed = await this.updateUtils.setRocketpoolClient(value)
-    if (changed) {
-      if (value && value != 'null') {
-        this.setLastChanged(ROCKETPOOL_CLIENT_SAVED, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
+        this.setLastChanged(client.storageKey, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
       } else {
-        this.setLastChanged("UN" + ROCKETPOOL_CLIENT_SAVED, "eth_client_update", "rocketpool", null, 'unsubscribe')
-      }
-    }
-  }
-
-  async changeETHClient(key: string, value: string) {
-    // do not sync to remote if notification for client updates isn't enabled in the first place
-    const isEnabled = await this.isNotifyClientUpdatesEnabled()
-    if (!isEnabled) return
-
-    if (value) {
-      value = value.toUpperCase()
-    }
-
-    const changed = await this.updateUtils.setETHClient(key, value)
-    if (changed) {
-      const storageKey = this.updateUtils.getETHClientStorageKey(key)
-      if (value && value != 'null') {
-        this.setLastChanged(storageKey, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
-      } else {
-        this.setLastChanged("UN" + storageKey, "eth_client_update", key.toLocaleLowerCase(), null, 'unsubscribe')
+        this.setLastChanged("UN" + client.storageKey, "eth_client_update", client.key.toLocaleLowerCase(), null, 'unsubscribe')
       }
     }
   }
@@ -469,25 +426,14 @@ export class SyncService {
   }
 
   async changeNotifyClientUpdate(key: string, value: boolean, filter: string = null) {
-
     this.storage.setBooleanSetting(key, value)
 
-    ETHClients.forEach(async (client) => {
-      var clientName = await this.updateUtils.getETHClient(this.updateUtils.getETHClientStorageKey(client.key))
+    Clients.forEach(async (client) => {
+      var clientName = await this.updateUtils.getClient(client.key)
       if (clientName != "null") {
-        this.setLastChanged(this.updateUtils.getETHClientStorageKey(client.key), "eth_client_update", clientName.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
+        this.setLastChanged(client.storageKey, "eth_client_update", clientName.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
       }
     })
-
-    var client = await this.updateUtils.getRocketpoolClient()
-    if (client != "null") {
-      this.setLastChanged(ROCKETPOOL_CLIENT_SAVED, "eth_client_update", client.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
-    }
-
-    client = await this.updateUtils.getMevBoostClient()
-    if (client != "null") {
-      this.setLastChanged(MEVBOOST_CLIENT_SAVED, "eth_client_update", client.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
-    }
   }
 
   private async setLastSynced(key: string, event: string,

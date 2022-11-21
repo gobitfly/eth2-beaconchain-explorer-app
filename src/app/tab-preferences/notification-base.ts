@@ -152,13 +152,13 @@ export class NotificationBase implements OnInit {
 
     if (!containsRocketpoolUpdateSub) {
       console.log("disabling rocketpool smartnode updates")
-      this.clientUpdate.setRocketpoolClient(null)
+      this.clientUpdate.setClient("ROCKETPOOL", null)
       this.smartnode = false
     }
 
     if (!containsMevboostUpdateSub) {
       console.log("disabling mev boost updates")
-      this.clientUpdate.setMevBoostClient(null)
+      this.clientUpdate.setClient("MEV-BOOST", null)
       this.mevboost = false
     }
 
