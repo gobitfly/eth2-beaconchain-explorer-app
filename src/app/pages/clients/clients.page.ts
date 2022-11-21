@@ -33,31 +33,31 @@ export class ClientsPage implements OnInit {
 
   ngOnInit() {
     this.updateUtils.getClient("LIGHTHOUSE").then((result) => {
-      this.toggleStateLighthouse = (result != "null")
+      this.toggleStateLighthouse = (result && result != "null")
     })
     this.updateUtils.getClient("LODESTAR").then((result) => {
-      this.toggleStateLodestar = (result != "null")
+      this.toggleStateLodestar = (result && result != "null")
     })
     this.updateUtils.getClient("PRYSM").then((result) => {
-      this.toggleStatePrysm = (result != "null")
+      this.toggleStatePrysm = (result && result != "null")
     })
     this.updateUtils.getClient("NIMBUS").then((result) => {
-      this.toggleStateNimbus = (result != "null")
+      this.toggleStateNimbus = (result && result != "null")
     })
     this.updateUtils.getClient("TEKU").then((result) => {
-      this.toggleStateTeku = (result != "null")
+      this.toggleStateTeku = (result && result != "null")
     })
     this.updateUtils.getClient("BESU").then((result) => {
-      this.toggleStateBesu = (result != "null")
+      this.toggleStateBesu = (result && result != "null")
     })
     this.updateUtils.getClient("ERIGON").then((result) => {
-      this.toggleStateErigon = (result != "null")
+      this.toggleStateErigon = (result && result != "null")
     })
     this.updateUtils.getClient("GETH").then((result) => {
-      this.toggleStateGeth = (result != "null")
+      this.toggleStateGeth = (result && result != "null")
     })
     this.updateUtils.getClient("NETHERMIND").then((result) => {
-      this.toggleStateNethermind = (result != "null")
+      this.toggleStateNethermind = (result && result != "null")
     })
   }
 
