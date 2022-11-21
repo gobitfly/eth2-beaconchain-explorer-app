@@ -30,6 +30,11 @@
       <ion-label>Clear API cache</ion-label>
     </ion-item>
 
+    <ion-item lines="none" (click)="outdateLastClosedForClients()">
+      <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+      <ion-label>Set "Last Closed" to 0 for all clients</ion-label>
+    </ion-item>
+
     <ion-item lines="none">
       <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
       <ion-label>

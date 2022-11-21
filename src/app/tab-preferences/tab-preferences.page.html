@@ -218,7 +218,7 @@
       </ion-label>
     </ion-item>
 
-    <ion-item lines="none" [disabled]="!authUser" (click)="gotoNotificationPage()">
+    <ion-item lines="none" [disabled]="!authUser" (click)="goToNotificationPage()">
       <ion-icon class="opacity-icon" slot="start" name="notifications-outline"></ion-icon>
       <ion-label>Notification Preferences</ion-label>
       <ion-icon class="opacity-icon" slot="end" name="chevron-forward-outline"></ion-icon>
@@ -232,29 +232,18 @@
   </ion-list-header>
 
   <ion-list>
-    <ion-item lines="none">
+    <ion-item lines="none" (click)="openClientsPage('eth1Clients')">
       <ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
-      <ion-label>Execution Client</ion-label>
-      <ion-select placeholder="None" [(ngModel)]="eth1client" (ionChange)="changeETH1Client()" interface="popover">
-        <ion-select-option value="none">None</ion-select-option>
-        <ion-select-option value="GETH">Geth</ion-select-option>
-        <ion-select-option value="OPENETHEREUM">OpenEthereum</ion-select-option>
-        <ion-select-option value="NETHERMIND">Nethermind</ion-select-option>
-        <ion-select-option value="BESU">Besu</ion-select-option>
-        <ion-select-option value="ERIGON">Erigon</ion-select-option>
-      </ion-select>
+      <ion-label>Execution Clients</ion-label>
+      <ion-icon class="opacity-icon" slot="end" name="chevron-forward-outline"></ion-icon>
     </ion-item>
-    <ion-item lines="none">
+
+    <ion-item lines="none" (click)="openClientsPage('eth2Clients')">
       <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
-      <ion-label>Consensus Client</ion-label>
-      <ion-select placeholder="None" [(ngModel)]="eth2client" (ionChange)="changeETH2Client()" interface="popover">
-        <ion-select-option value="none">None</ion-select-option>
-        <ion-select-option value="PRYSM">Prysm</ion-select-option>
-        <ion-select-option value="LIGHTHOUSE">Lighthouse</ion-select-option>
-        <ion-select-option value="NIMBUS">Nimbus</ion-select-option>
-        <ion-select-option value="TEKU">Teku</ion-select-option>
-      </ion-select>
+      <ion-label>Consensus Clients</ion-label>
+      <ion-icon class="opacity-icon" slot="end" name="chevron-forward-outline"></ion-icon>
     </ion-item>
+
     <ion-item lines="none">
       <ion-icon class="opacity-icon" slot="start" name="hammer-outline"></ion-icon>
       <ion-label>Rocketpool Smartnode</ion-label>

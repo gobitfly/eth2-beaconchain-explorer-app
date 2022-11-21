@@ -23,18 +23,24 @@ import { StorageService } from '../services/storage.service';
 import { Injectable } from '@angular/core';
 import { GithubReleaseRequest, GithubReleaseResponse } from '../requests/requests';
 
-export interface ETHClient {
+interface ETHClient {
     key: string,
     name: string,
     repo: string
 }
 
-export const ETH2Clients: ETHClient[] = [
-
+export const ETHClients: ETHClient[] = [
+    // Execution
     {
         key: "LIGHTHOUSE",
         name: "Lighthouse",
         repo: "sigp/lighthouse",
+    },
+
+    {
+        key: "LODESTAR",
+        name: "Lodestar",
+        repo: "chainsafe/lodestar",
     },
 
     {
@@ -54,10 +60,18 @@ export const ETH2Clients: ETHClient[] = [
         name: "Teku",
         repo: "ConsenSys/teku",
     },
-]
+    // Consensus
+    {
+        key: "BESU",
+        name: "Besu",
+        repo: "hyperledger/besu",
+    },
 
-
-export const ETH1Clients: ETHClient[] = [
+    {
+        key: "ERIGON",
+        name: "Erigon",
+        repo: "ledgerwatch/erigon",
+    },
 
     {
         key: "GETH",
@@ -66,31 +80,13 @@ export const ETH1Clients: ETHClient[] = [
     },
 
     {
-        key: "OPENETHEREUM",
-        name: "Open Ethereum",
-        repo: "openethereum/openethereum",
-    },
-
-    {
         key: "NETHERMIND",
         name: "Nethermind",
         repo: "NethermindEth/nethermind",
     },
-
-    {
-        key: "BESU",
-        name: "Besu",
-        repo: "hyperledger/besu",
-    },
-    {
-        key: "ERIGON",
-        name: "Erigon",
-        repo: "ledgerwatch/erigon",
-    },
 ]
 
 export const OtherClients: ETHClient[] = [
-
     {
         key: "ROCKETPOOL",
         name: "Rocketpool",
@@ -103,24 +99,18 @@ export const OtherClients: ETHClient[] = [
     },
 ]
 
-
-
 const LOCAL_UPDATED_KEY = "mark_clientupdate_completed"
-export const ETH1_CLIENT_SAVED = "setting_client_eth1"
-export const ETH2_CLIENT_SAVED = "setting_client_eth2"
+const ETH_CLIENT_SAVED_PREFIX = "setting_client_"
 export const ROCKETPOOL_CLIENT_SAVED = "smart_node_updates"
 export const MEVBOOST_CLIENT_SAVED = "mev_boost_updates"
 const SETTINGS_UPDATECHANNEL = "setting_client_updatechannel"
-
-const UPDATE_LOCK = "last_github_update"
-const REFRESH_INTERVAL = 30 * 60 * 1000 // just a lock, responses are cached anyway
 
 @Injectable({
     providedIn: 'root'
 })
 export default class ClientUpdateUtils {
 
-    public updates: Release[] = null
+    updates: Release[] = null
 
     constructor(
         private api: ApiService,
@@ -128,33 +118,51 @@ export default class ClientUpdateUtils {
     ) { }
 
     async checkUpdates() {
-
         this.updates = null
-
-        this.append(
-            this.checkUpdateFor(ETH2Clients, await this.storage.getItem(ETH2_CLIENT_SAVED))
-        )
-
-        this.append(
-            this.checkUpdateFor(ETH1Clients, await this.storage.getItem(ETH1_CLIENT_SAVED))
-        )
-
-        this.append(
-            this.checkUpdateFor(OtherClients, await this.storage.getItem(ROCKETPOOL_CLIENT_SAVED))
-        )
+        for (let i = 0; i < ETHClients.length; i++) {
+            this.append(
+                this.checkUpdateFor(ETHClients, await this.storage.getItem(this.getETHClientStorageKey(ETHClients[i].key)))
+            )
+        }
 
         this.append(
             this.checkUpdateFor(OtherClients, await this.storage.getItem(MEVBOOST_CLIENT_SAVED))
         )
 
-        this.storage.setObject(UPDATE_LOCK, { ts: Date.now() })
+        this.append(
+            this.checkUpdateFor(OtherClients, await this.storage.getItem(ROCKETPOOL_CLIENT_SAVED))
+        )
+    }
+
+    async checkETHClientUpdate(clientKey: string) {
+        this.remove(clientKey)
+
+        this.append(
+            this.checkUpdateFor(ETHClients, clientKey)
+        )
+    }
+
+    async checkMEVBoostUpdate() {
+        this.remove("MEV-BOOST")
+
+        this.append(
+            this.checkUpdateFor(OtherClients, await this.storage.getItem(MEVBOOST_CLIENT_SAVED))
+        )
+    }
+
+    async checkRocketpoolUpdate() {
+        this.remove("ROCKETPOOL")
+
+        this.append(
+            this.checkUpdateFor(OtherClients, await this.storage.getItem(ROCKETPOOL_CLIENT_SAVED))
+        )
     }
 
     private async isPreReleaseAllowed() {
         return await this.getUpdateChannel() == "PRERELEASE"
     }
 
-    async append(info: Promise<null | false | Release>) {
+    private async append(info: Promise<null | false | Release>) {
         const data = await info
         if (!data) return
 
@@ -166,8 +174,27 @@ export default class ClientUpdateUtils {
         }
     }
 
+    private remove(clientKey: string): boolean {
+        if (this.updates == null) {
+            return false
+        }
+
+        for (var i = 0; i < this.updates.length; i++) {
+            const value = this.updates[i]
+            if (value.client.key == clientKey) {
+                this.updates.splice(i, 1)
+                return true
+            }
+        }
+        return false
+    }
+
     // why are duplicates in Sets a thing, javascript? :(
     private contains(info: Release): boolean {
+        if (this.updates == null) {
+            return false
+        }
+
         for (var i = 0; i < this.updates.length; i++) {
             const value = this.updates[i]
             if (value.client.key == info.client.key) {
@@ -180,13 +207,15 @@ export default class ClientUpdateUtils {
     private async checkUpdateFor(array: ETHClient[], clientKey: string) {
         console.log("checkUpdateFor", clientKey, array)
         if (!clientKey) return false
-        const temp = array.find((item) => item.key == clientKey)
-        if (temp) {
-            console.log("checkUpdateFor found", temp)
-            const update = await this.getReleases(temp)
+        const client = array.find((item) => item.key == clientKey)
+        if (client) {
+            console.log("checkUpdateFor found", client)
+            const update = await this.getReleases(client)
             const lastClosed = await this.getLastClosedVersion(clientKey)
             if (update && update.data && lastClosed) {
-                if (update.data.id > lastClosed.version) return update
+                if (update.data.id > lastClosed.version) {
+                    return update
+                }
             } else {
                 return update
             }
@@ -212,8 +241,8 @@ export default class ClientUpdateUtils {
         return true
     }
 
-    async setRocketpoolClient(key: string): Promise<boolean> {
-        return await this.setClient(ROCKETPOOL_CLIENT_SAVED, key)
+    async setRocketpoolClient(clientKey: string): Promise<boolean> {
+        return await this.setClient(ROCKETPOOL_CLIENT_SAVED, clientKey)
     }
 
     async getRocketpoolClient() {
@@ -224,8 +253,8 @@ export default class ClientUpdateUtils {
         return temp
     }
 
-    async setMevBoostClient(key: string): Promise<boolean> {
-        return await this.setClient(MEVBOOST_CLIENT_SAVED, key)
+    async setMevBoostClient(clientKey: string): Promise<boolean> {
+        return await this.setClient(MEVBOOST_CLIENT_SAVED, clientKey)
     }
 
     async getMevBoostClient() {
@@ -236,39 +265,19 @@ export default class ClientUpdateUtils {
         return temp
     }
 
-
-    async setETH2Client(key: string): Promise<boolean> {
-        return await this.setClient(ETH2_CLIENT_SAVED, key)
+    async setETHClient(clientKey: string, value: string): Promise<boolean> {
+        return await this.setClient(this.getETHClientStorageKey(clientKey), value)
     }
 
-    getETH2Client() {
-        return this.storage.getItem(ETH2_CLIENT_SAVED)
+    async getETHClient(clientKey: string) {
+        return await this.storage.getItem(this.getETHClientStorageKey(clientKey))
     }
 
-    async setETH1Client(key: string): Promise<boolean> {
-        return await this.setClient(ETH1_CLIENT_SAVED, key)
+    async dismissRelease(clientKey: string, id: string) {
+        this.storage.setObject(LOCAL_UPDATED_KEY + clientKey, { clientKey: clientKey, version: id })
     }
 
-    getETH1Client() {
-        return this.storage.getItem(ETH1_CLIENT_SAVED)
-    }
-
-    getClient(key: string) {
-        return this.storage.getItem(key)
-    }
-
-    async dismissRelease(release: Release) {
-        this.storage.setObject(LOCAL_UPDATED_KEY + release.client.key, { clientKey: release.client.key, version: release.data.id })
-    }
-
-    // Used when talking to remote (0 means no change)
-    async getLastClosedVersionOrZero(clientKey) {
-        const temp = await this.getLastClosedVersion(clientKey)
-        if (temp && temp.version) return temp.version
-        else return 0
-    }
-
-    async getLastClosedVersion(clientKey: string): Promise<LocalReleaseMark> {
+    private async getLastClosedVersion(clientKey: string): Promise<LocalReleaseMark> {
         return await this.storage.getObject(LOCAL_UPDATED_KEY + clientKey)
     }
 
@@ -281,26 +290,22 @@ export default class ClientUpdateUtils {
         return new Release(client, temp[0])
     }
 
+    getETHClientStorageKey(key: string) {
+        return ETH_CLIENT_SAVED_PREFIX + key
+    }
+
     // Set client if only name of client is known and not whether execution or consensus. For example when setting client from /user/notifications
-    public setUnknownLayerClient(client: string) {
+    setUnknownLayerClient(client: string) {
         client = client.toUpperCase()
-        ETH1Clients.forEach((data) => { 
+        ETHClients.forEach((data) => {
             if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
-                console.log("setting ETH1 client to", client)
-                this.setETH1Client(data.key)
+                console.log("setting", data.key, "to", client)
+                this.setETHClient(data.key, data.key)
                 return
             }
         })
 
-        ETH2Clients.forEach((data) => { 
-            if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
-                console.log("setting ETH2 client to", client)
-                this.setETH2Client(data.key)
-                return
-            }
-        })
-
-        OtherClients.forEach((data) => { 
+        OtherClients.forEach((data) => {
             if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
                 if (data.key == "MEV-BOOST") {
                     console.log("setting mevboost client to", client)
@@ -311,7 +316,7 @@ export default class ClientUpdateUtils {
                     this.setRocketpoolClient(data.key)
                     return
                 }
-                
+
             }
         })
 

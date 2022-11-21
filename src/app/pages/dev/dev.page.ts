@@ -3,7 +3,7 @@ import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from 'src/app/services
 import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils';
 import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page';
 import { Toast } from '@capacitor/toast';
-import { LogviewPage } from '../logview/logview.page';
+import { ETHClients, OtherClients } from '../../utils/ClientUpdateUtils';
 
 @Component({
   selector: 'app-dev',
@@ -20,12 +20,10 @@ export class DevPage extends Tab3Page implements OnInit {
     this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, "default").then((result) => {
       this.packageOverride = result
     })
-    
+
     this.storage.getItem(CURRENT_TOKENKEY).then((result) => {
-     this.firebaseToken = result
+      this.firebaseToken = result
     })
-    
-    
   }
 
   // --- Development methods ---
@@ -40,6 +38,19 @@ export class DevPage extends Tab3Page implements OnInit {
   clearApiCache() {
     this.api.clearCache()
     this.alerts.confirmDialog("Restart", "API requests cache cleared, restart?", "OK", () => { this.restartApp() })
+  }
+
+  // Enables testing of client update messages
+  // Once this method is called, every subscribed client will report a new version
+  outdateLastClosedForClients() {
+    ETHClients.forEach((client) => {
+      this.updateUtils.dismissRelease(client.key, "0")
+    })
+    OtherClients.forEach((client) => {
+      this.updateUtils.dismissRelease(client.key, "0")
+    })
+
+    this.updateUtils.checkUpdates()
   }
 
   clearSyncQueue() {
