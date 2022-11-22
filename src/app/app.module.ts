@@ -23,7 +23,6 @@ import { BrowserModule, HammerModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -50,7 +49,6 @@ export class MyHammerConfig extends HammerGestureConfig  {
   entryComponents: [],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, PipesModule, HammerModule],
   providers: [
-    SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     InAppPurchase2,
     {

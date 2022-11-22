@@ -12,8 +12,8 @@ android {
         applicationId "in.beaconcha.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 82
-        versionName "4.0.2"
+        versionCode 84
+        versionName "4.0.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,7 +42,9 @@ repositories {
 }
 
 dependencies {
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"

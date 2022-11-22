@@ -282,7 +282,7 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.doneLoading = false
+    //this.doneLoading = false
     this.storage.getBooleanSetting("rank_percent_mode", false).then((result) => this.rankPercentMode = result)
     this.storage.getItem("rpl_pdisplay_mode").then((result) => this.rplState = result ? result : "rpl")
     highChartOptions(HighCharts)
@@ -615,11 +615,11 @@ export class DashboardComponent implements OnInit {
           labels: {
             formatter: function () {
               if (this.value > 0 && this.value < 0.01) {
-                return this.value.toFixed(3)
+                return parseInt(this.value.toString()).toFixed(3)
               } else if (this.value == 0) {
                 return "0"
               }
-              return this.value.toFixed(2)
+              return parseInt(this.value.toString()).toFixed(2)
             },
 
           }
