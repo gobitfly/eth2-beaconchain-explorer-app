@@ -107,10 +107,10 @@ export class Tab3Page {
     this.theme.getThemeColor().then((result) => this.themeColor = result)
 
     this.updateUtils.getClient("ROCKETPOOL").then((result) => {
-      this.notificationBase.smartnode = result && result.toUpperCase() == "ROCKETPOOL"
+      this.notificationBase.setLocalClientToggle("Rocketpool", result && result.toUpperCase() == "ROCKETPOOL")
     })
     this.updateUtils.getClient("MEV-BOOST").then((result) => {
-      this.notificationBase.mevboost = result && result.toUpperCase() == "MEV-BOOST"
+      this.notificationBase.setLocalClientToggle("MEV-Boost", result && result.toUpperCase() == "MEV-BOOST")
     })
     this.updateUtils.getUpdateChannel().then((result) => this.updateChannel = result)
 
@@ -272,7 +272,7 @@ export class Tab3Page {
       return;
     }
 
-    if (this.notificationBase.mevboost) {
+    if (this.notificationBase.toggleStateMevBoost) {
       this.sync.changeClient("MEV-BOOST", "MEV-BOOST")
     } else {
       this.sync.changeClient("MEV-BOOST", null)
@@ -285,7 +285,7 @@ export class Tab3Page {
       return;
     }
 
-    if (this.notificationBase.smartnode) {
+    if (this.notificationBase.toggleStateSmartnode) {
       this.sync.changeClient("ROCKETPOOL", "ROCKETPOOL")
     } else {
       this.sync.changeClient("ROCKETPOOL", null)

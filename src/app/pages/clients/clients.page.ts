@@ -11,17 +11,6 @@ import { SyncService } from '../../services/sync.service';
 })
 export class ClientsPage implements OnInit {
 
-  // used to set initial state of toggles, not meant to be changed via code
-  toggleStateLighthouse: boolean
-  toggleStateLodestar: boolean
-  toggleStatePrysm: boolean
-  toggleStateNimbus: boolean
-  toggleStateTeku: boolean
-  toggleStateBesu: boolean
-  toggleStateErigon: boolean
-  toggleStateGeth: boolean
-  toggleStateNethermind: boolean
-
   @Input() clientIdentifier: string = ""
 
   constructor(
@@ -33,31 +22,31 @@ export class ClientsPage implements OnInit {
 
   ngOnInit() {
     this.updateUtils.getClient("LIGHTHOUSE").then((result) => {
-      this.toggleStateLighthouse = (result && result != "null")
+      this.notificationBase.setLocalClientToggle("Lighthouse", (result && result != "null"))
     })
     this.updateUtils.getClient("LODESTAR").then((result) => {
-      this.toggleStateLodestar = (result && result != "null")
+      this.notificationBase.setLocalClientToggle("Lodestar", (result && result != "null"))
     })
     this.updateUtils.getClient("PRYSM").then((result) => {
-      this.toggleStatePrysm = (result && result != "null")
+      this.notificationBase.setLocalClientToggle("Prysm", (result && result != "null"))
     })
     this.updateUtils.getClient("NIMBUS").then((result) => {
-      this.toggleStateNimbus = (result && result != "null")
+      this.notificationBase.setLocalClientToggle("Nimbus", (result && result != "null"))
     })
     this.updateUtils.getClient("TEKU").then((result) => {
-      this.toggleStateTeku = (result && result != "null")
+      this.notificationBase.setLocalClientToggle("Teku", (result && result != "null"))
     })
     this.updateUtils.getClient("BESU").then((result) => {
-      this.toggleStateBesu = (result && result != "null")
+      this.notificationBase.setLocalClientToggle("Besu", (result && result != "null"))
     })
     this.updateUtils.getClient("ERIGON").then((result) => {
-      this.toggleStateErigon = (result && result != "null")
+      this.notificationBase.setLocalClientToggle("Erigon", (result && result != "null"))
     })
     this.updateUtils.getClient("GETH").then((result) => {
-      this.toggleStateGeth = (result && result != "null")
+      this.notificationBase.setLocalClientToggle("Geth", (result && result != "null"))
     })
     this.updateUtils.getClient("NETHERMIND").then((result) => {
-      this.toggleStateNethermind = (result && result != "null")
+      this.notificationBase.setLocalClientToggle("Nethermind", (result && result != "null"))
     })
   }
 

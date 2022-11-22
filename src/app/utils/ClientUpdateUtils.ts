@@ -94,6 +94,7 @@ export const Clients: ClientInfo[] = [
         repo: "NethermindEth/nethermind",
         storageKey: "client_updates_nethermind",
     },
+    // Various
     {
         key: "ROCKETPOOL",
         name: "Rocketpool",
@@ -276,18 +277,6 @@ export default class ClientUpdateUtils {
         if (temp.length <= 0) return null
         console.log("Client updates data", response, temp)
         return new Release(client, temp[0])
-    }
-
-    // Set client if only name of client is known and not whether execution or consensus. For example when setting client from /user/notifications
-    setUnknownLayerClient(client: string) {
-        client = client.toUpperCase()
-        Clients.forEach((data) => {
-            if (data.key.toLowerCase() == client.toLocaleLowerCase()) {
-                console.log("setting", data.key, "to", client)
-                this.setClient(data.key, data.key)
-                return
-            }
-        })
     }
 
 }

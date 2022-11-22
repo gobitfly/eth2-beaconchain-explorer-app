@@ -7,7 +7,7 @@ import { SyncService } from '../services/sync.service';
 import FirebaseUtils from '../utils/FirebaseUtils';
 import { GetMobileSettingsRequest, MobileSettingsResponse, NotificationGetRequest } from '../requests/requests';
 import { Injectable } from '@angular/core';
-import ClientUpdateUtils from '../utils/ClientUpdateUtils';
+import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils';
 
 const LOCKED_STATE = "locked_v2"
 
@@ -32,8 +32,17 @@ export class NotificationBase implements OnInit {
   activeSubscriptionsPerEventMap = new Map<String, number>() // map storing the count of subscribed validators per event
   notifyTogglesMap = new Map<String, boolean>()
 
-  smartnode: boolean
-  mevboost: boolean
+  toggleStateLighthouse: boolean
+  toggleStateLodestar: boolean
+  toggleStatePrysm: boolean
+  toggleStateNimbus: boolean
+  toggleStateTeku: boolean
+  toggleStateBesu: boolean
+  toggleStateErigon: boolean
+  toggleStateGeth: boolean
+  toggleStateNethermind: boolean
+  toggleStateSmartnode: boolean
+  toggleStateMevBoost: boolean
 
   constructor(
     protected api: ApiService,
@@ -101,8 +110,8 @@ export class NotificationBase implements OnInit {
     }
     console.log("result", results, network)
 
-    var containsRocketpoolUpdateSub = false
-    var containsMevboostUpdateSub = false
+    var clientsToActivate = <string[]>[]
+
     for (const result of results) {
       this.setToggleFromEvent(result.EventName, network, true, net)
       if (result.EventName == "monitoring_cpu_load") {
@@ -129,38 +138,28 @@ export class NotificationBase implements OnInit {
         } else {
           this.maxCollateralThreshold = Math.round(((1 - (threshold * -1)) * 1000) - 100) //(1 - ((this.maxCollateralThreshold + 100) / 1000)) * -1
         }
-
       }
       else if (result.EventName == network + ":rocketpool_colleteral_min") {
         this.minCollateralThreshold = Math.round((parseFloat(result.EventThreshold) - 1) * 100) //1 + this.minCollateralThreshold / 100 
         console.log("minCollateralThreshold", result.EventThreshold, this.minCollateralThreshold)
       } else if (result.EventName == "eth_client_update") {
-
         if (result.EventFilter && result.EventFilter.length >= 1 && result.EventFilter.charAt(0).toUpperCase() != result.EventFilter.charAt(0) && result.EventFilter != "null" && result.EventFilter != "none") {
-          this.clientUpdate.setUnknownLayerClient(result.EventFilter)
-          if (result.EventFilter == "rocketpool") {
-            this.smartnode = true
-            containsRocketpoolUpdateSub = true
-          } else if (result.EventFilter == "mev-boost") {
-            this.mevboost = true
-            containsMevboostUpdateSub = true
-          }
+          clientsToActivate.push(result.EventFilter)
         }
       }
-
     }
 
-    if (!containsRocketpoolUpdateSub) {
-      console.log("disabling rocketpool smartnode updates")
-      this.clientUpdate.setClient("ROCKETPOOL", null)
-      this.smartnode = false
-    }
-
-    if (!containsMevboostUpdateSub) {
-      console.log("disabling mev boost updates")
-      this.clientUpdate.setClient("MEV-BOOST", null)
-      this.mevboost = false
-    }
+    Clients.forEach(client => {
+      if (clientsToActivate.find(activate => client.name.toLocaleLowerCase() == activate) != undefined) {
+        console.log("enabling", client.name, "updates")
+        this.setLocalClientToggle(client.name, true)
+        this.clientUpdate.setClient(client.key, client.key)
+      } else {
+        console.log("disabling", client.name, "updates")
+        this.setLocalClientToggle(client.name, false)
+        this.clientUpdate.setClient(client.key, null)
+      }
+    });
 
     // locking toggle so we dont execute onChange when setting initial values
     const preferences = await this.storage.loadPreferencesToggles(net)
@@ -193,6 +192,48 @@ export class NotificationBase implements OnInit {
         this.disableToggleLock()
       }
       this.remoteNotifyLoadedOnce = true
+    }
+  }
+
+  // TODO: This should work with a <string, boolean> map but that caused problems with the ionic toggles
+  public setLocalClientToggle(client: string, state: boolean) {
+    switch (client) {
+      case "Lighthouse":
+        this.toggleStateLighthouse = state
+        break
+      case "Lodestar":
+        this.toggleStateLodestar = state
+        break
+      case "Prysm":
+        this.toggleStatePrysm = state
+        break
+      case "Nimbus":
+        this.toggleStateNimbus = state
+        break
+      case "Teku":
+        this.toggleStateTeku = state
+        break
+      case "Besu":
+        this.toggleStateBesu = state
+        break
+      case "Erigon":
+        this.toggleStateErigon = state
+        break
+      case "Geth":
+        this.toggleStateGeth = state
+        break
+      case "Nethermind":
+        this.toggleStateNethermind = state
+        break
+      case "Rocketpool":
+        this.toggleStateSmartnode = state
+        break
+      case "MEV-Boost":
+        this.toggleStateMevBoost = state
+        break;
+      default:
+        console.log("Unkown client", client)
+        break;
     }
   }
 

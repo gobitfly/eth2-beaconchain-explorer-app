@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-button (click)="closeModal()">
         <ion-icon size="large" name="close-outline"></ion-icon>
-      </ion-button>
+      </ion-button>    
     </ion-buttons>
     <span [ngSwitch]="clientIdentifier">
       <span *ngSwitchCase="'eth1Clients'">
@@ -26,22 +26,22 @@
         <ion-item lines="none">
           <ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
           <ion-label>Besu</ion-label>
-          <ion-toggle [(ngModel)]="toggleStateBesu" (ionChange)="toggleClient('BESU', $event)" slot="end"></ion-toggle>
+          <ion-toggle [(ngModel)]="notificationBase.toggleStateBesu" (ionChange)="toggleClient('BESU', $event)" slot="end"></ion-toggle>
         </ion-item>
         <ion-item lines="none">
           <ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
           <ion-label>Erigon</ion-label>
-          <ion-toggle [(ngModel)]="toggleStateErigon" (ionChange)="toggleClient('ERIGON', $event)" slot="end"></ion-toggle>
+          <ion-toggle [(ngModel)]="notificationBase.toggleStateErigon" (ionChange)="toggleClient('ERIGON', $event)" slot="end"></ion-toggle>
         </ion-item>      
         <ion-item lines="none">
           <ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
           <ion-label>Geth</ion-label>
-          <ion-toggle [(ngModel)]="toggleStateGeth" (ionChange)="toggleClient('GETH', $event)" slot="end"></ion-toggle>
+          <ion-toggle [(ngModel)]="notificationBase.toggleStateGeth" (ionChange)="toggleClient('GETH', $event)" slot="end"></ion-toggle>
         </ion-item>
         <ion-item lines="none">
           <ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
           <ion-label>Nethermind</ion-label>
-          <ion-toggle [(ngModel)]="toggleStateNethermind" (ionChange)="toggleClient('NETHERMIND', $event)" slot="end"></ion-toggle>
+          <ion-toggle [(ngModel)]="notificationBase.toggleStateNethermind" (ionChange)="toggleClient('NETHERMIND', $event)" slot="end"></ion-toggle>
         </ion-item>
       </ion-list>
     </span>
@@ -50,27 +50,27 @@
         <ion-item lines="none">
           <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
           <ion-label>Lighthouse</ion-label>
-          <ion-toggle [(ngModel)]="toggleStateLighthouse" (ionChange)="toggleClient('LIGHTHOUSE', $event)" slot="end"></ion-toggle>
+          <ion-toggle [(ngModel)]="notificationBase.toggleStateLighthouse" (ionChange)="toggleClient('LIGHTHOUSE', $event)" slot="end"></ion-toggle>
         </ion-item>
         <ion-item lines="none">
           <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
           <ion-label>Lodestar</ion-label>
-          <ion-toggle [(ngModel)]="toggleStateLodestar" (ionChange)="toggleClient('LODESTAR', $event)" slot="end"></ion-toggle>
+          <ion-toggle [(ngModel)]="notificationBase.toggleStateLodestar" (ionChange)="toggleClient('LODESTAR', $event)" slot="end"></ion-toggle>
         </ion-item>
         <ion-item lines="none">
           <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
           <ion-label>Nimbus</ion-label>
-          <ion-toggle [(ngModel)]="toggleStateNimbus" (ionChange)="toggleClient('NIMBUS', $event)" slot="end"></ion-toggle>
+          <ion-toggle [(ngModel)]="notificationBase.toggleStateNimbus" (ionChange)="toggleClient('NIMBUS', $event)" slot="end"></ion-toggle>
         </ion-item>
         <ion-item lines="none">
           <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
           <ion-label>Prysm</ion-label>
-          <ion-toggle [(ngModel)]="toggleStatePrysm" (ionChange)="toggleClient('PRYSM', $event)" slot="end"></ion-toggle>
+          <ion-toggle [(ngModel)]="notificationBase.toggleStatePrysm" (ionChange)="toggleClient('PRYSM', $event)" slot="end"></ion-toggle>
         </ion-item>
         <ion-item lines="none">
           <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
           <ion-label>Teku</ion-label>
-          <ion-toggle [(ngModel)]="toggleStateTeku" (ionChange)="toggleClient('TEKU', $event)" slot="end"></ion-toggle>
+          <ion-toggle [(ngModel)]="notificationBase.toggleStateTeku" (ionChange)="toggleClient('TEKU', $event)" slot="end"></ion-toggle>
         </ion-item>
       </ion-list>
     </span>
