@@ -64,12 +64,26 @@ export default class ThemeUtils {
             (preferenceDarkMode) => {
                 this.internalInit(preferenceDarkMode)
                 setTimeout(() => {
-                    this.colorHandler()
                     splashScreenCallback()
-                }, 1000)
+                    this.applyColorInitially()
+                    
+                }, 200)
                 return preferenceDarkMode
             }
         )
+    }
+
+    // We can close the new android 12 splashscreen but it has a fadeout animation of 200ms
+    // Status bar color won't adjust on Splashscreen since we change it via MainActivity context not Splashscreencontext
+    // and splashscreen won't instantly close either. So we retry setting the status bar color a couple times a few
+    // milliseconds apart so the color change won't blob in too late and annoy the user nor won't it change at all
+    // and annoy the user either ¯\_(ツ)_/¯
+    private applyColorInitially(count: number = 0) {
+        if (count >= 5) return
+        setTimeout(() => {
+            this.colorHandler()
+            this.applyColorInitially(++count)
+        }, count == 0 ? 210: 8) // fade out duration = 200ms 
     }
 
     private internalInit(preferenceDarkMode) {
@@ -157,11 +171,7 @@ export default class ThemeUtils {
     }
 
     toggleWinter(enabled, saveWinterSetting = true) {
-        if (this.snowFlakes) {
-            try {
-                this.snowFlakes.destroy()
-            } catch (error) { }
-        }
+        this.stopSnow(this.snowFlakes)
         if (this.isWinterSeason() && saveWinterSetting) this.storage.setBooleanSetting("snow_enabled", enabled)
 
         if (!enabled) return;
@@ -245,6 +255,10 @@ export default class ThemeUtils {
 
     private winterSeason(darkTheme: boolean) {
         if (!this.isWinterSeason()) return false;
+        return this.snow(darkTheme)
+    }
+
+    public snow(darkTheme: boolean = this.userPreference == Theme.DARK) {
         return Snowflakes({
             color: this.getSnowFlakeColor(darkTheme), // Default: "#5ECDEF"
             count: 14, // 100 snowflakes. Default: 50
@@ -256,6 +270,14 @@ export default class ThemeUtils {
             speed: 1, // The property affects the speed of falling. Default: 1
             wind: false, // Without wind. Default: true
         })
+    }
+
+    public stopSnow(snow) {
+        if (snow) {
+            try {
+                snow.destroy()
+            } catch (error) { }
+        }
     }
 
     private shadeColor(color_: string, percent: number): string {

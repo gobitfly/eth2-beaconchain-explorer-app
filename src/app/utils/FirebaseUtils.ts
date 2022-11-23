@@ -25,7 +25,10 @@ import { Injectable } from '@angular/core';
 import { AlertController, Platform } from '@ionic/angular';
 
 import { PushNotifications, PushNotificationSchema,
-  ActionPerformed, } from '@capacitor/push-notifications';
+  ActionPerformed,
+} from '@capacitor/push-notifications';
+  
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 const LOGTAG = "[FirebaseUtils]";
 
@@ -46,48 +49,54 @@ export default class FirebaseUtils {
     private alertController: AlertController
   ) { }
 
-  async hasConsentDenied() {
-    if (this.platform.is("ios")) {
-      const hasSeenConsent = await this.storage.getBooleanSetting(NOTIFICATION_CONSENT_KEY, false)
+  async hasSeenConsentScreenAndNotConsented() {
+    const hasSeenConsent = await this.storage.getBooleanSetting(NOTIFICATION_CONSENT_KEY, false)
 
-      if (hasSeenConsent) {
-        const hasNotificationToken = await this.storage.getItem(CURRENT_TOKENKEY)
-        if (!hasNotificationToken) return true
-      }
+    if (hasSeenConsent) {
+      return !(await this.hasNotificationConsent())
     }
-
     return false
+  }
+
+  async hasNotificationConsent(): Promise<boolean> {
+    return ((await LocalNotifications.checkPermissions()).display) == 'granted'
   }
 
   async registerPush(iosTriggerConsent = false) {
     if (!this.platform.is("ios") && !this.platform.is("android")) { return }
-    console.log(LOGTAG+ "registerPush", iosTriggerConsent)
+    console.log(LOGTAG + "registerPush", iosTriggerConsent)
     if (this.alreadyRegistered) return
 
-    if (this.platform.is("ios")) {
-      // On iOS we need to ask the user for notification permission
-      // Unless user has already consented or is triggering consent, stop registerPush right here
-      const hasSeenConsent = await this.storage.getBooleanSetting(NOTIFICATION_CONSENT_KEY, false)
-
-      console.log(LOGTAG + "registerPush hasconsent", hasSeenConsent)
-      if (!hasSeenConsent && !iosTriggerConsent) return;
-    }
+    const hasConsent = await this.hasNotificationConsent()
 
     console.log("register push notification")
 
     // Request permission to use push notifications
-    // iOS will prompt user and return if they granted permission or not
-    // Android will just grant without prompting
-    PushNotifications.requestPermissions().then((result) => {
-      this.storage.setBooleanSetting(NOTIFICATION_CONSENT_KEY, true)
+    // Will prompt user and start notification service if granted, otherwise show
+    // dialog for how to manually set the permission
+    if (iosTriggerConsent){
+      LocalNotifications.requestPermissions().then((result) => {
+        this.storage.setBooleanSetting(NOTIFICATION_CONSENT_KEY, true)
 
-      if (result.receive == 'granted') {
-        // Register with Apple / Google to receive push via APNS/FCM
-        PushNotifications.register();
-      } else {
-        this.alertIOSManuallyEnableNotifications()
-      }
-    });
+        if (result.display == 'granted') {
+          // Register with Apple / Google to receive push via APNS/FCM
+          PushNotifications.register();
+          this.alreadyRegistered = true;
+        } else {
+          if (this.platform.is("ios")) {
+            this.alertIOSManuallyEnableNotifications()
+          } else {
+            this.alertAndroidManuallyEnableNotifications()
+          }
+       
+        }
+      });
+    }
+
+    if (hasConsent && !iosTriggerConsent) {
+      PushNotifications.register();
+      this.alreadyRegistered = true;
+    }
 
     // On success, we should be able to receive notifications
     PushNotifications.addListener(
@@ -119,7 +128,6 @@ export default class FirebaseUtils {
       }
     );
 
-    this.alreadyRegistered = true;
   }
 
   private async inAppNotification(title, message) {
@@ -140,6 +148,17 @@ export default class FirebaseUtils {
   public async hasNotificationToken() {
     const token = await this.storage.getItem(CURRENT_TOKENKEY)
     return token != null && token.length > 10
+  }
+
+  async alertAndroidManuallyEnableNotifications() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: '',
+      message: 'You need to manually enable notifications for this app. Go to your devices System Settings -> Apps -> Beaconchain Dashboard -> Permissions -> Allow Notifications',
+      buttons: ['OK']
+    });
+
+    await alert.present();
   }
 
   async alertIOSManuallyEnableNotifications() {

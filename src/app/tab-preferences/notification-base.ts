@@ -202,7 +202,7 @@ export class NotificationBase implements OnInit {
 
     if (!(await this.isSupportedOnAndroid())) return
 
-    if (await this.firebaseUtils.hasConsentDenied()) {
+    if (await this.firebaseUtils.hasSeenConsentScreenAndNotConsented()) {
       this.changeToggleSafely(() => { this.notify = false })
       this.firebaseUtils.alertIOSManuallyEnableNotifications()
       return

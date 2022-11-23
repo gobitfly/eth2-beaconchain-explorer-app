@@ -327,10 +327,20 @@ export class Tab3Page {
   }
 
   count = 0;
-  rememberme() {
+  notAnEasterEgg() {
     this.count++;
     if (this.count % 3 != 0) return;
-    window.open('https://www.youtube.com/watch?v=eTOKcxIujgE', '_system', 'location=yes');
+    const random = Math.floor(Math.random() * 2);
+    switch (random) {
+      case 0:
+        const snow = this.theme.snow()
+        setTimeout(() => { this.theme.stopSnow(snow) }, 45000)
+        break
+      case 1:
+        this.theme.silvesterFireworks()
+        break
+    }
+
   }
 
   confirmLogout() {
