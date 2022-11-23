@@ -137,7 +137,7 @@ export class SyncService {
     unlock();
 
     console.log("== Step 1: Loading notification preferences from beaconcha.in ==")
-    await this.notificationBase.loadNotifyToggles()
+    await this.notificationBase.loadNotifyToggles(await this.isNotifyClientUpdatesEnabled())
 
     this.deleteAllTemp()
 

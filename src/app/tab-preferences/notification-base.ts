@@ -50,7 +50,7 @@ export class NotificationBase implements OnInit {
     protected firebaseUtils: FirebaseUtils,
     protected platform: Platform,
     protected alerts: AlertService,
-    protected sync: SyncService,
+    protected sync: SyncService, // If you have to use this, be cautios: This is not always available. We don't know why yet but will research this via BIDS-1117
     protected clientUpdate: ClientUpdateUtils
   ) { }
 
@@ -95,7 +95,8 @@ export class NotificationBase implements OnInit {
   }
 
   remoteNotifyLoadedOnce = false
-  public async loadNotifyToggles() {
+  public async loadNotifyToggles(isNotifyClientUpdatesEnabled: boolean) {
+    // We cannot use sync.isNotifyClientUpdatesEnabled here (see comment in constructor above)
     if (!(await this.storage.isLoggedIn())) return
 
     const net = (await this.api.networkConfig).net
@@ -142,24 +143,26 @@ export class NotificationBase implements OnInit {
       else if (result.EventName == network + ":rocketpool_colleteral_min") {
         this.minCollateralThreshold = Math.round((parseFloat(result.EventThreshold) - 1) * 100) //1 + this.minCollateralThreshold / 100 
         console.log("minCollateralThreshold", result.EventThreshold, this.minCollateralThreshold)
-      } else if (result.EventName == "eth_client_update") {
+      } else if (isNotifyClientUpdatesEnabled && result.EventName == "eth_client_update") {
         if (result.EventFilter && result.EventFilter.length >= 1 && result.EventFilter.charAt(0).toUpperCase() != result.EventFilter.charAt(0) && result.EventFilter != "null" && result.EventFilter != "none") {
           clientsToActivate.push(result.EventFilter)
         }
       }
     }
 
-    Clients.forEach(client => {
-      if (clientsToActivate.find(activate => client.name.toLocaleLowerCase() == activate) != undefined) {
-        console.log("enabling", client.name, "updates")
-        this.setLocalClientToggle(client.name, true)
-        this.clientUpdate.setClient(client.key, client.key)
-      } else {
-        console.log("disabling", client.name, "updates")
-        this.setLocalClientToggle(client.name, false)
-        this.clientUpdate.setClient(client.key, null)
-      }
-    });
+    if (isNotifyClientUpdatesEnabled) {
+      Clients.forEach(client => {
+        if (clientsToActivate.find(activate => client.name.toLocaleLowerCase() == activate) != undefined) {
+          console.log("enabling", client.name, "updates")
+          this.setLocalClientToggle(client.name, true)
+          this.clientUpdate.setClient(client.key, client.key)
+        } else {
+          console.log("disabling", client.name, "updates")
+          this.setLocalClientToggle(client.name, false)
+          this.clientUpdate.setClient(client.key, null)
+        }
+      });
+    }
 
     // locking toggle so we dont execute onChange when setting initial values
     const preferences = await this.storage.loadPreferencesToggles(net)

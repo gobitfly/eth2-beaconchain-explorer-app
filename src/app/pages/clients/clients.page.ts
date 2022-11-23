@@ -21,6 +21,8 @@ export class ClientsPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.notificationBase.lockedToggle = true
+
     this.updateUtils.getClient("LIGHTHOUSE").then((result) => {
       this.notificationBase.setLocalClientToggle("Lighthouse", (result && result != "null"))
     })
@@ -48,6 +50,8 @@ export class ClientsPage implements OnInit {
     this.updateUtils.getClient("NETHERMIND").then((result) => {
       this.notificationBase.setLocalClientToggle("Nethermind", (result && result != "null"))
     })
+
+    this.notificationBase.disableToggleLock()
   }
 
   closeModal() {
@@ -55,6 +59,10 @@ export class ClientsPage implements OnInit {
   }
 
   async toggleClient(clientKey: string, event: any) {
+    if (this.notificationBase.lockedToggle) {
+      return
+    }
+
     if (event.target.checked) {
       this.sync.changeClient(clientKey, clientKey)
     } else {
