@@ -33,6 +33,7 @@ import { time } from 'highcharts';
 export const ROCKETPOOL_SMOOTHING_POOL = "0xd4e96ef8eee8678dbff4d535e033ed1a4f7605b7"
 export const ETHPOOL = "0xb364e75b1189dcbbf7f0c856456c1ba8e4d6481b"
 
+const FIVEMONTH = 1000 * 60 * 60 * 24 * 150
 const FOURMONTH = 1000 * 60 * 60 * 24 * 120
 const THREEMONTH = 1000 * 60 * 60 * 24 * 90
 const TWOEMONTH = 1000 * 60 * 60 * 24 * 60
@@ -144,6 +145,7 @@ export class BlockUtils extends CacheModule {
 
     private getProposalLuckTimeframeName(timeframe: number): string {
         switch (timeframe) {
+            case FIVEMONTH: return "5 months"
             case FOURMONTH: return "4 months"
             case THREEMONTH: return "3 months"
             case TWOEMONTH: return "2 months"
@@ -181,15 +183,17 @@ export class BlockUtils extends CacheModule {
             return WEEK
         } else if (diff < MONTH) {
             return MONTH
-        } else if (diff < SIXWEEKS && blocksPer30d <= 2.25) {
-            return SIXWEEKS
-        } else if (diff < TWOEMONTH && blocksPer30d <= 1.65) {
-            return TWOEMONTH
-        } else if (diff < THREEMONTH && blocksPer30d <= 0.97) {
-            return THREEMONTH
-        } else if (diff < FOURMONTH && blocksPer30d <= 0.60) {
+        } else if (diff > FIVEMONTH && blocksPer30d <= 0.75) {
+            return FIVEMONTH
+        } else if (diff > FOURMONTH && blocksPer30d <= 1) {
             return FOURMONTH
-        }
+        } else if (diff > THREEMONTH && blocksPer30d <= 1.4) {
+            return THREEMONTH
+        } else if (diff > TWOEMONTH && blocksPer30d <= 2.1) {
+            return TWOEMONTH
+        } else if (diff > SIXWEEKS && blocksPer30d <= 2.8) {
+            return SIXWEEKS
+        } 
 
         return MONTH
     }
