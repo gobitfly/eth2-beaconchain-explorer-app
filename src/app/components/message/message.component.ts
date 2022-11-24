@@ -26,6 +26,7 @@ import confetti from 'canvas-confetti';
 import { Browser } from '@capacitor/browser';
 import { MergeChecklistPage } from 'src/app/pages/merge-checklist/merge-checklist.page';
 import { Output, EventEmitter } from '@angular/core';
+import FirebaseUtils from 'src/app/utils/FirebaseUtils';
 
 @Component({
   selector: 'app-message',
@@ -45,6 +46,7 @@ export class MessageComponent implements OnInit {
   @Input() msgText: any
   @Input() confettiOnClick: boolean = false
   @Input() mergeChecklist: boolean = false
+  @Input() notificationPermission: boolean = false
   @Output() onResult = new EventEmitter<string>();
 
   notDismissed: boolean = true
@@ -52,14 +54,22 @@ export class MessageComponent implements OnInit {
   constructor(
     private alertController: AlertController,
     private storage: StorageService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private firebaseUtils: FirebaseUtils
   ) { }
 
   ngOnInit() {
-    if (this.dismissAble) {
+    if (this.dismissAble || this.notificationPermission) {
       if (!this.dismissKey) this.dismissKey = this.defaultDismissKey()
       this.storage.getBooleanSetting(this.dismissKey, false).then((dismissed) => {
         this.notDismissed = !dismissed
+      })
+    }
+
+    if (this.notificationPermission) {
+      this.firebaseUtils.hasNotificationConsent().then((result) => {
+        if (result) this.dismiss()
+       
       })
     }
   }
@@ -83,6 +93,36 @@ export class MessageComponent implements OnInit {
       }
     } else if (this.mergeChecklist) {
       this.openMergeChecklist()
+    } else if (this.notificationPermission) {
+
+      const alert = await this.alertController.create({
+        header: "Notifications",
+        message: "You can configure custom alerts for you validators and get notified on your phone. If you wish to enable this, please grant notification permission. You can customize your notification settings in the settings panel.",
+        buttons: [{
+          text: 'Do not show again',
+          handler: async () => {
+            this.dismiss()
+          }
+        }, {
+          text: 'Decide Later',
+          handler: async () => {
+            this.notDismissed = false;
+          }
+        }, {
+          text: 'Allow Notifications',
+          handler: async () => {
+            
+            await this.firebaseUtils.registerPush(true, async () => {
+              if (await this.firebaseUtils.hasNotificationConsent()) {
+                this.notDismissed = false;
+              }
+            })
+            
+          }
+        }]
+      });
+  
+      await alert.present();
     }
   }
 

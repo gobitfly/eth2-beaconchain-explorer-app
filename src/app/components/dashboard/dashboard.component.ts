@@ -32,11 +32,12 @@ import { highChartOptions } from 'src/app/utils/HighchartOptions';
 import { StorageService } from 'src/app/services/storage.service';
 import confetti from 'canvas-confetti';
 import { Browser } from '@capacitor/browser';
-import { ModalController } from '@ionic/angular';
+import { ModalController, Platform } from '@ionic/angular';
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
 import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils';
 import { MergeChecklistPage } from 'src/app/pages/merge-checklist/merge-checklist.page';
+import FirebaseUtils from 'src/app/utils/FirebaseUtils';
 
 @Component({
   selector: 'app-validator-dashboard',
@@ -98,6 +99,8 @@ export class DashboardComponent implements OnInit {
   currentSyncCommitteeMessage: SyncCommitteeMessage = null
   nextSyncCommitteeMessage: SyncCommitteeMessage = null
 
+  notificationPermissionPending: boolean = false
+
   constructor(
     public unit: UnitconvService,
     public api: ApiService,
@@ -105,7 +108,9 @@ export class DashboardComponent implements OnInit {
     private storage: StorageService,
     private modalController: ModalController,
     private merchant: MerchantUtils,
-    public validatorUtils: ValidatorUtils
+    public validatorUtils: ValidatorUtils,
+    private firebaseUtils: FirebaseUtils,
+    private platform: Platform
   ) {
     this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
     //this.storage.setBooleanSetting("merge_list_dismissed", false)
@@ -152,6 +157,15 @@ export class DashboardComponent implements OnInit {
         this.updateNextSyncCommitteeMessage(this.data.nextSyncCommittee)
         this.doneLoading = true
         console.log("dashboard data", this.data)
+
+        if (this.platform.is("ios") || this.platform.is("android")) {
+          this.firebaseUtils.hasNotificationConsent().then(async (result) => {
+            const loggedIn = await this.storage.isLoggedIn()
+            if(!loggedIn) return
+          
+            this.notificationPermissionPending = !result
+          })
+        }
 
         if (!this.data.foreignValidator) {
           this.checkForFinalization()

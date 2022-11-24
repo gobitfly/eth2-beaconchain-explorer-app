@@ -59,10 +59,11 @@ export default class FirebaseUtils {
   }
 
   async hasNotificationConsent(): Promise<boolean> {
+    if (!this.platform.is("ios") && !this.platform.is("android")) { return  true}
     return ((await LocalNotifications.checkPermissions()).display) == 'granted'
   }
 
-  async registerPush(iosTriggerConsent = false) {
+  async registerPush(iosTriggerConsent = false, onPermissionGranted: () => any = null) {
     if (!this.platform.is("ios") && !this.platform.is("android")) { return }
     console.log(LOGTAG + "registerPush", iosTriggerConsent)
     if (this.alreadyRegistered) return
@@ -82,6 +83,9 @@ export default class FirebaseUtils {
           // Register with Apple / Google to receive push via APNS/FCM
           PushNotifications.register();
           this.alreadyRegistered = true;
+          if (onPermissionGranted) {
+            onPermissionGranted()
+          }
         } else {
           if (this.platform.is("ios")) {
             this.alertIOSManuallyEnableNotifications()
