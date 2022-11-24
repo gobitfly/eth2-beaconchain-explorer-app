@@ -615,11 +615,11 @@ export class DashboardComponent implements OnInit {
           labels: {
             formatter: function () {
               if (this.value > 0 && this.value < 0.01) {
-                return parseInt(this.value.toString()).toFixed(3)
+                return parseFloat(this.value.toString()).toFixed(3)
               } else if (this.value == 0) {
                 return "0"
               }
-              return parseInt(this.value.toString()).toFixed(2)
+              return parseFloat(this.value.toString()).toFixed(2)
             },
 
           }

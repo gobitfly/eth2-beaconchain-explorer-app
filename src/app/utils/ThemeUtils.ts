@@ -79,11 +79,11 @@ export default class ThemeUtils {
     // milliseconds apart so the color change won't blob in too late and annoy the user nor won't it change at all
     // and annoy the user either ¯\_(ツ)_/¯
     private applyColorInitially(count: number = 0) {
-        if (count >= 5) return
+        if (count >= 8) return
         setTimeout(() => {
             this.colorHandler()
             this.applyColorInitially(++count)
-        }, count == 0 ? 210: 8) // fade out duration = 200ms 
+        }, count == 0 ? 210: 10) // fade out duration = 200ms 
     }
 
     private internalInit(preferenceDarkMode) {

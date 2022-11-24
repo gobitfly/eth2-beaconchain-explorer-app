@@ -6,7 +6,8 @@
 	"webDir": "www",
 	"plugins": {
 		"SplashScreen": {
-			"launchAutoHide": false
+			"launchAutoHide": false,
+			"androidScaleType": "CENTER_CROP"
 		}
 	}
 }
