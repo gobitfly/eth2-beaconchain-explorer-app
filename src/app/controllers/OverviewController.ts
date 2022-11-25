@@ -240,7 +240,7 @@ export default class OverviewController {
                     true,
                     validators,
                     cur => cur.rocketpool.unclaimed_rpl_rewards,
-                    cur => cur.execshare
+                    cur => cur.rplshare
                 ),
                 smoothingPool: validators.find(cur => cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == true : false) != null ? true : false,
                 hasNonSmoothingPoolAsWell: validators.find(cur => cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == false : true) != null ? true : false,
