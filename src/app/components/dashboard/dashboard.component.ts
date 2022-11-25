@@ -463,6 +463,11 @@ export class DashboardComponent implements OnInit {
     const chart = Highstock.stockChart('highchartsBlocks' + this.randomChartId, {
       chart: {
         type: 'column',
+        marginLeft: 0,
+        marginRight: 0,
+        spacingLeft: 0,
+        spacingRight: 0,
+        spacingTop: 10
       },
       legend: {
         enabled: true
@@ -483,7 +488,12 @@ export class DashboardComponent implements OnInit {
             text: ''
           },
           allowDecimals: false,
-          opposite: false
+          opposite: false,
+          labels: {
+            align: 'left',
+            x: 1,
+            y: -2,
+          }
         }
       ],
       tooltip: {
