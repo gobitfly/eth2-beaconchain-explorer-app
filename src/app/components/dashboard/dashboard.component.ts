@@ -476,6 +476,11 @@ export class DashboardComponent implements OnInit {
     const chart = Highstock.stockChart('highchartsBlocks' + this.randomChartId, {
       chart: {
         type: 'column',
+        marginLeft: 0,
+        marginRight: 0,
+        spacingLeft: 0,
+        spacingRight: 0,
+        spacingTop: 10
       },
       legend: {
         enabled: true
@@ -496,7 +501,12 @@ export class DashboardComponent implements OnInit {
             text: ''
           },
           allowDecimals: false,
-          opposite: false
+          opposite: false,
+          labels: {
+            align: 'left',
+            x: 1,
+            y: -2,
+          }
         }
       ],
       tooltip: {
@@ -552,8 +562,17 @@ export class DashboardComponent implements OnInit {
 
   async createBalanceChart(income, execIncome) {
     execIncome = execIncome || []
+
+    const ticksDecimalPlaces = 3
+    let getConvertString = (value: BigNumber): string => {
+      if (this.unit.pref != "ETHER") {
+        return ` (${this.unit.convertToPref(value, "ETHER")})`
+      }
+      return ''
+    }
+
     // @ts-ignore     ¯\_(ツ)_/¯
-    Highstock.stockChart('highcharts' + this.randomChartId, {
+    Highstock.chart('highcharts' + this.randomChartId, {
 
       exporting: {
         scale: 1
@@ -567,6 +586,11 @@ export class DashboardComponent implements OnInit {
       chart: {
         type: 'column',
         pointInterval: 24 * 3600 * 1000,
+        marginLeft: 0,
+        marginRight: 0,
+        spacingLeft: 0,
+        spacingRight: 0,
+        spacingTop: 10
       },
       legend: {
         enabled: true
@@ -584,17 +608,22 @@ export class DashboardComponent implements OnInit {
           display: `inline-block`,
           width: `200px`
         },
+        shared: true,
         formatter: (tooltip) => {
           var text = ``
+          var total = new BigNumber(0)
 
           for (var i = 0; i < tooltip.chart.hoverPoints.length; i++) {
             const value = new BigNumber(tooltip.chart.hoverPoints[i].y);
-            text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${value.toFixed(5)} ETH`
-            if (this.unit.pref != "ETHER") {
-              text += ` (${this.unit.convertToPref(value, "ETHER")})`
-            }
-            text += `</b><br/>`
+            text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${value.toFixed(5)} ETH${getConvertString(value)}</b><br/>`
+            total = total.plus(value)
           }
+
+          // add total if hovered point contains rewards for both EL and CL
+          if (tooltip.chart.hoverPoints.length > 1) {
+            text += `<b>Total: ${total.toFixed(5)} ETH${getConvertString(total)}</b><br/>`
+          }
+
           text += new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString();
 
           return text
@@ -626,16 +655,39 @@ export class DashboardComponent implements OnInit {
             text: ''
           },
           opposite: false,
+          tickPositioner: function () {
+            const precision = Math.pow(10, ticksDecimalPlaces)
+            // make sure that no bar reaches the top or bottom of the chart (looks nicer)
+            const padding = 1.15
+            // make sure that the top and bottom tick are exactly at a position with [ticksDecimalPlaces] decimal places
+            const min = Math.round(this.chart.series[1].dataMin * padding * precision) / precision
+            const max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
+
+            // only show 3 ticks if min < 0 && max > 0
+            var positions
+            if (min < 0) {
+              if (max < 0) {
+                positions = [min, 0]
+              } else {
+                positions = [min, 0, max]
+              }
+            }
+            else {
+              positions = [0, max]
+            }
+
+            return positions
+          },
           labels: {
+            align: 'left',
+            x: 1,
+            y: -2,
             formatter: function () {
-              if (this.value > 0 && this.value < 0.01) {
-                return parseFloat(this.value.toString()).toFixed(3)
-              } else if (this.value == 0) {
+              if (this.value == 0) {
                 return "0"
               }
-              return parseFloat(this.value.toString()).toFixed(2)
+              return parseFloat(this.value.toString()).toFixed(ticksDecimalPlaces)
             },
-
           }
         }
       ],
