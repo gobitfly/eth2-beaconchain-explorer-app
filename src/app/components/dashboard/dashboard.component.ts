@@ -37,6 +37,7 @@ import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
 import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils';
 import { MergeChecklistPage } from 'src/app/pages/merge-checklist/merge-checklist.page';
+import { TimeagoCustomFormatter } from 'ngx-timeago';
 
 @Component({
   selector: 'app-validator-dashboard',
@@ -538,6 +539,14 @@ export class DashboardComponent implements OnInit {
 
   async createBalanceChart(income, execIncome) {
     execIncome = execIncome || []
+
+    let getConvertString = (value: BigNumber): string => {
+      if (this.unit.pref != "ETHER") {
+        return ` (${this.unit.convertToPref(value, "ETHER")})`
+      }
+      return ''
+    }
+
     // @ts-ignore     ¯\_(ツ)_/¯
     Highstock.stockChart('highcharts' + this.randomChartId, {
 
@@ -572,15 +581,19 @@ export class DashboardComponent implements OnInit {
         },
         formatter: (tooltip) => {
           var text = ``
+          var total = new BigNumber(0)
 
           for (var i = 0; i < tooltip.chart.hoverPoints.length; i++) {
             const value = new BigNumber(tooltip.chart.hoverPoints[i].y);
-            text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${value.toFixed(5)} ETH`
-            if (this.unit.pref != "ETHER") {
-              text += ` (${this.unit.convertToPref(value, "ETHER")})`
-            }
-            text += `</b><br/>`
+            text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${value.toFixed(5)} ETH${getConvertString(value)}</b><br/>`
+            total = total.plus(value)
           }
+
+          // add total if hovered point contains rewards for both EL and CL
+          if (tooltip.chart.hoverPoints.length > 1) {
+            text += `<b>Total: ${total.toFixed(5)} ETH${getConvertString(total)}</b><br/>`
+          }
+
           text += new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString();
 
           return text
