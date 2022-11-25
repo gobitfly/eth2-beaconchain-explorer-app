@@ -595,6 +595,7 @@ export class DashboardComponent implements OnInit {
           display: `inline-block`,
           width: `200px`
         },
+        shared: true,
         formatter: (tooltip) => {
           var text = ``
           var total = new BigNumber(0)
