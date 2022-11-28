@@ -60,6 +60,9 @@
       <app-clientupdate [data]="update" *ngIf="update"></app-clientupdate>
     </span>
 
+    <app-message title="Grant Notification Permission" icon="notifications-outline" iconStyle="warn"
+    notificationPermission="true" *ngIf="notificationPermissionPending"></app-message>
+
     <app-message title="Network struggles with finality" icon="alert-circle-outline" iconStyle="alert"
       [openUrl]="beaconChainUrl" *ngIf="finalizationIssue"></app-message>
 

@@ -125,10 +125,22 @@
     <ion-label>Update firebase token</ion-label>
   </ion-item>
 
+  <ion-item lines="none" (click)="triggerNotificationConsent()">
+    <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+    <ion-label>Notification Consent</ion-label>
+  </ion-item>
+  
+
 
   <ion-item lines="none" (click)="resetLastFirebaseToken()">
     <ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
     <ion-label>Reset saved firebase token</ion-label>
+  </ion-item>
+
+  
+
+  <ion-item lines="none">
+    <p>Notification Consent: {{ notificationConsent }}</p>
   </ion-item>
 
   <ion-item lines="none">

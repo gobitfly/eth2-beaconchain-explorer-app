@@ -1,4 +1,4 @@
-import { ThrowStmt } from '@angular/compiler';
+
 import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
 import { Animation, AnimationController, ModalController } from '@ionic/angular';
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
