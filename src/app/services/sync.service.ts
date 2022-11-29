@@ -137,7 +137,7 @@ export class SyncService {
     unlock();
 
     console.log("== Step 1: Loading notification preferences from beaconcha.in ==")
-    await this.notificationBase.loadNotifyToggles(await this.isNotifyClientUpdatesEnabled())
+    await this.notificationBase.loadNotifyToggles()
 
     this.deleteAllTemp()
 
@@ -360,7 +360,7 @@ export class SyncService {
 
   async changeClient(clientKey: string, value: string) {
     // do not sync to remote if notification for client updates isn't enabled in the first place
-    const isEnabled = await this.isNotifyClientUpdatesEnabled()
+    const isEnabled = await this.notificationBase.isNotifyClientUpdatesEnabled()
     if (!isEnabled) return
 
     if (value) {
@@ -418,11 +418,6 @@ export class SyncService {
       subscribeAction
     )
     return true
-  }
-
-  async isNotifyClientUpdatesEnabled(): Promise<boolean> {
-    return (await this.storage.getBooleanSetting("eth_client_update", true)) &&
-      (await this.storage.getBooleanSetting(SETTING_NOTIFY, true))
   }
 
   async changeNotifyClientUpdate(key: string, value: boolean, filter: string = null) {

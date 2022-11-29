@@ -55,6 +55,7 @@ export class ClientsPage implements OnInit {
   }
 
   closeModal() {
+    this.sync.syncAllSettings(true)
     this.modalCtrl.dismiss();
   }
 

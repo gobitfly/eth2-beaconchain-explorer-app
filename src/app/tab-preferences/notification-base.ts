@@ -75,6 +75,11 @@ export class NotificationBase implements OnInit {
     else return await this.firebaseUtils.hasNotificationToken() // on Android, enable as default when token is present
   }
 
+  public async isNotifyClientUpdatesEnabled(): Promise<boolean> {
+    return (await this.storage.getBooleanSetting("eth_client_update", true)) &&
+      (await this.storage.getBooleanSetting(SETTING_NOTIFY, true))
+  }
+
   // Android registers firebase service at app start
   // So if there is no token present when enabling notifications,
   // there might be no google play services on this device
@@ -95,8 +100,7 @@ export class NotificationBase implements OnInit {
   }
 
   remoteNotifyLoadedOnce = false
-  public async loadNotifyToggles(isNotifyClientUpdatesEnabled: boolean) {
-    // We cannot use sync.isNotifyClientUpdatesEnabled here (see comment in constructor above)
+  public async loadNotifyToggles() {
     if (!(await this.storage.isLoggedIn())) return
 
     const net = (await this.api.networkConfig).net
@@ -104,6 +108,8 @@ export class NotificationBase implements OnInit {
     const request = new NotificationGetRequest()
     const response = await this.api.execute(request)
     const results = request.parse(response)
+
+    const isNotifyClientUpdatesEnabled = await this.isNotifyClientUpdatesEnabled()
 
     var network = await this.api.getNetworkName()
     if (network == "main") {

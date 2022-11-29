@@ -71,7 +71,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
       this.canCustomizeThresholds = result
     })
 
-    await this.loadNotifyToggles(await this.sync.isNotifyClientUpdatesEnabled())
+    await this.loadNotifyToggles()
     setTimeout(() => { this.initialized = true }, 400)
   }
 

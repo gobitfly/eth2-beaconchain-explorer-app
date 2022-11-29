@@ -15,7 +15,7 @@ export class DevPage extends Tab3Page implements OnInit {
   packageOverride: string = "default"
   firebaseToken: string = ""
 
-  async ngOnInit() {
+  ngOnInit() {
     this.notificationBase.disableToggleLock()
     this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, "default").then((result) => {
       this.packageOverride = result

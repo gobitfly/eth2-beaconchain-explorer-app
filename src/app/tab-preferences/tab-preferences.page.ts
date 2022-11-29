@@ -100,7 +100,7 @@ export class Tab3Page {
     private router: Router
   ) { }
 
-  async ngOnInit() {
+  ngOnInit() {
 
     this.theme.isDarkThemed().then((result) => this.darkMode = result)
 
@@ -132,7 +132,7 @@ export class Tab3Page {
     })
     this.notificationBase.disableToggleLock()
 
-    await this.updateUtils.convertOldToNewClientSettings()
+    this.updateUtils.convertOldToNewClientSettings()
 
     this.fadeIn = "fade-in"
     setTimeout(() => {
@@ -336,7 +336,7 @@ export class Tab3Page {
 
     await this.storage.setNetworkPreferences(newConfig)
     await this.api.updateNetworkConfig()
-    await this.notificationBase.loadNotifyToggles(await this.sync.isNotifyClientUpdatesEnabled())
+    await this.notificationBase.loadNotifyToggles()
     this.validatorUtils.notifyListeners()
   }
 
