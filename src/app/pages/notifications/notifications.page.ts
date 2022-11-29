@@ -9,10 +9,11 @@ import { SyncService } from 'src/app/services/sync.service';
 import { NotificationBase } from 'src/app/tab-preferences/notification-base';
 import ClientUpdateUtils from 'src/app/utils/ClientUpdateUtils';
 import FirebaseUtils from 'src/app/utils/FirebaseUtils';
+import FlavorUtils from 'src/app/utils/FlavorUtils';
 import MachineUtils, { UNSUPPORTED_PRYSM } from 'src/app/utils/MachineUtils';
 import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 import { SubscribePage } from '../subscribe/subscribe.page';
-
+import { Browser } from '@capacitor/browser';
 @Component({
   selector: 'app-notifications',
   templateUrl: './notifications.page.html',
@@ -32,6 +33,8 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 
   unsupportedPrysm: boolean = false
 
+  noGoogle = false
+
   constructor(
     protected api: ApiService,
     protected storage: StorageService,
@@ -43,9 +46,12 @@ export class NotificationsPage extends NotificationBase implements OnInit {
     private modalController: ModalController,
     private machineUtils: MachineUtils,
     protected clientUpdateUtils: ClientUpdateUtils,
-    private router: Router
+    private router: Router,
+    private flavor: FlavorUtils
   ) {
     super(api, storage, firebaseUtils, platform, alerts, sync, clientUpdateUtils)
+
+    this.flavor.isNoGoogleFlavor().then((result) => { this.noGoogle = result })
   }
 
   saveAndBack() {
@@ -57,6 +63,10 @@ export class NotificationsPage extends NotificationBase implements OnInit {
     if (this.canCustomizeThresholds) return
     
     this.openUpgrades()
+  }
+
+  async configureWebhooks() {
+    await Browser.open({ url: "https://beaconcha.in/user/webhooks", toolbarColor: "#2f2e42" });
   }
 
   async ionViewWillEnter() {

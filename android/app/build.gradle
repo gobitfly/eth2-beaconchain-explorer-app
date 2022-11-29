@@ -10,6 +10,7 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "in.beaconcha.mobile"
+        namespace "in.beaconcha.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 86
@@ -31,6 +32,24 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
+    flavorDimensions "environment"
+    productFlavors {
+        prod {
+            dimension "environment"
+            manifestPlaceholders = [appLabel:"@string/app_name", loginCallbackScheme:"@string/custom_url_scheme"]
+        }
+        beta {
+            dimension "environment"
+            applicationIdSuffix ".beta"
+            manifestPlaceholders = [appLabel:"@string/app_name_beta", loginCallbackScheme:"@string/custom_url_scheme_beta"]
+        }
+        nogoogle {
+            dimension "environment"
+            applicationIdSuffix ".nogoo"
+            manifestPlaceholders = [appLabel:"@string/app_name", loginCallbackScheme:"@string/custom_url_scheme"]
+        }
     }
 }
 
@@ -63,11 +82,6 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
-    }
-} catch (Exception e) {
-    logger.warn("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+if (!getGradle().getStartParameter().getTaskRequests().toString().contains("Nogoogle")){
+    apply plugin: 'com.google.gms.google-services'
 }

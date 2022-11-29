@@ -33,6 +33,7 @@ import { MerchantUtils } from "./MerchantUtils";
 import { Toast } from '@capacitor/toast';
 import { Device } from '@capacitor/device';
 import { OAuth2Client } from '@byteowls/capacitor-oauth2';
+import FlavorUtils from "./FlavorUtils";
 
 @Injectable({
   providedIn: 'root'
@@ -46,7 +47,8 @@ export class OAuthUtils {
     private validatorUtils: ValidatorUtils,
     private loadingController: LoadingController,
     private sync: SyncService,
-    private merchantUtils: MerchantUtils
+    private merchantUtils: MerchantUtils,
+    private flavor: FlavorUtils
   ) {
     //registerWebPlugin(OAuth2Client);
   }
@@ -132,7 +134,11 @@ export class OAuthUtils {
     }
 
     const responseType = "code"
-    const callback = "beaconchainmobile://callback"
+    let callback = "beaconchainmobile://callback"
+
+    if (await this.flavor.isBetaFlavor()) {
+      callback = "beaconchainmobilebeta://callback"
+    }
 
     return {
       authorizationBaseUrl: await api.getBaseUrl() + "/user/authorize",
