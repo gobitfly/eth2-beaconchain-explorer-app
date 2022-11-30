@@ -40,35 +40,39 @@ const routes: Routes = [
   },
   {
     path: 'subscribe',
-    loadChildren: () => import('./pages/subscribe/subscribe.module').then( m => m.SubscribePageModule)
+    loadChildren: () => import('./pages/subscribe/subscribe.module').then(m => m.SubscribePageModule)
   },
   {
     path: 'machine-detail',
-    loadChildren: () => import('./pages/machine-detail/machine-detail.module').then( m => m.MachineDetailPageModule)
+    loadChildren: () => import('./pages/machine-detail/machine-detail.module').then(m => m.MachineDetailPageModule)
   },
   {
     path: 'dev',
-    loadChildren: () => import('./pages/dev/dev.module').then( m => m.DevPageModule)
+    loadChildren: () => import('./pages/dev/dev.module').then(m => m.DevPageModule)
   },
   {
     path: 'notifications',
-    loadChildren: () => import('./pages/notifications/notifications.module').then( m => m.NotificationsPageModule)
+    loadChildren: () => import('./pages/notifications/notifications.module').then(m => m.NotificationsPageModule)
   },
   {
     path: 'logview',
-    loadChildren: () => import('./pages/logview/logview.module').then( m => m.LogviewPageModule)
+    loadChildren: () => import('./pages/logview/logview.module').then(m => m.LogviewPageModule)
   },
   {
     path: 'merge-checklist',
-    loadChildren: () => import('./pages/merge-checklist/merge-checklist.module').then( m => m.MergeChecklistPageModule)
+    loadChildren: () => import('./pages/merge-checklist/merge-checklist.module').then(m => m.MergeChecklistPageModule)
   },
   {
     path: 'tab-blocks',
-    loadChildren: () => import('./tab-blocks/tab-blocks.module').then( m => m.TabBlocksPageModule)
+    loadChildren: () => import('./tab-blocks/tab-blocks.module').then(m => m.TabBlocksPageModule)
   },
   {
     path: 'block-detail',
-    loadChildren: () => import('./pages/block-detail/block-detail.module').then( m => m.BlockDetailPageModule)
+    loadChildren: () => import('./pages/block-detail/block-detail.module').then(m => m.BlockDetailPageModule)
+  },
+  {
+    path: 'clients',
+    loadChildren: () => import('./pages/clients/clients.module').then(m => m.ClientsPageModule)
   }
 ];
 @NgModule({
