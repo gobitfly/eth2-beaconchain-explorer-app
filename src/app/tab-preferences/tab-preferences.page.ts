@@ -107,10 +107,10 @@ export class Tab3Page {
     this.theme.getThemeColor().then((result) => this.themeColor = result)
 
     this.updateUtils.getClient("ROCKETPOOL").then((result) => {
-      this.notificationBase.setLocalClientToggle("Rocketpool", result && result.toUpperCase() == "ROCKETPOOL")
+      this.notificationBase.setClientToggleState("ROCKETPOOL", result && result.toUpperCase() == "ROCKETPOOL")
     })
     this.updateUtils.getClient("MEV-BOOST").then((result) => {
-      this.notificationBase.setLocalClientToggle("MEV-Boost", result && result.toUpperCase() == "MEV-BOOST")
+      this.notificationBase.setClientToggleState("MEV-BOOST", result && result.toUpperCase() == "MEV-BOOST")
     })
     this.updateUtils.getUpdateChannel().then((result) => this.updateChannel = result)
 
@@ -269,32 +269,6 @@ export class Tab3Page {
     this.updateUtils.checkAllUpdates()
   }
 
-  async mevBoostToggle() {
-    if (this.notificationBase.lockedToggle) {
-      return;
-    }
-
-    if (this.notificationBase.toggleStateMevBoost) {
-      this.sync.changeClient("MEV-BOOST", "MEV-BOOST")
-    } else {
-      this.sync.changeClient("MEV-BOOST", null)
-    }
-    this.updateUtils.checkClientUpdate("MEV-BOOST")
-  }
-
-  async smartNodeToggle() {
-    if (this.notificationBase.lockedToggle) {
-      return;
-    }
-
-    if (this.notificationBase.toggleStateSmartnode) {
-      this.sync.changeClient("ROCKETPOOL", "ROCKETPOOL")
-    } else {
-      this.sync.changeClient("ROCKETPOOL", null)
-    }
-    this.updateUtils.checkClientUpdate("ROCKETPOOL")
-  }
-
   async openBrowser(link, native: boolean = false) {
     if (native) {
       window.open(link, '_system', 'location=yes');
@@ -336,7 +310,7 @@ export class Tab3Page {
 
     await this.storage.setNetworkPreferences(newConfig)
     await this.api.updateNetworkConfig()
-    await this.notificationBase.loadNotifyToggles()
+    await this.notificationBase.loadAllToggles()
     this.validatorUtils.notifyListeners()
   }
 

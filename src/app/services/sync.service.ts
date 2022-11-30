@@ -78,7 +78,10 @@ export class SyncService {
     private validatorSyncUtils: ValidatorSyncUtils,
     private updateUtils: ClientUpdateUtils,
     protected notificationBase: NotificationBase,
-  ) { }
+  ) {
+    // HACK, see comment for notificationBase.sync in notification-base.ts (BIDS-1117)
+    notificationBase.sync = this
+  }
 
   public async mightSyncUpAndSyncDelete() {
     await this.validatorSyncUtils.mightSyncUpAndSyncDelete(
@@ -137,7 +140,7 @@ export class SyncService {
     unlock();
 
     console.log("== Step 1: Loading notification preferences from beaconcha.in ==")
-    await this.notificationBase.loadNotifyToggles()
+    await this.notificationBase.loadAllToggles()
 
     this.deleteAllTemp()
 
@@ -358,23 +361,20 @@ export class SyncService {
     return false
   }
 
-  async changeClient(clientKey: string, value: string) {
+  async changeClient(clientKey: string, value: string, force: boolean = false) {
     // do not sync to remote if notification for client updates isn't enabled in the first place
-    const isEnabled = await this.notificationBase.isNotifyClientUpdatesEnabled()
+    const isEnabled = await this.storage.isNotifyClientUpdatesEnabled()
     if (!isEnabled) return
 
     if (value) {
       value = value.toUpperCase()
     }
 
-    const changed = await this.updateUtils.setClient(clientKey, value)
-    if (changed) {
-      const client = this.updateUtils.getClientInfo(clientKey)
-      if (value && value != 'null') {
-        this.setLastChanged(client.storageKey, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
-      } else {
-        this.setLastChanged("UN" + client.storageKey, "eth_client_update", client.key.toLocaleLowerCase(), null, 'unsubscribe')
-      }
+    const client = this.updateUtils.getClientInfo(clientKey)
+    if (value && value != "NULL") {
+      this.setLastChanged(client.storageKey, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
+    } else {
+      this.setLastChanged("UN" + client.storageKey, "eth_client_update", client.key.toLocaleLowerCase(), null, 'unsubscribe')
     }
   }
 

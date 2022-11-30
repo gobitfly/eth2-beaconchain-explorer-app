@@ -1,15 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { CPU_THRESHOLD, HDD_THRESHOLD, OFFLINE_THRESHOLD, RAM_THRESHOLD, SETTING_NOTIFY, StorageService } from 'src/app/services/storage.service';
+import { GetMobileSettingsRequest, MobileSettingsResponse, NotificationGetRequest } from '../requests/requests';
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
 import { SyncService } from '../services/sync.service';
-import FirebaseUtils from '../utils/FirebaseUtils';
-import { GetMobileSettingsRequest, MobileSettingsResponse, NotificationGetRequest } from '../requests/requests';
-import { Injectable } from '@angular/core';
 import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils';
-
-const LOCKED_STATE = "locked_v2"
+import FirebaseUtils from '../utils/FirebaseUtils';
 
 @Injectable({
   providedIn: 'root'
@@ -31,18 +28,7 @@ export class NotificationBase implements OnInit {
 
   activeSubscriptionsPerEventMap = new Map<String, number>() // map storing the count of subscribed validators per event
   notifyTogglesMap = new Map<String, boolean>()
-
-  toggleStateLighthouse: boolean
-  toggleStateLodestar: boolean
-  toggleStatePrysm: boolean
-  toggleStateNimbus: boolean
-  toggleStateTeku: boolean
-  toggleStateBesu: boolean
-  toggleStateErigon: boolean
-  toggleStateGeth: boolean
-  toggleStateNethermind: boolean
-  toggleStateSmartnode: boolean
-  toggleStateMevBoost: boolean
+  clientUpdatesTogglesMap = new Map<String, boolean>() // identifier = client key
 
   constructor(
     protected api: ApiService,
@@ -50,7 +36,7 @@ export class NotificationBase implements OnInit {
     protected firebaseUtils: FirebaseUtils,
     protected platform: Platform,
     protected alerts: AlertService,
-    protected sync: SyncService, // If you have to use this, be cautios: This is not always available. We don't know why yet but will research this via BIDS-1117
+    public sync: SyncService, // If you have to use this, be cautios: This is not always available. We don't know why yet but will research this via BIDS-1117
     protected clientUpdate: ClientUpdateUtils
   ) { }
 
@@ -58,26 +44,40 @@ export class NotificationBase implements OnInit {
     this.notifyInitialized = false
   }
 
-  setToggle(eventName, event) {
-    console.log("change toggle", eventName, event)
+  async setClientToggleState(clientKey: string, state: boolean) {
+    this.clientUpdatesTogglesMap.set(clientKey, state)
+    if (state) {
+      await this.clientUpdate.setClient(clientKey, clientKey)
+    } else {
+      await this.clientUpdate.setClient(clientKey, "null")
+    }
+    this.clientUpdate.checkClientUpdate(clientKey)
+  }
+
+  getClientToggleState(clientKey: string): boolean {
+    const toggle = this.clientUpdatesTogglesMap.get(clientKey)
+    if (toggle == undefined) {
+      console.log("Could not return toggle state for client", clientKey)
+      return false
+    }
+    return toggle
+  }
+
+  setNotifyToggle(eventName: string, event) {
+    console.log("change notify toggle", eventName, event)
     this.notifyTogglesMap.set(eventName, event)
   }
 
   // changes a toggle without triggering onChange
   lockedToggle = true;
-  public changeToggleSafely(func: () => void) {
+  changeToggleSafely(func: () => void) {
     this.lockedToggle = true;
     func()
   }
 
-  public async getDefaultNotificationSetting() {
+  async getDefaultNotificationSetting() {
     if (this.platform.is("ios")) return false // iOS users need to grant notification permission first
     else return await this.firebaseUtils.hasNotificationToken() // on Android, enable as default when token is present
-  }
-
-  public async isNotifyClientUpdatesEnabled(): Promise<boolean> {
-    return (await this.storage.getBooleanSetting("eth_client_update", true)) &&
-      (await this.storage.getBooleanSetting(SETTING_NOTIFY, true))
   }
 
   // Android registers firebase service at app start
@@ -100,7 +100,7 @@ export class NotificationBase implements OnInit {
   }
 
   remoteNotifyLoadedOnce = false
-  public async loadNotifyToggles() {
+  async loadAllToggles() {
     if (!(await this.storage.isLoggedIn())) return
 
     const net = (await this.api.networkConfig).net
@@ -109,7 +109,7 @@ export class NotificationBase implements OnInit {
     const response = await this.api.execute(request)
     const results = request.parse(response)
 
-    const isNotifyClientUpdatesEnabled = await this.isNotifyClientUpdatesEnabled()
+    const isNotifyClientUpdatesEnabled = await this.storage.isNotifyClientUpdatesEnabled()
 
     var network = await this.api.getNetworkName()
     if (network == "main") {
@@ -160,12 +160,10 @@ export class NotificationBase implements OnInit {
       Clients.forEach(client => {
         if (clientsToActivate.find(activate => client.name.toLocaleLowerCase() == activate) != undefined) {
           console.log("enabling", client.name, "updates")
-          this.setLocalClientToggle(client.name, true)
-          this.clientUpdate.setClient(client.key, client.key)
+          this.setClientToggleState(client.key, true)
         } else {
           console.log("disabling", client.name, "updates")
-          this.setLocalClientToggle(client.name, false)
-          this.clientUpdate.setClient(client.key, null)
+          this.setClientToggleState(client.key, false)
         }
       });
     }
@@ -201,48 +199,6 @@ export class NotificationBase implements OnInit {
         this.disableToggleLock()
       }
       this.remoteNotifyLoadedOnce = true
-    }
-  }
-
-  // TODO: This should work with a <string, boolean> map but that caused problems with the ionic toggles
-  public setLocalClientToggle(client: string, state: boolean) {
-    switch (client) {
-      case "Lighthouse":
-        this.toggleStateLighthouse = state
-        break
-      case "Lodestar":
-        this.toggleStateLodestar = state
-        break
-      case "Prysm":
-        this.toggleStatePrysm = state
-        break
-      case "Nimbus":
-        this.toggleStateNimbus = state
-        break
-      case "Teku":
-        this.toggleStateTeku = state
-        break
-      case "Besu":
-        this.toggleStateBesu = state
-        break
-      case "Erigon":
-        this.toggleStateErigon = state
-        break
-      case "Geth":
-        this.toggleStateGeth = state
-        break
-      case "Nethermind":
-        this.toggleStateNethermind = state
-        break
-      case "Rocketpool":
-        this.toggleStateSmartnode = state
-        break
-      case "MEV-Boost":
-        this.toggleStateMevBoost = state
-        break;
-      default:
-        console.log("Unkown client", client)
-        break;
     }
   }
 
@@ -315,26 +271,13 @@ export class NotificationBase implements OnInit {
     this.api.clearSpecificCache(new NotificationGetRequest())
   }
 
-  private getToggleFromEvent(eventName) {
+  private getNotifyToggleFromEvent(eventName: string) {
     const toggle = this.notifyTogglesMap.get(eventName)
+    if (toggle == undefined) {
+      console.log("Could not return toggle state for event", eventName)
+      return false
+    }
     return toggle
-    /*switch (eventName) {
-      case "validator_balance_decreased": return this.notifyDecreased
-      case "validator_got_slashed": return this.notifySlashed
-      case "validator_proposal_submitted": return this.notifyProposalsSubmitted
-      case "validator_proposal_missed": return this.notifyProposalsMissed
-      case "validator_attestation_missed": return this.notifyAttestationsMissed
-      case "monitoring_machine_offline": return this.notifyMachineOffline
-      case "monitoring_cpu_load": return this.notifyMachineCpuLoad
-      case "monitoring_hdd_almostfull": return this.notifyMachineDiskFull
-      case "monitoring_memory_usage": return this.notifyMachineMemoryLoad
-      case "eth_client_update": return this.notifyClientUpdate 
-      case "validator_synccommittee_soon": return this.notifySyncDuty
-      case "rocketpool_new_claimround": return this.notifyRPLNewRewardRound
-      case "rocketpool_colleteral_min": return this.notifyRPLMinColletaral
-      case "rocketpool_colleteral_max": return this.notifyRPLMaxColletaral
-      default: return null
-    }*/
   }
 
   private setToggleFromEvent(eventNameTagges, network, value, net) {
@@ -368,11 +311,23 @@ export class NotificationBase implements OnInit {
     this.sync.changeNotifyEvent(
       eventName,
       eventName,
-      this.getToggleFromEvent(eventName),
+      this.getNotifyToggleFromEvent(eventName),
       filter,
       threshold
     )
     this.api.clearSpecificCache(new NotificationGetRequest())
+  }
+
+  clientUpdateOnToggle(clientKey: string) {
+    if (this.lockedToggle) {
+      return
+    }
+
+    if (this.getClientToggleState(clientKey)) {
+      this.sync.changeClient(clientKey, clientKey)
+    } else {
+      this.sync.changeClient(clientKey, "null")
+    }
   }
 
   // include filter in key (fe used by machine toggles)
@@ -382,7 +337,7 @@ export class NotificationBase implements OnInit {
       return;
     }
     let key = eventName + filter
-    let value = this.getToggleFromEvent(eventName)
+    let value = this.getNotifyToggleFromEvent(eventName)
 
     this.storage.setBooleanSetting(eventName, value)
 
@@ -397,7 +352,7 @@ export class NotificationBase implements OnInit {
   }
 
 
-  public disableToggleLock() {
+  disableToggleLock() {
     setTimeout(() => {
       this.lockedToggle = false
     }, 300)

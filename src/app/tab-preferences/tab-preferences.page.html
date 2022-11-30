@@ -247,12 +247,15 @@
     <ion-item lines="none">
       <ion-icon class="opacity-icon" slot="start" name="hammer-outline"></ion-icon>
       <ion-label>Rocketpool Smartnode</ion-label>
-      <ion-toggle id="smartnode" [(ngModel)]="notificationBase.toggleStateSmartnode" (ionChange)="smartNodeToggle()" slot="end"></ion-toggle>
+      <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('ROCKETPOOL')" (ngModelChange)="notificationBase.setClientToggleState('ROCKETPOOL', $event)"
+      (ionChange)="notificationBase.clientUpdateOnToggle('ROCKETPOOL')" slot="end"></ion-toggle>
     </ion-item>
+
     <ion-item lines="none">
       <ion-icon class="opacity-icon" slot="start" name="magnet-outline"></ion-icon>
       <ion-label>MEV-Boost</ion-label>
-      <ion-toggle id="mevboost" [(ngModel)]="notificationBase.toggleStateMevBoost" (ionChange)="mevBoostToggle()" slot="end"></ion-toggle>
+      <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('MEV-BOOST')" (ngModelChange)="notificationBase.setClientToggleState('MEV-BOOST', $event)"
+      (ionChange)="notificationBase.clientUpdateOnToggle('MEV-BOOST')" slot="end"></ion-toggle>
     </ion-item>
     <ion-item lines="none">
       <ion-icon class="opacity-icon" slot="start" name="git-branch"></ion-icon>

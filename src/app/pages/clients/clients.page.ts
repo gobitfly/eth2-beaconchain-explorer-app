@@ -15,8 +15,8 @@ export class ClientsPage implements OnInit {
 
   constructor(
     private modalCtrl: ModalController,
-    protected updateUtils: ClientUpdateUtils,
-    protected sync: SyncService,
+    private updateUtils: ClientUpdateUtils,
+    private sync: SyncService,
     public notificationBase: NotificationBase
   ) { }
 
@@ -24,31 +24,31 @@ export class ClientsPage implements OnInit {
     this.notificationBase.lockedToggle = true
 
     this.updateUtils.getClient("LIGHTHOUSE").then((result) => {
-      this.notificationBase.setLocalClientToggle("Lighthouse", (result && result != "null"))
+      this.notificationBase.setClientToggleState("LIGHTHOUSE", (result && result != "null"))
     })
     this.updateUtils.getClient("LODESTAR").then((result) => {
-      this.notificationBase.setLocalClientToggle("Lodestar", (result && result != "null"))
+      this.notificationBase.setClientToggleState("LODESTAR", (result && result != "null"))
     })
     this.updateUtils.getClient("PRYSM").then((result) => {
-      this.notificationBase.setLocalClientToggle("Prysm", (result && result != "null"))
+      this.notificationBase.setClientToggleState("PRYSM", (result && result != "null"))
     })
     this.updateUtils.getClient("NIMBUS").then((result) => {
-      this.notificationBase.setLocalClientToggle("Nimbus", (result && result != "null"))
+      this.notificationBase.setClientToggleState("NIMBUS", (result && result != "null"))
     })
     this.updateUtils.getClient("TEKU").then((result) => {
-      this.notificationBase.setLocalClientToggle("Teku", (result && result != "null"))
+      this.notificationBase.setClientToggleState("TEKU", (result && result != "null"))
     })
     this.updateUtils.getClient("BESU").then((result) => {
-      this.notificationBase.setLocalClientToggle("Besu", (result && result != "null"))
+      this.notificationBase.setClientToggleState("BESU", (result && result != "null"))
     })
     this.updateUtils.getClient("ERIGON").then((result) => {
-      this.notificationBase.setLocalClientToggle("Erigon", (result && result != "null"))
+      this.notificationBase.setClientToggleState("ERIGON", (result && result != "null"))
     })
     this.updateUtils.getClient("GETH").then((result) => {
-      this.notificationBase.setLocalClientToggle("Geth", (result && result != "null"))
+      this.notificationBase.setClientToggleState("GETH", (result && result != "null"))
     })
     this.updateUtils.getClient("NETHERMIND").then((result) => {
-      this.notificationBase.setLocalClientToggle("Nethermind", (result && result != "null"))
+      this.notificationBase.setClientToggleState("NETHERMIND", (result && result != "null"))
     })
 
     this.notificationBase.disableToggleLock()
@@ -59,16 +59,4 @@ export class ClientsPage implements OnInit {
     this.modalCtrl.dismiss();
   }
 
-  async toggleClient(clientKey: string, event: any) {
-    if (this.notificationBase.lockedToggle) {
-      return
-    }
-
-    if (event.target.checked) {
-      this.sync.changeClient(clientKey, clientKey)
-    } else {
-      this.sync.changeClient(clientKey, null)
-    }
-    this.updateUtils.checkClientUpdate(clientKey)
-  }
 }

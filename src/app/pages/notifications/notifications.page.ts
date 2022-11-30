@@ -37,7 +37,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
     protected firebaseUtils: FirebaseUtils,
     protected platform: Platform,
     protected alerts: AlertService,
-    protected sync: SyncService,
+    public sync: SyncService,
     private merchantUtils: MerchantUtils,
     private modalController: ModalController,
     private machineUtils: MachineUtils,
@@ -71,7 +71,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
       this.canCustomizeThresholds = result
     })
 
-    await this.loadNotifyToggles()
+    await this.loadAllToggles()
     setTimeout(() => { this.initialized = true }, 400)
   }
 
