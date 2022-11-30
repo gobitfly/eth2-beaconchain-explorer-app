@@ -20,7 +20,6 @@
 
 import { Component } from '@angular/core';
 import { ApiService } from '../services/api.service';
-import BigNumber from "bignumber.js";
 import { StorageService } from '../services/storage.service';
 import { UnitconvService } from '../services/unitconv.service';
 import { OAuthUtils } from '../utils/OAuthUtils';
@@ -47,6 +46,7 @@ import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { Toast } from '@capacitor/toast';
 import { MergeChecklistPage } from '../pages/merge-checklist/merge-checklist.page';
+import { ClientsPage } from '../pages/clients/clients.page';
 
 @Component({
   selector: 'app-tab3',
@@ -58,9 +58,6 @@ export class Tab3Page {
   fadeIn = "invisible"
 
   darkMode: boolean
-
-  eth1client: string
-  eth2client: string
 
   network: string = "main"
 
@@ -78,14 +75,11 @@ export class Tab3Page {
 
   snowing: boolean
 
-
   themeColor: string
   //widgetThemeColor: string
   currentPlan: string
 
   premiumLabel: string = ""
-
-
 
   constructor(
     protected api: ApiService,
@@ -107,19 +101,17 @@ export class Tab3Page {
   ) { }
 
   ngOnInit() {
-    
+
     this.theme.isDarkThemed().then((result) => this.darkMode = result)
-    
+
     this.theme.getThemeColor().then((result) => this.themeColor = result)
 
-    this.updateUtils.getRocketpoolClient().then((result) => {
-      this.notificationBase.smartnode = result && result.toUpperCase() == "ROCKETPOOL"
+    this.updateUtils.getClient("ROCKETPOOL").then((result) => {
+      this.notificationBase.setClientToggleState("ROCKETPOOL", result && result.toUpperCase() == "ROCKETPOOL")
     })
-    this.updateUtils.getMevBoostClient().then((result) => {
-      this.notificationBase.mevboost = result && result.toUpperCase() == "MEV-BOOST"
+    this.updateUtils.getClient("MEV-BOOST").then((result) => {
+      this.notificationBase.setClientToggleState("MEV-BOOST", result && result.toUpperCase() == "MEV-BOOST")
     })
-    this.updateUtils.getETH1Client().then((result) => this.eth1client = result)
-    this.updateUtils.getETH2Client().then((result) => this.eth2client = result)
     this.updateUtils.getUpdateChannel().then((result) => this.updateChannel = result)
 
     this.theme.isWinterEnabled().then((result) => this.snowing = result)
@@ -140,6 +132,8 @@ export class Tab3Page {
     })
     this.notificationBase.disableToggleLock()
 
+    this.updateUtils.convertOldToNewClientSettings()
+
     this.fadeIn = "fade-in"
     setTimeout(() => {
       this.fadeIn = null
@@ -147,12 +141,24 @@ export class Tab3Page {
   }
 
   changeWidgetTheme() {
-    
+
   }
 
-  async gotoNotificationPage() {
+  async goToNotificationPage() {
     await this.sync.syncAllSettings(true)
     this.router.navigate(['/notifications'])
+  }
+
+  async openClientsPage(identifier: string) {
+    const modal = await this.modalController.create({
+      component: ClientsPage,
+      cssClass: 'my-custom-class',
+      componentProps: {
+        'clientIdentifier': identifier,
+      }
+    });
+
+    return await modal.present();
   }
 
   themeColorLock = false
@@ -182,7 +188,8 @@ export class Tab3Page {
         "Widgets are only available on iOS 14 or newer<br/><br/>" +
         "If you just purchased a premium package and the widget does not show any data, try deleting it and adding the widget again."
     } else {
-      tutorialText = "1. Go to your homescreen<br/>" +
+      tutorialText =
+        "1. Go to your homescreen<br/>" +
         "2. Hold down on an empty space<br/>" +
         "3. Click on 'Widgets'<br/>" +
         "4. Scroll down and select Beaconchain Dashboard and chose your widget<br/><br/>" +
@@ -259,55 +266,8 @@ export class Tab3Page {
     }
 
     this.updateUtils.setUpdateChannel(this.updateChannel)
-    this.updateUtils.checkUpdates()
+    this.updateUtils.checkAllUpdates()
   }
-
-  async mevBoostToggle() {
-    if (this.notificationBase.lockedToggle) {
-      return;
-    }
-
-    if (this.notificationBase.mevboost) {
-      this.sync.changeMevBoostClient("MEV-BOOST")
-    } else {
-      this.sync.changeMevBoostClient(null)
-    }
-    
-    this.updateUtils.checkUpdates()
-  }
-
-  async smartNodeToggle() {
-    if (this.notificationBase.lockedToggle) {
-      return;
-    }
-
-    if (this.notificationBase.smartnode) {
-      this.sync.changeRocketpoolClient("ROCKETPOOL")
-    } else {
-      this.sync.changeRocketpoolClient(null)
-    }
-    
-    this.updateUtils.checkUpdates()
-  }
-
-  async changeETH2Client() {
-    if (this.notificationBase.lockedToggle) {
-      return;
-    }
-
-    this.sync.changeETH2Client(this.eth2client)
-    this.updateUtils.checkUpdates()
-  }
-
-  async changeETH1Client() {
-    if (this.notificationBase.lockedToggle) {
-      return;
-    }
-
-    this.sync.changeETH1Client(this.eth1client)
-    this.updateUtils.checkUpdates()
-  }
-
 
   async openBrowser(link, native: boolean = false) {
     if (native) {
@@ -360,7 +320,7 @@ export class Tab3Page {
 
     await this.storage.setNetworkPreferences(newConfig)
     await this.api.updateNetworkConfig()
-    await this.notificationBase.loadNotifyToggles()
+    await this.notificationBase.loadAllToggles()
     this.validatorUtils.notifyListeners()
   }
 

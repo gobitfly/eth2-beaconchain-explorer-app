@@ -292,7 +292,6 @@ export class DashboardComponent implements OnInit {
     } catch (e) {
 
     }
-
   }
 
   ngOnInit() {
@@ -371,7 +370,6 @@ export class DashboardComponent implements OnInit {
       this.unit.prefRpl = "RPL"
     }
   }
-
 
   switchRplStake(canPercent = false) {
     if (this.rplState == "rpl" && canPercent) {

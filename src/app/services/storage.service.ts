@@ -138,7 +138,7 @@ export class StorageService extends CacheModule {
     return new BigNumber(value)
   }
 
-  async setStakingShare(value: BigNumber){
+  async setStakingShare(value: BigNumber) {
     await this.setItem("staking_share", value ? value.toString() : null)
   }
 
@@ -146,7 +146,7 @@ export class StorageService extends CacheModule {
   async setLastEpochRequestTime(time: number) {
     await this.setObject("last_epoch_time", { ts: time })
   }
- 
+
   async getLastEpochRequestTime() {
     const result = await this.getObject("last_epoch_time")
     if (!result || !result.ts) return Date.now()
@@ -163,19 +163,24 @@ export class StorageService extends CacheModule {
     }
   }
 
-async openLogSession(modalCtr, offset: number) {
-  var lastLogSession = parseInt(await window.localStorage.getItem("last_log_session"))
-  if (isNaN(lastLogSession)) lastLogSession = 0
-  
+  async openLogSession(modalCtr, offset: number) {
+    var lastLogSession = parseInt(await window.localStorage.getItem("last_log_session"))
+    if (isNaN(lastLogSession)) lastLogSession = 0
+
     const modal = await modalCtr.create({
       component: LogviewPage,
       cssClass: 'my-custom-class',
       componentProps: {
-        'logs': JSON.parse(window.localStorage.getItem("log_session_"+((lastLogSession + (3 - offset)) % 3)))
+        'logs': JSON.parse(window.localStorage.getItem("log_session_" + ((lastLogSession + (3 - offset)) % 3)))
       }
     });
     return await modal.present();
-}
+  }
+
+  async isNotifyClientUpdatesEnabled(): Promise<boolean> {
+    return (await this.getBooleanSetting("eth_client_update", true)) &&
+      (await this.getBooleanSetting(SETTING_NOTIFY, true))
+  }
 
 
   // --- Low level ---

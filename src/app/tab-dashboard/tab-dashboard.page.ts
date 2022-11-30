@@ -72,7 +72,7 @@ export class Tab1Page {
   async reApplyNotifications() {
     const isLoggedIn = await this.storage.getAuthUser()
     if (!isLoggedIn) return
-    
+
     const reapply = await this.storage.getBooleanSetting(REAPPLY_KEY, false)
     if (!reapply) {
       this.sync.syncAllSettingsForceStaleNotifications()
@@ -112,7 +112,7 @@ export class Tab1Page {
       this.initialized = false
       return
     }
-    this.updates.checkUpdates()
+    this.updates.checkAllUpdates()
     const validators = await this.validatorUtils.getAllMyValidators().catch((error) => { return [] })
     const epoch = await this.validatorUtils.getRemoteCurrentEpoch().catch((error) => { return null })
     const overviewController = new OverviewController(() => {
@@ -120,7 +120,7 @@ export class Tab1Page {
       this.api.invalidateCache()
       this.refresh()
     }, await this.merchant.getCurrentPlanMaxValidator())
-    
+
     this.overallData = overviewController.proccessDashboard(
       validators,
       epoch
@@ -133,7 +133,7 @@ export class Tab1Page {
   }
 
   async doRefresh(event) {
-    const old =  Object.assign({}, this.overallData);
+    const old = Object.assign({}, this.overallData);
     this.overallData = null
     await this.refresh().catch(() => {
       this.api.mayInvalidateOnFaultyConnectionState()
