@@ -82,7 +82,7 @@ export class Tab3Page {
 
   premiumLabel: string = ""
 
-  package = ""
+  protected package = ""
 
   constructor(
     protected api: ApiService,
