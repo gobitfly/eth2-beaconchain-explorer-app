@@ -30,6 +30,8 @@ export class NotificationBase implements OnInit {
   notifyTogglesMap = new Map<String, boolean>()
   clientUpdatesTogglesMap = new Map<String, boolean>() // identifier = client key
 
+  settingsChanged = false
+
   constructor(
     protected api: ApiService,
     protected storage: StorageService,
@@ -46,6 +48,7 @@ export class NotificationBase implements OnInit {
 
   async setClientToggleState(clientKey: string, state: boolean) {
     this.clientUpdatesTogglesMap.set(clientKey, state)
+    this.settingsChanged = true
     if (state) {
       await this.clientUpdate.setClient(clientKey, clientKey)
     } else {
@@ -65,6 +68,7 @@ export class NotificationBase implements OnInit {
 
   setNotifyToggle(eventName: string, event) {
     console.log("change notify toggle", eventName, event)
+    this.settingsChanged = true
     this.notifyTogglesMap.set(eventName, event)
   }
 
@@ -223,7 +227,7 @@ export class NotificationBase implements OnInit {
 
     const net = (await this.api.networkConfig).net
     this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
-
+    this.settingsChanged = true
     if (!(await this.api.isNotMainnet())) {
       this.sync.changeGeneralNotify(this.notify)
     }
@@ -263,7 +267,7 @@ export class NotificationBase implements OnInit {
     if (this.lockedToggle) {
       return;
     }
-
+    this.settingsChanged = true
     this.sync.changeNotifyClientUpdate(
       "eth_client_update",
       this.notifyTogglesMap.get("eth_client_update")
@@ -289,7 +293,7 @@ export class NotificationBase implements OnInit {
       if (parts[1].indexOf("eth_client_update") >= 0) { return; }
       eventName = parts[1]
     }
-
+    this.settingsChanged = true
     this.notifyTogglesMap.set(eventName, value)
     const count = this.activeSubscriptionsPerEventMap.get(eventName)
     this.activeSubscriptionsPerEventMap.set(eventName, count ? count + 1 : 1)
@@ -307,7 +311,7 @@ export class NotificationBase implements OnInit {
     if (this.lockedToggle) {
       return;
     }
-
+    this.settingsChanged = true
     this.sync.changeNotifyEvent(
       eventName,
       eventName,
@@ -322,7 +326,7 @@ export class NotificationBase implements OnInit {
     if (this.lockedToggle) {
       return
     }
-
+    this.settingsChanged = true
     if (this.getClientToggleState(clientKey)) {
       this.sync.changeClient(clientKey, clientKey)
     } else {
@@ -338,7 +342,7 @@ export class NotificationBase implements OnInit {
     }
     let key = eventName + filter
     let value = this.getNotifyToggleFromEvent(eventName)
-
+    this.settingsChanged = true
     this.storage.setBooleanSetting(eventName, value)
 
     this.sync.changeNotifyEventUser(
@@ -355,6 +359,7 @@ export class NotificationBase implements OnInit {
   disableToggleLock() {
     setTimeout(() => {
       this.lockedToggle = false
+      this.settingsChanged = false
     }, 300)
   }
 

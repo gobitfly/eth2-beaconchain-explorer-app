@@ -21,6 +21,7 @@ export class ClientsPage implements OnInit {
   ) { }
 
   ngOnInit() {
+    
     this.notificationBase.lockedToggle = true
 
     this.updateUtils.getClient("LIGHTHOUSE").then((result) => {
@@ -52,10 +53,13 @@ export class ClientsPage implements OnInit {
     })
 
     this.notificationBase.disableToggleLock()
+    
   }
 
   closeModal() {
-    this.sync.syncAllSettings(true)
+    if (this.notificationBase.settingsChanged) {
+      this.sync.syncAllSettings(true)
+    }
     this.modalCtrl.dismiss();
   }
 
