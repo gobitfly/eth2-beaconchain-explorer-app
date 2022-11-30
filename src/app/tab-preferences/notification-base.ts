@@ -79,9 +79,8 @@ export class NotificationBase implements OnInit {
     func()
   }
 
-  async getDefaultNotificationSetting() {
-    if (this.platform.is("ios")) return false // iOS users need to grant notification permission first
-    else return await this.firebaseUtils.hasNotificationToken() // on Android, enable as default when token is present
+  public async getDefaultNotificationSetting() {
+    return await this.firebaseUtils.hasNotificationConsent() && await this.firebaseUtils.hasNotificationToken()
   }
 
   // Android registers firebase service at app start
@@ -213,7 +212,7 @@ export class NotificationBase implements OnInit {
 
     if (!(await this.isSupportedOnAndroid())) return
 
-    if (await this.firebaseUtils.hasConsentDenied()) {
+    if (this.platform.is("ios") && await this.firebaseUtils.hasSeenConsentScreenAndNotConsented()) {
       this.changeToggleSafely(() => { this.notify = false })
       this.firebaseUtils.alertIOSManuallyEnableNotifications()
       return
@@ -250,7 +249,7 @@ export class NotificationBase implements OnInit {
 
   private async getNotificationSetting(notifyLocalStore): Promise<boolean> {
     const local = (notifyLocalStore != null) ? notifyLocalStore : await this.getDefaultNotificationSetting()
-
+    if( ! (await this.firebaseUtils.hasNotificationConsent())) return false
     console.log("Returning notification enabled local state:", local)
     return local
   }

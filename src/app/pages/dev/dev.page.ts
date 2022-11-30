@@ -14,6 +14,7 @@ export class DevPage extends Tab3Page implements OnInit {
 
   packageOverride: string = "default"
   firebaseToken: string = ""
+  notificationConsent: boolean = false
 
   ngOnInit() {
     this.notificationBase.disableToggleLock()
@@ -24,6 +25,9 @@ export class DevPage extends Tab3Page implements OnInit {
     this.storage.getItem(CURRENT_TOKENKEY).then((result) => {
       this.firebaseToken = result
     })
+
+    this.firebaseUtils.hasNotificationConsent().then((result) => this.notificationConsent = result)
+    
   }
 
   // --- Development methods ---
@@ -74,6 +78,10 @@ export class DevPage extends Tab3Page implements OnInit {
 
   triggerToggleTest() {
     this.toggleTest = true
+  }
+
+  triggerNotificationConsent() {
+    this.firebaseUtils.registerPush(true)
   }
 
   toggleTest = false

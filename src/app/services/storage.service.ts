@@ -26,7 +26,7 @@ import { CacheModule } from '../utils/CacheModule'
 import BigNumber from 'bignumber.js';
 import { Platform } from '@ionic/angular';
 
-import { Storage } from '@capacitor/storage';
+import { Preferences } from '@capacitor/preferences';
 import { LogviewPage } from '../pages/logview/logview.page';
 const { StorageMirror } = Plugins;
 
@@ -158,7 +158,7 @@ export class StorageService extends CacheModule {
     let alreadyMigrated = await this.getBooleanSetting("migrated_to_cap3", false)
     if (!alreadyMigrated) {
       console.log("migrating to capacitor 3 storage...")
-      let result = await Storage.migrate()
+      let result = await Preferences.migrate()
       this.setBooleanSetting("migrated_to_cap3", true)
     }
   }
@@ -201,7 +201,7 @@ export class StorageService extends CacheModule {
 
   async setItem(key: string, value: string, cache: boolean = true) {
     if (cache) this.putCache(key, value)
-    await Storage.set({
+    await Preferences.set({
       key: key,
       value: value,
     });
@@ -232,12 +232,12 @@ export class StorageService extends CacheModule {
     const cached = await this.getCache(key)
     if (cached != null) return cached
 
-    const { value } = await Storage.get({ key: key });
+    const { value } = await Preferences.get({ key: key });
     return value;
   }
 
   async findAllKeys(startingWith: string) {
-    const keys = await Storage.keys()
+    const keys = await Preferences.keys()
     const result: string[] = []
     keys.keys.forEach((value) => {
       if (value.startsWith(startingWith)) result.push(value)
@@ -247,18 +247,18 @@ export class StorageService extends CacheModule {
 
   async remove(key: string) {
     this.invalidateCache(key)
-    await Storage.remove({ key: key });
+    await Preferences.remove({ key: key });
     this.reflectiOSStorage()
   }
 
   async keys() {
-    const { keys } = await Storage.keys();
+    const { keys } = await Preferences.keys();
     return keys;
   }
 
   async clear() {
     this.invalidateAllCache()
-    await Storage.clear();
+    await Preferences.clear();
     this.reflectiOSStorage()
   }
 

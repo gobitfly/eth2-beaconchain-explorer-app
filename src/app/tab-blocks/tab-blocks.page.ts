@@ -155,7 +155,7 @@ export class TabBlocksPage implements OnInit {
     } else {
       this.alertService.showInfo(
         "Proposal Luck",
-        `Compares the number of your actual proposed blocks to the expected average blocks per validator during the last ${this.luck.timeFrameName}. 
+        `Compares the number of your actual proposed blocks to the expected average blocks per validator during the last <strong>${this.luck.timeFrameName}</strong>. 
         <br/><br/>Your <strong>${this.luck.userValidators}</strong> validators are expected to produce <strong>${this.luck.expectedBlocksPerMonth.toFixed(2)}</strong> blocks per month on average with current network conditions.`
       )
     }
