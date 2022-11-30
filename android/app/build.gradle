@@ -1,11 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
-android.defaultConfig.manifestPlaceholders = [
-        // change to the 'custom_url_scheme' value in your strings.xml. They need to be the same. e.g.
-        "appAuthRedirectScheme": "beaconchainmobile"
-]
-
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
@@ -38,17 +33,17 @@ android {
     productFlavors {
         prod {
             dimension "environment"
-            manifestPlaceholders = [appLabel:"@string/app_name", loginCallbackScheme:"@string/custom_url_scheme"]
+            manifestPlaceholders = [appLabel:"@string/app_name", loginCallbackScheme:"@string/custom_url_scheme", "appAuthRedirectScheme": "beaconchainmobile"]
         }
         beta {
             dimension "environment"
             applicationIdSuffix ".beta"
-            manifestPlaceholders = [appLabel:"@string/app_name_beta", loginCallbackScheme:"@string/custom_url_scheme_beta"]
+            manifestPlaceholders = [appLabel:"@string/app_name_beta", loginCallbackScheme:"@string/custom_url_scheme_beta", "appAuthRedirectScheme": "beaconchainmobilebeta"]
         }
         nogoogle {
             dimension "environment"
             applicationIdSuffix ".nogoo"
-            manifestPlaceholders = [appLabel:"@string/app_name", loginCallbackScheme:"@string/custom_url_scheme"]
+            manifestPlaceholders = [appLabel:"@string/app_name", loginCallbackScheme:"@string/custom_url_scheme", "appAuthRedirectScheme": "beaconchainmobile"]
         }
     }
 }
