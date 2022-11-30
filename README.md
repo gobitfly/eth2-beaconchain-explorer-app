@@ -17,6 +17,7 @@ Beaconchain Dashboard is an Angular app written in Typescript, HTML & CSS. It ut
 
 - Keep track on your validators online status, balances, returns and more  
 - Various notification alerts for your validators  
+- Execution block rewards overview
 - Machine monitoring (CPU usage, network usage and more)
 - Rocketpool support
 - Customize stake share if you only partially own a validator
@@ -26,13 +27,12 @@ Beaconchain Dashboard is an Angular app written in Typescript, HTML & CSS. It ut
 - Network warnings  
 - Support for multiple currencies  
 - Mainnet & Testnet support  
-- Add validators with public key, index or eth 1.0 deposit addresses  
 - Light Theme & Dark Theme  
 
 ## Device support
 
-- Android 5.0 or newer
-- iOS 12 or newer
+- Android 5.1 or newer
+- iOS 13 or newer
 
 ## Development
 ### Getting started
