@@ -6,6 +6,9 @@ import { MerchantUtils, Package } from 'src/app/utils/MerchantUtils';
 import { OAuthUtils } from 'src/app/utils/OAuthUtils';
 import { AlertService } from 'src/app/services/alert.service';
 import { Toast } from '@capacitor/toast';
+import FlavorUtils from 'src/app/utils/FlavorUtils';
+
+import { Browser } from '@capacitor/browser';
 
 @Component({
   selector: 'app-subscribe',
@@ -29,7 +32,8 @@ export class SubscribePage implements OnInit {
     private storage: StorageService,
     private oauth: OAuthUtils,
     private alertService: AlertService,
-    private platform: Platform
+    private platform: Platform,
+    private flavor: FlavorUtils,
   ) { }
 
   ngOnInit() {
@@ -67,14 +71,25 @@ export class SubscribePage implements OnInit {
 
   async continuePurchaseIntern() {
     const isPremium = await this.merchant.hasMachineHistoryPremium()
+    const isNoGoogle = await this.flavor.isNoGoogleFlavor() 
     if (isPremium) {
       const packageName = capitalize(await this.merchant.getCurrentPlanConfirmed())
-      this.alertService.confirmDialog("Already Premium", "You already own the " + packageName + " package, are you sure that you want to continue with your purchase?", "Yes", () => {
-        this.merchant.purchase(this.selectedPackage.purchaseKey)
+      this.alertService.confirmDialog("Already Premium", "You already own the " + packageName + " package, are you sure that you want to continue with your purchase?", "Yes", async () => {
+        if (isNoGoogle) {
+          await Browser.open({ url: "https://beaconcha.in/premium", toolbarColor: "#2f2e42" });
+        } else {
+          this.merchant.purchase(this.selectedPackage.purchaseKey)
+        }
       })
       return
     }
-    this.merchant.purchase(this.selectedPackage.purchaseKey)
+  
+    if (isNoGoogle) {
+      await Browser.open({ url: "https://beaconcha.in/premium", toolbarColor: "#2f2e42" });
+    } else {
+      this.merchant.purchase(this.selectedPackage.purchaseKey)
+    }
+    
   }
 
   async purchaseIntern() {

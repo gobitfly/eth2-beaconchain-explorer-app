@@ -29,7 +29,8 @@ npm-debug.log*
 /platforms
 /plugins
 /www
-/android/app/google-services.json
+/android/app/src/prod/google-services.json
+/android/app/src/beta/google-services.json
 /ios/App/GoogleService-Info.plist
 /appassets
 /.angular

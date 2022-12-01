@@ -26,13 +26,15 @@ import { Injectable } from '@angular/core';
 import { StorageService } from '../services/storage.service';
 import FirebaseUtils from './FirebaseUtils';
 import { ValidatorUtils } from './ValidatorUtils';
-import { LoadingController } from '@ionic/angular';
+import { LoadingController, Platform } from '@ionic/angular';
 import { SyncService } from '../services/sync.service';
 import { MerchantUtils } from "./MerchantUtils";
 
 import { Toast } from '@capacitor/toast';
 import { Device } from '@capacitor/device';
 import { OAuth2Client } from '@byteowls/capacitor-oauth2';
+import FlavorUtils from "./FlavorUtils";
+import { Browser } from '@capacitor/browser';
 
 @Injectable({
   providedIn: 'root'
@@ -46,7 +48,9 @@ export class OAuthUtils {
     private validatorUtils: ValidatorUtils,
     private loadingController: LoadingController,
     private sync: SyncService,
-    private merchantUtils: MerchantUtils
+    private merchantUtils: MerchantUtils,
+    private flavor: FlavorUtils,
+    private platform: Platform
   ) {
     //registerWebPlugin(OAuth2Client);
   }
@@ -132,7 +136,13 @@ export class OAuthUtils {
     }
 
     const responseType = "code"
-    const callback = "beaconchainmobile://callback"
+    let callback = "beaconchainmobile://callback"
+
+    if (this.platform.is("ios") || this.platform.is("android")) {
+      if (await this.flavor.isBetaFlavor()) {
+        callback = "beaconchainmobilebeta://callback"
+      }
+    }
 
     return {
       authorizationBaseUrl: await api.getBaseUrl() + "/user/authorize",

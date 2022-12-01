@@ -47,6 +47,7 @@ import { Browser } from '@capacitor/browser';
 import { Toast } from '@capacitor/toast';
 import { MergeChecklistPage } from '../pages/merge-checklist/merge-checklist.page';
 import { ClientsPage } from '../pages/clients/clients.page';
+import FlavorUtils from '../utils/FlavorUtils';
 
 @Component({
   selector: 'app-tab3',
@@ -81,6 +82,8 @@ export class Tab3Page {
 
   premiumLabel: string = ""
 
+  protected package = ""
+
   constructor(
     protected api: ApiService,
     protected oauth: OAuthUtils,
@@ -97,7 +100,8 @@ export class Tab3Page {
     protected sync: SyncService,
     protected merchant: MerchantUtils,
     public notificationBase: NotificationBase,
-    private router: Router
+    private router: Router,
+    private flavor: FlavorUtils
   ) { }
 
   ngOnInit() {
@@ -121,7 +125,21 @@ export class Tab3Page {
       this.allTestNetworks = result
     })
 
-    App.getInfo().then((result) => this.appVersion = result.version)
+    App.getInfo().then((result) => {
+      this.appVersion = result.version
+    })
+
+    this.flavor.isBetaFlavor().then((result) => {
+      if (result) {
+        this.package = "INTERNAL BETA"
+      }
+    })
+
+    this.flavor.isNoGoogleFlavor().then((result) => {
+      if (result) {
+        this.package = "Googleless Edition"
+      }
+    })
 
     this.merchant.getCurrentPlanConfirmed().then((result) => {
       this.currentPlan = result
