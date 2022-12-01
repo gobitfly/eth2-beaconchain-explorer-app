@@ -18,18 +18,14 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import "../../../theme/variables.scss";
+@import '../../../theme/variables.scss';
 
 // Makes the iOS top bounce in our primary color
 // and the bottom bounce in main themes color
 ion-content {
-  --background: linear-gradient(
-    0deg,
-    var(--ion-background-color) 60%,
-    var(--ion-toolbar-background) 40%
-  );
+	--background: linear-gradient(0deg, var(--ion-background-color) 60%, var(--ion-toolbar-background) 40%);
 }
 
 ion-refresher-content {
-  --color: #fff !important;
+	--color: #fff !important;
 }

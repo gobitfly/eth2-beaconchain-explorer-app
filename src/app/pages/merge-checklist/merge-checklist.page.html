@@ -1,75 +1,73 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="closeModal()">
-        <ion-icon size="large" name="close-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>Merge Checklist</ion-title>
-    <ion-buttons slot="end" *ngIf="!fromSettings">
-      <ion-button (click)="dismissChecklist()">
-        <ion-icon  name="checkbox-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+	<ion-toolbar>
+		<ion-buttons slot="start">
+			<ion-button (click)="closeModal()">
+				<ion-icon size="large" name="close-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+		<ion-title>Merge Checklist</ion-title>
+		<ion-buttons slot="end" *ngIf="!fromSettings">
+			<ion-button (click)="dismissChecklist()">
+				<ion-icon name="checkbox-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
 </ion-header>
 
 <ion-content>
+	<ion-list>
+		<ion-item *ngFor="let entry of todo" [ngStyle]="{'opacity' : entry.isChecked ? 0.8 : 1}">
+			<ion-checkbox slot="start" [(ngModel)]="entry.isChecked" [value]="entry" (ionChange)="change($event)"></ion-checkbox>
+			<ion-label class="ion-text-wrap"
+				>{{entry.val}}
+				<ion-label class="ion-text-wrap hint">{{entry.timing}}</ion-label>
+			</ion-label>
+		</ion-item>
+	</ion-list>
 
-  <ion-list>
-    <ion-item *ngFor="let entry of todo" [ngStyle]="{'opacity' : entry.isChecked ? 0.8 : 1}">
-      <ion-checkbox slot="start" [(ngModel)]="entry.isChecked" [value]="entry" (ionChange)="change($event)"></ion-checkbox>
-      <ion-label class="ion-text-wrap">{{entry.val}}
-        <ion-label class="ion-text-wrap hint">{{entry.timing}}</ion-label>
-      </ion-label>
-     
-    </ion-item>
-  </ion-list>
+	<ion-list-header>
+		<ion-label>Optional</ion-label>
+	</ion-list-header>
+	<ion-list>
+		<ion-item *ngFor="let entry of optional" [ngStyle]="{'opacity' : entry.isChecked ? 0.8 : 1}">
+			<ion-checkbox slot="start" [(ngModel)]="entry.isChecked" [value]="entry" (ionChange)="change($event)"></ion-checkbox>
+			<ion-label class="ion-text-wrap">{{entry.val}}</ion-label>
+		</ion-item>
+	</ion-list>
 
-  <ion-list-header>
-    <ion-label>Optional</ion-label>
-  </ion-list-header>
-  <ion-list>
-    <ion-item *ngFor="let entry of optional" [ngStyle]="{'opacity' : entry.isChecked ? 0.8 : 1}">
-      <ion-checkbox slot="start"  [(ngModel)]="entry.isChecked" [value]="entry" (ionChange)="change($event)"></ion-checkbox>
-      <ion-label class="ion-text-wrap">{{entry.val}}</ion-label>
-     
-    </ion-item>
-  </ion-list>
+	<ion-list-header>
+		<ion-label>Guides & Help</ion-label>
+	</ion-list-header>
 
-  <ion-list-header>
-    <ion-label>Guides & Help</ion-label>
-  </ion-list-header>
+	<ion-list>
+		<ion-item lines="none" (click)="openBrowser('https://launchpad.ethereum.org/en/merge-readiness')">
+			<ion-icon slot="start" name="bulb-outline"></ion-icon>
+			<ion-label>Launchpad Merge Readiness</ion-label>
+		</ion-item>
 
-  <ion-list>
-    
-    <ion-item lines="none" (click)="openBrowser('https://launchpad.ethereum.org/en/merge-readiness')">
-      <ion-icon slot="start" name="bulb-outline"></ion-icon>
-      <ion-label>Launchpad Merge Readiness</ion-label>
-    </ion-item>
+		<ion-item
+			lines="none"
+			(click)="openBrowser('https://www.coincashew.com/coins/overview-eth/ethereum-merge-upgrade-checklist-for-home-stakers-and-validators')">
+			<ion-icon slot="start" name="bulb-outline"></ion-icon>
+			<ion-label>CoinCashew Merge Checklist</ion-label>
+		</ion-item>
 
-    <ion-item lines="none" (click)="openBrowser('https://www.coincashew.com/coins/overview-eth/ethereum-merge-upgrade-checklist-for-home-stakers-and-validators')">
-      <ion-icon slot="start" name="bulb-outline"></ion-icon>
-      <ion-label>CoinCashew Merge Checklist</ion-label>
-    </ion-item>
+		<ion-item
+			lines="none"
+			(click)="openBrowser('https://www.coincashew.com/coins/overview-eth/guide-or-how-to-setup-a-validator-on-eth2-mainnet/part-i-installation/installing-execution-client')">
+			<ion-icon slot="start" name="bulb-outline"></ion-icon>
+			<ion-label>Install Execution Client</ion-label>
+		</ion-item>
 
-    <ion-item lines="none" (click)="openBrowser('https://www.coincashew.com/coins/overview-eth/guide-or-how-to-setup-a-validator-on-eth2-mainnet/part-i-installation/installing-execution-client')">
-      <ion-icon slot="start" name="bulb-outline"></ion-icon>
-      <ion-label>Install Execution Client</ion-label>
-    </ion-item>
+		<ion-item lines="none" (click)="openBrowser('https://github.com/flashbots/mev-boost')">
+			<ion-icon slot="start" name="bulb-outline"></ion-icon>
+			<ion-label>MEV Boost</ion-label>
+		</ion-item>
 
-    <ion-item lines="none" (click)="openBrowser('https://github.com/flashbots/mev-boost')">
-      <ion-icon slot="start" name="bulb-outline"></ion-icon>
-      <ion-label>MEV Boost</ion-label>
-    </ion-item>
-    
-
-    <ion-item lines="none" (click)="openBrowser('https://reddit.com/r/ethstaker')">
-      <ion-icon slot="start" name="bulb-outline"></ion-icon>
-      <ion-label>Reddit ethstaker</ion-label>
-    </ion-item>
-
-    
-  </ion-list>
-  <div class="bottomFiller"></div> 
+		<ion-item lines="none" (click)="openBrowser('https://reddit.com/r/ethstaker')">
+			<ion-icon slot="start" name="bulb-outline"></ion-icon>
+			<ion-label>Reddit ethstaker</ion-label>
+		</ion-item>
+	</ion-list>
+	<div class="bottomFiller"></div>
 </ion-content>

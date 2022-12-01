@@ -18,74 +18,73 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- @import "../../../theme/variables.scss";
+@import '../../../theme/variables.scss';
 
- .blockie {
-   position: absolute;
-   top: 20px;
-   left: 22px;
-   border-radius: 20%;
-   height: 59px;
-   width: 56px;
-   image-rendering: pixelated;
- }
- 
- .container {
- }
- 
+.blockie {
+	position: absolute;
+	top: 20px;
+	left: 22px;
+	border-radius: 20%;
+	height: 59px;
+	width: 56px;
+	image-rendering: pixelated;
+}
 
- .blocknr {
-    top: 83px;
-    text-align:center;
-    padding-top: 75px;
-    width: 66px;
-    font-size: 0.72rem;
-  }
+.container {
+}
 
- .inner {
-   padding-top: 14px;
-   padding-bottom: 14px;
- }
- 
- ion-item {
-   background: var(--ion-card-background);
- }
- 
- ion-icon {
-   position: absolute !important;
-   top: 2px;
-   right: 20px;
-   margin-top: 0px !important;
-   padding-top: 0px !important;
-   margin-bottom: 29px;
-   height: 56px;
- }
- 
- .info {
-   margin-top: 15px;
-   margin-left: 0px;
-   margin-right: 5px;
-   margin-bottom: 15px;
- }
- 
- .balance {
-   font-weight: bold;
- }
- 
- .title {
-   font-size: 16px;
-   font-weight: bold;
- }
- 
- .smaller-info {
-   font-size: 0.8rem;
-   color: var(--ion-text-color-secondary);
- }
- 
- .smoothing {
-    color: #e17959
- }
+.blocknr {
+	top: 83px;
+	text-align: center;
+	padding-top: 75px;
+	width: 66px;
+	font-size: 0.72rem;
+}
 
- .ethpool {
-    color: #ee7112
- }
+.inner {
+	padding-top: 14px;
+	padding-bottom: 14px;
+}
+
+ion-item {
+	background: var(--ion-card-background);
+}
+
+ion-icon {
+	position: absolute !important;
+	top: 2px;
+	right: 20px;
+	margin-top: 0px !important;
+	padding-top: 0px !important;
+	margin-bottom: 29px;
+	height: 56px;
+}
+
+.info {
+	margin-top: 15px;
+	margin-left: 0px;
+	margin-right: 5px;
+	margin-bottom: 15px;
+}
+
+.balance {
+	font-weight: bold;
+}
+
+.title {
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.smaller-info {
+	font-size: 0.8rem;
+	color: var(--ion-text-color-secondary);
+}
+
+.smoothing {
+	color: #e17959;
+}
+
+.ethpool {
+	color: #ee7112;
+}

@@ -19,15 +19,15 @@
  -->
 
 <div class="background" [class]="iconStyle" *ngIf="notDismissed">
-  <div class="inner">
-    <ion-item lines="none" (click)="openInfo()" [class]="iconStyle">
-      <ion-icon class="left-icon" slot="start" name="{{ icon }}"></ion-icon>
+	<div class="inner">
+		<ion-item lines="none" (click)="openInfo()" [class]="iconStyle">
+			<ion-icon class="left-icon" slot="start" name="{{ icon }}"></ion-icon>
 
-      <ion-label [class]="iconStyle">
-        {{ title }}
-      </ion-label>
+			<ion-label [class]="iconStyle">
+				{{ title }}
+			</ion-label>
 
-      <ion-icon slot="end" name="checkbox-outline" (click)="dismiss()" *ngIf="dismissAble"></ion-icon>
-    </ion-item>
-  </div>
+			<ion-icon slot="end" name="checkbox-outline" (click)="dismiss()" *ngIf="dismissAble"></ion-icon>
+		</ion-item>
+	</div>
 </div>
