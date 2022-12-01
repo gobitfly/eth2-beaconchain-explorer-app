@@ -1,128 +1,130 @@
-
-import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
-import { Animation, AnimationController, ModalController } from '@ionic/angular';
-import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
-import { AdSeenRequest, CoinzillaAdResponse } from 'src/app/requests/requests';
-import { ApiService } from 'src/app/services/api.service';
-import AdUtils, { AdLocation, BEACONCHAIN_AD_ACTION } from 'src/app/utils/AdUtils';
+import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core'
+import { Animation, AnimationController, ModalController } from '@ionic/angular'
+import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
+import { AdSeenRequest, CoinzillaAdResponse } from 'src/app/requests/requests'
+import { ApiService } from 'src/app/services/api.service'
+import AdUtils, {
+	AdLocation,
+	BEACONCHAIN_AD_ACTION,
+} from 'src/app/utils/AdUtils'
 
 const TRANSITION_SPEED = 650
 var DELAY_SPEED = 5000
 
 @Component({
-  selector: 'app-text-ad',
-  templateUrl: './text-ad.component.html',
-  styleUrls: ['./text-ad.component.scss'],
+	selector: 'app-text-ad',
+	templateUrl: './text-ad.component.html',
+	styleUrls: ['./text-ad.component.scss'],
 })
 export class TextAdComponent implements OnInit {
+	@ViewChild('titleContainer', { read: ElementRef }) titleContainer: ElementRef
 
-  @ViewChild('titleContainer', { read: ElementRef }) titleContainer: ElementRef;
+	@Input() location: AdLocation
 
-  @Input() location: AdLocation;
+	text = ''
 
-  text = ""
+	outAnimation: Animation
+	inAnimation: Animation
 
-  outAnimation: Animation;
-  inAnimation: Animation;
+	ad: CoinzillaAdResponse
 
-  ad: CoinzillaAdResponse
+	constructor(
+		private animationCtrl: AnimationController,
+		private adUtils: AdUtils,
+		private modalController: ModalController,
+		private api: ApiService
+	) {}
 
-  constructor(
-    private animationCtrl: AnimationController,
-    private adUtils: AdUtils,
-    private modalController: ModalController,
-    private api: ApiService
-  ) { }
+	ngOnInit() {
+		this.adUtils.get(this.location).then((data) => {
+			this.ad = data
+			if (!this.ad) return
+			this.text = this.ad.title
+			this.sendImpression()
 
-  ngOnInit() {
+			setTimeout(() => {
+				this.animateTitleChange()
+			}, DELAY_SPEED + 1000)
+		})
+	}
 
-    this.adUtils.get(this.location).then((data) => {
-      this.ad = data;
-      if (!this.ad) return
-      this.text = this.ad.title
-      this.sendImpression()
+	currentDisplay = 0
+	animateTitleChange() {
+		if (!this.outAnimation) {
+			this.outAnimation = this.animationCtrl
+				.create()
+				.addElement(this.titleContainer.nativeElement)
+				.easing('ease-out')
+				.duration(TRANSITION_SPEED)
+				.fromTo('opacity', '1.0', '0.0')
+		}
+		if (!this.inAnimation) {
+			this.inAnimation = this.animationCtrl
+				.create()
+				.addElement(this.titleContainer.nativeElement)
+				.duration(TRANSITION_SPEED)
+				.easing('ease-in')
+				.fromTo('opacity', '0.0', '1.0')
+		}
 
-      setTimeout(() => {
-        this.animateTitleChange()
-      }, DELAY_SPEED + 1000)
-    })
-  }
+		this.outAnimation.play()
+		setTimeout(() => {
+			this.outAnimation.stop()
 
-  currentDisplay = 0
-  animateTitleChange() {
+			this.currentDisplay = (this.currentDisplay + 1) % 3
+			if (this.currentDisplay == 0) {
+				this.text = this.ad.title
+				this.titleContainer.nativeElement.style.fontSize =
+					this.calculateTextSize(this.text)
+				DELAY_SPEED = 7500
+			} else if (this.currentDisplay == 1) {
+				this.text = this.ad.description_short
+				this.titleContainer.nativeElement.style.fontSize =
+					this.calculateTextSize(this.text)
+			} else {
+				this.text = this.ad.description
+				this.titleContainer.nativeElement.style.fontSize =
+					this.calculateTextSize(this.text)
+			}
 
-    if (!this.outAnimation) {
-      this.outAnimation = this.animationCtrl.create()
-        .addElement(this.titleContainer.nativeElement)
-        .easing('ease-out')
-        .duration(TRANSITION_SPEED)
-        .fromTo('opacity', '1.0', '0.0');
-    }
-    if (!this.inAnimation) {
-      this.inAnimation = this.animationCtrl.create()
-        .addElement(this.titleContainer.nativeElement)
-        .duration(TRANSITION_SPEED)
-        .easing('ease-in')
-        .fromTo('opacity', '0.0', '1.0');
-    }
+			this.inAnimation.play()
+			setTimeout(() => {
+				this.inAnimation.stop()
+				this.animateTitleChange()
+			}, DELAY_SPEED)
+		}, TRANSITION_SPEED)
+	}
 
-    this.outAnimation.play()
-    setTimeout(() => {
-      this.outAnimation.stop()
+	private calculateTextSize(text: string) {
+		if (text && text.length > 60) {
+			if (text.length > 90) return '12px'
+			return '13px'
+		}
+		return '15px'
+	}
 
-      this.currentDisplay = (this.currentDisplay + 1) % 3
-      if (this.currentDisplay == 0) {
-        this.text = this.ad.title
-        this.titleContainer.nativeElement.style.fontSize = this.calculateTextSize(this.text)
-        DELAY_SPEED = 7500
-      } else if (this.currentDisplay == 1) {
-        this.text = this.ad.description_short
-        this.titleContainer.nativeElement.style.fontSize = this.calculateTextSize(this.text)
-      } else {
-        this.text = this.ad.description
-        this.titleContainer.nativeElement.style.fontSize = this.calculateTextSize(this.text)
-      }
+	openAd() {
+		if (this.ad.url && this.ad.url == BEACONCHAIN_AD_ACTION) {
+			this.openUpgrades()
+		} else {
+			window.open(this.ad.url, '_system', 'location=yes')
+		}
+	}
 
-      this.inAnimation.play()
-      setTimeout(() => {
-        this.inAnimation.stop()
-        this.animateTitleChange()
-      }, DELAY_SPEED)
+	async openUpgrades() {
+		const modal = await this.modalController.create({
+			component: SubscribePage,
+			cssClass: 'my-custom-class',
+		})
+		return await modal.present()
+	}
 
-    }, TRANSITION_SPEED)
-  }
+	async sendImpression() {
+		if (!this.ad.impressionUrl) return
 
-  private calculateTextSize(text: string) {
-    if (text && text.length > 60) {
-      if (text.length > 90) return "12px"
-      return "13px"
-    }
-    return "15px"
-  }
-
-  openAd() {
-    if (this.ad.url && this.ad.url == BEACONCHAIN_AD_ACTION) {
-      this.openUpgrades()
-    } else {
-      window.open(this.ad.url, '_system', 'location=yes');
-    }
-  }
-
-  async openUpgrades() {
-    const modal = await this.modalController.create({
-      component: SubscribePage,
-      cssClass: 'my-custom-class',
-    });
-    return await modal.present();
-  }
-
-  async sendImpression() {
-
-    if (!this.ad.impressionUrl) return;
-    
-    const result = await this.api.execute(new AdSeenRequest(this.ad.impressionUrl))
-    console.log("ad impression response", result)
-      
-  }
-
+		const result = await this.api.execute(
+			new AdSeenRequest(this.ad.impressionUrl)
+		)
+		console.log('ad impression response', result)
+	}
 }

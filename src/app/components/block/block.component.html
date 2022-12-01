@@ -1,27 +1,32 @@
 <div class="container" [class]="fadeIn">
-  <div class="inner">
-    <ion-item lines="none">
+	<div class="inner">
+		<ion-item lines="none">
+			<div slot="start">
+				<img class="blockie" src="{{ imgData }}" />
+				<ion-label class="blocknr">{{ block.blockNumber }}</ion-label>
+			</div>
 
-      <div slot="start">
-        <img class="blockie" src="{{ imgData }}" />
-        <ion-label class="blocknr">{{ block.blockNumber }}</ion-label>
-      </div>
-
-      <div class="info">
-        <ion-text class="title">Reward: {{ producerReward | mcurrency: "WEI":unit.pref  }}</ion-text>
-        <ion-label class="smaller-info" style="padding-bottom: 0px;">
-          <span>Proposer: {{ block.posConsensus.proposerIndex }}</span>
-        </ion-label>
-        <ion-label class="smaller-info" style="padding-bottom: 0px;">
-          <span *ngIf="!resolvedName">To: {{ feeRecipient | slice:0:8 }}…{{ feeRecipient | slice:35:42 }}</span>
-          <span *ngIf="resolvedName" >To: <span [class]="resolvedClass">{{ resolvedName }}</span></span>
-        </ion-label>
-        <ion-label class="smaller-info" style="padding-bottom: 0px;">
-          <span>{{ timestamp | timeago }}</span>
-        </ion-label>
-
-      </div>
-
-    </ion-item>
-  </div>
+			<div class="info">
+				<ion-text class="title"
+					>Reward: {{ producerReward | mcurrency: 'WEI':unit.pref }}</ion-text
+				>
+				<ion-label class="smaller-info" style="padding-bottom: 0px">
+					<span>Proposer: {{ block.posConsensus.proposerIndex }}</span>
+				</ion-label>
+				<ion-label class="smaller-info" style="padding-bottom: 0px">
+					<span *ngIf="!resolvedName"
+						>To: {{ feeRecipient | slice: 0:8 }}…{{
+							feeRecipient | slice: 35:42
+						}}</span
+					>
+					<span *ngIf="resolvedName"
+						>To: <span [class]="resolvedClass">{{ resolvedName }}</span></span
+					>
+				</ion-label>
+				<ion-label class="smaller-info" style="padding-bottom: 0px">
+					<span>{{ timestamp | timeago }}</span>
+				</ion-label>
+			</div>
+		</ion-item>
+	</div>
 </div>

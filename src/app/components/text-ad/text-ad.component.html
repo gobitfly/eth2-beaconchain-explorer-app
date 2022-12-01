@@ -1,25 +1,18 @@
 <div class="ad-container" *ngIf="ad">
+	<div class="head" (click)="openAd()">
+		<div class="logo-container">
+			<img
+				src="{{ ad.thumbnail }}"
+				class="logo"
+				[class]="!ad.thumbnail ? 'own-ad' : ''" />
+			<ion-badge color="success">Ad</ion-badge>
+		</div>
+		<div class="title-container" #titleContainer>
+			<ion-label class="ad-title">
+				{{ text }}
+			</ion-label>
+		</div>
+	</div>
 
-
-  <div class="head" (click)="openAd()">
-    <div class="logo-container">
-      <img src="{{ ad.thumbnail }}" class="logo" [class]="!ad.thumbnail ? 'own-ad' : ''">
-      <ion-badge color="success">Ad</ion-badge>
-    </div>
-    <div class="title-container" #titleContainer>
-      
-      <ion-label class="ad-title">
-        
-       {{ text }}
-        
-      </ion-label>
-
-    </div>
-  
-    
-  </div>
-
-  <!--<iframe src="{{ ad.impressionUrl }}" width="1px" height="1px" style="position: absolute;width:0;height:0;border:0;"></iframe>-->
-  
-
+	<!--<iframe src="{{ ad.impressionUrl }}" width="1px" height="1px" style="position: absolute;width:0;height:0;border:0;"></iframe>-->
 </div>

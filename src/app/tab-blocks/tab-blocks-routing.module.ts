@@ -1,17 +1,17 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { NgModule } from '@angular/core'
+import { Routes, RouterModule } from '@angular/router'
 
-import { TabBlocksPage } from './tab-blocks.page';
+import { TabBlocksPage } from './tab-blocks.page'
 
 const routes: Routes = [
-  {
-    path: '',
-    component: TabBlocksPage
-  }
-];
+	{
+		path: '',
+		component: TabBlocksPage,
+	},
+]
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule],
+	imports: [RouterModule.forChild(routes)],
+	exports: [RouterModule],
 })
 export class TabBlocksPageRoutingModule {}

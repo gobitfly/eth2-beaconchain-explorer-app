@@ -18,45 +18,45 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import "../../theme/variables.scss";
+@import '../../theme/variables.scss';
 
 .inner-setup-head ion-icon {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  padding-bottom: 24px;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	padding-bottom: 24px;
 }
 
 .setup-head {
-  background-image: var(--status-bg-image);
-  background-color: var(--ion-toolbar-background) !important;
-  color: var(--x-toolbar-title-color);
+	background-image: var(--status-bg-image);
+	background-color: var(--ion-toolbar-background) !important;
+	color: var(--x-toolbar-title-color);
 }
 
 .inner-setup-head {
-  padding: 30px;
-  margin-top: 25px;
-  margin-top: 0px !important;
-  text-align: center;
-  width: 100%;
+	padding: 30px;
+	margin-top: 25px;
+	margin-top: 0px !important;
+	text-align: center;
+	width: 100%;
 }
 
 .setup-icon {
-  margin-top: 7px;
-  font-size: 69px;
+	margin-top: 7px;
+	font-size: 69px;
 }
 
 // Makes the iOS top bounce in our primary color
 // and the bottom bounce in main themes color
 ion-content {
-  --background: linear-gradient(
-    0deg,
-    var(--ion-background-color) 60%,
-    var(--ion-toolbar-background) 40%
-  );
+	--background: linear-gradient(
+		0deg,
+		var(--ion-background-color) 60%,
+		var(--ion-toolbar-background) 40%
+	);
 }
 
 ion-refresher-content {
-  --color: #fff !important;
+	--color: #fff !important;
 }
