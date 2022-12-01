@@ -1,17 +1,17 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { NgModule } from '@angular/core'
+import { Routes, RouterModule } from '@angular/router'
 
-import { SubscribePage } from './subscribe.page';
+import { SubscribePage } from './subscribe.page'
 
 const routes: Routes = [
-  {
-    path: '',
-    component: SubscribePage
-  }
-];
+	{
+		path: '',
+		component: SubscribePage,
+	},
+]
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule],
+	imports: [RouterModule.forChild(routes)],
+	exports: [RouterModule],
 })
 export class SubscribePageRoutingModule {}

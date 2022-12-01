@@ -30,146 +30,144 @@
  */
 
 /* Core CSS required for Ionic components to work properly */
-@import "~@ionic/angular/css/core.css";
+@import '~@ionic/angular/css/core.css';
 
 /* Basic CSS for apps built with Ionic */
-@import "~@ionic/angular/css/normalize.css";
-@import "~@ionic/angular/css/structure.css";
-@import "~@ionic/angular/css/typography.css";
-@import "~@ionic/angular/css/display.css";
+@import '~@ionic/angular/css/normalize.css';
+@import '~@ionic/angular/css/structure.css';
+@import '~@ionic/angular/css/typography.css';
+@import '~@ionic/angular/css/display.css';
 
 /* Optional CSS utils that can be commented out */
-@import "~@ionic/angular/css/padding.css";
-@import "~@ionic/angular/css/float-elements.css";
-@import "~@ionic/angular/css/text-alignment.css";
-@import "~@ionic/angular/css/text-transformation.css";
-@import "~@ionic/angular/css/flex-utils.css";
+@import '~@ionic/angular/css/padding.css';
+@import '~@ionic/angular/css/float-elements.css';
+@import '~@ionic/angular/css/text-alignment.css';
+@import '~@ionic/angular/css/text-transformation.css';
+@import '~@ionic/angular/css/flex-utils.css';
 
 @font-face {
-  font-family: "Varela";
-  font-style: normal;
-  font-weight: normal;
-  src: url("./assets/fonts/Montserrat-Medium.ttf");
+	font-family: 'Varela';
+	font-style: normal;
+	font-weight: normal;
+	src: url('./assets/fonts/Montserrat-Medium.ttf');
 }
 
-
-
 ion-button {
-  --box-shadow: none;
+	--box-shadow: none;
 }
 
 .bigger-alert {
-  .alert-message.sc-ion-alert-md {
-    max-height: 335px !important;
-  }
+	.alert-message.sc-ion-alert-md {
+		max-height: 335px !important;
+	}
 
-  .alert-message.sc-ion-alert-ios {
-    max-height: 335px !important;
-  }
+	.alert-message.sc-ion-alert-ios {
+		max-height: 335px !important;
+	}
 
-  .alert-wrapper.sc-ion-alert-md {
-    min-width: 340px !important;
-  }
+	.alert-wrapper.sc-ion-alert-md {
+		min-width: 340px !important;
+	}
 
-  .alert-wrapper.sc-ion-alert-ios {
-    min-width: 340px !important;
-  }
+	.alert-wrapper.sc-ion-alert-ios {
+		min-width: 340px !important;
+	}
 }
 
 .fixed-content {
-  background: #dedede;
+	background: #dedede;
 }
 
 .tooltip {
-  background-color: var(--tooltip-background) !important;
-  color: var(--tooltip-textcolor) !important;
-  box-shadow: none !important;
-  border-radius: 9px !important;
-  padding: 8px 14px !important;
-  margin-left: 12px !important;
+	background-color: var(--tooltip-background) !important;
+	color: var(--tooltip-textcolor) !important;
+	box-shadow: none !important;
+	border-radius: 9px !important;
+	padding: 8px 14px !important;
+	margin-left: 12px !important;
 }
 
 .tooltip-right::after {
-  border-color: transparent var(--tooltip-background) transparent transparent !important;
+	border-color: transparent var(--tooltip-background) transparent transparent !important;
 }
 
 ion-header {
-  background: var(--ion-toolbar-background) !important;
-  --background: var(--ion-toolbar-background) !important;
-  --box-shadow: none;
+	background: var(--ion-toolbar-background) !important;
+	--background: var(--ion-toolbar-background) !important;
+	--box-shadow: none;
 }
 
 body.dark .alert-wrapper,
 body.dark .loading-wrapper {
-  background: #222222;
-  --background: #222222;
+	background: #222222;
+	--background: #222222;
 }
 
 .alert-wrapper,
 .loading-wrapper {
-  border-radius: 16px !important;
+	border-radius: 16px !important;
 }
 
 .alert-title,
 .loading-content {
-  color: var(--x-alert-primary) !important;
+	color: var(--x-alert-primary) !important;
 }
 
 .alert-button {
-  font-weight: bold !important;
-  color: var(--x-alert-primary) !important;
+	font-weight: bold !important;
+	color: var(--x-alert-primary) !important;
 }
 
 ion-list,
 ion-list-header,
 ion-virtual-scroll {
-  --background: var(--ion-background-color);
-  background: var(--ion-background-color);
+	--background: var(--ion-background-color);
+	background: var(--ion-background-color);
 }
 
 .header-md::after {
-  display: none;
+	display: none;
 }
 
 h1,
 h2,
 h3 {
-  font-family: "Varela";
-  --font-family: "Varela";
+	font-family: 'Varela';
+	--font-family: 'Varela';
 }
 
 ion-modal {
-  --width: 100% !important;
-  --height: 100% !important;
+	--width: 100% !important;
+	--height: 100% !important;
 }
 
 ion-toolbar ion-title {
-  --color: var(--x-toolbar-title-color);
+	--color: var(--x-toolbar-title-color);
 
-  left: 0;
-  top: 0;
-  bottom: 0;
-  margin: auto;
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  font-weight: 400;
-  font-family: "Varela";
-  font-size: 1.4em;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	margin: auto;
+	position: absolute;
+	width: 100%;
+	text-align: center;
+	font-weight: 400;
+	font-family: 'Varela';
+	font-size: 1.4em;
 }
 
 ion-card {
-  background-color: var(--background-color) !important;
-  --box-shadow: none;
-  box-shadow: none !important;
+	background-color: var(--background-color) !important;
+	--box-shadow: none;
+	box-shadow: none !important;
 }
 
 .highcharts-background {
-  fill: var(--background-color);
+	fill: var(--background-color);
 }
 
 .highcharts-container text {
-  fill: var(--text-color);
+	fill: var(--text-color);
 }
 
 .highcharts-subtitle,
@@ -183,165 +181,159 @@ ion-card {
 .highcharts-legend-title,
 .highcharts-title,
 .highcharts-tooltip text {
-  stroke-opacity: 1;
-  color: var(--text-color) !important;
+	stroke-opacity: 1;
+	color: var(--text-color) !important;
 }
 
 .highcharts-grid-line {
-  stroke: var(--text-color);
-  stroke-opacity: 0.2;
+	stroke: var(--text-color);
+	stroke-opacity: 0.2;
 }
 
 .highcharts-tooltip-box,
 .highcharts-label-box {
-  fill: var(--background-color) !important;
+	fill: var(--background-color) !important;
 }
 
 .highcharts-column-series rect.highcharts-point {
-  stroke: var(--background-color);
+	stroke: var(--background-color);
 }
 
 .highcharts-series path {
-  stroke-linecap: initial;
+	stroke-linecap: initial;
 }
 
 .positive-value {
-  color: var(--ion-color-success) !important;
-  font-weight: bold;
+	color: var(--ion-color-success) !important;
+	font-weight: bold;
 }
 
 .negative-value {
-  color: var(--ion-color-danger) !important;
-  font-weight: bold;
+	color: var(--ion-color-danger) !important;
+	font-weight: bold;
 }
 
 .warn-value {
-  color: var(--ion-color-warning) !important;
-  font-weight: bold;
+	color: var(--ion-color-warning) !important;
+	font-weight: bold;
 }
 
 ion-back-button {
-  color: #fff;
+	color: #fff;
 }
 
 ion-tab-button.tab-selected {
-
-  .opacity-icon {
-    color: var(--ion-tab-button-color);
-    ;
-    opacity: 0.95;
-  }
+	.opacity-icon {
+		color: var(--ion-tab-button-color);
+		opacity: 0.95;
+	}
 }
 
 body.dark {
+	ion-tab-button.tab-selected {
+		.opacity-icon {
+			color: var(--ion-tab-button-color);
+			opacity: 0.99;
+		}
+	}
 
-  ion-tab-button.tab-selected {
-    .opacity-icon {
-      color: var(--ion-tab-button-color);
-      ;
-      opacity: 0.99;
-    }
-  }
+	ion-tab-button {
+		--color-selected: var(--ion-tab-button-color-selected);
+		--color: var(--ion-tab-button-color);
 
-  ion-tab-button {
-    --color-selected: var(--ion-tab-button-color-selected);
-    --color: var(--ion-tab-button-color);
+		color: var(--ion-tab-button-color);
 
-    color: var(--ion-tab-button-color);
-
-    .opacity-icon {
-      color: var(--ion-tab-button-color);
-      ;
-      opacity: 0.6;
-    }
-  }
+		.opacity-icon {
+			color: var(--ion-tab-button-color);
+			opacity: 0.6;
+		}
+	}
 }
 
 ion-tab-button {
-  --color-selected: var(--ion-tab-button-color-selected);
-  --color: var(--ion-tab-button-color);
+	--color-selected: var(--ion-tab-button-color-selected);
+	--color: var(--ion-tab-button-color);
 
-  color: var(--ion-tab-button-color);
+	color: var(--ion-tab-button-color);
 
-  .opacity-icon {
-    color: var(--ion-tab-button-color);
-    ;
-    opacity: 0.6;
-  }
+	.opacity-icon {
+		color: var(--ion-tab-button-color);
+		opacity: 0.6;
+	}
 }
 
 ion-label {
-  font-weight: bold;
+	font-weight: bold;
 }
 
 ion-toolbar ion-buttons ion-button ion-icon {
-  color: var(--x-toolbar-title-color);
-  --color: var(--x-toolbar-title-color);
+	color: var(--x-toolbar-title-color);
+	--color: var(--x-toolbar-title-color);
 }
 
 ion-item,
 ion-header,
 ion-toolbar {
-  --border-width: 0 !important;
-  --inner-border-width: 0 !important;
-  border-style: none !important;
+	--border-width: 0 !important;
+	--inner-border-width: 0 !important;
+	border-style: none !important;
 }
 
 .fade-in {
-  -webkit-animation: fadein 0.7s;
-  -moz-animation: fadein 0.7s;
-  -ms-animation: fadein 0.7s;
-  -o-animation: fadein 0.7s;
-  animation: fadein 0.7s;
+	-webkit-animation: fadein 0.7s;
+	-moz-animation: fadein 0.7s;
+	-ms-animation: fadein 0.7s;
+	-o-animation: fadein 0.7s;
+	animation: fadein 0.7s;
 }
 
 .invisible {
-  opacity: 0;
+	opacity: 0;
 }
 
 .bottomFiller {
-  height: 40px;
+	height: 40px;
 }
 
 @keyframes fadein {
-  from {
-    opacity: 0;
-  }
+	from {
+		opacity: 0;
+	}
 
-  to {
-    opacity: 1;
-  }
+	to {
+		opacity: 1;
+	}
 }
 
 /* Firefox < 16 */
 @-moz-keyframes fadein {
-  from {
-    opacity: 0;
-  }
+	from {
+		opacity: 0;
+	}
 
-  to {
-    opacity: 1;
-  }
+	to {
+		opacity: 1;
+	}
 }
 
 /* Safari, Chrome and Opera > 12.1 */
 @-webkit-keyframes fadein {
-  from {
-    opacity: 0;
-  }
+	from {
+		opacity: 0;
+	}
 
-  to {
-    opacity: 1;
-  }
+	to {
+		opacity: 1;
+	}
 }
 
 /* Internet Explorer */
 @-ms-keyframes fadein {
-  from {
-    opacity: 0;
-  }
+	from {
+		opacity: 0;
+	}
 
-  to {
-    opacity: 1;
-  }
+	to {
+		opacity: 1;
+	}
 }

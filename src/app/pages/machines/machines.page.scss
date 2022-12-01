@@ -1,122 +1,122 @@
-@import "../../../theme/variables.scss";
+@import '../../../theme/variables.scss';
 
 ion-segment-button {
-  color: var(--x-toolbar-title-color);
+	color: var(--x-toolbar-title-color);
 
-  font-family: "Varela";
-  font-size: 0.75em;
-  --indicator-height: 0px !important;
-  text-transform: none !important;
-  --ripple-color: transparent !important;
-  //transition: color 0.15s ease;
-  opacity: 0.65;
+	font-family: 'Varela';
+	font-size: 0.75em;
+	--indicator-height: 0px !important;
+	text-transform: none !important;
+	--ripple-color: transparent !important;
+	//transition: color 0.15s ease;
+	opacity: 0.65;
 }
 
 ion-segment {
-  background-color: var(--ion-toolbar-background);
+	background-color: var(--ion-toolbar-background);
 }
 
 .card {
-  background-color: var(--background-color) !important;
+	background-color: var(--background-color) !important;
 
-  margin-bottom: 14px;
-  padding-left: 5px;
-  padding-right: 5px;
+	margin-bottom: 14px;
+	padding-left: 5px;
+	padding-right: 5px;
 }
 
 .card-header {
-  margin-bottom: 8px;
+	margin-bottom: 8px;
 }
 
 .segment-button-checked {
-  opacity: 1;
+	opacity: 1;
 }
 
 .loading-spinner {
-  margin-top: 55px;
-  margin-bottom: 10px;
+	margin-top: 55px;
+	margin-bottom: 10px;
 }
 
 .loading-container {
-  height: 100%;
+	height: 100%;
 }
 
 .center {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  text-align: center;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
 }
 
 .top-bar {
-  padding-bottom: 0px !important;
-  margin-bottom: 14px !important;
+	padding-bottom: 0px !important;
+	margin-bottom: 14px !important;
 }
 
 .top-bar ion-label {
-  font-weight: normal;
-  color: var(--ion-text-color-lighter);
-  margin-left: 5px;
+	font-weight: normal;
+	color: var(--ion-text-color-lighter);
+	margin-left: 5px;
 }
 
 .nothingfound {
-  text-align: center;
-  padding: 50px;
-  margin-left: 6%;
-  margin-right: 6%;
-  margin-top: 45px;
-  color: var(--ion-text-color-lighter);
+	text-align: center;
+	padding: 50px;
+	margin-left: 6%;
+	margin-right: 6%;
+	margin-top: 45px;
+	color: var(--ion-text-color-lighter);
 }
 
 .nothingfound .title {
-  font-size: 25px;
+	font-size: 25px;
 }
 
 .nothingfound ion-icon {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  text-align: center;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
 
-  font-size: 55px;
-  color: var(--ion-text-color-lighter);
+	font-size: 55px;
+	color: var(--ion-text-color-lighter);
 }
 
 ion-button {
-  --border-radius: var(--button-border-radius);
-  text-transform: none;
-  width: 70%;
-  min-width: 180px;
-  margin-top: 15px;
-  margin-bottom: 25px;
-  font-weight: bold !important;
-  font-size: 1em !important;
-  height: 44px;
-  --background: var(--button-bg-image);
+	--border-radius: var(--button-border-radius);
+	text-transform: none;
+	width: 70%;
+	min-width: 180px;
+	margin-top: 15px;
+	margin-bottom: 25px;
+	font-weight: bold !important;
+	font-size: 1em !important;
+	height: 44px;
+	--background: var(--button-bg-image);
 
-  // font-family: "Varela";
-  // --font-family: "Varela";
+	// font-family: "Varela";
+	// --font-family: "Varela";
 }
 
 .sync-alert {
-  color: var(--traffic-light-orange) !important;
-  --color: var(--traffic-light-orange) !important;
+	color: var(--traffic-light-orange) !important;
+	--color: var(--traffic-light-orange) !important;
 }
 
 .sync-alert-container {
-  padding-top: 0px !important;
-  margin-top: 0px !important;
-  padding-left: 0px !important;
-  padding-right: 0px !important;
-  margin-left: 0px !important;
-  margin-right: 0px !important;
+	padding-top: 0px !important;
+	margin-top: 0px !important;
+	padding-left: 0px !important;
+	padding-right: 0px !important;
+	margin-left: 0px !important;
+	margin-right: 0px !important;
 }
 
 .alert-icon {
-  display: inline-block;
-  vertical-align: middle;
+	display: inline-block;
+	vertical-align: middle;
 }
 
 .alert-text {
-  color: var(--ion-text-color) !important;
+	color: var(--ion-text-color) !important;
 }

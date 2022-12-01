@@ -1,25 +1,20 @@
+import { Injectable } from '@angular/core'
 
-import { Injectable } from '@angular/core';
-
-
-import { App } from '@capacitor/app';
+import { App } from '@capacitor/app'
 
 @Injectable({
-    providedIn: 'root'
-  })
+	providedIn: 'root',
+})
 export default class FlavorUtils {
+	constructor() {}
 
-    constructor(
-    ) { }
+	async isBetaFlavor(): Promise<boolean> {
+		const info = await App.getInfo()
+		return info.id.indexOf('beta') > 0
+	}
 
-    async isBetaFlavor(): Promise<boolean> {
-        const info = await App.getInfo()
-        return info.id.indexOf("beta") > 0
-    }
-
-    async isNoGoogleFlavor(): Promise<boolean> {
-        const info = await App.getInfo()
-        return info.id.indexOf("nogoo") > 0
-    }
-
+	async isNoGoogleFlavor(): Promise<boolean> {
+		const info = await App.getInfo()
+		return info.id.indexOf('nogoo') > 0
+	}
 }
