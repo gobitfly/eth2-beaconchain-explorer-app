@@ -29,6 +29,7 @@ import { PushNotifications, PushNotificationSchema,
 } from '@capacitor/push-notifications';
   
 import { LocalNotifications } from '@capacitor/local-notifications';
+import FlavorUtils from "./FlavorUtils";
 
 const LOGTAG = "[FirebaseUtils]";
 
@@ -46,7 +47,8 @@ export default class FirebaseUtils {
     private api: ApiService,
     private storage: StorageService,
     private platform: Platform,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private flavor: FlavorUtils
   ) { }
 
   async hasSeenConsentScreenAndNotConsented() {
@@ -65,6 +67,9 @@ export default class FirebaseUtils {
 
   async registerPush(iosTriggerConsent = false, onPermissionGranted: () => any = null) {
     if (!this.platform.is("ios") && !this.platform.is("android")) { return }
+    const isNoGoogle = await this.flavor.isNoGoogleFlavor() 
+    if (isNoGoogle) { return }
+    
     console.log(LOGTAG + "registerPush", iosTriggerConsent)
     if (this.alreadyRegistered) return
 

@@ -54,7 +54,7 @@ export class ClientupdateComponent implements OnInit {
   async dismiss() {
     if (!this.data) return
 
-    this.updateUtils.dismissRelease(this.data)
+    this.updateUtils.dismissRelease(this.data.client.key, this.data.data.id)
     this.data = null
     this.version = null
 

@@ -36,7 +36,6 @@ import { ModalController, Platform } from '@ionic/angular';
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
 import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils';
-import { MergeChecklistPage } from 'src/app/pages/merge-checklist/merge-checklist.page';
 import FirebaseUtils from 'src/app/utils/FirebaseUtils';
 
 @Component({
@@ -161,8 +160,8 @@ export class DashboardComponent implements OnInit {
         if (this.platform.is("ios") || this.platform.is("android")) {
           this.firebaseUtils.hasNotificationConsent().then(async (result) => {
             const loggedIn = await this.storage.isLoggedIn()
-            if(!loggedIn) return
-          
+            if (!loggedIn) return
+
             this.notificationPermissionPending = !result
           })
         }
@@ -292,7 +291,6 @@ export class DashboardComponent implements OnInit {
     } catch (e) {
 
     }
-
   }
 
   ngOnInit() {
@@ -371,7 +369,6 @@ export class DashboardComponent implements OnInit {
       this.unit.prefRpl = "RPL"
     }
   }
-
 
   switchRplStake(canPercent = false) {
     if (this.rplState == "rpl" && canPercent) {
@@ -564,16 +561,37 @@ export class DashboardComponent implements OnInit {
     execIncome = execIncome || []
 
     const ticksDecimalPlaces = 3
-    let getConvertString = (value: BigNumber): string => {
-      if (this.unit.pref != "ETHER") {
-        return ` (${this.unit.convertToPref(value, "ETHER")})`
+    const network = await this.api.getNetwork()
+
+    let getValueString = (value: BigNumber): string => {
+      var text = `${value.toFixed(5)} ETH`
+      if (this.unit.pref != "ETHER" && network.key == "main") {
+        text += ` (${this.unit.convertToPref(value, "ETHER")})`
       }
-      return ''
+      return text
+    }
+
+    let getEpochString = (timestamp: number): string => {
+      let dateToEpoch = (ts: number): number => {
+        const slot = Math.floor((ts / 1000 - network.genesisTs) / 12)
+        const epoch = Math.floor(slot / 32)
+        return Math.max(0, epoch)
+      }
+
+      const msForOneHour = 60 * 60 * 1000
+      const msForOneDay = 24 * msForOneHour
+
+      // force timestamp to be at 00:00AM for the day
+      // note that a timestamp of 0 equals 1/1/1970 01:00AM so we have to additionally remove msForOneHour
+      timestamp -= msForOneHour + (timestamp % msForOneDay)
+
+      const startEpoch = dateToEpoch(timestamp)
+      const endEpoch = dateToEpoch(timestamp + msForOneDay) - 1
+      return `(Epochs ${startEpoch} - ${endEpoch})<br/>`
     }
 
     // @ts-ignore     ¯\_(ツ)_/¯
     Highstock.chart('highcharts' + this.randomChartId, {
-
       exporting: {
         scale: 1
       },
@@ -590,7 +608,7 @@ export class DashboardComponent implements OnInit {
         marginRight: 0,
         spacingLeft: 0,
         spacingRight: 0,
-        spacingTop: 10
+        spacingTop: 12
       },
       legend: {
         enabled: true
@@ -599,32 +617,32 @@ export class DashboardComponent implements OnInit {
         text: '' //Balance History for all Validators
       },
       xAxis: {
-        range: 32 * 24 * 60 * 60 * 1000,
         type: 'datetime',
+        range: 31 * 24 * 60 * 60 * 1000,
       },
       tooltip: {
         style: {
           color: 'var(--text-color)',
           display: `inline-block`,
-          width: `200px`
+          width: `250px`
         },
         shared: true,
         formatter: (tooltip) => {
-          var text = ``
-          var total = new BigNumber(0)
+          // date and epoch
+          var text = `${new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString()} ${getEpochString(tooltip.chart.hoverPoints[0].x)}`
 
+          // income
+          var total = new BigNumber(0)
           for (var i = 0; i < tooltip.chart.hoverPoints.length; i++) {
             const value = new BigNumber(tooltip.chart.hoverPoints[i].y);
-            text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${value.toFixed(5)} ETH${getConvertString(value)}</b><br/>`
+            text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${getValueString(value)}</b><br/>`
             total = total.plus(value)
           }
 
           // add total if hovered point contains rewards for both EL and CL
           if (tooltip.chart.hoverPoints.length > 1) {
-            text += `<b>Total: ${total.toFixed(5)} ETH${getConvertString(total)}</b><br/>`
+            text += `<b>Total: ${getValueString(total)}</b>`
           }
-
-          text += new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString();
 
           return text
         }

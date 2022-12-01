@@ -23,7 +23,7 @@ import { ApiService } from './api.service';
 import { SETTING_NOTIFY, StorageService } from './storage.service';
 import { Mutex } from 'async-mutex';
 import { BundleSub, GetMobileSettingsRequest, NotificationBundleSubsRequest, NotificationGetRequest, SetMobileSettingsRequest } from '../requests/requests';
-import ClientUpdateUtils, { ETH1_CLIENT_SAVED, ETH2_CLIENT_SAVED, MEVBOOST_CLIENT_SAVED, ROCKETPOOL_CLIENT_SAVED } from '../utils/ClientUpdateUtils';
+import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils';
 import { ValidatorSyncUtils } from '../utils/ValidatorSyncUtils';
 import { NotificationBase } from '../tab-preferences/notification-base';
 
@@ -47,7 +47,7 @@ enum SyncActionEvent {
   NOTIFICATIONS
 }
 
-interface BundleSubWithAction extends BundleSub{
+interface BundleSubWithAction extends BundleSub {
   onComplete: (boolean) => void
 }
 
@@ -78,7 +78,10 @@ export class SyncService {
     private validatorSyncUtils: ValidatorSyncUtils,
     private updateUtils: ClientUpdateUtils,
     protected notificationBase: NotificationBase,
-  ) { }
+  ) {
+    // HACK, see comment for notificationBase.sync in notification-base.ts (BIDS-1117)
+    notificationBase.sync = this
+  }
 
   public async mightSyncUpAndSyncDelete() {
     await this.validatorSyncUtils.mightSyncUpAndSyncDelete(
@@ -96,7 +99,7 @@ export class SyncService {
     await this.validatorSyncUtils.syncDown()
   }
 
-  async syncAllSettings(useForce : boolean = false) {
+  async syncAllSettings(useForce: boolean = false) {
     const loggedIn = await this.storage.isLoggedIn()
     if (!loggedIn) return false
 
@@ -129,15 +132,15 @@ export class SyncService {
 
     await this.postNotifyBundles()
 
-    if (allNotifyKeys.length > 0) { 
+    if (allNotifyKeys.length > 0) {
       await this.api.clearSpecificCache(new NotificationGetRequest())
       await this.api.clearSpecificCache(new GetMobileSettingsRequest())
-    } 
+    }
 
     unlock();
 
     console.log("== Step 1: Loading notification preferences from beaconcha.in ==")
-    await this.notificationBase.loadNotifyToggles()
+    await this.notificationBase.loadAllToggles()
 
     this.deleteAllTemp()
 
@@ -165,9 +168,9 @@ export class SyncService {
       if (cleanKey.indexOf("setting_notify_cpuwarn") >= 0) continue;
       if (cleanKey.indexOf("setting_notify_memorywarn") >= 0) continue;
       if (cleanKey.indexOf("setting_notify_rplcommission") >= 0) continue;
-     
+
       const syncAction = this.getSyncActionEvent(cleanKey)
-      if(syncAction != SyncActionEvent.NOTIFICATIONS) continue
+      if (syncAction != SyncActionEvent.NOTIFICATIONS) continue
       console.log("STALE CHECK " + cleanKey, syncAction)
 
       if (syncAction == SyncActionEvent.NOTIFICATIONS) {
@@ -207,25 +210,17 @@ export class SyncService {
       }
     } else if (actionEvent == SyncActionEvent.CLIENT_UPDATE_GENERAL) {
       return this.getClientUpdateSyncAction()
-    } 
+    }
 
     return this.getNotifySubSyncAction(key)
-  }
-
-  async getClientUpdateFilter(clientKey): Promise<any> {
-    const client = await this.updateUtils.getClient(clientKey)
-    if (!client) {
-      return new Error("No clients configured");
-    }
-    return client.toLocaleLowerCase()
   }
 
   getGeneralFilter(item: SyncChanged): string {
     return item.eventFilter
   }
 
-  getNotifySubSyncAction (key) {
-    return async (syncChange: SyncChanged, superOnComplete: (boolean) => void) => { 
+  getNotifySubSyncAction(key) {
+    return async (syncChange: SyncChanged, superOnComplete: (boolean) => void) => {
 
       var eventFilter = syncChange.eventFilter
       if (eventFilter) {
@@ -241,27 +236,25 @@ export class SyncService {
     }
   }
 
-  getSyncActionEvent(key: string) {
+  private getSyncActionEvent(key: string) {
     if (key.endsWith(SETTING_NOTIFY)) {
       return SyncActionEvent.NOTIFY_GLOBAL
-    } else if (key.endsWith(ETH2_CLIENT_SAVED)) {
-      return SyncActionEvent.CLIENT_UPDATE_GENERAL
-    } else if (key.endsWith(ETH1_CLIENT_SAVED)) {
-      return SyncActionEvent.CLIENT_UPDATE_GENERAL
-    }  else if (key.endsWith(ROCKETPOOL_CLIENT_SAVED)) {
-      return SyncActionEvent.CLIENT_UPDATE_GENERAL
+    } else {
+      for (const client of Clients) {
+        if (key.endsWith(client.key)) {
+          return SyncActionEvent.CLIENT_UPDATE_GENERAL
+        }
+      }
     }
 
     return SyncActionEvent.NOTIFICATIONS
   }
 
-
-  private getClientUpdateSyncAction(){
+  private getClientUpdateSyncAction() {
     return async (syncChange: SyncChanged, superOnComplete: (boolean) => void) => {
       return this.getNotifySubSyncAction(syncChange.eventName)(syncChange, superOnComplete)
     }
   }
-
 
   private queueForPost(enabled: boolean, network: string, bundle: BundleSubWithAction) {
     this.bundleList.push({
@@ -280,7 +273,7 @@ export class SyncService {
         if (networkMap.has(it.network)) {
           array = networkMap.get(it.network)
         }
-              
+
         array.push(it.bundle)
         networkMap.set(it.network, array)
       }
@@ -307,11 +300,11 @@ export class SyncService {
     for (var i = 0; i < bundles.length; i++) {
       let bundle = bundles[i]
       while (bundle.bundles.length) {
-        let splice = bundle.bundles.splice(0,MAX_SERVER_BUNDLE_SIZE) 
+        let splice = bundle.bundles.splice(0, MAX_SERVER_BUNDLE_SIZE)
         let success = await this.postNotifyBundle(bundle.subscribe, splice, bundle.network)
         if (success) this.lastNotifySync = Date.now()
-        
-        for (var j = 0; j < splice.length; j++){
+
+        for (var j = 0; j < splice.length; j++) {
           await splice[j].onComplete(success)
         }
       }
@@ -328,7 +321,7 @@ export class SyncService {
     }
 
     const response = await this.api.execute(request)
-    const result = request.wasSuccessfull(response) 
+    const result = request.wasSuccessfull(response)
     if (!result) {
       return false
     }
@@ -368,81 +361,22 @@ export class SyncService {
     return false
   }
 
-  async changeMevBoostClient(value) {
+  async changeClient(clientKey: string, value: string, force: boolean = false) {
     // do not sync to remote if notification for client updates isn't enabled in the first place
-    const isEnabled = await this.isNotifyClientUpdatesEnabled()
+    const isEnabled = await this.storage.isNotifyClientUpdatesEnabled()
     if (!isEnabled) return
 
     if (value) {
       value = value.toUpperCase()
     }
-    
-    const changed = await this.updateUtils.setMevBoostClient(value)
-    if (changed) {
-      if (value && value != 'null') {
-        this.setLastChanged(MEVBOOST_CLIENT_SAVED, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
-      }
-     else {
-        this.setLastChanged("UN"+MEVBOOST_CLIENT_SAVED, "eth_client_update", "mev-boost", null, 'unsubscribe')
-      }
+
+    const client = this.updateUtils.getClientInfo(clientKey)
+    if (value && value != "NULL") {
+      this.setLastChanged(client.storageKey, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
+    } else {
+      this.setLastChanged("UN" + client.storageKey, "eth_client_update", client.key.toLocaleLowerCase(), null, 'unsubscribe')
     }
   }
-
-
-  async changeRocketpoolClient(value) {
-    // do not sync to remote if notification for client updates isn't enabled in the first place
-    const isEnabled = await this.isNotifyClientUpdatesEnabled()
-    if (!isEnabled) return
-
-    if (value) {
-      value = value.toUpperCase()
-    }
-    
-    const changed = await this.updateUtils.setRocketpoolClient(value)
-    if (changed) {
-      if (value && value != 'null') {
-        this.setLastChanged(ROCKETPOOL_CLIENT_SAVED, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
-      } else {
-        this.setLastChanged("UN"+ROCKETPOOL_CLIENT_SAVED, "eth_client_update", "rocketpool", null, 'unsubscribe')
-      }
-    }
-  }
-
-  async changeETH2Client(value: string) {
-    // do not sync to remote if notification for client updates isn't enabled in the first place
-    const isEnabled = await this.isNotifyClientUpdatesEnabled()
-    if (!isEnabled) return
-    
-    const oldValue = await this.updateUtils.getETH2Client()
-    const changed = await this.updateUtils.setETH2Client(value)
-    if (changed) {
-      if (value != "none") {
-        this.setLastChanged(ETH2_CLIENT_SAVED, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
-      }
-      
-      if (oldValue) {
-        this.setLastChanged("UN"+ETH2_CLIENT_SAVED, "eth_client_update", oldValue.toLocaleLowerCase(), null, 'unsubscribe')
-      }
-    }
-  }
-
-  async changeETH1Client(value: string) {
-    // do not sync to remote if notification for client updates isn't enabled in the first place
-    const isEnabled = await this.isNotifyClientUpdatesEnabled()
-    if (!isEnabled) return
-    
-    const oldValue = await this.updateUtils.getETH1Client()
-    const changed = await this.updateUtils.setETH1Client(value)
-    if (changed) {
-      if (value != "none") {
-        this.setLastChanged(ETH1_CLIENT_SAVED, "eth_client_update", value.toLocaleLowerCase(), null, 'subscribe')
-      }
-      if (oldValue) {
-        this.setLastChanged("UN"+ETH1_CLIENT_SAVED, "eth_client_update", oldValue.toLocaleLowerCase(), null, 'unsubscribe')
-      }
-    }
-  }
-
 
   async changeGeneralNotify(value: boolean, filter: string = null) {
     this.storage.setBooleanSetting(SETTING_NOTIFY, value)
@@ -475,9 +409,9 @@ export class SyncService {
 
     var subscribeAction = current.subscribeAction
     if (!subscribeAction) {
-      subscribeAction = (await this.storage.getBooleanSetting(current.eventName)) ?  'subscribe' : 'unsubscribe'
+      subscribeAction = (await this.storage.getBooleanSetting(current.eventName)) ? 'subscribe' : 'unsubscribe'
     }
-    
+
     this.setLastChanged(event + filter, event,
       filter,
       current.eventThreshold,
@@ -486,33 +420,15 @@ export class SyncService {
     return true
   }
 
-  async isNotifyClientUpdatesEnabled(): Promise<boolean> {
-    return (await this.storage.getBooleanSetting("eth_client_update", true)) &&
-      (await this.storage.getBooleanSetting(SETTING_NOTIFY, true))
-  }
-
   async changeNotifyClientUpdate(key: string, value: boolean, filter: string = null) {
     this.storage.setBooleanSetting(key, value)
 
-    var client = await this.updateUtils.getETH1Client()
-    if (client && client != "none") {
-      this.setLastChanged(ETH1_CLIENT_SAVED, "eth_client_update", client.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
-    }
-    
-    client = await this.updateUtils.getETH2Client()
-    if (client && client != "none") {
-      this.setLastChanged(ETH2_CLIENT_SAVED, "eth_client_update", client.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
-    }
-
-    client = await this.updateUtils.getRocketpoolClient()
-    if (client && client != "null") {
-      this.setLastChanged(ROCKETPOOL_CLIENT_SAVED, "eth_client_update", client.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
-    }
-
-    client = await this.updateUtils.getMevBoostClient()
-    if (client && client != "null") {
-      this.setLastChanged(MEVBOOST_CLIENT_SAVED, "eth_client_update", client.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
-    }
+    Clients.forEach(async (client) => {
+      var clientName = await this.updateUtils.getClient(client.key)
+      if (clientName != "null") {
+        this.setLastChanged(client.storageKey, "eth_client_update", clientName.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
+      }
+    })
   }
 
   private async setLastSynced(key: string, event: string,

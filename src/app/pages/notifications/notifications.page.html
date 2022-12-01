@@ -8,6 +8,11 @@
 </ion-header>
 
 <ion-content>
+  <div class="nogoogleinfo" *ngIf="noGoogle" (click)="configureWebhooks()">
+    <strong>Note: </strong>You are using the No-Google version of this app. Push notifications will not work,
+    but you can configure webhook notifications on beaconcha.in directly or by clicking here.
+  </div>
+  
   <ion-list-header>
     <ion-label *ngIf="network == 'Main'">General</ion-label>
     <ion-label *ngIf="network != 'Main'">General » {{ network }}</ion-label>
@@ -42,7 +47,7 @@
       <ion-label>
         Validator Slashed <span class="active-count">({{ getCount('validator_got_slashed') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_got_slashed')" (ngModelChange)="setToggle('validator_got_slashed', $event)"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_got_slashed')" (ngModelChange)="setNotifyToggle('validator_got_slashed', $event)"
         (ionChange)="notifyEventToggle('validator_got_slashed')" slot="end"></ion-toggle>
     </ion-item>
 
@@ -52,7 +57,7 @@
       <ion-label>
         Submitted Proposals <span class="active-count">({{ getCount('validator_proposal_submitted') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_proposal_submitted')"  (ngModelChange)="setToggle('validator_proposal_submitted', $event)"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_proposal_submitted')"  (ngModelChange)="setNotifyToggle('validator_proposal_submitted', $event)"
         (ionChange)="notifyEventToggle('validator_proposal_submitted')" slot="end"></ion-toggle>
     </ion-item>
 
@@ -61,7 +66,7 @@
       <ion-label>
         Missed Proposals <span class="active-count">({{ getCount('validator_proposal_missed') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_proposal_missed')" (ngModelChange)="setToggle('validator_proposal_missed', $event)"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_proposal_missed')" (ngModelChange)="setNotifyToggle('validator_proposal_missed', $event)"
         (ionChange)="notifyEventToggle('validator_proposal_missed')" slot="end"></ion-toggle>
     </ion-item>
 
@@ -70,7 +75,7 @@
       <ion-label >
         Missed Attestations <span class="active-count">({{ getCount('validator_attestation_missed') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_attestation_missed')"  (ngModelChange)="setToggle('validator_attestation_missed', $event)"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_attestation_missed')"  (ngModelChange)="setNotifyToggle('validator_attestation_missed', $event)"
         (ionChange)="notifyEventToggle('validator_attestation_missed')" slot="end"></ion-toggle>
     </ion-item>
 
@@ -80,7 +85,7 @@
       <ion-label >
         Sync Committee Duty <span class="active-count">({{ getCount('validator_synccommittee_soon') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_synccommittee_soon')"  (ngModelChange)="setToggle('validator_synccommittee_soon', $event)"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_synccommittee_soon')"  (ngModelChange)="setNotifyToggle('validator_synccommittee_soon', $event)"
         (ionChange)="notifyEventToggle('validator_synccommittee_soon')" slot="end"></ion-toggle>
     </ion-item>
     </ion-list>
@@ -91,7 +96,7 @@
       <ion-label>
         Validator Offline <span class="active-count">({{ getCount('validator_is_offline') }})</span>
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_is_offline')" (ngModelChange)="setToggle('validator_is_offline', $event)"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('validator_is_offline')" (ngModelChange)="setNotifyToggle('validator_is_offline', $event)"
       (ionChange)="changeValidatorOffline()"
         slot="end"></ion-toggle>
     </ion-item>
@@ -117,7 +122,7 @@
       <ion-label>
         Client Updates
       </ion-label>
-      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('eth_client_update')"  (ngModelChange)="setToggle('eth_client_update', $event)"
+      <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('eth_client_update')"  (ngModelChange)="setNotifyToggle('eth_client_update', $event)"
        (ionChange)="notifyClientUpdates()" slot="end"></ion-toggle>
     </ion-item>
   </ion-list>
@@ -133,7 +138,7 @@
     <ion-label>
       Machine Offline
     </ion-label>
-    <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_machine_offline')" (ngModelChange)="setToggle('monitoring_machine_offline', $event)"
+    <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_machine_offline')" (ngModelChange)="setNotifyToggle('monitoring_machine_offline', $event)"
      (ionChange)="notifyEventToggleAllMachines('monitoring_machine_offline')"
       slot="end"></ion-toggle>
   </ion-item>
@@ -156,7 +161,7 @@
     <ion-label>
       Storage Usage 
     </ion-label>
-    <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_hdd_almostfull')" (ngModelChange)="setToggle('monitoring_hdd_almostfull', $event)"
+    <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_hdd_almostfull')" (ngModelChange)="setNotifyToggle('monitoring_hdd_almostfull', $event)"
      (ionChange)="changeDiskNotification()"
       slot="end"></ion-toggle>
       
@@ -177,7 +182,7 @@
     <ion-label>
       CPU Usage
     </ion-label>
-    <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_cpu_load')" (ngModelChange)="setToggle('monitoring_cpu_load', $event)"
+    <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_cpu_load')" (ngModelChange)="setNotifyToggle('monitoring_cpu_load', $event)"
     (ionChange)="changeCPUNotification()"
       slot="end"></ion-toggle>
   </ion-item>
@@ -197,7 +202,7 @@
   <ion-label>
     Memory Usage
   </ion-label>
-  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_memory_usage')" (ngModelChange)="setToggle('monitoring_memory_usage', $event)"
+  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('monitoring_memory_usage')" (ngModelChange)="setNotifyToggle('monitoring_memory_usage', $event)"
    (ionChange)="changeMemoryNotification()"
     slot="end"></ion-toggle>
 </ion-item>
@@ -227,7 +232,7 @@
   <ion-label >
     New Reward Round
   </ion-label>
-  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('rocketpool_new_claimround')" (ngModelChange)="setToggle('rocketpool_new_claimround', $event)"
+  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('rocketpool_new_claimround')" (ngModelChange)="setNotifyToggle('rocketpool_new_claimround', $event)"
     (ionChange)="notifyEventToggle('rocketpool_new_claimround')" slot="end"></ion-toggle>
   </ion-item>
 
@@ -248,7 +253,7 @@
   <ion-label>
     Max Collateral
   </ion-label>
-  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('rocketpool_colleteral_max')" (ngModelChange)="setToggle('rocketpool_colleteral_max', $event)"
+  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('rocketpool_colleteral_max')" (ngModelChange)="setNotifyToggle('rocketpool_colleteral_max', $event)"
    (ionChange)="changeRocketpoolMaxCollateral()"
     slot="end"></ion-toggle>
 </ion-item>
@@ -272,7 +277,7 @@
   <ion-label>
     Min Collateral
   </ion-label>
-  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('rocketpool_colleteral_min')" (ngModelChange)="setToggle('rocketpool_colleteral_min', $event)"
+  <ion-toggle checked id="notifyToggle" [ngModel]="notifyTogglesMap.get('rocketpool_colleteral_min')" (ngModelChange)="setNotifyToggle('rocketpool_colleteral_min', $event)"
    (ionChange)="changeRocketpoolMinCollateral()"
     slot="end"></ion-toggle>
 </ion-item>
