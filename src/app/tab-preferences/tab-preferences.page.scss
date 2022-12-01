@@ -19,53 +19,53 @@
  */
 
 ion-select::part(icon) {
-	display: none !important;
+  display: none !important;
 }
 
 ion-select::part(text) {
-	font-size: 1.1em;
+  font-size: 1.1em;
 }
 
 .company,
 .appversion,
 .heart {
-	padding-top: 8px;
-	text-align: center;
+  padding-top: 8px;
+  text-align: center;
 }
 
 .heart {
-	font-size: 18px;
+  font-size: 18px;
 }
 
 ion-item {
-	padding-top: 7px;
-	padding-bottom: 7px;
+  padding-top: 7px;
+  padding-bottom: 7px;
 }
 
 ion-list-header {
-	padding-top: 5px;
+  padding-top: 5px;
 }
 
 .loading-spinner {
-	height: 15px;
-	width: 15px;
+  height: 15px;
+  width: 15px;
 }
 
 .selected-option {
-	text-align: end;
-	font-weight: normal;
+  text-align: end;
+  font-weight: normal;
 }
 
 .hint {
-	display: inline-block;
-	color: var(--ion-text-color-secondary);
-	max-width: 65%;
-	margin-left: 72px;
-	font-size: 0.9em;
-	line-height: 1em !important;
-	margin-bottom: 10px;
+  display: inline-block;
+  color: var(--ion-text-color-secondary);
+  max-width: 65%;
+  margin-left: 72px;
+  font-size: 0.9em;
+  line-height: 1em !important;
+  margin-bottom: 10px;
 }
 
 .premium {
-	padding-bottom: 0px !important;
+  padding-bottom: 0px !important;
 }

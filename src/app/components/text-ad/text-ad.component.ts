@@ -1,130 +1,128 @@
-import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core'
-import { Animation, AnimationController, ModalController } from '@ionic/angular'
-import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
-import { AdSeenRequest, CoinzillaAdResponse } from 'src/app/requests/requests'
-import { ApiService } from 'src/app/services/api.service'
-import AdUtils, {
-	AdLocation,
-	BEACONCHAIN_AD_ACTION,
-} from 'src/app/utils/AdUtils'
+
+import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
+import { Animation, AnimationController, ModalController } from '@ionic/angular';
+import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page';
+import { AdSeenRequest, CoinzillaAdResponse } from 'src/app/requests/requests';
+import { ApiService } from 'src/app/services/api.service';
+import AdUtils, { AdLocation, BEACONCHAIN_AD_ACTION } from 'src/app/utils/AdUtils';
 
 const TRANSITION_SPEED = 650
 var DELAY_SPEED = 5000
 
 @Component({
-	selector: 'app-text-ad',
-	templateUrl: './text-ad.component.html',
-	styleUrls: ['./text-ad.component.scss'],
+  selector: 'app-text-ad',
+  templateUrl: './text-ad.component.html',
+  styleUrls: ['./text-ad.component.scss'],
 })
 export class TextAdComponent implements OnInit {
-	@ViewChild('titleContainer', { read: ElementRef }) titleContainer: ElementRef
 
-	@Input() location: AdLocation
+  @ViewChild('titleContainer', { read: ElementRef }) titleContainer: ElementRef;
 
-	text = ''
+  @Input() location: AdLocation;
 
-	outAnimation: Animation
-	inAnimation: Animation
+  text = ""
 
-	ad: CoinzillaAdResponse
+  outAnimation: Animation;
+  inAnimation: Animation;
 
-	constructor(
-		private animationCtrl: AnimationController,
-		private adUtils: AdUtils,
-		private modalController: ModalController,
-		private api: ApiService
-	) {}
+  ad: CoinzillaAdResponse
 
-	ngOnInit() {
-		this.adUtils.get(this.location).then((data) => {
-			this.ad = data
-			if (!this.ad) return
-			this.text = this.ad.title
-			this.sendImpression()
+  constructor(
+    private animationCtrl: AnimationController,
+    private adUtils: AdUtils,
+    private modalController: ModalController,
+    private api: ApiService
+  ) { }
 
-			setTimeout(() => {
-				this.animateTitleChange()
-			}, DELAY_SPEED + 1000)
-		})
-	}
+  ngOnInit() {
 
-	currentDisplay = 0
-	animateTitleChange() {
-		if (!this.outAnimation) {
-			this.outAnimation = this.animationCtrl
-				.create()
-				.addElement(this.titleContainer.nativeElement)
-				.easing('ease-out')
-				.duration(TRANSITION_SPEED)
-				.fromTo('opacity', '1.0', '0.0')
-		}
-		if (!this.inAnimation) {
-			this.inAnimation = this.animationCtrl
-				.create()
-				.addElement(this.titleContainer.nativeElement)
-				.duration(TRANSITION_SPEED)
-				.easing('ease-in')
-				.fromTo('opacity', '0.0', '1.0')
-		}
+    this.adUtils.get(this.location).then((data) => {
+      this.ad = data;
+      if (!this.ad) return
+      this.text = this.ad.title
+      this.sendImpression()
 
-		this.outAnimation.play()
-		setTimeout(() => {
-			this.outAnimation.stop()
+      setTimeout(() => {
+        this.animateTitleChange()
+      }, DELAY_SPEED + 1000)
+    })
+  }
 
-			this.currentDisplay = (this.currentDisplay + 1) % 3
-			if (this.currentDisplay == 0) {
-				this.text = this.ad.title
-				this.titleContainer.nativeElement.style.fontSize =
-					this.calculateTextSize(this.text)
-				DELAY_SPEED = 7500
-			} else if (this.currentDisplay == 1) {
-				this.text = this.ad.description_short
-				this.titleContainer.nativeElement.style.fontSize =
-					this.calculateTextSize(this.text)
-			} else {
-				this.text = this.ad.description
-				this.titleContainer.nativeElement.style.fontSize =
-					this.calculateTextSize(this.text)
-			}
+  currentDisplay = 0
+  animateTitleChange() {
 
-			this.inAnimation.play()
-			setTimeout(() => {
-				this.inAnimation.stop()
-				this.animateTitleChange()
-			}, DELAY_SPEED)
-		}, TRANSITION_SPEED)
-	}
+    if (!this.outAnimation) {
+      this.outAnimation = this.animationCtrl.create()
+        .addElement(this.titleContainer.nativeElement)
+        .easing('ease-out')
+        .duration(TRANSITION_SPEED)
+        .fromTo('opacity', '1.0', '0.0');
+    }
+    if (!this.inAnimation) {
+      this.inAnimation = this.animationCtrl.create()
+        .addElement(this.titleContainer.nativeElement)
+        .duration(TRANSITION_SPEED)
+        .easing('ease-in')
+        .fromTo('opacity', '0.0', '1.0');
+    }
 
-	private calculateTextSize(text: string) {
-		if (text && text.length > 60) {
-			if (text.length > 90) return '12px'
-			return '13px'
-		}
-		return '15px'
-	}
+    this.outAnimation.play()
+    setTimeout(() => {
+      this.outAnimation.stop()
 
-	openAd() {
-		if (this.ad.url && this.ad.url == BEACONCHAIN_AD_ACTION) {
-			this.openUpgrades()
-		} else {
-			window.open(this.ad.url, '_system', 'location=yes')
-		}
-	}
+      this.currentDisplay = (this.currentDisplay + 1) % 3
+      if (this.currentDisplay == 0) {
+        this.text = this.ad.title
+        this.titleContainer.nativeElement.style.fontSize = this.calculateTextSize(this.text)
+        DELAY_SPEED = 7500
+      } else if (this.currentDisplay == 1) {
+        this.text = this.ad.description_short
+        this.titleContainer.nativeElement.style.fontSize = this.calculateTextSize(this.text)
+      } else {
+        this.text = this.ad.description
+        this.titleContainer.nativeElement.style.fontSize = this.calculateTextSize(this.text)
+      }
 
-	async openUpgrades() {
-		const modal = await this.modalController.create({
-			component: SubscribePage,
-			cssClass: 'my-custom-class',
-		})
-		return await modal.present()
-	}
+      this.inAnimation.play()
+      setTimeout(() => {
+        this.inAnimation.stop()
+        this.animateTitleChange()
+      }, DELAY_SPEED)
 
-	async sendImpression() {
-		if (!this.ad.impressionUrl) return
+    }, TRANSITION_SPEED)
+  }
 
-		const result = await this.api.execute(
-			new AdSeenRequest(this.ad.impressionUrl)
-		)
-		console.log('ad impression response', result)
-	}
+  private calculateTextSize(text: string) {
+    if (text && text.length > 60) {
+      if (text.length > 90) return "12px"
+      return "13px"
+    }
+    return "15px"
+  }
+
+  openAd() {
+    if (this.ad.url && this.ad.url == BEACONCHAIN_AD_ACTION) {
+      this.openUpgrades()
+    } else {
+      window.open(this.ad.url, '_system', 'location=yes');
+    }
+  }
+
+  async openUpgrades() {
+    const modal = await this.modalController.create({
+      component: SubscribePage,
+      cssClass: 'my-custom-class',
+    });
+    return await modal.present();
+  }
+
+  async sendImpression() {
+
+    if (!this.ad.impressionUrl) return;
+    
+    const result = await this.api.execute(new AdSeenRequest(this.ad.impressionUrl))
+    console.log("ad impression response", result)
+      
+  }
+
 }

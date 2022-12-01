@@ -1,134 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<title>Beaconcha.in</title>
 
-		<base href="/" />
+<head>
+  <meta charset="utf-8" />
+  <title>Beaconcha.in</title>
 
-		<meta name="color-scheme" content="light dark" />
-		<meta
-			name="viewport"
-			content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-		<meta name="format-detection" content="telephone=no" />
-		<meta name="msapplication-tap-highlight" content="no" />
+  <base href="/" />
 
-		<!-- add to homescreen for ios -->
-		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="viewport"
+    content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="msapplication-tap-highlight" content="no" />
 
-		<script>
-			try {
-				if (window) {
-					var logSession = []
-					localStorage = window.localStorage
+  <!-- add to homescreen for ios -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
-					var lastLogSession = parseInt(
-						localStorage.getItem('last_log_session')
-					)
-					if (isNaN(lastLogSession)) lastLogSession = 0
-					const newLogSession = (lastLogSession + 1) % 3
-					localStorage.setItem('last_log_session', newLogSession.toString())
+  <script>
+    try {
+      if (window) {
+        var logSession = []
+        localStorage = window.localStorage
 
-					var console = (function (oldCons, storage, debug) {
-						return {
-							log: (text, extra) => {
-								if (debug) oldCons.log(text)
-								try {
-									if (typeof text === 'object') {
-										text = JSON.stringify(text)
-									}
-									logSession.push({
-										text: '[LOG] [' + new Date().toLocaleString() + '] ' + text,
-										extra: extra ? ': ' + JSON.stringify(extra) : '',
-									})
-									storage.setItem(
-										'log_session_' + newLogSession,
-										JSON.stringify(logSession)
-									)
-								} catch (e) {}
-							},
-							info: (text, extra) => {
-								if (debug) oldCons.info(text)
-								try {
-									if (typeof text === 'object') {
-										text = JSON.stringify(text)
-									}
-									logSession.push({
-										text:
-											'[INFO] [' + new Date().toLocaleString() + '] ' + text,
-										extra: extra ? ': ' + JSON.stringify(extra) : '',
-									})
-									storage.setItem(
-										'log_session_' + newLogSession,
-										JSON.stringify(logSession)
-									)
-								} catch (e) {}
-							},
-							warn: (text, extra) => {
-								if (debug) oldCons.warn(text)
-								try {
-									if (typeof text === 'object') {
-										text = JSON.stringify(text)
-									}
-									logSession.push({
-										text:
-											'[WARN] [' + new Date().toLocaleString() + '] ' + text,
-										extra: extra ? ': ' + JSON.stringify(extra) : '',
-									})
-									storage.setItem(
-										'log_session_' + newLogSession,
-										JSON.stringify(logSession)
-									)
-								} catch (e) {}
-							},
-							error: (text, err) => {
-								if (debug) oldCons.error(text, err)
-								try {
-									if (typeof text === 'object') {
-										text = JSON.stringify(text)
-									}
-									logSession.push({
-										text:
-											'[ERROR] [' + new Date().toLocaleString() + '] ' + text,
-										extra: err ? ': ' + err.toString() : '',
-									})
-									storage.setItem(
-										'log_session_' + newLogSession,
-										JSON.stringify(logSession)
-									)
-								} catch (e) {}
-							},
-						}
-					})(
-						window.console,
-						localStorage,
-						localStorage.getItem('debug') == 'true'
-					)
-					window.console = console
+        var lastLogSession = parseInt(localStorage.getItem("last_log_session"))
+        if (isNaN(lastLogSession)) lastLogSession = 0
+        const newLogSession = (lastLogSession + 1) % 3
+        localStorage.setItem("last_log_session", newLogSession.toString())
 
-					window.onerror = (message, url, lineNumber, columnNo, error) => {
-						window.console.error(
-							message +
-								' ' +
-								error +
-								' (' +
-								url +
-								':' +
-								lineNumber +
-								':' +
-								columnNo +
-								')'
-						)
-					}
+        var console = (function (oldCons, storage, debug) {
+          return {
+            log: (text, extra) => {
+              if (debug) oldCons.log(text);
+              try {
+                if (typeof text === 'object') {
+                  text = JSON.stringify(text)
+                }
+                logSession.push({
+                  text: "[LOG] [" + new Date().toLocaleString() + "] " + text,
+                  extra: extra ? (": " + JSON.stringify(extra)) : ""})
+                storage.setItem("log_session_" + newLogSession, JSON.stringify(logSession))
+              } catch (e) { }
 
-					console.log('Log Session #' + newLogSession)
-				}
-			} catch (e) {}
-		</script>
-	</head>
+            },
+            info: (text, extra) => {
+              if (debug) oldCons.info(text);
+              try {
+                if (typeof text === 'object') {
+                  text = JSON.stringify(text)
+                }
+                logSession.push({
+                  text: "[INFO] [" + new Date().toLocaleString() + "] " + text,
+                  extra: extra ? (": " + JSON.stringify(extra)) : ""
+                })
+                storage.setItem("log_session_" + newLogSession, JSON.stringify(logSession))
+              } catch (e) { }
+            },
+            warn: (text, extra) => {
+              if (debug) oldCons.warn(text);
+              try {
+                if (typeof text === 'object') {
+                  text = JSON.stringify(text)
+                }
+                logSession.push({
+                  text: "[WARN] [" + new Date().toLocaleString() + "] " + text,
+                  extra: extra ? (": " + JSON.stringify(extra)) : ""
+                })
+                storage.setItem("log_session_" + newLogSession, JSON.stringify(logSession))
+              } catch (e) { }
+            },
+            error: (text, err) => {
+              if (debug) oldCons.error(text, err);
+              try {
+                if (typeof text === 'object') {
+                  text = JSON.stringify(text)
+                }
+                logSession.push({
+                  text: "[ERROR] [" + new Date().toLocaleString() + "] " + text,
+                  extra: err ? (": " + err.toString()) : ""
+                })
+                storage.setItem("log_session_" + newLogSession, JSON.stringify(logSession))
+              } catch (e) { }
+            }
+          };
+        }(window.console, localStorage, localStorage.getItem("debug") == "true"));
+        window.console = console;
 
-	<body>
-		<app-root></app-root>
-	</body>
+        window.onerror = (message, url, lineNumber, columnNo, error) => {
+          window.console.error(message + " " + error + " (" + url + ":" + lineNumber + ":" + columnNo + ")")
+        };
+
+        console.log("Log Session #" + newLogSession)
+      }
+    } catch (e) { }
+  </script>
+</head>
+
+<body>
+  <app-root></app-root>
+</body>
+
 </html>

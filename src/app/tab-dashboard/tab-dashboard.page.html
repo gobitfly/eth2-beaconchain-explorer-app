@@ -19,44 +19,36 @@
  -->
 
 <ion-header [translucent]="true">
-	<ion-toolbar>
-		<ion-title> Dashboard </ion-title>
-	</ion-toolbar>
-	<app-offline *ngIf="!api.connectionStateOK"></app-offline>
+  <ion-toolbar>
+    <ion-title>
+      Dashboard
+    </ion-title>
+  </ion-toolbar>
+  <app-offline *ngIf="!api.connectionStateOK"></app-offline>
 </ion-header>
 
-<ion-content
-	[fullscreen]="true"
-	[scrollEvents]="true"
-	(ionScroll)="onScroll($event)"
-	(ionScrollStart)="onScrollStarted()"
-	(ionScrollEnd)="onScrollEnded()">
-	<div class="setup-head" *ngIf="!initialized">
-		<div class="inner-setup-head">
-			<ion-icon
-				class="setup-icon"
-				name="color-wand-outline"
-				[ngStyle]="{'opacity': currentY | fadeoutpipe: 100 }">
-			</ion-icon>
-			<h2 [ngStyle]="{'opacity': currentY | fadeoutpipe: 180 }">
-				Let´s get started
-			</h2>
-		</div>
-	</div>
+<ion-content [fullscreen]="true" [scrollEvents]="true" (ionScroll)="onScroll($event)"
+  (ionScrollStart)="onScrollStarted()" (ionScrollEnd)="onScrollEnded()">
 
-	<ion-refresher
-		slot="fixed"
-		(ionRefresh)="doRefresh($event)"
-		[disabled]="!initialized">
-		<ion-refresher-content></ion-refresher-content>
-	</ion-refresher>
+  <div class="setup-head" *ngIf="!initialized">
 
-	<app-validator-dashboard
-		[data]="overallData"
-		[currentY]="currentY"
-		[scrolling]="scrolling"
-		[updates]="updates.updates"
-		*ngIf="initialized"></app-validator-dashboard>
+    <div class="inner-setup-head">
+      <ion-icon class="setup-icon" name="color-wand-outline" [ngStyle]="{'opacity': currentY | fadeoutpipe: 100 }">
+      </ion-icon>
+      <h2 [ngStyle]="{'opacity': currentY | fadeoutpipe: 180 }">
+        Let´s get started
+      </h2>
+    </div>
 
-	<app-help *ngIf="!initialized"></app-help>
+  </div>
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" [disabled]="!initialized">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <app-validator-dashboard [data]="overallData" [currentY]="currentY" [scrolling]="scrolling"
+    [updates]="updates.updates" *ngIf="initialized"></app-validator-dashboard>
+
+  <app-help *ngIf="!initialized"></app-help>
+
 </ion-content>

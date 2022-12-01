@@ -19,67 +19,40 @@
  -->
 
 <div class="container" [class]="fadeIn">
-	<div class="inner">
-		<ion-item lines="none">
-			<div slot="start">
-				<img class="blockie" src="{{ imgData }}" />
-				<ion-label class="pubkey">{{ data.pubkey | slice: 0:5 }}</ion-label>
-			</div>
+  <div class="inner">
+    <ion-item lines="none">
 
-			<div class="info">
-				<ion-text class="title">{{ name }}</ion-text>
-				<ion-label> {{ balance | mcurrency: 'GWEI':unit.pref }} </ion-label>
+      <div slot="start">
+        <img class="blockie" src="{{ imgData }}" />
+        <ion-label class="pubkey">{{ data.pubkey | slice:0:5 }}</ion-label>
+      </div>
 
-				<ion-label class="smaller-info" style="padding-bottom: 6px">
-					{{
-						validator.attrEffectiveness && validator.attrEffectiveness != -1
-							? 'Eff.:' + validator.attrEffectiveness + '%'
-							: ''
-					}}
-					<span *ngIf="validator.share != null || validator.rplshare != null"
-						><span
-							*ngIf="
-								validator.attrEffectiveness && validator.attrEffectiveness != -1
-							">
-							| </span
-						>Share:
-					</span>
-					<span *ngIf="validator.share != null">{{
-						validator.share | percent: '1.0-1'
-					}}</span>
-					<span *ngIf="validator.rocketpool && validator.rplshare != null"
-						><span *ngIf="validator.share != null">, </span>RPL:
-						{{ validator.rplshare | percent: '1.0-1' }}
-					</span>
-				</ion-label>
-				<span>
-					<ion-badge [class]="stateCss" class="onlinestate">{{
-						state
-					}}</ion-badge>
-					<ion-badge class="rpl" *ngIf="validator.rocketpool"
-						>Rocketpool</ion-badge
-					>
-					<ion-badge class="sync" *ngIf="validator.currentSyncCommittee"
-						>Sync</ion-badge
-					>
-				</span>
+      <div class="info">
+        <ion-text class="title">{{ name }}</ion-text>
+        <ion-label> {{ balance | mcurrency: "GWEI":unit.pref }} </ion-label>
 
-				<!--<ion-label class="smaller-info"
+        <ion-label class="smaller-info" style="padding-bottom: 6px;">
+          {{ validator.attrEffectiveness && validator.attrEffectiveness != -1 ? ("Eff.:" + validator.attrEffectiveness + "%") : ""}}
+          <span *ngIf="validator.share != null || validator.rplshare != null"><span *ngIf="validator.attrEffectiveness && validator.attrEffectiveness != -1"> | </span>Share: </span>
+          <span *ngIf="validator.share != null">{{ validator.share | percent: "1.0-1" }}</span>
+          <span *ngIf="validator.rocketpool && validator.rplshare != null"><span *ngIf="validator.share != null">, </span>RPL: {{validator.rplshare | percent: "1.0-1" }} </span>
+        </ion-label>
+        <span >
+        <ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge>
+        <ion-badge class="rpl" *ngIf="validator.rocketpool">Rocketpool</ion-badge>
+        <ion-badge class="sync" *ngIf="validator.currentSyncCommittee">Sync</ion-badge>
+      </span>
+
+
+        <!--<ion-label class="smaller-info"
           *ngIf="validator.data.lastattestationslot">Last Attestation:
           {{ validator.data.lastattestationslot }}</ion-label>-->
-			</div>
 
-			<ion-icon
-				slot="end"
-				name="bookmark-outline"
-				*ngIf="!tagged"
-				(click)="tag($event)"></ion-icon>
-			<ion-icon
-				slot="end"
-				class="bookmarked"
-				name="bookmark"
-				*ngIf="tagged"
-				(click)="untag($event)"></ion-icon>
-		</ion-item>
-	</div>
+      </div>
+
+      <ion-icon slot="end" name="bookmark-outline" *ngIf="!tagged" (click)="tag($event)"></ion-icon>
+      <ion-icon slot="end" class="bookmarked" name="bookmark" *ngIf="tagged" (click)="untag($event)"></ion-icon>
+
+    </ion-item>
+  </div>
 </div>

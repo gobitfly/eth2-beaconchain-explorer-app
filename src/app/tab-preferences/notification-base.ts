@@ -1,412 +1,366 @@
-import { Injectable, OnInit } from '@angular/core'
-import { Platform } from '@ionic/angular'
-import { ApiService } from 'src/app/services/api.service'
-import {
-	CPU_THRESHOLD,
-	HDD_THRESHOLD,
-	OFFLINE_THRESHOLD,
-	RAM_THRESHOLD,
-	SETTING_NOTIFY,
-	StorageService,
-} from 'src/app/services/storage.service'
-import {
-	GetMobileSettingsRequest,
-	MobileSettingsResponse,
-	NotificationGetRequest,
-} from '../requests/requests'
-import { AlertService, SETTINGS_PAGE } from '../services/alert.service'
-import { SyncService } from '../services/sync.service'
-import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils'
-import FirebaseUtils from '../utils/FirebaseUtils'
+import { Injectable, OnInit } from '@angular/core';
+import { Platform } from '@ionic/angular';
+import { ApiService } from 'src/app/services/api.service';
+import { CPU_THRESHOLD, HDD_THRESHOLD, OFFLINE_THRESHOLD, RAM_THRESHOLD, SETTING_NOTIFY, StorageService } from 'src/app/services/storage.service';
+import { GetMobileSettingsRequest, MobileSettingsResponse, NotificationGetRequest } from '../requests/requests';
+import { AlertService, SETTINGS_PAGE } from '../services/alert.service';
+import { SyncService } from '../services/sync.service';
+import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils';
+import FirebaseUtils from '../utils/FirebaseUtils';
 
 @Injectable({
-	providedIn: 'root',
+  providedIn: 'root'
 })
 export class NotificationBase implements OnInit {
-	notifyInitialized = false
 
-	notify: boolean = false
+  notifyInitialized = false
 
-	storageThreshold = 90
-	cpuThreshold = 60
-	memoryThreshold = 80
+  notify: boolean = false
 
-	maxCollateralThreshold = 100
-	minCollateralThreshold = 0
+  storageThreshold = 90
+  cpuThreshold = 60
+  memoryThreshold = 80
 
-	offlineThreshold = 3
+  maxCollateralThreshold = 100
+  minCollateralThreshold = 0
 
-	activeSubscriptionsPerEventMap = new Map<String, number>() // map storing the count of subscribed validators per event
-	notifyTogglesMap = new Map<String, boolean>()
-	clientUpdatesTogglesMap = new Map<String, boolean>() // identifier = client key
+  offlineThreshold = 3
 
-	settingsChanged = false
+  activeSubscriptionsPerEventMap = new Map<String, number>() // map storing the count of subscribed validators per event
+  notifyTogglesMap = new Map<String, boolean>()
+  clientUpdatesTogglesMap = new Map<String, boolean>() // identifier = client key
 
-	constructor(
-		protected api: ApiService,
-		protected storage: StorageService,
-		protected firebaseUtils: FirebaseUtils,
-		protected platform: Platform,
-		protected alerts: AlertService,
-		public sync: SyncService, // If you have to use this, be cautios: This is not always available. We don't know why yet but will research this via BIDS-1117
-		protected clientUpdate: ClientUpdateUtils
-	) {}
+  settingsChanged = false
 
-	ngOnInit() {
-		this.notifyInitialized = false
-	}
+  constructor(
+    protected api: ApiService,
+    protected storage: StorageService,
+    protected firebaseUtils: FirebaseUtils,
+    protected platform: Platform,
+    protected alerts: AlertService,
+    public sync: SyncService, // If you have to use this, be cautios: This is not always available. We don't know why yet but will research this via BIDS-1117
+    protected clientUpdate: ClientUpdateUtils
+  ) { }
 
-	async setClientToggleState(clientKey: string, state: boolean) {
-		this.clientUpdatesTogglesMap.set(clientKey, state)
-		this.settingsChanged = true
-		if (state) {
-			await this.clientUpdate.setClient(clientKey, clientKey)
-		} else {
-			await this.clientUpdate.setClient(clientKey, 'null')
-		}
-		this.clientUpdate.checkClientUpdate(clientKey)
-	}
+  ngOnInit() {
+    this.notifyInitialized = false
+  }
 
-	getClientToggleState(clientKey: string): boolean {
-		const toggle = this.clientUpdatesTogglesMap.get(clientKey)
-		if (toggle == undefined) {
-			console.log('Could not return toggle state for client', clientKey)
-			return false
-		}
-		return toggle
-	}
+  async setClientToggleState(clientKey: string, state: boolean) {
+    this.clientUpdatesTogglesMap.set(clientKey, state)
+    this.settingsChanged = true
+    if (state) {
+      await this.clientUpdate.setClient(clientKey, clientKey)
+    } else {
+      await this.clientUpdate.setClient(clientKey, "null")
+    }
+    this.clientUpdate.checkClientUpdate(clientKey)
+  }
 
-	setNotifyToggle(eventName: string, event) {
-		console.log('change notify toggle', eventName, event)
-		this.settingsChanged = true
-		this.notifyTogglesMap.set(eventName, event)
-	}
+  getClientToggleState(clientKey: string): boolean {
+    const toggle = this.clientUpdatesTogglesMap.get(clientKey)
+    if (toggle == undefined) {
+      console.log("Could not return toggle state for client", clientKey)
+      return false
+    }
+    return toggle
+  }
 
-	// changes a toggle without triggering onChange
-	lockedToggle = true
-	changeToggleSafely(func: () => void) {
-		this.lockedToggle = true
-		func()
-	}
+  setNotifyToggle(eventName: string, event) {
+    console.log("change notify toggle", eventName, event)
+    this.settingsChanged = true
+    this.notifyTogglesMap.set(eventName, event)
+  }
 
-	public async getDefaultNotificationSetting() {
-		return (
-			(await this.firebaseUtils.hasNotificationConsent()) &&
-			(await this.firebaseUtils.hasNotificationToken())
-		)
-	}
+  // changes a toggle without triggering onChange
+  lockedToggle = true;
+  changeToggleSafely(func: () => void) {
+    this.lockedToggle = true;
+    func()
+  }
 
-	// Android registers firebase service at app start
-	// So if there is no token present when enabling notifications,
-	// there might be no google play services on this device
-	private async isSupportedOnAndroid() {
-		if (this.platform.is('android')) {
-			const hasToken = await this.firebaseUtils.hasNotificationToken()
-			if (!hasToken) {
-				this.alerts.showError(
-					'Play Service',
-					'We could not enable notifications for your device which might be due to missing Google Play Services. Please note that notifications do not work without Google Play Services.',
-					SETTINGS_PAGE + 2
-				)
-				this.changeToggleSafely(() => {
-					this.notify = false
-				})
-				return false
-			}
-		}
-		return true
-	}
+  public async getDefaultNotificationSetting() {
+    return await this.firebaseUtils.hasNotificationConsent() && await this.firebaseUtils.hasNotificationToken()
+  }
 
-	remoteNotifyLoadedOnce = false
-	async loadAllToggles() {
-		if (!(await this.storage.isLoggedIn())) return
+  // Android registers firebase service at app start
+  // So if there is no token present when enabling notifications,
+  // there might be no google play services on this device
+  private async isSupportedOnAndroid() {
+    if (this.platform.is("android")) {
+      const hasToken = await this.firebaseUtils.hasNotificationToken()
+      if (!hasToken) {
+        this.alerts.showError(
+          "Play Service",
+          "We could not enable notifications for your device which might be due to missing Google Play Services. Please note that notifications do not work without Google Play Services.",
+          SETTINGS_PAGE + 2
+        )
+        this.changeToggleSafely(() => { this.notify = false })
+        return false
+      }
+    }
+    return true
+  }
 
-		const net = (await this.api.networkConfig).net
+  remoteNotifyLoadedOnce = false
+  async loadAllToggles() {
+    if (!(await this.storage.isLoggedIn())) return
 
-		const request = new NotificationGetRequest()
-		const response = await this.api.execute(request)
-		const results = request.parse(response)
+    const net = (await this.api.networkConfig).net
 
-		const isNotifyClientUpdatesEnabled =
-			await this.storage.isNotifyClientUpdatesEnabled()
+    const request = new NotificationGetRequest()
+    const response = await this.api.execute(request)
+    const results = request.parse(response)
 
-		var network = await this.api.getNetworkName()
-		if (network == 'main') {
-			network = 'mainnet'
-		}
-		console.log('result', results, network)
+    const isNotifyClientUpdatesEnabled = await this.storage.isNotifyClientUpdatesEnabled()
 
-		var clientsToActivate = <string[]>[]
+    var network = await this.api.getNetworkName()
+    if (network == "main") {
+      network = "mainnet"
+    }
+    console.log("result", results, network)
 
-		for (const result of results) {
-			this.setToggleFromEvent(result.EventName, network, true, net)
-			if (result.EventName == 'monitoring_cpu_load') {
-				this.cpuThreshold = Math.round(parseFloat(result.EventThreshold) * 100)
-				this.storage.setSetting(CPU_THRESHOLD, this.cpuThreshold)
-			} else if (result.EventName == network + ':validator_is_offline') {
-				this.offlineThreshold = Math.round(parseFloat(result.EventThreshold))
-				this.storage.setSetting(OFFLINE_THRESHOLD, this.offlineThreshold)
-			} else if (result.EventName == 'monitoring_hdd_almostfull') {
-				this.storageThreshold = Math.round(
-					100 - parseFloat(result.EventThreshold) * 100
-				)
-				this.storage.setSetting(HDD_THRESHOLD, this.storageThreshold)
-			} else if (result.EventName == 'monitoring_memory_usage') {
-				this.memoryThreshold = Math.round(
-					parseFloat(result.EventThreshold) * 100
-				)
-				this.storage.setSetting(RAM_THRESHOLD, this.memoryThreshold)
-			} else if (result.EventName == network + ':rocketpool_colleteral_max') {
-				const threshold = parseFloat(result.EventThreshold)
-				if (threshold >= 0) {
-					this.maxCollateralThreshold = Math.round((threshold - 1) * 1000 + 100) //1 + ((this.maxCollateralThreshold - 100) / 1000)
-				} else {
-					this.maxCollateralThreshold = Math.round(
-						(1 - threshold * -1) * 1000 - 100
-					) //(1 - ((this.maxCollateralThreshold + 100) / 1000)) * -1
-				}
-			} else if (result.EventName == network + ':rocketpool_colleteral_min') {
-				this.minCollateralThreshold = Math.round(
-					(parseFloat(result.EventThreshold) - 1) * 100
-				) //1 + this.minCollateralThreshold / 100
-				console.log(
-					'minCollateralThreshold',
-					result.EventThreshold,
-					this.minCollateralThreshold
-				)
-			} else if (
-				isNotifyClientUpdatesEnabled &&
-				result.EventName == 'eth_client_update'
-			) {
-				if (
-					result.EventFilter &&
-					result.EventFilter.length >= 1 &&
-					result.EventFilter.charAt(0).toUpperCase() !=
-						result.EventFilter.charAt(0) &&
-					result.EventFilter != 'null' &&
-					result.EventFilter != 'none'
-				) {
-					clientsToActivate.push(result.EventFilter)
-				}
-			}
-		}
+    var clientsToActivate = <string[]>[]
 
-		if (isNotifyClientUpdatesEnabled) {
-			Clients.forEach((client) => {
-				if (
-					clientsToActivate.find(
-						(activate) => client.name.toLocaleLowerCase() == activate
-					) != undefined
-				) {
-					console.log('enabling', client.name, 'updates')
-					this.setClientToggleState(client.key, true)
-				} else {
-					console.log('disabling', client.name, 'updates')
-					this.setClientToggleState(client.key, false)
-				}
-			})
-		}
+    for (const result of results) {
+      this.setToggleFromEvent(result.EventName, network, true, net)
+      if (result.EventName == "monitoring_cpu_load") {
+        this.cpuThreshold = Math.round(parseFloat(result.EventThreshold) * 100)
+        this.storage.setSetting(CPU_THRESHOLD, this.cpuThreshold)
+      }
+      else if (result.EventName == network + ":validator_is_offline") {
+        this.offlineThreshold = Math.round(parseFloat(result.EventThreshold))
+        this.storage.setSetting(OFFLINE_THRESHOLD, this.offlineThreshold)
+      }
+      else if (result.EventName == "monitoring_hdd_almostfull") {
+        this.storageThreshold = Math.round(100 - (parseFloat(result.EventThreshold) * 100))
+        this.storage.setSetting(HDD_THRESHOLD, this.storageThreshold)
+      }
+      else if (result.EventName == "monitoring_memory_usage") {
 
-		// locking toggle so we dont execute onChange when setting initial values
-		const preferences = await this.storage.loadPreferencesToggles(net)
+        this.memoryThreshold = Math.round(parseFloat(result.EventThreshold) * 100)
+        this.storage.setSetting(RAM_THRESHOLD, this.memoryThreshold)
+      }
+      else if (result.EventName == network + ":rocketpool_colleteral_max") {
+        const threshold = parseFloat(result.EventThreshold)
+        if (threshold >= 0) {
+          this.maxCollateralThreshold = Math.round(((threshold - 1) * 1000) + 100) //1 + ((this.maxCollateralThreshold - 100) / 1000)
+        } else {
+          this.maxCollateralThreshold = Math.round(((1 - (threshold * -1)) * 1000) - 100) //(1 - ((this.maxCollateralThreshold + 100) / 1000)) * -1
+        }
+      }
+      else if (result.EventName == network + ":rocketpool_colleteral_min") {
+        this.minCollateralThreshold = Math.round((parseFloat(result.EventThreshold) - 1) * 100) //1 + this.minCollateralThreshold / 100 
+        console.log("minCollateralThreshold", result.EventThreshold, this.minCollateralThreshold)
+      } else if (isNotifyClientUpdatesEnabled && result.EventName == "eth_client_update") {
+        if (result.EventFilter && result.EventFilter.length >= 1 && result.EventFilter.charAt(0).toUpperCase() != result.EventFilter.charAt(0) && result.EventFilter != "null" && result.EventFilter != "none") {
+          clientsToActivate.push(result.EventFilter)
+        }
+      }
+    }
 
-		this.lockedToggle = true
+    if (isNotifyClientUpdatesEnabled) {
+      Clients.forEach(client => {
+        if (clientsToActivate.find(activate => client.name.toLocaleLowerCase() == activate) != undefined) {
+          console.log("enabling", client.name, "updates")
+          this.setClientToggleState(client.key, true)
+        } else {
+          console.log("disabling", client.name, "updates")
+          this.setClientToggleState(client.key, false)
+        }
+      });
+    }
 
-		if (await this.api.isNotMainnet()) {
-			this.lockedToggle = true
-			this.notify = preferences
-			this.notifyInitialized = true
-			this.disableToggleLock()
-			return
-		}
+    // locking toggle so we dont execute onChange when setting initial values
+    const preferences = await this.storage.loadPreferencesToggles(net)
 
-		await this.getNotificationSetting(preferences).then((result) => {
-			this.lockedToggle = true
-			this.notify = result
-			this.disableToggleLock()
-		})
+    this.lockedToggle = true
 
-		this.disableToggleLock()
+    if (await this.api.isNotMainnet()) {
+      this.lockedToggle = true
+      this.notify = preferences
+      this.notifyInitialized = true;
+      this.disableToggleLock()
+      return;
+    }
 
-		this.notifyInitialized = true
+    await this.getNotificationSetting(preferences).then((result) => {
+      this.lockedToggle = true
+      this.notify = result
+      this.disableToggleLock()
+    })
 
-		if (!this.remoteNotifyLoadedOnce) {
-			const remoteNofiy = await this.getRemoteNotificationSetting(preferences)
-			if (remoteNofiy != this.notify) {
-				this.lockedToggle = true
-				this.notify = remoteNofiy
-				this.disableToggleLock()
-			}
-			this.remoteNotifyLoadedOnce = true
-		}
-	}
+    this.disableToggleLock()
 
-	async notifyToggle() {
-		if (this.lockedToggle) {
-			return
-		}
+    this.notifyInitialized = true;
 
-		if (!(await this.isSupportedOnAndroid())) return
+    if (!this.remoteNotifyLoadedOnce) {
+      const remoteNofiy = await this.getRemoteNotificationSetting(preferences)
+      if (remoteNofiy != this.notify) {
+        this.lockedToggle = true
+        this.notify = remoteNofiy
+        this.disableToggleLock()
+      }
+      this.remoteNotifyLoadedOnce = true
+    }
+  }
 
-		if (
-			this.platform.is('ios') &&
-			(await this.firebaseUtils.hasSeenConsentScreenAndNotConsented())
-		) {
-			this.changeToggleSafely(() => {
-				this.notify = false
-			})
-			this.firebaseUtils.alertIOSManuallyEnableNotifications()
-			return
-		}
+  async notifyToggle() {
+    if (this.lockedToggle) {
+      return;
+    }
 
-		if (this.notify == false) {
-			for (const [key, value] of this.notifyTogglesMap) {
-				this.notifyTogglesMap.set(key, this.notify)
-			}
-		}
+    if (!(await this.isSupportedOnAndroid())) return
 
-		const net = (await this.api.networkConfig).net
-		this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
-		this.settingsChanged = true
-		if (!(await this.api.isNotMainnet())) {
-			this.sync.changeGeneralNotify(this.notify)
-		}
+    if (this.platform.is("ios") && await this.firebaseUtils.hasSeenConsentScreenAndNotConsented()) {
+      this.changeToggleSafely(() => { this.notify = false })
+      this.firebaseUtils.alertIOSManuallyEnableNotifications()
+      return
+    }
 
-		if (this.notify) this.firebaseUtils.registerPush(true)
+    if (this.notify == false) {
+      for (const [key, value] of this.notifyTogglesMap) {
+        this.notifyTogglesMap.set(key, this.notify)
+      }
+    }
 
-		this.api.clearSpecificCache(new NotificationGetRequest())
-	}
+    const net = (await this.api.networkConfig).net
+    this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
+    this.settingsChanged = true
+    if (!(await this.api.isNotMainnet())) {
+      this.sync.changeGeneralNotify(this.notify)
+    }
 
-	private async getRemoteNotificationSetting(
-		notifyLocalStore
-	): Promise<boolean> {
-		const local = await this.getNotificationSetting(notifyLocalStore)
-		const remote = await this.getRemoteNotificationSettingResponse()
+    if (this.notify) this.firebaseUtils.registerPush(true)
 
-		if (remote && notifyLocalStore) {
-			console.log(
-				'Returning notification enabled remote state:',
-				remote.notify_enabled
-			)
-			return remote.notify_enabled
-		}
-		return local
-	}
+    this.api.clearSpecificCache(new NotificationGetRequest())
+  }
 
-	private async getNotificationSetting(notifyLocalStore): Promise<boolean> {
-		const local =
-			notifyLocalStore != null
-				? notifyLocalStore
-				: await this.getDefaultNotificationSetting()
-		if (!(await this.firebaseUtils.hasNotificationConsent())) return false
-		console.log('Returning notification enabled local state:', local)
-		return local
-	}
+  private async getRemoteNotificationSetting(notifyLocalStore): Promise<boolean> {
+    const local = await this.getNotificationSetting(notifyLocalStore)
+    const remote = await this.getRemoteNotificationSettingResponse()
 
-	private async getRemoteNotificationSettingResponse(): Promise<MobileSettingsResponse> {
-		const request = new GetMobileSettingsRequest()
-		const response = await this.api.execute(request)
-		const result = request.parse(response)
-		if (result && result.length >= 1) return result[0]
-		return null
-	}
+    if (remote && notifyLocalStore) {
+      console.log("Returning notification enabled remote state:", remote.notify_enabled)
+      return remote.notify_enabled
+    }
+    return local
+  }
 
-	notifyClientUpdates() {
-		if (this.lockedToggle) {
-			return
-		}
-		this.settingsChanged = true
-		this.sync.changeNotifyClientUpdate(
-			'eth_client_update',
-			this.notifyTogglesMap.get('eth_client_update')
-		)
-		this.api.clearSpecificCache(new NotificationGetRequest())
-	}
+  private async getNotificationSetting(notifyLocalStore): Promise<boolean> {
+    const local = (notifyLocalStore != null) ? notifyLocalStore : await this.getDefaultNotificationSetting()
+    if( ! (await this.firebaseUtils.hasNotificationConsent())) return false
+    console.log("Returning notification enabled local state:", local)
+    return local
+  }
 
-	private getNotifyToggleFromEvent(eventName: string) {
-		const toggle = this.notifyTogglesMap.get(eventName)
-		if (toggle == undefined) {
-			console.log('Could not return toggle state for event', eventName)
-			return false
-		}
-		return toggle
-	}
+  private async getRemoteNotificationSettingResponse(): Promise<MobileSettingsResponse> {
+    const request = new GetMobileSettingsRequest()
+    const response = await this.api.execute(request)
+    const result = request.parse(response)
+    if (result && result.length >= 1) return result[0]
+    return null
+  }
 
-	private setToggleFromEvent(eventNameTagges, network, value, net) {
-		var parts = eventNameTagges.split(':')
-		var eventName = eventNameTagges
-		if (parts.length == 2) {
-			if (parts[0] != network) {
-				return
-			}
-			if (parts[1].indexOf('monitoring_') >= 0) {
-				return
-			}
-			if (parts[1].indexOf('eth_client_update') >= 0) {
-				return
-			}
-			eventName = parts[1]
-		}
-		this.settingsChanged = true
-		this.notifyTogglesMap.set(eventName, value)
-		const count = this.activeSubscriptionsPerEventMap.get(eventName)
-		this.activeSubscriptionsPerEventMap.set(eventName, count ? count + 1 : 1)
+  notifyClientUpdates() {
+    if (this.lockedToggle) {
+      return;
+    }
+    this.settingsChanged = true
+    this.sync.changeNotifyClientUpdate(
+      "eth_client_update",
+      this.notifyTogglesMap.get("eth_client_update")
+    )
+    this.api.clearSpecificCache(new NotificationGetRequest())
+  }
 
-		this.storage.setBooleanSetting(net + eventName, value)
-	}
+  private getNotifyToggleFromEvent(eventName: string) {
+    const toggle = this.notifyTogglesMap.get(eventName)
+    if (toggle == undefined) {
+      console.log("Could not return toggle state for event", eventName)
+      return false
+    }
+    return toggle
+  }
 
-	getCount(eventName) {
-		const count = this.activeSubscriptionsPerEventMap.get(eventName)
-		return count ? count : 0
-	}
+  private setToggleFromEvent(eventNameTagges, network, value, net) {
+    var parts = eventNameTagges.split(":")
+    var eventName = eventNameTagges
+    if (parts.length == 2) {
+      if (parts[0] != network) { return }
+      if (parts[1].indexOf("monitoring_") >= 0) { return; }
+      if (parts[1].indexOf("eth_client_update") >= 0) { return; }
+      eventName = parts[1]
+    }
+    this.settingsChanged = true
+    this.notifyTogglesMap.set(eventName, value)
+    const count = this.activeSubscriptionsPerEventMap.get(eventName)
+    this.activeSubscriptionsPerEventMap.set(eventName, count ? count + 1 : 1)
 
-	async notifyEventToggle(eventName, filter = null, threshold = null) {
-		console.log('notifyEventToggle', this.lockedToggle)
-		if (this.lockedToggle) {
-			return
-		}
-		this.settingsChanged = true
-		this.sync.changeNotifyEvent(
-			eventName,
-			eventName,
-			this.getNotifyToggleFromEvent(eventName),
-			filter,
-			threshold
-		)
-		this.api.clearSpecificCache(new NotificationGetRequest())
-	}
+    this.storage.setBooleanSetting(net + eventName, value)
+  }
 
-	clientUpdateOnToggle(clientKey: string) {
-		if (this.lockedToggle) {
-			return
-		}
-		this.settingsChanged = true
-		if (this.getClientToggleState(clientKey)) {
-			this.sync.changeClient(clientKey, clientKey)
-		} else {
-			this.sync.changeClient(clientKey, 'null')
-		}
-	}
+  getCount(eventName) {
+    const count = this.activeSubscriptionsPerEventMap.get(eventName)
+    return count ? count : 0
+  }
 
-	// include filter in key (fe used by machine toggles)
-	async notifyEventFilterToggle(eventName, filter = null, threshold = null) {
-		console.log('notifyEventToggle', this.lockedToggle)
-		if (this.lockedToggle) {
-			return
-		}
-		let key = eventName + filter
-		let value = this.getNotifyToggleFromEvent(eventName)
-		this.settingsChanged = true
-		this.storage.setBooleanSetting(eventName, value)
+  async notifyEventToggle(eventName, filter = null, threshold = null) {
+    console.log("notifyEventToggle", this.lockedToggle)
+    if (this.lockedToggle) {
+      return;
+    }
+    this.settingsChanged = true
+    this.sync.changeNotifyEvent(
+      eventName,
+      eventName,
+      this.getNotifyToggleFromEvent(eventName),
+      filter,
+      threshold
+    )
+    this.api.clearSpecificCache(new NotificationGetRequest())
+  }
 
-		this.sync.changeNotifyEventUser(key, eventName, value, filter, threshold)
-		this.api.clearSpecificCache(new NotificationGetRequest())
-	}
+  clientUpdateOnToggle(clientKey: string) {
+    if (this.lockedToggle) {
+      return
+    }
+    this.settingsChanged = true
+    if (this.getClientToggleState(clientKey)) {
+      this.sync.changeClient(clientKey, clientKey)
+    } else {
+      this.sync.changeClient(clientKey, "null")
+    }
+  }
 
-	disableToggleLock() {
-		setTimeout(() => {
-			this.lockedToggle = false
-			this.settingsChanged = false
-		}, 300)
-	}
+  // include filter in key (fe used by machine toggles)
+  async notifyEventFilterToggle(eventName, filter = null, threshold = null) {
+    console.log("notifyEventToggle", this.lockedToggle)
+    if (this.lockedToggle) {
+      return;
+    }
+    let key = eventName + filter
+    let value = this.getNotifyToggleFromEvent(eventName)
+    this.settingsChanged = true
+    this.storage.setBooleanSetting(eventName, value)
+
+    this.sync.changeNotifyEventUser(
+      key,
+      eventName,
+      value,
+      filter,
+      threshold
+    )
+    this.api.clearSpecificCache(new NotificationGetRequest())
+  }
+
+
+  disableToggleLock() {
+    setTimeout(() => {
+      this.lockedToggle = false
+      this.settingsChanged = false
+    }, 300)
+  }
+
 }
+

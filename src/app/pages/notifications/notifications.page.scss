@@ -1,35 +1,39 @@
-@import '../../../theme/variables.scss';
+@import "../../../theme/variables.scss";
+
 
 .range {
-	margin-left: 50px !important;
+
+    margin-left: 50px !important;
 }
 
 .range-locked {
-	padding-left: 1px !important;
-	margin-left: 0px !important;
+    padding-left: 1px !important;
+    margin-left: 0px !important;
 }
 
 .pseudo-disabled {
-	opacity: 0.3 !important;
+    opacity: 0.3 !important;
 }
 
 ion-note {
-	color: var(--text-color);
-	font-size: 15px;
-	font-weight: bold;
+
+    color: var(--text-color);
+    font-size: 15px;
+    font-weight: bold;
 }
 
 .active-count {
-	font-size: 0.85rem;
-	opacity: 0.8;
+    font-size: 0.85rem;
+    opacity: 0.8;
 }
 
 .nogoogleinfo {
-	margin: 14px;
-	opacity: 0.9;
-	font-size: 0.95em;
+    margin: 14px;
+    opacity: 0.9;
+    font-size: 0.95em;
+    
 }
 
-.nogoogleinfo strong {
-	color: var(--ion-color-primary);
+.nogoogleinfo strong{
+    color: var(--ion-color-primary); 
 }

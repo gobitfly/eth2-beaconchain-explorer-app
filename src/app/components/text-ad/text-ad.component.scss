@@ -1,92 +1,96 @@
 // Copyright (C) 2021 Bitfly GmbH
-//
+// 
 // This file is part of Beaconchain Dashboard.
-//
+// 
 // Beaconchain Dashboard is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // Beaconchain Dashboard is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
 
-@import '../../../theme/variables.scss';
+@import "../../../theme/variables.scss";
 
 .ad-container {
-	padding-left: 25px;
-	padding-right: 25px;
+    padding-left: 25px;
+    padding-right: 25px;
 
-	margin-top: 13px;
-	margin-bottom: 13px;
-	padding-bottom: 10px;
+    margin-top: 13px;
+    margin-bottom: 13px;
+    padding-bottom: 10px;
 
-	padding-top: 10px;
-	background-color: var(--ion-item-background) !important;
+    padding-top: 10px;
+    background-color: var(--ion-item-background) !important;
 }
 
 .logo-container {
-	width: 40px;
-	display: flex;
-	justify-content: flex-start;
-	flex-direction: column;
-	//@extend: 15px;
+    width: 40px;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+    //@extend: 15px;
 }
 
 .title-container {
-	margin-left: 15px;
-	display: flex;
+    margin-left: 15px;
+    display: flex;
 
-	width: 70%;
-	height: 70px;
-	max-height: 70px;
+    width: 70%;
+    height: 70px; 
+    max-height: 70px;  
 }
 
 .logo {
-	display: flex;
-	justify-content: flex-end;
-	border-radius: 20%;
-	margin-top: 7px;
-	height: 34px;
-	width: 34px;
+    display: flex;
+    justify-content: flex-end;
+    border-radius: 20%;
+    margin-top: 7px;
+    height: 34px;
+    width: 34px;
 }
 
 .ad-img {
-	position: absolute;
-	margin-top: 4px;
-	margin-left: 4px;
+    position: absolute;
+    margin-top: 4px;
+    margin-left: 4px;
 }
 
+
+
 ion-badge {
-	width: 34px;
-	margin-top: 8px;
-	font-size: 11px;
-	height: 15px;
+    width: 34px;
+    margin-top: 8px;
+    font-size: 11px;
+    height: 15px;
 }
 
 .content {
+
 }
 
+
 .head {
-	width: 100%;
-	display: flex;
+    width: 100%;
+    display: flex;
 }
 
 ion-button {
-	--border-radius: 55px;
-	text-transform: none;
-	min-width: 180px;
-	margin-top: 15px;
-	margin-bottom: 25px;
-	font-weight: bold !important;
-	font-size: 1em !important;
-	height: 44px;
+    --border-radius: 55px;
+    text-transform: none;
+    min-width: 180px;
+    margin-top: 15px;
+    margin-bottom: 25px;
+    font-weight: bold !important;
+    font-size: 1em !important;
+    height: 44px;
 }
 
 .own-ad {
-	content: url(/assets/icon/ad-icon.png);
+    content: url(/assets/icon/ad-icon.png);
 }

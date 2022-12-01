@@ -18,76 +18,76 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import '../../theme/variables.scss';
+@import "../../theme/variables.scss";
 
 ion-searchbar {
-	--background: var(--ion-toolbar-background);
-	--box-shadow: var(--ion-toolbar-background);
-	--color: var(--x-toolbar-title-color);
-	--clear-button-color: var(--x-toolbar-title-color);
-	--cancel-button-color: var(--x-toolbar-title-color);
-	--icon-color: var(--x-toolbar-title-color);
-	--placeholder-color: var(--x-toolbar-title-color);
-	--placeholder-opacity: 0.8;
+  --background: var(--ion-toolbar-background);
+  --box-shadow: var(--ion-toolbar-background);
+  --color: var(--x-toolbar-title-color);
+  --clear-button-color: var(--x-toolbar-title-color);
+  --cancel-button-color: var(--x-toolbar-title-color);
+  --icon-color: var(--x-toolbar-title-color);
+  --placeholder-color: var(--x-toolbar-title-color);
+  --placeholder-opacity: 0.8;
 }
 
 .toolbar-btn::part(native) {
-	--ion-color-contrast: var(--x-toolbar-title-color);
-	--color: var(--x-toolbar-title-color);
-	color: var(--x-toolbar-title-color);
-	background: transparent !important;
-	--background: transparent !important;
+  --ion-color-contrast: var(--x-toolbar-title-color);
+  --color: var(--x-toolbar-title-color);
+  color: var(--x-toolbar-title-color);
+  background: transparent !important;
+  --background: transparent !important;
 }
 
 .nothingfound ion-icon {
-	width: 100%;
-	display: flex;
-	justify-content: center;
-	text-align: center;
-	padding-bottom: 12px;
-	font-size: 55px;
-	color: var(--ion-text-color-lighter);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  padding-bottom: 12px;
+  font-size: 55px;
+  color: var(--ion-text-color-lighter);
 }
 
 .nothingfound {
-	text-align: center;
-	padding: 30px;
-	margin-left: 6%;
-	margin-right: 6%;
-	margin-top: 25px;
-	color: var(--ion-text-color-lighter);
+  text-align: center;
+  padding: 30px;
+  margin-left: 6%;
+  margin-right: 6%;
+  margin-top: 25px;
+  color: var(--ion-text-color-lighter);
 }
 
 ion-label {
-	font-weight: normal;
-	color: var(--ion-text-color-lighter);
+  font-weight: normal;
+  color: var(--ion-text-color-lighter);
 }
 
 .top-bar {
-	padding-bottom: 0px !important;
-	margin-bottom: 0px !important;
+  padding-bottom: 0px !important;
+  margin-bottom: 0px !important;
 }
 
 ion-virtual-scroll {
-	margin-left: 0px;
-	margin-right: 0px;
-	padding-left: 0px;
-	padding-right: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+  padding-left: 0px;
+  padding-right: 0px;
 }
 
 .center {
-	width: 100%;
-	display: flex;
-	justify-content: center;
-	text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
 }
 
 .status-icon {
-	margin-top: 7px;
-	font-size: 69px;
+  margin-top: 7px;
+  font-size: 69px;
 }
 
 .loading-spinner {
-	margin-top: 55px;
-	margin-bottom: 10px;
+  margin-top: 55px;
+  margin-bottom: 10px;
 }

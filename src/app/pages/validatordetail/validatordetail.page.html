@@ -19,32 +19,31 @@
  -->
 
 <ion-header [translucent]="true">
-	<ion-toolbar>
-		<ion-buttons slot="start">
-			<ion-button (click)="closeModal()">
-				<ion-icon size="large" name="close-outline"></ion-icon>
-			</ion-button>
-		</ion-buttons>
-		<ion-buttons slot="end">
-			<ion-button (click)="tag($event)" *ngIf="!tagged">
-				<ion-icon slot="end" name="bookmark-outline"></ion-icon>
-			</ion-button>
-			<ion-button (click)="untag($event)" *ngIf="tagged">
-				<ion-icon slot="end" class="bookmarked" name="bookmark"></ion-icon>
-			</ion-button>
-		</ion-buttons>
-		<ion-title> {{ name }} </ion-title>
-	</ion-toolbar>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon size="large" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="tag($event)" *ngIf="!tagged">
+        <ion-icon slot="end" name="bookmark-outline"></ion-icon>
+
+      </ion-button>
+      <ion-button (click)="untag($event)" *ngIf="tagged">
+        <ion-icon slot="end" class="bookmarked" name="bookmark"></ion-icon>
+
+      </ion-button>
+
+    </ion-buttons>
+    <ion-title>
+      {{ name }}
+    </ion-title>
+  </ion-toolbar>
 </ion-header>
 
-<ion-content
-	[fullscreen]="true"
-	[scrollEvents]="true"
-	(ionScroll)="onScroll($event)"
-	(ionScrollStart)="onScrollStarted()"
-	(ionScrollEnd)="onScrollEnded()">
-	<app-validator-dashboard
-		[data]="data"
-		[currentY]="currentY"
-		[scrolling]="scrolling"></app-validator-dashboard>
+<ion-content [fullscreen]="true" [scrollEvents]="true"
+(ionScroll)="onScroll($event)" (ionScrollStart)="onScrollStarted()" (ionScrollEnd)="onScrollEnded()">
+  
+  <app-validator-dashboard [data]="data" [currentY]="currentY" [scrolling]="scrolling"></app-validator-dashboard>
 </ion-content>

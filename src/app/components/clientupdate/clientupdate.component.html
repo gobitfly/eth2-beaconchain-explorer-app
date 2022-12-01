@@ -19,21 +19,16 @@
  -->
 
 <div class="background" *ngIf="version">
-	<div class="inner">
-		<ion-item lines="none">
-			<ion-icon
-				slot="start"
-				name="logo-github"
-				(click)="openGithub()"></ion-icon>
+  <div class="inner">
+    <ion-item lines="none">
+      <ion-icon slot="start" name="logo-github" (click)="openGithub()"></ion-icon>
 
-			<ion-label (click)="openGithub()">
-				{{ data.client.name }} Update: {{ version }} available
-			</ion-label>
 
-			<ion-icon
-				slot="end"
-				name="checkbox-outline"
-				(click)="dismiss()"></ion-icon>
-		</ion-item>
-	</div>
+      <ion-label (click)="openGithub()">
+        {{ data.client.name }} Update: {{ version }} available
+      </ion-label>
+
+      <ion-icon slot="end" name="checkbox-outline" (click)="dismiss()"></ion-icon>
+    </ion-item>
+  </div>
 </div>

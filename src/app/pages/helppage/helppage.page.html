@@ -19,16 +19,19 @@
  -->
 
 <ion-header [translucent]="true">
-	<ion-toolbar>
-		<ion-buttons slot="start">
-			<ion-button (click)="closeModal()">
-				<ion-icon size="large" name="close-outline"></ion-icon>
-			</ion-button>
-		</ion-buttons>
-		<ion-title> Guides & FAQ </ion-title>
-	</ion-toolbar>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon size="large" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      Guides & FAQ
+    </ion-title>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-	<app-help onlyGuides="true" class="container"></app-help>
+
+  <app-help onlyGuides="true" class="container"></app-help>
 </ion-content>

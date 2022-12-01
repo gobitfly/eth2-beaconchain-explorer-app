@@ -1,58 +1,39 @@
 <div>
-	<ion-card-header class="card-header" *ngIf="title" (click)="doClick()">
-		<ion-card-title>
-			<ion-label>
-				<div
-					class="circle online"
-					*ngIf="icon == 'online'"
-					style="float: left; margin-right: 10px"></div>
-				<div
-					class="circle offline"
-					*ngIf="icon == 'offline'"
-					style="float: left; margin-right: 10px"></div>
-				<div
-					class="circle attention"
-					*ngIf="icon == 'attention'"
-					style="float: left; margin-right: 10px"></div>
-				{{ title }}
+  <ion-card-header class="card-header" *ngIf="title" (click)="doClick()">
+    <ion-card-title>
+      <ion-label>
+       
+        <div class="circle online" *ngIf="icon == 'online'" style="float: left; margin-right: 10px;"></div>
+        <div class="circle offline" *ngIf="icon == 'offline'" style="float: left; margin-right: 10px;"></div>
+        <div class="circle attention" *ngIf="icon == 'attention'" style="float: left; margin-right: 10px;"></div>
+        {{ title }}
 
-				<ion-icon
-					name="pulse-outline"
-					style="float: right"
-					*ngIf="icon"
-					class="more-icon"></ion-icon>
-			</ion-label>
-		</ion-card-title>
-		<ion-card-subtitle>
-			<span style="float: left" *ngIf="subtitleLeft">{{ subtitleLeft }}</span>
-			<span style="float: right" *ngIf="subtitleRight">{{
-				subtitleRight
-			}}</span>
-		</ion-card-subtitle>
-	</ion-card-header>
+        <ion-icon name="pulse-outline" style="float: right;" *ngIf="icon" class="more-icon"></ion-icon>
+      </ion-label>
 
-	<div
-		*ngIf="!chartData || chartData.length <= 0 || chartError"
-		style="width: 100%; height: 280px">
-		<div class="nothingfound" *ngIf="!specificError">
-			<ion-icon name="telescope-outline"></ion-icon>
-			<ion-label>Not enough data to display. </ion-label><br />
-			<ion-label>Check back later.</ion-label>
-		</div>
+    </ion-card-title>
+    <ion-card-subtitle>
 
-		<div class="nothingfound" *ngIf="specificError == 'system_missing'">
-			<ion-icon name="bandage-outline"></ion-icon>
-			<ion-label>Missing system data.</ion-label><br />
-			<ion-label style="font-size: 13px"
-				>Monitoring might not be configured correctly or your client does not
-				support it.</ion-label
-			>
-		</div>
-	</div>
+      <span style="float: left" *ngIf="subtitleLeft">{{ subtitleLeft }}</span>
+      <span style="float: right" *ngIf="subtitleRight">{{ subtitleRight }}</span>
+    </ion-card-subtitle>
+  </ion-card-header>
 
-	<div
-		*ngIf="chartData && chartData.length > 0"
-		[hidden]="chartError"
-		id="machinechart_{{ id }}_{{ hashCode(key) }}"
-		style="width: 100%; height: 300px; margin-bottom: 10px"></div>
+  <div *ngIf="!chartData || chartData.length <= 0 || chartError" style="width:100%; height:280px;">
+    <div class="nothingfound" *ngIf="!specificError">
+      <ion-icon name="telescope-outline"></ion-icon>
+      <ion-label>Not enough data to display. </ion-label><br />
+      <ion-label>Check back later.</ion-label>
+    </div>
+
+    <div class="nothingfound" *ngIf="specificError == 'system_missing'">
+      <ion-icon name="bandage-outline"></ion-icon>
+      <ion-label>Missing system data.</ion-label><br />
+      <ion-label style="font-size: 13px;">Monitoring might not be configured correctly or your client does not support it.</ion-label>
+    </div>
+  </div>
+
+  <div *ngIf="chartData && chartData.length > 0" [hidden]="chartError" id="machinechart_{{ id }}_{{ hashCode(key) }}"
+    style="width:100%; height:300px; margin-bottom: 10px;"></div>
+
 </div>

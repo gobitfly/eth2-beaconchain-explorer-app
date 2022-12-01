@@ -1,260 +1,231 @@
-/*
+/* 
  *  // Copyright (C) 2020 - 2021 Bitfly GmbH
  *  // Manuel Caspari (manuel@bitfly.at)
- *  //
+ *  // 
  *  // This file is part of Beaconchain Dashboard.
- *  //
+ *  // 
  *  // Beaconchain Dashboard is free software: you can redistribute it and/or modify
  *  // it under the terms of the GNU General Public License as published by
  *  // the Free Software Foundation, either version 3 of the License, or
  *  // (at your option) any later version.
- *  //
+ *  // 
  *  // Beaconchain Dashboard is distributed in the hope that it will be useful,
  *  // but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  // GNU General Public License for more details.
- *  //
+ *  // 
  *  // You should have received a copy of the GNU General Public License
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
-import { Injectable } from '@angular/core'
-import {
-	MyValidatorResponse,
-	AddMyValidatorsRequest,
-} from '../requests/requests'
-import { Mutex } from 'async-mutex'
-import {
-	ValidatorUtils,
-	LAST_TIME_ADDED_KEY,
-	LAST_TIME_REMOVED_KEY,
-} from './ValidatorUtils'
+import { ApiService } from '../services/api.service';
+import { StorageService } from '../services/storage.service';
+import { Injectable } from '@angular/core';
+import { MyValidatorResponse, AddMyValidatorsRequest } from '../requests/requests';
+import { Mutex } from 'async-mutex';
+import { ValidatorUtils, LAST_TIME_ADDED_KEY, LAST_TIME_REMOVED_KEY } from './ValidatorUtils';
 
-const LAST_TIME_UPSYNCED_KEY = 'last_time_upsynced'
-const LAST_TIME_UPDELETED_KEY = 'last_time_updeleted'
+const LAST_TIME_UPSYNCED_KEY = "last_time_upsynced"
+const LAST_TIME_UPDELETED_KEY = "last_time_updeleted"
 
 @Injectable({
-	providedIn: 'root',
+    providedIn: 'root'
 })
 export class ValidatorSyncUtils {
-	constructor(
-		private validator: ValidatorUtils,
-		private storage: StorageService,
-		private api: ApiService
-	) {}
 
-	public async mightSyncUpAndSyncDelete(
-		syncNotificationsForNewValidators: () => void
-	) {
-		this.mayDeleteUp()
-		await this.maySyncUp(syncNotificationsForNewValidators)
-	}
+    constructor(
+        private validator: ValidatorUtils,
+        private storage: StorageService,
+        private api: ApiService
+    ) { }
 
-	// Use only when you really need to sync both ways
-	// Otherwise use syncDown or maySyncUp
-	public async fullSync(syncNotificationsForNewValidators: () => void) {
-		await this.syncDown()
-		await this.mightSyncUpAndSyncDelete(syncNotificationsForNewValidators)
-	}
+    public async mightSyncUpAndSyncDelete(syncNotificationsForNewValidators: () => void) {
+        this.mayDeleteUp()
+        await this.maySyncUp(syncNotificationsForNewValidators)
+    }
 
-	public async syncDown() {
-		const loggedIn = await this.storage.isLoggedIn()
-		if (!loggedIn) return
-		console.log('[SYNC] syncing down')
+    // Use only when you really need to sync both ways
+    // Otherwise use syncDown or maySyncUp
+    public async fullSync(syncNotificationsForNewValidators: () => void) {
+        await this.syncDown()
+        await this.mightSyncUpAndSyncDelete(syncNotificationsForNewValidators)
+    }
 
-		const myRemotes = await this.validator.getMyRemoteValidators()
-		if (!myRemotes || myRemotes.length <= 0) return
+    public async syncDown() {
 
-		const newValidatorIndizes = await this.validator.getAllNewIndizesOnly(
-			myRemotes
-		)
-		console.log('newValidatorIndizes', newValidatorIndizes)
+        const loggedIn = await this.storage.isLoggedIn()
+        if (!loggedIn) return
+        console.log("[SYNC] syncing down")
 
-		this.syncRemoteRemovals(myRemotes)
+        const myRemotes = await this.validator.getMyRemoteValidators()
+        if (!myRemotes || myRemotes.length <= 0) return
 
-		if (newValidatorIndizes.length <= 0) {
-			this.validator.notifyListeners()
-			return
-		}
+        const newValidatorIndizes = await this.validator.getAllNewIndizesOnly(myRemotes)
+        console.log("newValidatorIndizes", newValidatorIndizes)
 
-		const newValidators = await this.validator
-			.getRemoteValidatorInfo(newValidatorIndizes)
-			.catch((err) => {
-				return null
-			})
-		if (newValidators == null) return
+        this.syncRemoteRemovals(myRemotes)
 
-		this.validator.convertToValidatorModelsAndSaveLocal(true, newValidators)
-	}
+        if (newValidatorIndizes.length <= 0) {
+            this.validator.notifyListeners()
+            return
+        }
 
-	private upSyncLastTry = 0
+        const newValidators = await this.validator.getRemoteValidatorInfo(newValidatorIndizes).catch((err) => { return null })
+        if (newValidators == null) return
 
-	private async maySyncUp(syncNotificationsForNewValidators: () => void) {
-		const loggedIn = await this.storage.isLoggedIn()
-		if (!loggedIn) return
+        this.validator.convertToValidatorModelsAndSaveLocal(true, newValidators)
+    }
 
-		if (this.upSyncLastTry + 2 * 60 * 1000 > Date.now()) {
-			console.log('maySyncUp canceled, last try was under 2minutes ago')
-			return
-		}
+    private upSyncLastTry = 0
 
-		const lastTimeUpSynced = await this.storage.getObject(
-			LAST_TIME_UPSYNCED_KEY
-		)
+    private async maySyncUp(syncNotificationsForNewValidators: () => void) {
+        const loggedIn = await this.storage.isLoggedIn()
+        if (!loggedIn) return
 
-		// Upload only when new validators were added locally
-		const lastTimeAdded = await this.storage.getObject(LAST_TIME_ADDED_KEY)
-		if (
-			lastTimeAdded &&
-			(!lastTimeUpSynced ||
-				lastTimeAdded.timestamp > lastTimeUpSynced.timestamp)
-		) {
-			this.upSyncLastTry = Date.now()
-			const success = await this.syncUp(syncNotificationsForNewValidators)
-			if (success) {
-				this.storage.setObject(LAST_TIME_UPSYNCED_KEY, {
-					timestamp: Date.now(),
-				})
-			}
-		}
-	}
+        if (this.upSyncLastTry + (2 * 60 * 1000) > Date.now()) {
+            console.log("maySyncUp canceled, last try was under 2minutes ago")
+            return;
+        }
 
-	private upDeleteSyncLastTry = 0
-	private deleteSyncLock = new Mutex()
-	private async mayDeleteUp() {
-		const loggedIn = await this.storage.isLoggedIn()
-		if (!loggedIn) return
+        const lastTimeUpSynced = await this.storage.getObject(LAST_TIME_UPSYNCED_KEY)
 
-		if (this.upDeleteSyncLastTry + 5 * 60 * 1000 > Date.now()) {
-			console.log('mayDeleteUp canceled, last try was under 2minutes ago')
-			return
-		}
+        // Upload only when new validators were added locally
+        const lastTimeAdded = await this.storage.getObject(LAST_TIME_ADDED_KEY)
+        if (lastTimeAdded && (!lastTimeUpSynced || lastTimeAdded.timestamp > lastTimeUpSynced.timestamp)) {
+            this.upSyncLastTry = Date.now()
+            const success = await this.syncUp(syncNotificationsForNewValidators)
+            if (success) {
+                this.storage.setObject(LAST_TIME_UPSYNCED_KEY, { timestamp: Date.now() })
+            }
+        }
+    }
 
-		if (this.deleteSyncLock.isLocked()) {
-			console.log('delete sync already locked by other async chain')
-			return
-		}
+    private upDeleteSyncLastTry = 0
+    private deleteSyncLock = new Mutex()
+    private async mayDeleteUp() {
+        const loggedIn = await this.storage.isLoggedIn()
+        if (!loggedIn) return
 
-		const lastTimeUpDeleted = await this.storage.getObject(
-			LAST_TIME_UPDELETED_KEY
-		)
-		const lastTimeRemoved = await this.storage.getObject(LAST_TIME_REMOVED_KEY)
+        if (this.upDeleteSyncLastTry + (5 * 60 * 1000) > Date.now()) {
+            console.log("mayDeleteUp canceled, last try was under 2minutes ago")
+            return;
+        }
 
-		console.log('mayDeleteUp', lastTimeRemoved, lastTimeUpDeleted)
+        if (this.deleteSyncLock.isLocked()) {
+            console.log("delete sync already locked by other async chain")
+            return
+        }
 
-		if (
-			lastTimeRemoved &&
-			(!lastTimeUpDeleted ||
-				lastTimeRemoved.timestamp > lastTimeUpDeleted.timestamp)
-		) {
-			console.log('Starting deleteUp')
-			const unlock = await this.deleteSyncLock.acquire()
-			const success = await this.deleteUp()
-			unlock()
-			if (success) {
-				this.validator.clearDeletedSet()
-				this.storage.setObject(LAST_TIME_UPDELETED_KEY, {
-					timestamp: Date.now(),
-				})
-			}
-		} else {
-			this.validator.clearDeletedSet()
-		}
-	}
+        const lastTimeUpDeleted = await this.storage.getObject(LAST_TIME_UPDELETED_KEY)
+        const lastTimeRemoved = await this.storage.getObject(LAST_TIME_REMOVED_KEY)
 
-	private async deleteUp(): Promise<boolean> {
-		const storageKey = await this.validator.getStorageKey()
-		const deletedSet = await this.validator.getDeletedSet(storageKey)
+        console.log("mayDeleteUp", lastTimeRemoved, lastTimeUpDeleted)
 
-		console.log('delete queue', deletedSet)
-		if (deletedSet.size <= 0) return true
-		this.upDeleteSyncLastTry = Date.now()
-		console.log('== starting delete sync queue ==')
+        if (lastTimeRemoved && (!lastTimeUpDeleted || lastTimeRemoved.timestamp > lastTimeUpDeleted.timestamp)) {
+            console.log("Starting deleteUp")
+            const unlock = await this.deleteSyncLock.acquire();
+            const success = await this.deleteUp();
+            unlock();
+            if (success) {
+                this.validator.clearDeletedSet()
+                this.storage.setObject(LAST_TIME_UPDELETED_KEY, { timestamp: Date.now() })
+            }
+        } else {
+            this.validator.clearDeletedSet()
+        }
+    }
 
-		var count = 0
-		var finished = true
-		for (const value of deletedSet) {
-			const success = await this.validator.removeValidatorRemote(
-				value.toString()
-			)
-			if (success) {
-				console.log('== deleted ' + value + ' ==')
-				count++
+    private async deleteUp(): Promise<boolean> {
+        const storageKey = await this.validator.getStorageKey()
+        const deletedSet = await this.validator.getDeletedSet(storageKey)
 
-				const temp = await this.validator.getDeletedSet(storageKey)
-				temp.delete(value)
-				this.validator.setDeleteSet(storageKey, temp)
+        console.log("delete queue", deletedSet)
+        if (deletedSet.size <= 0) return true
+        this.upDeleteSyncLastTry = Date.now()
+        console.log("== starting delete sync queue ==")
 
-				await this.delay(10000 + (count > 3 ? 15000 : 0))
-			} else {
-				console.log('== failed to delete ' + value + ' ==')
-				finished = false
-				await this.delay(35000)
-			}
-		}
+        var count = 0
+        var finished = true
+        for (const value of deletedSet) {
+            const success = await this.validator.removeValidatorRemote(value.toString())
+            if (success) {
+                console.log("== deleted " + value + " ==")
+                count++;
 
-		return finished
-	}
+                const temp = await this.validator.getDeletedSet(storageKey)
+                temp.delete(value)
+                this.validator.setDeleteSet(storageKey, temp)
 
-	private delay(ms: number) {
-		return new Promise((resolve) => setTimeout(resolve, ms))
-	}
+                await this.delay(10000 + (count > 3 ? 15000 : 0))
+            } else {
+                console.log("== failed to delete " + value + " ==")
+                finished = false
+                await this.delay(35000)
+            }
+        }
 
-	private async syncUp(syncNotificationsForNewValidators: () => void) {
-		console.log('[SYNC] syncing up')
+        return finished
+    }
 
-		const storageKey = await this.validator.getStorageKey()
-		const current = await this.validator.getMap(storageKey)
+    private delay(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
-		const syncUpList: string[] = []
-		current.forEach((validator) => {
-			if (!validator.synced) syncUpList.push(validator.index + '')
-		})
 
-		if (syncUpList.length <= 0) return true
-		const success = await this.addValidatorsRemote(syncUpList)
+    private async syncUp(syncNotificationsForNewValidators: () => void) {
+        console.log("[SYNC] syncing up")
 
-		if (success) {
-			syncNotificationsForNewValidators()
+        const storageKey = await this.validator.getStorageKey()
+        const current = await this.validator.getMap(storageKey)
 
-			current.forEach((validator) => {
-				if (!validator.synced) validator.synced = true
-			})
-		}
+        const syncUpList: string[] = []
+        current.forEach((validator) => {
+            if (!validator.synced) syncUpList.push(validator.index + "")
+        })
 
-		await this.storage.setObject(storageKey, current)
-		return success
-	}
+        if (syncUpList.length <= 0) return true
+        const success = await this.addValidatorsRemote(syncUpList)
 
-	private async syncRemoteRemovals(myRemotes: MyValidatorResponse[]) {
-		const storageKey = await this.validator.getStorageKey()
-		const current = await this.validator.getMap(storageKey)
+        if (success) {
+            syncNotificationsForNewValidators()
 
-		const existsSynced: Set<string> = new Set<string>()
-		myRemotes.forEach((remote) => {
-			if (current.has(remote.PubKey)) {
-				existsSynced.add(remote.PubKey)
-			}
-		})
-		console.log('syncRemoteRemovals existsSynced', existsSynced)
+            current.forEach((validator) => {
+                if (!validator.synced) validator.synced = true
+            })
+        }
 
-		current.forEach((oldValidator) => {
-			if (!existsSynced.has(oldValidator.pubkey) && oldValidator.synced) {
-				console.log('syncRemoteRemovals remove', oldValidator)
-				current.delete(oldValidator.pubkey)
-			}
-		})
+        await this.storage.setObject(storageKey, current)
+        return success
+    }
 
-		await this.storage.setObject(storageKey, current)
-	}
+    private async syncRemoteRemovals(myRemotes: MyValidatorResponse[]) {
+        const storageKey = await this.validator.getStorageKey()
+        const current = await this.validator.getMap(storageKey)
 
-	private async addValidatorsRemote(indices: string[]): Promise<boolean> {
-		const request = new AddMyValidatorsRequest(indices)
-		const response = await this.api.execute(request)
-		const result = request.parse(response)
-		console.log('add validators remote', response, result)
-		return request.wasSuccessfull(response)
-	}
+        const existsSynced: Set<string> = new Set<string>()
+        myRemotes.forEach((remote) => {
+            if (current.has(remote.PubKey)) {
+                existsSynced.add(remote.PubKey)
+            }
+        })
+        console.log("syncRemoteRemovals existsSynced", existsSynced)
+
+        current.forEach((oldValidator) => {
+            if (!existsSynced.has(oldValidator.pubkey) && oldValidator.synced) {
+                console.log("syncRemoteRemovals remove", oldValidator)
+                current.delete(oldValidator.pubkey)
+            }
+        })
+
+        await this.storage.setObject(storageKey, current)
+    }
+
+    private async addValidatorsRemote(indices: string[]): Promise<boolean> {
+        const request = new AddMyValidatorsRequest(indices)
+        const response = await this.api.execute(request)
+        const result = request.parse(response)
+        console.log("add validators remote", response, result)
+        return request.wasSuccessfull(response)
+    }
+
 }

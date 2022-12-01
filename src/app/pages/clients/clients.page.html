@@ -1,160 +1,88 @@
 <ion-header>
-	<ion-toolbar>
-		<ion-buttons slot="start">
-			<ion-button (click)="closeModal()">
-				<ion-icon size="large" name="close-outline"></ion-icon>
-			</ion-button>
-		</ion-buttons>
-		<span [ngSwitch]="clientIdentifier">
-			<span *ngSwitchCase="'eth1Clients'">
-				<ion-title>Excecution Clients</ion-title>
-			</span>
-			<span *ngSwitchCase="'eth2Clients'">
-				<ion-title>Consensus Clients</ion-title>
-			</span>
-		</span>
-	</ion-toolbar>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon size="large" name="close-outline"></ion-icon>
+      </ion-button>    
+    </ion-buttons>
+    <span [ngSwitch]="clientIdentifier">
+      <span *ngSwitchCase="'eth1Clients'">
+        <ion-title>Excecution Clients</ion-title>
+      </span>
+      <span *ngSwitchCase="'eth2Clients'">
+        <ion-title>Consensus Clients</ion-title>
+      </span>
+    </span>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
-	<ion-list-header>
-		<ion-label>Show me updates for</ion-label>
-	</ion-list-header>
-	<span [ngSwitch]="clientIdentifier">
-		<span *ngSwitchCase="'eth1Clients'">
-			<ion-list>
-				<ion-item lines="none">
-					<ion-icon
-						class="opacity-icon"
-						slot="start"
-						name="cube-outline"></ion-icon>
-					<ion-label>Besu</ion-label>
-					<ion-toggle
-						checked
-						id="clientToggle"
-						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('BESU')"
-						(ngModelChange)="notificationBase.setClientToggleState('BESU', $event)"
-						(ionChange)="notificationBase.clientUpdateOnToggle('BESU')"
-						slot="end"></ion-toggle>
-				</ion-item>
-				<ion-item lines="none">
-					<ion-icon
-						class="opacity-icon"
-						slot="start"
-						name="cube-outline"></ion-icon>
-					<ion-label>Erigon</ion-label>
-					<ion-toggle
-						checked
-						id="clientToggle"
-						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('ERIGON')"
-						(ngModelChange)="notificationBase.setClientToggleState('ERIGON', $event)"
-						(ionChange)="notificationBase.clientUpdateOnToggle('ERIGON')"
-						slot="end"></ion-toggle>
-				</ion-item>
-				<ion-item lines="none">
-					<ion-icon
-						class="opacity-icon"
-						slot="start"
-						name="cube-outline"></ion-icon>
-					<ion-label>Geth</ion-label>
-					<ion-toggle
-						checked
-						id="clientToggle"
-						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('GETH')"
-						(ngModelChange)="notificationBase.setClientToggleState('GETH', $event)"
-						(ionChange)="notificationBase.clientUpdateOnToggle('GETH')"
-						slot="end"></ion-toggle>
-				</ion-item>
-				<ion-item lines="none">
-					<ion-icon
-						class="opacity-icon"
-						slot="start"
-						name="cube-outline"></ion-icon>
-					<ion-label>Nethermind</ion-label>
-					<ion-toggle
-						checked
-						id="clientToggle"
-						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('NETHERMIND')"
-						(ngModelChange)="notificationBase.setClientToggleState('NETHERMIND', $event)"
-						(ionChange)="notificationBase.clientUpdateOnToggle('NETHERMIND')"
-						slot="end"></ion-toggle>
-				</ion-item>
-			</ion-list>
-		</span>
-		<span *ngSwitchCase="'eth2Clients'">
-			<ion-list>
-				<ion-item lines="none">
-					<ion-icon
-						class="opacity-icon"
-						slot="start"
-						name="bonfire-outline"></ion-icon>
-					<ion-label>Lighthouse</ion-label>
-					<ion-toggle
-						checked
-						id="clientToggle"
-						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('LIGHTHOUSE')"
-						(ngModelChange)="notificationBase.setClientToggleState('LIGHTHOUSE', $event)"
-						(ionChange)="notificationBase.clientUpdateOnToggle('LIGHTHOUSE')"
-						slot="end"></ion-toggle>
-				</ion-item>
-				<ion-item lines="none">
-					<ion-icon
-						class="opacity-icon"
-						slot="start"
-						name="bonfire-outline"></ion-icon>
-					<ion-label>Lodestar</ion-label>
-					<ion-toggle
-						checked
-						id="clientToggle"
-						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('LODESTAR')"
-						(ngModelChange)="notificationBase.setClientToggleState('LODESTAR', $event)"
-						(ionChange)="notificationBase.clientUpdateOnToggle('LODESTAR')"
-						slot="end"></ion-toggle>
-				</ion-item>
-				<ion-item lines="none">
-					<ion-icon
-						class="opacity-icon"
-						slot="start"
-						name="bonfire-outline"></ion-icon>
-					<ion-label>Nimbus</ion-label>
-					<ion-toggle
-						checked
-						id="clientToggle"
-						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('NIMBUS')"
-						(ngModelChange)="notificationBase.setClientToggleState('NIMBUS', $event)"
-						(ionChange)="notificationBase.clientUpdateOnToggle('NIMBUS')"
-						slot="end"></ion-toggle>
-				</ion-item>
-				<ion-item lines="none">
-					<ion-icon
-						class="opacity-icon"
-						slot="start"
-						name="bonfire-outline"></ion-icon>
-					<ion-label>Prysm</ion-label>
-					<ion-toggle
-						checked
-						id="clientToggle"
-						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('PRYSM')"
-						(ngModelChange)="notificationBase.setClientToggleState('PRYSM', $event)"
-						(ionChange)="notificationBase.clientUpdateOnToggle('PRYSM')"
-						slot="end"></ion-toggle>
-				</ion-item>
-				<ion-item lines="none">
-					<ion-icon
-						class="opacity-icon"
-						slot="start"
-						name="bonfire-outline"></ion-icon>
-					<ion-label>Teku</ion-label>
-					<ion-toggle
-						checked
-						id="clientToggle"
-						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('TEKU')"
-						(ngModelChange)="notificationBase.setClientToggleState('TEKU', $event)"
-						(ionChange)="notificationBase.clientUpdateOnToggle('TEKU')"
-						slot="end"></ion-toggle>
-				</ion-item>
-			</ion-list>
-		</span>
-	</span>
-	<div class="bottomFiller"></div>
+  <ion-list-header>
+    <ion-label>Show me updates for</ion-label>
+  </ion-list-header>
+  <span [ngSwitch]="clientIdentifier">
+    <span *ngSwitchCase="'eth1Clients'">
+      <ion-list>
+        <ion-item lines="none">
+          <ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
+          <ion-label>Besu</ion-label>
+          <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('BESU')" (ngModelChange)="notificationBase.setClientToggleState('BESU', $event)"
+          (ionChange)="notificationBase.clientUpdateOnToggle('BESU')" slot="end"></ion-toggle>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
+          <ion-label>Erigon</ion-label>
+          <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('ERIGON')" (ngModelChange)="notificationBase.setClientToggleState('ERIGON', $event)"
+          (ionChange)="notificationBase.clientUpdateOnToggle('ERIGON')" slot="end"></ion-toggle>
+        </ion-item>      
+        <ion-item lines="none">
+          <ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
+          <ion-label>Geth</ion-label>
+          <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('GETH')" (ngModelChange)="notificationBase.setClientToggleState('GETH', $event)"
+          (ionChange)="notificationBase.clientUpdateOnToggle('GETH')" slot="end"></ion-toggle>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
+          <ion-label>Nethermind</ion-label>
+          <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('NETHERMIND')" (ngModelChange)="notificationBase.setClientToggleState('NETHERMIND', $event)"
+          (ionChange)="notificationBase.clientUpdateOnToggle('NETHERMIND')" slot="end"></ion-toggle>
+        </ion-item>
+      </ion-list>
+    </span>
+    <span *ngSwitchCase="'eth2Clients'">
+      <ion-list>
+        <ion-item lines="none">
+          <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
+          <ion-label>Lighthouse</ion-label>
+          <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('LIGHTHOUSE')" (ngModelChange)="notificationBase.setClientToggleState('LIGHTHOUSE', $event)"
+          (ionChange)="notificationBase.clientUpdateOnToggle('LIGHTHOUSE')" slot="end"></ion-toggle>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
+          <ion-label>Lodestar</ion-label>
+          <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('LODESTAR')" (ngModelChange)="notificationBase.setClientToggleState('LODESTAR', $event)"
+          (ionChange)="notificationBase.clientUpdateOnToggle('LODESTAR')" slot="end"></ion-toggle>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
+          <ion-label>Nimbus</ion-label>
+          <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('NIMBUS')" (ngModelChange)="notificationBase.setClientToggleState('NIMBUS', $event)"
+          (ionChange)="notificationBase.clientUpdateOnToggle('NIMBUS')" slot="end"></ion-toggle>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
+          <ion-label>Prysm</ion-label>
+          <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('PRYSM')" (ngModelChange)="notificationBase.setClientToggleState('PRYSM', $event)"
+          (ionChange)="notificationBase.clientUpdateOnToggle('PRYSM')" slot="end"></ion-toggle>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
+          <ion-label>Teku</ion-label>
+          <ion-toggle checked id="clientToggle" [ngModel]="notificationBase.clientUpdatesTogglesMap.get('TEKU')" (ngModelChange)="notificationBase.setClientToggleState('TEKU', $event)"
+          (ionChange)="notificationBase.clientUpdateOnToggle('TEKU')" slot="end"></ion-toggle>
+        </ion-item>
+      </ion-list>
+    </span>
+  </span>
+  <div class="bottomFiller"></div>
 </ion-content>

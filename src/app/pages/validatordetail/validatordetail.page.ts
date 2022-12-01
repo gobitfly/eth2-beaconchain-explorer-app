@@ -1,118 +1,108 @@
-/*
+/* 
  *  // Copyright (C) 2020 - 2021 Bitfly GmbH
  *  // Manuel Caspari (manuel@bitfly.at)
- *  //
+ *  // 
  *  // This file is part of Beaconchain Dashboard.
- *  //
+ *  // 
  *  // Beaconchain Dashboard is free software: you can redistribute it and/or modify
  *  // it under the terms of the GNU General Public License as published by
  *  // the Free Software Foundation, either version 3 of the License, or
  *  // (at your option) any later version.
- *  //
+ *  // 
  *  // Beaconchain Dashboard is distributed in the hope that it will be useful,
  *  // but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  // GNU General Public License for more details.
- *  //
+ *  // 
  *  // You should have received a copy of the GNU General Public License
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, Input } from '@angular/core'
-import {
-	ValidatorUtils,
-	Validator,
-	getDisplayName,
-	SAVED,
-} from '../../utils/ValidatorUtils'
-import { ModalController } from '@ionic/angular'
-import OverviewController from '../../controllers/OverviewController'
-import { fromEvent, Subscription } from 'rxjs'
-import { MerchantUtils } from 'src/app/utils/MerchantUtils'
+import { Component, OnInit, Input } from '@angular/core';
+import { ValidatorUtils, Validator, getDisplayName, SAVED } from '../../utils/ValidatorUtils';
+import { ModalController } from '@ionic/angular';
+import OverviewController from '../../controllers/OverviewController';
+import { fromEvent, Subscription } from 'rxjs';
+import { MerchantUtils } from 'src/app/utils/MerchantUtils';
 
 @Component({
-	selector: 'app-validatordetail',
-	templateUrl: './validatordetail.page.html',
-	styleUrls: ['./validatordetail.page.scss'],
+  selector: 'app-validatordetail',
+  templateUrl: './validatordetail.page.html',
+  styleUrls: ['./validatordetail.page.scss'],
 })
 export class ValidatordetailPage implements OnInit {
-	@Input() item: Validator
-	name: string
 
-	data: any
+  @Input() item: Validator;
+  name: string
 
-	tagged: boolean = false
+  data: any
 
-	currentY: number = 0
+  tagged: boolean = false
 
-	private backbuttonSubscription: Subscription
+  currentY: number = 0
 
-	scrolling: boolean = false
+  private backbuttonSubscription: Subscription;
 
-	constructor(
-		private validatorUtils: ValidatorUtils,
-		private modalCtrl: ModalController,
-		private merchant: MerchantUtils
-	) {}
+  scrolling: boolean = false
 
-	setInput(validator: Validator) {
-		this.item = validator
-	}
+  constructor(
+    private validatorUtils: ValidatorUtils,
+    private modalCtrl: ModalController,
+    private merchant: MerchantUtils
+  ) { }
 
-	ngOnInit() {
-		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(async () => {
-			this.modalCtrl.dismiss()
-		})
-		this.updateDetails(this.item)
-		this.tagged = this.item.storage == SAVED
-	}
+  setInput(validator: Validator) {
+    this.item = validator
+  }
 
-	ngOnChanges() {
-		this.updateDetails(this.item)
-	}
+  ngOnInit() {
+    const event = fromEvent(document, 'backbutton');
+    this.backbuttonSubscription = event.subscribe(async () => {
+      this.modalCtrl.dismiss();
+    });
+    this.updateDetails(this.item)
+    this.tagged = this.item.storage == SAVED
+  }
 
-	onScroll($event) {
-		this.currentY = $event.detail.currentY
-	}
+  ngOnChanges() {
+    this.updateDetails(this.item)
+  }
 
-	onScrollStarted() {
-		this.scrolling = true
-	}
+  onScroll($event) {
+    this.currentY = $event.detail.currentY
+  }
 
-	onScrollEnded() {
-		this.scrolling = false
-	}
+  onScrollStarted() {
+    this.scrolling = true
+  }
 
-	ngOnDestroy() {
-		this.backbuttonSubscription.unsubscribe()
-	}
+  onScrollEnded() {
+    this.scrolling = false
+  }
 
-	closeModal() {
-		this.modalCtrl.dismiss()
-	}
+  ngOnDestroy() {
+    this.backbuttonSubscription.unsubscribe();
+  }
 
-	async updateDetails(item: Validator) {
-		this.name = getDisplayName(item)
+  closeModal() {
+    this.modalCtrl.dismiss();
+  }
 
-		const epoch = await this.validatorUtils.getRemoteCurrentEpoch()
-		const overviewController = new OverviewController(
-			null,
-			await this.merchant.getCurrentPlanMaxValidator()
-		)
-		this.data = overviewController.proccessDetail([item], epoch)
-	}
+  async updateDetails(item: Validator) {
+    this.name = getDisplayName(item)
 
-	tag(event) {
-		this.validatorUtils.convertToValidatorModelAndSaveValidatorLocal(
-			false,
-			this.item.data
-		)
-		this.tagged = true
-	}
+    const epoch = await this.validatorUtils.getRemoteCurrentEpoch()
+    const overviewController = new OverviewController(null, await this.merchant.getCurrentPlanMaxValidator())
+    this.data = overviewController.proccessDetail([item], epoch)
+  }
 
-	untag(event) {
-		this.validatorUtils.deleteValidatorLocal(this.item.data)
-		this.tagged = false
-	}
+  tag(event) {
+    this.validatorUtils.convertToValidatorModelAndSaveValidatorLocal(false, this.item.data)
+    this.tagged = true
+  }
+
+  untag(event) {
+    this.validatorUtils.deleteValidatorLocal(this.item.data)
+    this.tagged = false
+  }
 }

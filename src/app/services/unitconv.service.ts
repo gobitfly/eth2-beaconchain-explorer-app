@@ -1,234 +1,205 @@
-/*
+/* 
  *  // Copyright (C) 2020 - 2021 Bitfly GmbH
  *  // Manuel Caspari (manuel@bitfly.at)
- *  //
+ *  // 
  *  // This file is part of Beaconchain Dashboard.
- *  //
+ *  // 
  *  // Beaconchain Dashboard is free software: you can redistribute it and/or modify
  *  // it under the terms of the GNU General Public License as published by
  *  // the Free Software Foundation, either version 3 of the License, or
  *  // (at your option) any later version.
- *  //
+ *  // 
  *  // Beaconchain Dashboard is distributed in the hope that it will be useful,
  *  // but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  // GNU General Public License for more details.
- *  //
+ *  // 
  *  // You should have received a copy of the GNU General Public License
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core'
-import Unit, {
-	convertDisplayable,
-	MAPPING,
-	convertEthUnits,
-} from '../utils/EthereumUnits'
-import { StorageService } from './storage.service'
-import BigNumber from 'bignumber.js'
-import { ApiService } from './api.service'
-import {
-	CoinbaseExchangeRequest,
-	CoinbaseExchangeResponse,
-} from '../requests/requests'
+import { Injectable } from '@angular/core';
+import Unit, { convertDisplayable, MAPPING, convertEthUnits } from '../utils/EthereumUnits';
+import { StorageService } from './storage.service';
+import BigNumber from "bignumber.js";
+import { ApiService } from './api.service';
+import { CoinbaseExchangeRequest, CoinbaseExchangeResponse } from '../requests/requests';
 
 interface UnitStorage {
-	prefered: 'ETHER' | 'FINNEY' | 'EURO' | 'DOLLAR'
+  prefered: ("ETHER" | "FINNEY" | "EURO" | "DOLLAR")
 }
 
-const STORAGE_KEY = 'prefered_unit'
-const STORAGE_KEY_ROCKETPOOL = 'prefered_unit_rocketpool'
+const STORAGE_KEY = "prefered_unit"
+const STORAGE_KEY_ROCKETPOOL = "prefered_unit_rocketpool"
 
 @Injectable({
-	providedIn: 'root',
+  providedIn: 'root'
 })
 export class UnitconvService {
-	pref: string = 'ETHER'
-	prefRpl: string = 'RPL'
-	lastPrice: BigNumber
 
-	static currencyPipe = null
+  pref: string = "ETHER"
+  prefRpl: string = "RPL"
+  lastPrice: BigNumber
 
-	constructor(private storage: StorageService, private api: ApiService) {
-		this.storage.getObject(STORAGE_KEY).then((unitPref) => this.init(unitPref))
-		this.storage
-			.getObject(STORAGE_KEY_ROCKETPOOL)
-			.then((unitPref) => (this.prefRpl = this.getPref(unitPref, 'RPL')))
-	}
+  static currencyPipe = null
 
-	private async getExchangeRate(
-		unitPair: string
-	): Promise<CoinbaseExchangeResponse> {
-		if (unitPair == 'ETH-BTC') return this.getExchangeRateBitcoin()
+  constructor(private storage: StorageService, private api: ApiService) {
+    this.storage.getObject(STORAGE_KEY).then(
+      (unitPref) => this.init(unitPref)
+    )
+    this.storage.getObject(STORAGE_KEY_ROCKETPOOL).then(
+      (unitPref) => this.prefRpl = this.getPref(unitPref, "RPL")
+    )
+  }
 
-		const req = new CoinbaseExchangeRequest(unitPair)
-		const response = await this.api.execute(req).catch((error) => {
-			return null
-		})
-		const temp = req.parse(response)
-		if (temp.length <= 0) return null
-		return temp[0]
-	}
+  private async getExchangeRate(unitPair: string): Promise<CoinbaseExchangeResponse> {
+    if (unitPair == "ETH-BTC") return this.getExchangeRateBitcoin()
 
-	// Special bitcoin case since coinbase doesn't have an ETH_BTC spot price api endpoint
-	private async getExchangeRateBitcoin(): Promise<CoinbaseExchangeResponse> {
-		const reqEthUsd = new CoinbaseExchangeRequest('ETH-USD')
-		const reqBtcUsd = new CoinbaseExchangeRequest('BTC-USD')
+    const req = new CoinbaseExchangeRequest(unitPair)
+    const response = await this.api.execute(req).catch((error) => { return null })
+    const temp = req.parse(response)
+    if(temp.length <= 0) return null
+    return temp[0]
+  }
 
-		const responseEthUsdPromise = this.api.execute(reqEthUsd)
-		const responseBtcUsdPromise = this.api.execute(reqBtcUsd)
+  // Special bitcoin case since coinbase doesn't have an ETH_BTC spot price api endpoint
+  private async getExchangeRateBitcoin(): Promise<CoinbaseExchangeResponse> {
+    const reqEthUsd = new CoinbaseExchangeRequest("ETH-USD")
+    const reqBtcUsd = new CoinbaseExchangeRequest("BTC-USD")
 
-		const responseEthUsd = reqEthUsd.parse(await responseEthUsdPromise)
-		const responseBtcUsd = reqBtcUsd.parse(await responseBtcUsdPromise)
-		if (responseEthUsd.length <= 0 || responseBtcUsd.length <= 0) return null
+    const responseEthUsdPromise = this.api.execute(reqEthUsd)
+    const responseBtcUsdPromise = this.api.execute(reqBtcUsd)
+    
+    const responseEthUsd = reqEthUsd.parse(await responseEthUsdPromise)
+    const responseBtcUsd = reqBtcUsd.parse(await responseBtcUsdPromise)
+    if(responseEthUsd.length <= 0 || responseBtcUsd.length <= 0) return null
 
-		const rate = new BigNumber(responseEthUsd[0].amount).dividedBy(
-			new BigNumber(responseBtcUsd[0].amount)
-		)
+    const rate = new BigNumber(responseEthUsd[0].amount)
+      .dividedBy(new BigNumber(responseBtcUsd[0].amount))
 
-		return {
-			base: 'ETH',
-			currency: 'BTC',
-			amount: rate.toString(),
-		} as CoinbaseExchangeResponse
-	}
+    return {
+      base: "ETH",
+      currency: "BTC",
+      amount: rate.toString()
+    } as CoinbaseExchangeResponse
+  }
 
-	async init(unitPref) {
-		const temp = this.getPref(unitPref)
+  async init(unitPref) {
+    const temp = this.getPref(unitPref)
 
-		this.pref = temp
+    this.pref = temp
 
-		const unit: Unit = this.getCurrentPrefAsUnit()
+    const unit: Unit = this.getCurrentPrefAsUnit()
 
-		const lastUpdatedPrice = await this.storage.getObject(
-			'last_price_' + this.pref
-		)
+    const lastUpdatedPrice = await this.storage.getObject("last_price_" + this.pref)
 
-		if (lastUpdatedPrice && lastUpdatedPrice.lastPrice) {
-			const price = new BigNumber(lastUpdatedPrice.lastPrice)
-			this.lastPrice = price
-		} else {
-			this.lastPrice = unit.value
-		}
+    if (lastUpdatedPrice && lastUpdatedPrice.lastPrice) {
+      const price = new BigNumber(lastUpdatedPrice.lastPrice)
+      this.lastPrice = price
+    } else {
+      this.lastPrice = unit.value
+    }
 
-		if (
-			!(await this.storage.getBooleanSetting('UPDATED_CURRENCY_INTEROP', false))
-		) {
-			this.storage.setBooleanSetting('UPDATED_CURRENCY_INTEROP', true)
-			this.save()
-		}
+    if (! (await this.storage.getBooleanSetting("UPDATED_CURRENCY_INTEROP", false))) {
+      this.storage.setBooleanSetting("UPDATED_CURRENCY_INTEROP", true)
+      this.save()
+    }
 
-		this.updatePriceData()
-	}
+    this.updatePriceData()
+  }
 
-	private getCurrentPrefAsUnit() {
-		return this.getCurrentyAsUnit(this.pref)
-	}
+  private getCurrentPrefAsUnit() {
+    return this.getCurrentyAsUnit(this.pref)
+  }
 
-	private getCurrentyAsUnit(currency) {
-		const unitStored: Unit = MAPPING.get(currency)
-		return unitStored ? unitStored : Unit.ETHER
-	}
+  private getCurrentyAsUnit(currency) {
+    const unitStored: Unit = MAPPING.get(currency)
+    return unitStored ? unitStored : Unit.ETHER
+  }
 
-	setRPLPrice(price: BigNumber) {
-		const unitStored: Unit = MAPPING.get('RPL')
-		if (!unitStored) return
-		unitStored.value = convertEthUnits(price, MAPPING.get('WEI'), Unit.ETHER)
-	}
+  setRPLPrice(price: BigNumber) {
+    const unitStored: Unit = MAPPING.get("RPL")
+    if (!unitStored) return
+    unitStored.value = convertEthUnits(price, MAPPING.get("WEI"), Unit.ETHER)
+  }
 
-	setRETHPrice(price: BigNumber) {
-		const unitStored: Unit = MAPPING.get('RETH')
-		if (!unitStored) return
-		unitStored.value = convertEthUnits(price, Unit.WEI, Unit.ETHER)
-	}
+  setRETHPrice(price: BigNumber) {
+    const unitStored: Unit = MAPPING.get("RETH")
+    if(!unitStored) return
+    unitStored.value = convertEthUnits(price, Unit.WEI, Unit.ETHER)
+  }
 
-	async updatePriceData() {
-		console.log('updatePriceData currency')
-		const unit: Unit = this.getCurrentPrefAsUnit()
-		if (unit.coinbaseSpot) {
-			const exchangeRate = await this.getExchangeRate(unit.coinbaseSpot)
-			const bigNumAmount = exchangeRate
-				? new BigNumber(exchangeRate.amount)
-				: null
-			if (bigNumAmount && bigNumAmount.isGreaterThan(0)) {
-				unit.value = bigNumAmount
-				this.lastPrice = bigNumAmount
-				this.triggerPropertyChange()
-				this.storage.setObject('last_price_' + this.pref, {
-					lastPrice: bigNumAmount,
-				})
-			} else {
-				// Handles the case if we get no price data atm
-				// Currently we fall back to ether being the default unit (since price is 1:1)
-				// (TODO: we could do this for all eth subunits fe. finney)
-				this.lastPrice = unit.value
-				this.pref = 'ETHER'
-			}
-		}
-	}
 
-	private triggeredChange = false
-	private triggerPropertyChange() {
-		this.triggeredChange = true
+  async updatePriceData() {
+    console.log("updatePriceData currency")
+    const unit: Unit = this.getCurrentPrefAsUnit()
+    if (unit.coinbaseSpot) {
+      const exchangeRate = await this.getExchangeRate(unit.coinbaseSpot)
+      const bigNumAmount = exchangeRate ? new BigNumber(exchangeRate.amount) : null
+      if (bigNumAmount && bigNumAmount.isGreaterThan(0)) {
+        unit.value = bigNumAmount
+        this.lastPrice = bigNumAmount
+        this.triggerPropertyChange()
+        this.storage.setObject("last_price_" + this.pref, { lastPrice: bigNumAmount })
+      } else {
+        // Handles the case if we get no price data atm
+        // Currently we fall back to ether being the default unit (since price is 1:1)
+        // (TODO: we could do this for all eth subunits fe. finney)
+        this.lastPrice = unit.value
+        this.pref = "ETHER"
+      }
+    }
+  }
 
-		const temp = this.pref
-		this.pref = 'ETHER'
-		this.pref = 'FINNEY'
+  private triggeredChange = false
+  private triggerPropertyChange() {
+    this.triggeredChange = true
 
-		const temp2 = this.prefRpl
-		this.prefRpl = 'ETHER'
-		this.prefRpl = 'RPL'
+    const temp = this.pref
+    this.pref = "ETHER"
+    this.pref = "FINNEY"
 
-		setTimeout(() => {
-			this.pref = temp
-			this.prefRpl = temp2
-			this.triggeredChange = false
-		}, 450)
-	}
 
-	private getPref(unitPref, defaultva = 'ETHER') {
-		if (unitPref) {
-			return unitPref.prefered
-		}
-		return defaultva
-	}
+    const temp2 = this.prefRpl
+    this.prefRpl = "ETHER"
+    this.prefRpl = "RPL"
 
-	convertToPref(value: BigNumber, from) {
-		return this.convert(value, from, this.pref)
-	}
 
-	convert(value: BigNumber, from, to, displayable = true) {
-		if (!value || !from || !to) return value
+    setTimeout(() => {
+      this.pref = temp
+      this.prefRpl = temp2
+      this.triggeredChange = false
+    }, 450)
+  }
 
-		const tempValue = value instanceof BigNumber ? value : new BigNumber(value)
-		if (displayable) {
-			return convertDisplayable(tempValue, MAPPING.get(from), MAPPING.get(to))
-		} else {
-			return convertEthUnits(
-				tempValue,
-				MAPPING.get(from),
-				MAPPING.get(to),
-				false
-			)
-		}
-	}
+  private getPref(unitPref, defaultva = "ETHER") {
+    if (unitPref) {
+      return unitPref.prefered
+    }
+    return defaultva
+  }
 
-	save() {
-		if (this.triggeredChange) return
-		const unit = this.getCurrentPrefAsUnit()
-		this.storage.setObject(STORAGE_KEY, {
-			prefered: this.pref,
-			coinbaseSpot: unit.coinbaseSpot,
-			symbol: unit.display,
-			rounding: unit.rounding,
-		})
+  convertToPref(value: BigNumber, from) {
+    return this.convert(value, from, this.pref)
+  }
 
-		const rplUnit = this.getCurrentyAsUnit(this.prefRpl)
-		this.storage.setObject(STORAGE_KEY_ROCKETPOOL, {
-			prefered: this.prefRpl,
-			coinbaseSpot: rplUnit.coinbaseSpot,
-			symbol: rplUnit.display,
-			rounding: rplUnit.rounding,
-		})
-	}
+  convert(value: BigNumber, from, to, displayable = true) {
+    if (!value || !from || !to) return value
+
+    const tempValue = value instanceof BigNumber ? value : new BigNumber(value)
+    if (displayable) {
+      return convertDisplayable(tempValue, MAPPING.get(from), MAPPING.get(to))
+    } else {
+      return convertEthUnits(tempValue, MAPPING.get(from), MAPPING.get(to), false)
+    }
+  }
+
+  save() {
+    if (this.triggeredChange) return
+    const unit = this.getCurrentPrefAsUnit()
+    this.storage.setObject(STORAGE_KEY, { prefered: this.pref, coinbaseSpot: unit.coinbaseSpot, symbol: unit.display, rounding: unit.rounding })
+    
+    const rplUnit = this.getCurrentyAsUnit(this.prefRpl)
+    this.storage.setObject(STORAGE_KEY_ROCKETPOOL, { prefered: this.prefRpl, coinbaseSpot: rplUnit.coinbaseSpot, symbol: rplUnit.display, rounding: rplUnit.rounding })
+  }
 }

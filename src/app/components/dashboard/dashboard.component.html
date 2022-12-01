@@ -18,145 +18,91 @@
     along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<div
-	class="container"
-	[ngClass]="fadeIn"
-	*ngIf="data && api.connectionStateOK"
-	[hidden]="!doneLoading">
-	<ion-list class="status">
-		<div lines="none" class="status-container">
-			<div [ngStyle]="{ opacity: currentY | fadeoutpipe: 73 }">
-				<ion-icon
-					class="status-icon"
-					[class]="data.dashboardState.iconCss"
-					name="{{ data.dashboardState.icon }}">
-				</ion-icon>
-			</div>
+ <div class="container" [ngClass]="fadeIn" *ngIf="data && api.connectionStateOK" [hidden]="!doneLoading">
 
-			<div
-				class="status-text"
-				[ngStyle]="{ opacity: currentY | fadeoutpipe: 173 }">
-				<ion-label class="validator-count" *ngIf="!data.foreignValidator">
-					<strong>{{ data.dashboardState.title }}</strong>
-				</ion-label>
+  <ion-list class="status">
+    <div lines="none" class="status-container">
 
-				<div class="status-text">
-					<ion-label>
-						{{ data.dashboardState.description }}
-					</ion-label>
-				</div>
+      <div [ngStyle]="{'opacity': currentY | fadeoutpipe: 73 }">
 
-				<div
-					class="status-text"
-					*ngIf="data.dashboardState.extendedDescription">
-					<ion-label>
-						{{ data.dashboardState.extendedDescriptionPre
-						}}<strong>{{ data.dashboardState.extendedDescription }}</strong>
-					</ion-label>
-				</div>
-			</div>
-		</div>
-	</ion-list>
+        <ion-icon class="status-icon" [class]="data.dashboardState.iconCss" name="{{ data.dashboardState.icon }}">
+        </ion-icon>
 
-	<ion-list class="updates" *ngIf="!data.foreignValidator">
-		<span *ngFor="let update of updates">
-			<app-clientupdate [data]="update" *ngIf="update"></app-clientupdate>
-		</span>
+      </div>
 
-		<app-message
-			title="Grant Notification Permission"
-			icon="notifications-outline"
-			iconStyle="warn"
-			notificationPermission="true"
-			*ngIf="notificationPermissionPending"></app-message>
+      <div class="status-text" [ngStyle]="{'opacity': currentY | fadeoutpipe: 173 }">
+        <ion-label class="validator-count" *ngIf="!data.foreignValidator">
+          <strong>{{ data.dashboardState.title }}</strong>
 
-		<app-message
-			title="Network struggles with finality"
-			icon="alert-circle-outline"
-			iconStyle="alert"
-			[openUrl]="beaconChainUrl"
-			*ngIf="finalizationIssue"></app-message>
+        </ion-label>
 
-		<app-message
-			title="Merge Checklist"
-			icon="clipboard-outline"
-			iconStyle="info"
-			mergeChecklist="true"
-			*ngIf="showMergeChecklist"
-			(onResult)="onDismissed($event)"></app-message>
+        <div class="status-text">
+          <ion-label>
+            {{ data.dashboardState.description }}
+          </ion-label>
+        </div>
 
-		<app-message
-			title="Network is preparing for liftoff"
-			icon="time-outline"
-			iconStyle="genesis"
-			[openUrl]="beaconChainUrl"
-			*ngIf="awaitGenesis"></app-message>
+        <div class="status-text" *ngIf="data.dashboardState.extendedDescription">
+          <ion-label>
+            {{ data.dashboardState.extendedDescriptionPre }}<strong>{{ data.dashboardState.extendedDescription
+              }}</strong>
+          </ion-label>
+        </div>
+      </div>
 
-		<app-message
-			title="Happy Liftoff! Network is now live"
-			icon="rocket-outline"
-			iconStyle="genesis"
-			[openUrl]="beaconChainUrl"
-			*ngIf="earlyGenesis"></app-message>
+    </div>
+  </ion-list>
 
-		<app-message
-			title="Happy Holidays!"
-			icon="gift-outline"
-			iconStyle="genesis"
-			dismissAble="true"
-			*ngIf="theme.isWinterSeason()">
-		</app-message>
+  <ion-list class="updates" *ngIf="!data.foreignValidator">
 
-		<app-message
-			title="Active Sync Committee"
-			icon="sync-outline"
-			iconStyle="sync-active"
-			*ngIf="currentSyncCommitteeMessage"
-			[msgTitle]="currentSyncCommitteeMessage.title"
-			[msgText]="currentSyncCommitteeMessage.text">
-		</app-message>
 
-		<app-message
-			title="Soon: Sync Committee"
-			icon="sync-outline"
-			iconStyle="genesis"
-			*ngIf="nextSyncCommitteeMessage"
-			[msgTitle]="nextSyncCommitteeMessage.title"
-			[msgText]="nextSyncCommitteeMessage.text">
-		</app-message>
+    <span *ngFor="let update of updates">
+      <app-clientupdate [data]="update" *ngIf="update"></app-clientupdate>
+    </span>
 
-		<app-message
-			title="Congrats on your first proposal!"
-			icon="ribbon-outline"
-			iconStyle="genesis"
-			dismissAble="true"
-			dismissKey="first_proposal_executed"
-			confettiOnClick="true"
-			*ngIf="showFirstProposalMsg"></app-message>
+    <app-message title="Grant Notification Permission" icon="notifications-outline" iconStyle="warn"
+    notificationPermission="true" *ngIf="notificationPermissionPending"></app-message>
 
-		<app-message
-			title="Limited to 100 validators."
-			icon="rocket-outline"
-			iconStyle="genesis"
-			(click)="upgrade()"
-			*ngIf="
-				data.validatorCount >= currentPackageMaxValidators &&
-				data.validatorCount <= 100
-			">
-		</app-message>
+    <app-message title="Network struggles with finality" icon="alert-circle-outline" iconStyle="alert"
+      [openUrl]="beaconChainUrl" *ngIf="finalizationIssue"></app-message>
 
-		<app-message
-			title="Limited to 280 validators."
-			icon="rocket-outline"
-			iconStyle="genesis"
-			*ngIf="
-				data.validatorCount >= currentPackageMaxValidators &&
-				data.validatorCount > 100
-			">
-		</app-message>
-	</ion-list>
+    <app-message title="Merge Checklist" icon="clipboard-outline" iconStyle="info"
+      mergeChecklist="true" *ngIf="showMergeChecklist" (onResult)="onDismissed($event)"></app-message>
 
-	<!--<ion-list-header>
+    <app-message title="Network is preparing for liftoff" icon="time-outline" iconStyle="genesis"
+      [openUrl]="beaconChainUrl" *ngIf="awaitGenesis"></app-message>
+
+    <app-message title="Happy Liftoff! Network is now live" icon="rocket-outline" iconStyle="genesis"
+      [openUrl]="beaconChainUrl" *ngIf="earlyGenesis"></app-message>
+
+    <app-message title="Happy Holidays!" icon="gift-outline" iconStyle="genesis" dismissAble="true"
+     *ngIf="theme.isWinterSeason()">
+    </app-message>
+
+    <app-message title="Active Sync Committee" icon="sync-outline" iconStyle="sync-active" *ngIf="currentSyncCommitteeMessage"
+      [msgTitle]="currentSyncCommitteeMessage.title" [msgText]="currentSyncCommitteeMessage.text">
+    </app-message>
+
+    <app-message title="Soon: Sync Committee" icon="sync-outline" iconStyle="genesis" *ngIf="nextSyncCommitteeMessage"
+      [msgTitle]="nextSyncCommitteeMessage.title" [msgText]="nextSyncCommitteeMessage.text">
+    </app-message>
+
+    <app-message title="Congrats on your first proposal!" icon="ribbon-outline" iconStyle="genesis" dismissAble="true"
+      dismissKey="first_proposal_executed" confettiOnClick="true" *ngIf="showFirstProposalMsg"></app-message>
+
+    <app-message title="Limited to 100 validators." icon="rocket-outline" iconStyle="genesis" 
+      (click)="upgrade()"
+       *ngIf="(data.validatorCount >= currentPackageMaxValidators) && data.validatorCount <= 100">
+     </app-message>
+
+     <app-message title="Limited to 280 validators." icon="rocket-outline" iconStyle="genesis" 
+      *ngIf="(data.validatorCount >= currentPackageMaxValidators) && data.validatorCount > 100">
+    </app-message>
+
+
+  </ion-list>
+
+  <!--<ion-list-header>
     <ion-label>Staking & Transactions</ion-label>
   </ion-list-header>
   <ion-list class="performances" >
@@ -203,807 +149,684 @@
 
   </ion-list>-->
 
-	<ion-list-header>
-		<ion-label>Staking</ion-label>
-	</ion-list-header>
-	<ion-list class="performances">
-		<ion-item lines="none">
-			<div class="grid">
-				<div class="grid-cell left" (click)="switchCurrencyPipe()">
-					<div class="grid">
-						<ion-label class="value left">
-							{{ data.overallBalance | mcurrency: 'GWEI':unit.pref }}
-						</ion-label>
-					</div>
-					<div class="grid">
-						<ion-label class="income-title"> Balance </ion-label>
-					</div>
-				</div>
 
-				<div class="grid-cell">
-					<div>
-						<ion-label class="value" [class]="data.apr | valuestyle: 0">
-							{{ data.apr }} %
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right">
-							<span
-								tooltip="Estimated yearly returns on the consensus layer (staking), based on the last 31 days"
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>APR</span
-							>
-						</ion-label>
-					</div>
-				</div>
 
-				<div class="grid-cell left">
-					<div>
-						<ion-label
-							class="value left"
-							[class]="data.attrEffectiveness | valuestyle: 80">
-							{{ data.attrEffectiveness }} %
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title">
-							<span
-								tooltip="The attestation inclusion effectiveness should be 80% or higher to minimize reward penalties."
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000">
-								Effectiveness
-							</span>
-						</ion-label>
-					</div>
-				</div>
+  <ion-list-header>
+    <ion-label>Staking</ion-label>
+  </ion-list-header>
+  <ion-list class="performances">
 
-				<div class="grid-cell">
-					<div>
-						<ion-label class="value" *ngIf="proposals">
-							<span class="ok-proposals">{{ proposals.good }}</span> /
-							<span [class]="proposals.bad == 0 ? '' : 'err-proposals'">{{
-								proposals.bad
-							}}</span>
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right">
-							<span
-								tooltip="Amount of valid or invalid (orphaned or missed) block proposals."
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000">
-								Proposals
-							</span>
-						</ion-label>
-					</div>
-				</div>
+    <ion-item lines="none">
 
-				<div class="grid-cell left" (click)="switchCurrencyPipe()">
-					<div class="grid">
-						<ion-label
-							class="value left"
-							[class]="data.consensusPerformance.performance1d | valuestyle: 0">
-							{{
-								data.consensusPerformance.performance1d
-									| mcurrency: 'GWEI':unit.pref
-							}}
-						</ion-label>
-					</div>
-					<div class="grid">
-						<ion-label class="income-title"> Last Day </ion-label>
-					</div>
-				</div>
+      <div class="grid">
 
-				<div class="grid-cell" (click)="switchCurrencyPipe()">
-					<div>
-						<ion-label
-							class="value"
-							[class]="data.consensusPerformance.performance7d | valuestyle: 0">
-							{{
-								data.consensusPerformance.performance7d
-									| mcurrency: 'GWEI':unit.pref
-							}}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> Last Week </ion-label>
-					</div>
-				</div>
+        <div class="grid-cell left" (click)="switchCurrencyPipe()">
 
-				<div class="grid-cell left" (click)="switchCurrencyPipe()">
-					<div>
-						<ion-label
-							class="value left"
-							[class]="
-								data.consensusPerformance.performance31d | valuestyle: 0
-							">
-							{{
-								data.consensusPerformance.performance31d
-									| mcurrency: 'GWEI':unit.pref
-							}}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title"> Last Month </ion-label>
-					</div>
-				</div>
+          <div class="grid">
+            <ion-label class="value left" >
+              {{ data.overallBalance | mcurrency: "GWEI":unit.pref }}
+            </ion-label>
+          </div>
+          <div class="grid">
+            <ion-label class="income-title">
+              Balance
+            </ion-label>
+          </div>
 
-				<div class="grid-cell" (click)="switchCurrencyPipe()">
-					<div>
-						<ion-label
-							class="value"
-							[class]="data.consensusPerformance.total | valuestyle: 0">
-							{{
-								data.consensusPerformance.total | mcurrency: 'GWEI':unit.pref
-							}}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> Total </ion-label>
-					</div>
-				</div>
-			</div>
-		</ion-item>
+        </div>
 
-		<app-text-ad location="dashboard"></app-text-ad>
+        <div class="grid-cell" >
 
-		<ion-list-header *ngIf="hasNonSmoothingPoolAsWell">
-			<ion-label>Transaction Fees</ion-label>
-		</ion-list-header>
+          <div>
+            <ion-label class="value" [class]="data.apr | valuestyle:0">
+              {{ data.apr }} %
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title right">
+              <span tooltip="Estimated yearly returns on the consensus layer (staking), based on the last 31 days" placement="right" trigger="click"
+                hideDelayAfterClick="5000">APR</span>
+            </ion-label>
+          </div>
 
-		<ion-list class="performances" *ngIf="hasNonSmoothingPoolAsWell">
-			<ion-item lines="none">
-				<div class="grid">
-					<div class="grid-cell left" (click)="switchCurrencyPipe()">
-						<div>
-							<ion-label
-								class="value left"
-								[class]="
-									data.executionPerformance.performance31d | valuestyle: 0
-								">
-								{{
-									data.executionPerformance.performance31d
-										| mcurrency: 'GWEI':unit.pref
-								}}
-							</ion-label>
-						</div>
-						<div>
-							<ion-label class="income-title">
-								<span
-									tooltip="Income of last 31 days solely from transaction fees and mev. Staking or smoothing pool rewards are not included. "
-									trigger="click"
-									hideDelayAfterClick="5000"
-									>Last Month</span
-								>
-							</ion-label>
-						</div>
-					</div>
+        </div>
 
-					<div class="grid-cell" (click)="switchCurrencyPipe()">
-						<div>
-							<ion-label
-								class="value"
-								[class]="data.executionPerformance.apr | valuestyle: 0">
-								{{ data.executionPerformance.apr }} %
-							</ion-label>
-						</div>
-						<div>
-							<ion-label class="income-title right">
-								<span
-									tooltip="Estimated yearly returns with transaction fees (execution layer), based on the last 31 days"
-									trigger="click"
-									hideDelayAfterClick="5000"
-									>APR</span
-								>
-							</ion-label>
-						</div>
-					</div>
-				</div>
-			</ion-item>
-		</ion-list>
-	</ion-list>
+        <div class="grid-cell left" >
 
-	<ion-list-header *ngIf="displaySmoothingPool">
-		<ion-label>Rocketpool Smoothing Pool</ion-label>
-	</ion-list-header>
+          <div>
+            <ion-label class="value left" [class]="data.attrEffectiveness | valuestyle:80">
+              {{ data.attrEffectiveness }} %
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title">
+              <span tooltip="The attestation inclusion effectiveness should be 80% or higher to minimize reward penalties."
+                placement="right" trigger="click" hideDelayAfterClick="5000">
+                Effectiveness
+              </span>
+            </ion-label>
+          </div>
 
-	<ion-list class="performance" *ngIf="displaySmoothingPool">
-		<ion-item lines="none">
-			<div class="grid">
-				<div class="grid-cell left">
-					<div>
-						<ion-label
-							[class]="
-								smoothingClaimed.plus(smoothingUnclaimed) | valuestyle: 0
-							"
-							class="value left"
-							(click)="switchCurrencyPipe()">
-							{{
-								smoothingClaimed.plus(smoothingUnclaimed)
-									| mcurrency: 'GWEI':unit.pref
-							}}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label
-							class="income-title"
-							tooltip="Total earned smoothing rewards (includes claimed and unclaimed smoothing pool rewards)"
-							trigger="click"
-							hideDelayAfterClick="5000">
-							Total Earned
-						</ion-label>
-					</div>
-				</div>
+        </div>
 
-				<div class="grid-cell" *ngIf="displaySmoothingPool">
-					<div>
-						<ion-label
-							[class]="smoothingUnclaimed | valuestyle: 0"
-							class="value"
-							(click)="switchCurrencyPipe()">
-							{{ smoothingUnclaimed | mcurrency: 'GWEI':unit.pref }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label
-							class="income-title right"
-							tooltip="All smoothing pool rewards that have accumulated for your node but have not been claimed yet. "
-							trigger="click"
-							hideDelayAfterClick="5000">
-							Unclaimed
-						</ion-label>
-					</div>
-				</div>
-			</div>
-		</ion-item>
-	</ion-list>
+        <div class="grid-cell" >
 
-	<ion-list-header *ngIf="rplProjectedClaim">
-		<ion-label>Rocketpool</ion-label>
-	</ion-list-header>
+          <div>
+            <ion-label class="value" *ngIf="proposals">
+              <span class="ok-proposals">{{ proposals.good }}</span> /  <span [class]="proposals.bad == 0 ? '' : 'err-proposals'">{{ proposals.bad }}</span>
+            </ion-label>
+        
+          </div>
+          <div>
+            <ion-label class="income-title right">
+              <span
+                tooltip="Amount of valid or invalid (orphaned or missed) block proposals."
+                placement="right" trigger="click" hideDelayAfterClick="5000">
+                Proposals
+              </span>
+            </ion-label>
+          </div>
 
-	<ion-list class="performances" *ngIf="rplProjectedClaim">
-		<ion-item lines="none">
-			<div class="grid">
-				<div class="grid-cell left" (click)="switchRplStake(true)">
-					<div class="grid">
-						<ion-label
-							class="value left"
-							*ngIf="rplState == 'rpl' || rplState == '%'"
-							[class]="rplProjectedClaim | valuestyle: 0">
-							{{ rplProjectedClaim | mcurrency: 'WEI':'RPL_NAKED' }}
-						</ion-label>
-						<ion-label
-							class="value left"
-							*ngIf="rplState == 'conv'"
-							[class]="rplProjectedClaim | valuestyle: 0">
-							{{
-								rplProjectedClaim
-									| mcurrency: 'WEI':'RPL':false
-									| mcurrency: 'ETHER':unit.pref
-							}}
-						</ion-label>
-					</div>
-					<div class="grid">
-						<ion-label class="income-title">
-							<span
-								tooltip="Estimated claim amount based on current network state."
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>Next Claim</span
-							>
-						</ion-label>
-					</div>
-				</div>
+        </div>
 
-				<div class="grid-cell" (click)="switchRplStake(true)">
-					<div>
-						<ion-label
-							class="value"
-							*ngIf="rplState == 'rpl' || rplState == '%'"
-							[class]="data.rocketpool.totalClaims | valuestyle: 0">
-							{{
-								data.rocketpool.totalClaims.plus(unclaimedRpl)
-									| mcurrency: 'WEI':'RPL_NAKED'
-							}}
-						</ion-label>
-						<ion-label
-							class="value"
-							*ngIf="rplState == 'conv'"
-							[class]="data.rocketpool.totalClaims | valuestyle: 0">
-							{{
-								data.rocketpool.totalClaims.plus(unclaimedRpl)
-									| mcurrency: 'WEI':'RPL':false
-									| mcurrency: 'ETHER':unit.pref
-							}}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right">
-							<span
-								tooltip="Total earned RPL rewards so far. Includes unclaimed and claimed RPL rewards."
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>Total Earned</span
-							>
-						</ion-label>
-					</div>
-				</div>
+        <div class="grid-cell left" (click)="switchCurrencyPipe()">
 
-				<div class="grid-cell left">
-					<div>
-						<ion-label
-							*ngIf="rplState == 'rpl' || rplState == '%'"
-							[class]="unclaimedRpl | valuestyle: 0"
-							class="value left"
-							(click)="switchRplStake()">
-							{{ unclaimedRpl | mcurrency: 'WEI':'NO_CURRENCY' }} RPL
-						</ion-label>
-						<ion-label
-							*ngIf="rplState == 'conv'"
-							class="value left"
-							[class]="unclaimedRpl | valuestyle: 0"
-							(click)="switchRplStake()">
-							{{
-								unclaimedRpl
-									| mcurrency: 'WEI':'RPL':false
-									| mcurrency: 'ETHER':unit.pref
-							}}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label
-							class="income-title"
-							tooltip="All RPL that have accumulated for your node but have not been claimed yet."
-							trigger="click"
-							hideDelayAfterClick="5000">
-							Unclaimed RPL
-						</ion-label>
-					</div>
-				</div>
+          <div class="grid">
+            <ion-label class="value left" [class]="data.consensusPerformance.performance1d | valuestyle:0">
+              {{ data.consensusPerformance.performance1d | mcurrency: "GWEI":unit.pref }}
+            </ion-label>
+          </div>
+          <div class="grid">
+            <ion-label class="income-title">
+              Last Day
+            </ion-label>
+          </div>
 
-				<div class="grid-cell">
-					<div>
-						<ion-label class="value">
-							<span
-								[class]="
-									data.rocketpool.cheatingStatus.strikes == 0
-										? 'ok-proposals'
-										: 'warn'
-								"
-								>{{ data.rocketpool.cheatingStatus.strikes }}</span
-							>
-							/
-							<span
-								[class]="
-									data.rocketpool.cheatingStatus.penalties == 0
-										? 'ok-proposals'
-										: 'err-proposals'
-								"
-								>{{ data.rocketpool.cheatingStatus.penalties }}</span
-							>
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right">
-							<span
-								tooltip="Indicates how many strikes (first value) and penalties (second value) you got from cheating at the Rocketpool fee-recipient address. Three strikes and you'll be penalized and lose substantial amounts of staked ETH and RPL."
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000">
-								Cheating
-							</span>
-						</ion-label>
-					</div>
-				</div>
+        </div>
 
-				<div class="grid-cell left" (click)="switchCurrencyPipe()">
-					<div class="grid">
-						<ion-label class="value left">
-							{{
-								1
-									| mcurrency: 'ETHER':'RPL':false
-									| mcurrency: 'ETHER':unit.pref
-							}}
-						</ion-label>
-					</div>
-					<div class="grid">
-						<ion-label class="income-title"> RPL Price </ion-label>
-					</div>
-				</div>
+        <div class="grid-cell" (click)="switchCurrencyPipe()">
 
-				<div class="grid-cell">
-					<div>
-						<ion-label class="value" [class]="rplApr | valuestyle: 0">
-							{{ rplApr }} %
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right">
-							<span
-								tooltip="Estimated yearly RPL returns, based on the last 7 days"
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>RPL APR</span
-							>
-						</ion-label>
-					</div>
-				</div>
+          <div>
+            <ion-label class="value" [class]="data.consensusPerformance.performance7d | valuestyle:0">
+              {{ data.consensusPerformance.performance7d | mcurrency: "GWEI":unit.pref }}
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title right">
+              Last Week
+            </ion-label>
+          </div>
 
-				<div class="grid-cell left" (click)="switchRplStake(true)">
-					<div>
-						<ion-label
-							class="value left"
-							*ngIf="rplState == 'rpl'"
-							[class]="
-								data.rocketpool.currentRpl
-									| valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1
-							">
-							{{ data.rocketpool.currentRpl | mcurrency: 'WEI':'RPL_NAKED' }}
-						</ion-label>
-						<ion-label
-							class="value left"
-							*ngIf="rplState == 'conv'"
-							[class]="
-								data.rocketpool.currentRpl
-									| valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1
-							">
-							{{
-								data.rocketpool.currentRpl
-									| mcurrency: 'WEI':'RPL':false
-									| mcurrency: 'ETHER':unit.pref
-							}}
-						</ion-label>
-						<ion-label
-							class="value left"
-							*ngIf="rplState == '%'"
-							[class]="
-								data.rocketpool.currentRpl
-									| valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1
-							">
-							{{ rplDisplay }} %
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title">
-							<span
-								tooltip="Your currently staked rocktpool token colleteral. It must be between max and min to earn interest."
-								trigger="click"
-								hideDelayAfterClick="5000">
-								Collateral
-							</span>
-						</ion-label>
-					</div>
-				</div>
+        </div>
 
-				<div class="grid-cell">
-					<div>
-						<ion-label class="value"> {{ data.rocketpool.fee }} % </ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right">
-							<span
-								*ngIf="data.foreignValidator"
-								tooltip="The commission fee of this minipool."
-								trigger="click"
-								hideDelayAfterClick="5000">
-								Minipool Fee
-							</span>
-							<span
-								*ngIf="!data.foreignValidator"
-								tooltip="Average of all your minipool commission fees"
-								trigger="click"
-								hideDelayAfterClick="5000">
-								Avg Fee
-							</span>
-						</ion-label>
-					</div>
-				</div>
+        <div class="grid-cell left" (click)="switchCurrencyPipe()">
 
-				<div class="grid-cell left">
-					<div>
-						<ion-label
-							*ngIf="rplState == 'rpl' || rplState == '%'"
-							class="value left"
-							(click)="switchRplStake()">
-							{{ data.rocketpool.minRpl | mcurrency: 'WEI':'NO_CURRENCY' }} -
-							{{ data.rocketpool.maxRpl | mcurrency: 'WEI':'NO_CURRENCY' }} RPL
-						</ion-label>
-						<ion-label
-							*ngIf="rplState == 'conv'"
-							class="value left"
-							(click)="switchRplStake()">
-							{{
-								data.rocketpool.minRpl
-									| mcurrency: 'WEI':'RPL':false
-									| mcurrency: 'ETHER':unit.pref
-							}}
-							-
-							{{
-								data.rocketpool.maxRpl
-									| mcurrency: 'WEI':'RPL':false
-									| mcurrency: 'ETHER':unit.pref
-							}}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label
-							class="income-title"
-							tooltip="Your nodes collateral must be between this range to be eligible for RPL claims."
-							trigger="click"
-							hideDelayAfterClick="5000">
-							Coll. Range
-						</ion-label>
-					</div>
-				</div>
+          <div>
+            <ion-label class="value left" [class]="data.consensusPerformance.performance31d | valuestyle:0">
+              {{ data.consensusPerformance.performance31d | mcurrency: "GWEI":unit.pref }}
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title">
+              Last Month
+            </ion-label>
+          </div>
 
-				<div class="grid-cell">
-					<div>
-						<ion-label class="value">
-							{{ nextRewardRound | date: 'MMM dd, h:mm a' }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right">
-							<span
-								tooltip="With the start of a new rocketpool reward round, rewards from the previous round can be claimed."
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000">
-								Next RPL Round
-							</span>
-						</ion-label>
-					</div>
-				</div>
-			</div>
-		</ion-item>
+        </div>
 
-		<ion-item
-			lines="none"
-			*ngIf="data.rocketpool.depositType && data.foreignValidator">
-			<ion-label class="stat-title"> Deposit Type </ion-label>
-			<ion-label class="value">
-				{{ data.rocketpool.depositType }}
-			</ion-label>
-		</ion-item>
-	</ion-list>
+        <div class="grid-cell" (click)="switchCurrencyPipe()">
 
-	<ion-list class="performances" *ngIf="!chartError">
-		<ion-list-header>
-			<ion-label>Charts & Stats</ion-label>
-		</ion-list-header>
-		<ion-segment [(ngModel)]="selectedChart" mode="md">
-			<ion-segment-button value="chartIncome" [disabled]="scrolling">
-				<ion-label>Income</ion-label>
-			</ion-segment-button>
-			<ion-segment-button
-				value="chartBlocks"
-				*ngIf="chartDataProposals"
-				[disabled]="scrolling">
-				<ion-label>Proposals</ion-label>
-			</ion-segment-button>
-		</ion-segment>
-		<div class="chartcontainer">
-			<div
-				class="stat-charts"
-				id="highcharts{{ randomChartId }}"
-				style="width: 100%; height: 380px"
-				[hidden]="!chartData || selectedChart != 'chartIncome'"></div>
-			<div
-				class="stat-charts"
-				id="highchartsBlocks{{ randomChartId }}"
-				style="width: 100%; height: 380px"
-				[hidden]="!chartDataProposals || selectedChart != 'chartBlocks'"></div>
+          <div>
+            <ion-label class="value" [class]="data.consensusPerformance.total | valuestyle:0">
+              {{ data.consensusPerformance.total | mcurrency: "GWEI":unit.pref }}
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title right">
+              Total
+            </ion-label>
+          </div>
 
-			<div class="center" *ngIf="!chartData">
-				<ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
-			</div>
-		</div>
-	</ion-list>
+        </div>
 
-	<ion-list class="performance">
-		<ion-item lines="none" *ngIf="data.bestRank == data.worstRank">
-			<ion-label class="stat-title">
-				<span
-					tooltip="Global rank of this validator, based on last 7 days"
-					placement="right"
-					trigger="click"
-					hideDelayAfterClick="5000">
-					Rank
-				</span>
-			</ion-label>
 
-			<ion-label class="value" (click)="switchRank()">
-				<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
+      </div>
+    </ion-item>
 
-				<span class="rank-text">
-					{{
-						data.bestRank
-							| percentageabs
-								: data.currentEpoch.validatorscount
-								: rankPercentMode
-								: 'Top '
-					}}
-				</span>
-			</ion-label>
-		</ion-item>
+    <app-text-ad location="dashboard"></app-text-ad>
 
-		<ion-item *ngIf="data.bestRank != data.worstRank">
-			<div class="grid">
-				<div class="grid-cell left" (click)="switchRank()">
-					<div class="grid">
-						<ion-label class="value left">
-							<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
-							<span class="rank-text">
-								{{
-									data.bestRank
-										| percentageabs
-											: data.currentEpoch.validatorscount
-											: rankPercentMode
-											: 'Top '
-								}}
-							</span>
-						</ion-label>
-					</div>
-					<div class="grid">
-						<ion-label class="income-title">
-							<span
-								tooltip="Global rank of your best performing validator, based on last 7 days"
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000">
-								Best Rank
-							</span>
-						</ion-label>
-					</div>
-				</div>
+    <ion-list-header *ngIf="hasNonSmoothingPoolAsWell">
+      <ion-label>Transaction Fees</ion-label>
+    </ion-list-header>
+  
 
-				<div class="grid-cell" (click)="switchRank()">
-					<div>
-						<ion-label class="value">
-							<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
-							<span class="rank-text">
-								{{
-									data.worstRank
-										| percentageabs
-											: data.currentEpoch.validatorscount
-											: rankPercentMode
-											: 'Top '
-								}}
-							</span>
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right">
-							<span
-								tooltip="Global rank of your worst performing validator, based on last 7 days"
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000">
-								Worst Rank
-							</span>
-						</ion-label>
-					</div>
-				</div>
-			</div>
-		</ion-item>
-	</ion-list>
+    <ion-list class="performances" *ngIf="hasNonSmoothingPoolAsWell" >
 
-	<ion-list class="performances" *ngIf="!data.foreignValidator">
-		<ion-item lines="none" *ngIf="utilizationAvg != -1">
-			<ion-label class="stat-title">
-				<span
-					tooltip="Based on your earnings and effective balance, this value indicates how well your validators perform."
-					placement="right"
-					trigger="click"
-					hideDelayAfterClick="5000">
-					Effective Performance
-				</span>
-			</ion-label>
-			<ion-label class="value" [class]="utilizationAvg | valuestyle: 80">
-				{{ utilizationAvg }} %
-			</ion-label>
-		</ion-item>
+      <ion-item lines="none">
+  
+        <div class="grid">
+  
+  
+          <div class="grid-cell left" (click)="switchCurrencyPipe()">
+  
+            <div>
+              <ion-label class="value left" [class]="data.executionPerformance.performance31d | valuestyle:0">
+                {{ data.executionPerformance.performance31d | mcurrency: "GWEI":unit.pref }}
+              </ion-label>
+            </div>
+            <div>
+              <ion-label class="income-title">
+                <span tooltip="Income of last 31 days solely from transaction fees and mev. Staking or smoothing pool rewards are not included. "  trigger="click"
+                hideDelayAfterClick="5000">Last Month</span>
+              </ion-label>
+            </div>
+  
+          </div>
+  
+          <div class="grid-cell" (click)="switchCurrencyPipe()">
+  
+            <div>
+              <ion-label class="value" [class]="data.executionPerformance.apr | valuestyle:0">
+                {{ data.executionPerformance.apr }} %
+              </ion-label>
+            </div>
+            <div>
+              <ion-label class="income-title right">
+                <span tooltip="Estimated yearly returns with transaction fees (execution layer), based on the last 31 days"  trigger="click"
+                hideDelayAfterClick="5000">APR</span>
+              </ion-label>
+            </div>
+  
+          </div>
+  
+  
+        </div>
+      </ion-item>
+  
+      
+  
+    </ion-list>
+   
 
-		<ion-item lines="none">
-			<ion-label class="stat-title">
-				<span
-					tooltip="Used to calculate rewards and penalties. Also influences luck on block proposals. Maximum is 32 per validator."
-					placement="right"
-					trigger="click"
-					hideDelayAfterClick="5000">
-					Effective Balance
-				</span>
-			</ion-label>
-			<ion-label class="value" (click)="switchCurrencyPipe()">
-				{{ data.effectiveBalance | mcurrency: 'GWEI':'ETHER' }}
-			</ion-label>
-		</ion-item>
-	</ion-list>
+  </ion-list>
 
-	<ion-list class="performances">
-		<ion-item lines="none" *ngIf="data.foreignValidator">
-			<ion-label class="stat-title"> Unique Index </ion-label>
-			<ion-label class="value">
-				{{
-					data.foreignValidatorItem.data.validatorindex | number: '1.0':'en-US'
-				}}
-			</ion-label>
-		</ion-item>
+  <ion-list-header *ngIf="displaySmoothingPool">
+    <ion-label>Rocketpool Smoothing Pool</ion-label>
+  </ion-list-header>
 
-		<ion-item
-			lines="none"
-			*ngIf="data.foreignValidator"
-			tooltip="0x00 credentials must be upgraded to 0x01 credentials at some point in time to be eligible for withdrawals."
-			placement="right"
-			trigger="click"
-			hideDelayAfterClick="5000">
-			<ion-label class="stat-title"> Withdrawal Cred </ion-label>
-			<ion-label
-				class="value"
-				[class]="
-					(data.foreignValidatorItem.data.withdrawalcredentials | slice: 0:4) ==
-					'0x01'
-						? 'ok-proposals'
-						: 'warn'
-				"
-				(click)="switchCurrencyPipe()">
-				{{ data.foreignValidatorItem.data.withdrawalcredentials | slice: 0:4 }}
-			</ion-label>
-		</ion-item>
+  <ion-list class="performance" *ngIf="displaySmoothingPool">
 
-		<ion-item lines="none" *ngIf="data.foreignValidator">
-			<ion-label class="stat-title"> Effective Balance </ion-label>
-			<ion-label class="value" (click)="switchCurrencyPipe()">
-				{{ data.effectiveBalance | mcurrency: 'GWEI':'ETHER' }}
-			</ion-label>
-		</ion-item>
+    <ion-item lines="none">
 
-		<ion-item
-			lines="none"
-			*ngIf="
-				(unit.pref != 'ETHER' && unit.pref != 'FINNEY') ||
-				classReference.currencyPipe != null
-			">
-			<ion-label class="stat-title"> Ether Price </ion-label>
-			<ion-label class="value" (click)="switchCurrencyPipe()">
-				{{ 1 | mcurrency: 'ETHER':unit.pref }}
-			</ion-label>
-		</ion-item>
+      <div class="grid">
+    <div class="grid-cell left"  >
+      <div >
+        <ion-label [class]="smoothingClaimed.plus(smoothingUnclaimed) | valuestyle:0" class="value left" (click)="switchCurrencyPipe()">
+          {{ smoothingClaimed.plus(smoothingUnclaimed) | mcurrency: "GWEI":unit.pref  }}
+        </ion-label>
+      </div>
+      <div >
+        <ion-label class="income-title" tooltip="Total earned smoothing rewards (includes claimed and unclaimed smoothing pool rewards)"
+        trigger="click" hideDelayAfterClick="5000">
+          Total Earned
+        </ion-label>
+       
+      </div>
+    </div>
 
-		<ion-item lines="none">
-			<ion-label class="stat-title">
-				<span
-					tooltip="Last updated timestamp. New data is fetched every epoch (~6 minutes)"
-					placement="right"
-					trigger="click"
-					hideDelayAfterClick="5000">
-					Updated
-				</span>
-			</ion-label>
-			<ion-label class="value">
-				{{ api.lastRefreshed | timeago }}
-			</ion-label>
-		</ion-item>
-	</ion-list>
+    <div class="grid-cell" *ngIf="displaySmoothingPool" >
+      <div>
+        <ion-label [class]="smoothingUnclaimed| valuestyle:0" class="value " (click)="switchCurrencyPipe()">
+          {{ smoothingUnclaimed | mcurrency: "GWEI":unit.pref }}  
+        </ion-label>
+      </div>
+      <div>
+        <ion-label class="income-title right" tooltip="All smoothing pool rewards that have accumulated for your node but have not been claimed yet. "
+        trigger="click" hideDelayAfterClick="5000">
+          Unclaimed
+        </ion-label>
+      </div>
+    </div>
 
-	<ion-list class="performances">
-		<ion-item lines="none" (click)="openBrowser()">
-			<ion-icon slot="end" name="open-outline"></ion-icon>
-			<ion-label class="stat-title"> View on beaconcha.in </ion-label>
-		</ion-item>
-	</ion-list>
-	<div class="bottomFiller"></div>
+    </div>
+    </ion-item>
+  </ion-list>
+
+  <ion-list-header  *ngIf="rplProjectedClaim">
+    <ion-label>Rocketpool</ion-label>
+  </ion-list-header>
+
+  <ion-list class="performances" *ngIf="rplProjectedClaim">
+
+    <ion-item lines="none">
+
+      <div class="grid">
+
+        <div class="grid-cell left" (click)="switchRplStake(true)">
+
+          <div class="grid">
+            <ion-label class="value left" *ngIf="rplState == 'rpl' || rplState == '%' " [class]="rplProjectedClaim | valuestyle:0" >
+              {{ rplProjectedClaim  | mcurrency: "WEI":"RPL_NAKED"}} 
+            </ion-label>
+            <ion-label class="value left" *ngIf="rplState == 'conv'" [class]="rplProjectedClaim | valuestyle:0" >
+              {{ rplProjectedClaim  | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref  }} 
+            </ion-label>
+          </div>
+          <div class="grid">
+            <ion-label class="income-title">
+              <span tooltip="Estimated claim amount based on current network state." trigger="click"
+                hideDelayAfterClick="5000">Next Claim</span>
+            </ion-label>
+          </div>
+
+        </div>
+
+        <div class="grid-cell" (click)="switchRplStake(true)" >
+
+
+          <div>
+            <ion-label class="value" *ngIf="rplState == 'rpl' || rplState == '%' " [class]=" data.rocketpool.totalClaims | valuestyle:0" >
+              {{ data.rocketpool.totalClaims.plus(unclaimedRpl)  | mcurrency: "WEI":"RPL_NAKED"}} 
+            </ion-label>
+            <ion-label class="value" *ngIf="rplState == 'conv'" [class]=" data.rocketpool.totalClaims | valuestyle:0" >
+              {{ data.rocketpool.totalClaims.plus(unclaimedRpl)  | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref  }} 
+            </ion-label>
+          
+          </div>
+          <div>
+            
+            <ion-label class="income-title right">
+              <span tooltip="Total earned RPL rewards so far. Includes unclaimed and claimed RPL rewards."  trigger="click"
+                hideDelayAfterClick="5000">Total Earned</span>
+            </ion-label>
+          </div>
+
+        </div>
+
+
+        <div class="grid-cell left" >
+          <div >
+            <ion-label *ngIf="rplState == 'rpl' || rplState == '%'"  [class]="unclaimedRpl | valuestyle:0" class="value left" (click)="switchRplStake()">
+              {{ unclaimedRpl | mcurrency: "WEI":"NO_CURRENCY" }}  RPL
+            </ion-label>
+            <ion-label *ngIf="rplState == 'conv' " class="value left"  [class]="unclaimedRpl | valuestyle:0" (click)="switchRplStake()">
+              {{ unclaimedRpl | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref }} 
+            </ion-label>
+          </div>
+          <div >
+            <ion-label class="income-title" tooltip="All RPL that have accumulated for your node but have not been claimed yet."
+            trigger="click" hideDelayAfterClick="5000">
+              Unclaimed RPL
+            </ion-label>
+           
+          </div>
+        </div>
+
+        <div class="grid-cell" >
+          <div>
+            <ion-label class="value " >
+              <span [class]="data.rocketpool.cheatingStatus.strikes == 0 ? 'ok-proposals' : 'warn'">{{ data.rocketpool.cheatingStatus.strikes }}</span> / 
+              <span [class]="data.rocketpool.cheatingStatus.penalties == 0 ? 'ok-proposals' : 'err-proposals'">{{ data.rocketpool.cheatingStatus.penalties }}</span>
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title right">
+              <span
+                tooltip="Indicates how many strikes (first value) and penalties (second value) you got from cheating at the Rocketpool fee-recipient address. Three strikes and you'll be penalized and lose substantial amounts of staked ETH and RPL."
+                placement="right" trigger="click" hideDelayAfterClick="5000">
+                Cheating
+              </span>
+            </ion-label>
+          </div>
+        </div>
+
+
+        <div class="grid-cell left" (click)="switchCurrencyPipe()">
+
+          <div class="grid">
+            <ion-label class="value left" >
+              {{ 1 | mcurrency: "ETHER":"RPL":false | mcurrency: "ETHER":unit.pref }}
+            </ion-label>
+            
+          </div>
+          <div class="grid">
+            <ion-label class="income-title">
+               RPL Price
+            </ion-label>
+          </div>
+
+        </div>
+
+        <div class="grid-cell" >
+
+          <div>
+            <ion-label class="value" [class]="rplApr | valuestyle:0">
+              {{ rplApr}} %
+            </ion-label>
+          </div>
+          <div>
+            
+            <ion-label class="income-title right">
+              <span tooltip="Estimated yearly RPL returns, based on the last 7 days"  trigger="click"
+                hideDelayAfterClick="5000">RPL APR</span>
+            </ion-label>
+          </div>
+
+        </div>
+
+        <div class="grid-cell left" (click)="switchRplStake(true)">
+
+          <div>
+           
+            <ion-label class="value left" *ngIf="rplState == 'rpl'" [class]="data.rocketpool.currentRpl | valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1 " >
+              {{ data.rocketpool.currentRpl | mcurrency: "WEI":"RPL_NAKED" }}
+            </ion-label>
+            <ion-label class="value left" *ngIf="rplState == 'conv'" [class]="data.rocketpool.currentRpl | valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1 " >
+              {{ data.rocketpool.currentRpl | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref }}
+            </ion-label>
+            <ion-label class="value left" *ngIf="rplState == '%'" [class]="data.rocketpool.currentRpl | valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1 " >
+              {{ rplDisplay }} %
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title">
+              <span tooltip="Your currently staked rocktpool token colleteral. It must be between max and min to earn interest."
+                trigger="click" hideDelayAfterClick="5000">
+                Collateral
+              </span>
+             
+            </ion-label>
+          </div>
+
+        </div>
+
+        <div class="grid-cell" >
+
+          <div>
+           
+            <ion-label class="value" >
+              {{ data.rocketpool.fee }} %
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title right">
+              <span *ngIf="data.foreignValidator" tooltip="The commission fee of this minipool."
+              trigger="click" hideDelayAfterClick="5000">
+                Minipool Fee
+            </span>
+            <span *ngIf="!data.foreignValidator" tooltip="Average of all your minipool commission fees"
+            trigger="click" hideDelayAfterClick="5000">
+              Avg Fee
+          </span>
+            </ion-label>
+          </div>
+
+        </div>
+
+
+        <div class="grid-cell left" >
+          <div >
+            <ion-label *ngIf="rplState == 'rpl' || rplState == '%'" class="value left" (click)="switchRplStake()">
+              {{ data.rocketpool.minRpl | mcurrency: "WEI":"NO_CURRENCY" }} - {{ data.rocketpool.maxRpl | mcurrency: "WEI":"NO_CURRENCY" }} RPL
+            </ion-label>
+            <ion-label *ngIf="rplState == 'conv' " class="value left" (click)="switchRplStake()">
+              {{ data.rocketpool.minRpl | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref }} - {{ data.rocketpool.maxRpl | mcurrency: "WEI":"RPL":false | mcurrency: "ETHER":unit.pref }}
+            </ion-label>
+          </div>
+          <div >
+            <ion-label class="income-title" tooltip="Your nodes collateral must be between this range to be eligible for RPL claims."
+            trigger="click" hideDelayAfterClick="5000">
+              Coll. Range
+            </ion-label>
+           
+          </div>
+        </div>
+
+        <div class="grid-cell" >
+          <div>
+            <ion-label class="value " >
+              {{ nextRewardRound | date:'MMM dd, h:mm a'}}
+            </ion-label>
+          </div>
+          <div>
+            <ion-label class="income-title right">
+              <span
+                tooltip="With the start of a new rocketpool reward round, rewards from the previous round can be claimed."
+                placement="right" trigger="click" hideDelayAfterClick="5000">
+                Next RPL Round
+              </span>
+            </ion-label>
+          </div>
+        </div>
+       
+      </div>
+    </ion-item>
+   
+
+    <ion-item lines="none" *ngIf="data.rocketpool.depositType && data.foreignValidator">
+
+      <ion-label class="stat-title">
+          Deposit Type
+      </ion-label>
+      <ion-label class="value" >
+        {{ data.rocketpool.depositType }}
+      </ion-label>
+
+    </ion-item>
+
+
+  </ion-list>
+
+
+
+  <ion-list class="performances" *ngIf="!chartError">
+    <ion-list-header>
+      <ion-label>Charts & Stats</ion-label>
+    </ion-list-header>
+    <ion-segment [(ngModel)]="selectedChart" mode="md">
+      <ion-segment-button value="chartIncome" [disabled]="scrolling">
+        <ion-label>Income</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="chartBlocks" *ngIf="chartDataProposals" [disabled]="scrolling">
+        <ion-label>Proposals</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+    <div class="chartcontainer">
+
+      <div class="stat-charts" id="highcharts{{ randomChartId }}" style="width:100%; height:380px;"
+        [hidden]="!chartData || selectedChart != 'chartIncome'"></div>
+      <div class="stat-charts" id="highchartsBlocks{{ randomChartId }}" style="width:100%; height:380px;"
+        [hidden]="!chartDataProposals || selectedChart != 'chartBlocks'"></div>
+
+      <div class="center" *ngIf="!chartData ">
+        <ion-skeleton-text animated style="width:80%;"></ion-skeleton-text>
+      </div>
+
+    </div>
+  </ion-list>
+
+  <ion-list class="performance">
+    <ion-item lines="none" *ngIf="data.bestRank == data.worstRank">
+      <ion-label class="stat-title">
+        <span tooltip="Global rank of this validator, based on last 7 days" placement="right" trigger="click"
+          hideDelayAfterClick="5000">
+          Rank
+        </span>
+      </ion-label>
+
+      <ion-label class="value" (click)="switchRank()">
+        <ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
+
+        <span class="rank-text">
+          {{ data.bestRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:"Top " }}
+        </span>
+      </ion-label>
+    </ion-item>
+
+    <ion-item *ngIf="data.bestRank != data.worstRank">
+    <div class="grid" >
+
+      <div class="grid-cell left" (click)="switchRank()">
+
+        <div class="grid">
+          <ion-label class="value left" >
+            <ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
+            <span class="rank-text">
+              {{ data.bestRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:"Top " }}
+            </span>
+          </ion-label>
+        </div>
+        <div class="grid">
+          <ion-label class="income-title">
+            <span tooltip="Global rank of your best performing validator, based on last 7 days" placement="right"
+              trigger="click" hideDelayAfterClick="5000">
+              Best Rank
+            </span>
+          </ion-label>
+        </div>
+
+      </div>
+
+      <div class="grid-cell" (click)="switchRank()" >
+
+        <div>
+          <ion-label class="value" >
+            <ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
+            <span class="rank-text">
+              {{ data.worstRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:"Top " }}
+            </span>
+          </ion-label>
+        </div>
+        <div>
+          
+          <ion-label class="income-title right">
+            <span tooltip="Global rank of your worst performing validator, based on last 7 days" placement="right"
+              trigger="click" hideDelayAfterClick="5000">
+              Worst Rank
+            </span>
+    
+          </ion-label>
+        </div>
+
+      </div>
+     </div>
+    </ion-item>
+  </ion-list>
+
+  <ion-list class="performances" *ngIf="!data.foreignValidator">
+
+    <ion-item lines="none" *ngIf="utilizationAvg != -1">
+
+      <ion-label class="stat-title">
+        <span
+          tooltip="Based on your earnings and effective balance, this value indicates how well your validators perform."
+          placement="right" trigger="click" hideDelayAfterClick="5000">
+          Effective Performance
+        </span>
+      </ion-label>
+      <ion-label class="value" [class]="utilizationAvg | valuestyle:80">
+        {{ utilizationAvg }} %
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none">
+
+      <ion-label class="stat-title">
+        <span
+          tooltip="Used to calculate rewards and penalties. Also influences luck on block proposals. Maximum is 32 per validator."
+          placement="right" trigger="click" hideDelayAfterClick="5000">
+          Effective Balance
+        </span>
+      </ion-label>
+      <ion-label class="value" (click)="switchCurrencyPipe()">
+        {{ data.effectiveBalance | mcurrency: "GWEI":"ETHER" }}
+      </ion-label>
+
+    </ion-item>
+    
+
+  
+  </ion-list>
+
+
+  <ion-list class="performances">
+
+    <ion-item lines="none" *ngIf="data.foreignValidator">
+
+      <ion-label class="stat-title">
+        Unique Index
+      </ion-label>
+      <ion-label class="value">
+        {{ data.foreignValidatorItem.data.validatorindex | number:'1.0':'en-US' }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="data.foreignValidator" tooltip="0x00 credentials must be upgraded to 0x01 credentials at some point in time to be eligible for withdrawals." placement="right"
+    trigger="click" hideDelayAfterClick="5000">
+
+      <ion-label class="stat-title">
+        Withdrawal Cred
+      </ion-label>
+      <ion-label class="value" [class]="(data.foreignValidatorItem.data.withdrawalcredentials | slice:0:4) == '0x01' ? 'ok-proposals' : 'warn'" (click)="switchCurrencyPipe()">
+        {{ data.foreignValidatorItem.data.withdrawalcredentials | slice:0:4 }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="data.foreignValidator">
+
+      <ion-label class="stat-title">
+        Effective Balance
+      </ion-label>
+      <ion-label class="value" (click)="switchCurrencyPipe()">
+        {{ data.effectiveBalance | mcurrency: "GWEI":"ETHER" }}
+      </ion-label>
+
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="(unit.pref != 'ETHER' && unit.pref != 'FINNEY') || classReference.currencyPipe != null">
+
+      <ion-label class="stat-title">
+        Ether Price
+      </ion-label>
+      <ion-label class="value" (click)="switchCurrencyPipe()">
+        {{ 1 | mcurrency: "ETHER":unit.pref }}
+      </ion-label>
+
+    </ion-item>
+
+
+    <ion-item lines="none">
+      <ion-label class="stat-title">
+        <span tooltip="Last updated timestamp. New data is fetched every epoch (~6 minutes)" placement="right"
+          trigger="click" hideDelayAfterClick="5000">
+          Updated
+        </span>
+      </ion-label>
+      <ion-label class="value">
+        {{ api.lastRefreshed | timeago }}
+      </ion-label>
+
+    </ion-item>
+  </ion-list>
+
+  <ion-list class="performances">
+    <ion-item lines="none" (click)="openBrowser()">
+      <ion-icon slot="end" name="open-outline"></ion-icon>
+      <ion-label class="stat-title">
+        View on beaconcha.in
+      </ion-label>
+
+    </ion-item>
+  </ion-list>
+  <div class="bottomFiller"></div>
 </div>
 
-<div
-	class="container loading-container"
-	*ngIf="(!data || !doneLoading) && api.connectionStateOK">
-	<div class="center">
-		<ion-spinner class="status-icon loading-spinner"></ion-spinner>
-	</div>
+
+<div class="container loading-container" *ngIf="(!data || !doneLoading) && api.connectionStateOK">
+  <div class="center">
+    <ion-spinner class="status-icon loading-spinner"></ion-spinner>
+  </div>
 </div>
