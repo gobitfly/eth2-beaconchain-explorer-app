@@ -18,25 +18,25 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import "../../../theme/variables.scss";
+@import '../../../theme/variables.scss';
 
 .primary {
-  background: var(--x-update-messages-background) !important;
+	background: var(--x-update-messages-background) !important;
 }
 
 .primary ion-label {
-  font-size: bold;
-  color: var(--x-toolbar-title-color);
+	font-size: bold;
+	color: var(--x-toolbar-title-color);
 }
 
 .primary ion-item {
-  --background: var(--x-update-messages-background) !important;
+	--background: var(--x-update-messages-background) !important;
 }
 
 .first-item-group {
-  margin-top: var(--x-first-item-group-margin-top) !important;
+	margin-top: var(--x-first-item-group-margin-top) !important;
 }
 
 .primary ion-icon {
-  color: var(--x-toolbar-title-color) !important;
+	color: var(--x-toolbar-title-color) !important;
 }

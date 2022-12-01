@@ -1,329 +1,274 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="closeModal()">
-        <ion-icon size="large" name="close-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>{{ key ? key : 'Machine' }}</ion-title>
-  </ion-toolbar>
-  <ion-segment [(ngModel)]="selectedTab" mode="md" scrollable="true">
-    <ion-segment-button value="cpu" [disabled]="scrolling"
-      [class]="selectedTab == 'cpu' ? 'segment-button-checked' : ''">
-      <ion-label>CPU</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="memory" [disabled]="scrolling">
-      <ion-label [class]="selectedTab == 'memory' ? 'segment-button-checked' : ''">Memory</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="network" [disabled]="scrolling"
-      [class]="selectedTab == 'network' ? 'segment-button-checked' : ''">
-      <ion-label>Network</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="disk" [disabled]="scrolling"
-      [class]="selectedTab == 'disk' ? 'segment-button-checked' : ''">
-      <ion-label>Disk</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="sync" [disabled]="scrolling"
-      [class]="selectedTab == 'sync' ? 'segment-button-checked' : ''">
-      <ion-label>Sync</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="gen" [disabled]="scrolling"
-      [class]="selectedTab == 'gen' ? 'segment-button-checked' : ''">
-      <ion-label>General</ion-label>
-    </ion-segment-button>
-  </ion-segment>
+	<ion-toolbar>
+		<ion-buttons slot="start">
+			<ion-button (click)="closeModal()">
+				<ion-icon size="large" name="close-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+		<ion-title>{{ key ? key : 'Machine' }}</ion-title>
+	</ion-toolbar>
+	<ion-segment [(ngModel)]="selectedTab" mode="md" scrollable="true">
+		<ion-segment-button value="cpu" [disabled]="scrolling" [class]="selectedTab == 'cpu' ? 'segment-button-checked' : ''">
+			<ion-label>CPU</ion-label>
+		</ion-segment-button>
+		<ion-segment-button value="memory" [disabled]="scrolling">
+			<ion-label [class]="selectedTab == 'memory' ? 'segment-button-checked' : ''">Memory</ion-label>
+		</ion-segment-button>
+		<ion-segment-button value="network" [disabled]="scrolling" [class]="selectedTab == 'network' ? 'segment-button-checked' : ''">
+			<ion-label>Network</ion-label>
+		</ion-segment-button>
+		<ion-segment-button value="disk" [disabled]="scrolling" [class]="selectedTab == 'disk' ? 'segment-button-checked' : ''">
+			<ion-label>Disk</ion-label>
+		</ion-segment-button>
+		<ion-segment-button value="sync" [disabled]="scrolling" [class]="selectedTab == 'sync' ? 'segment-button-checked' : ''">
+			<ion-label>Sync</ion-label>
+		</ion-segment-button>
+		<ion-segment-button value="gen" [disabled]="scrolling" [class]="selectedTab == 'gen' ? 'segment-button-checked' : ''">
+			<ion-label>General</ion-label>
+		</ion-segment-button>
+	</ion-segment>
 </ion-header>
 
-<ion-content [fullscreen]="true" [scrollEvents]="true" (ionScrollStart)="onScrollStarted()"
-  (ionScrollEnd)="onScrollEnded()">
+<ion-content [fullscreen]="true" [scrollEvents]="true" (ionScrollStart)="onScrollStarted()" (ionScrollEnd)="onScrollEnded()">
+	<app-message
+		title="Experimental Prysm Support"
+		icon="flask-outline"
+		iconStyle="genesis"
+		msgTitle="Experimental"
+		msgText="The current version of Prysm doesn't fully support the monitoring feature quite yet.<br/><br/>Some metrics might not be available. Prysm will improve the monitoring support in a future version. "
+		*ngIf="isBuggyPrismVersion">
+	</app-message>
 
-  <app-message title="Experimental Prysm Support" icon="flask-outline" iconStyle="genesis" 
-    msgTitle="Experimental"
-    msgText="The current version of Prysm doesn't fully support the monitoring feature quite yet.<br/><br/>Some metrics might not be available. Prysm will improve the monitoring support in a future version. "
-    *ngIf="isBuggyPrismVersion">
-  </app-message>
+	<div id="cpu" [hidden]="selectedTab != 'cpu'" class="data-container">
+		<app-machinechart
+			[hidden]="selectedTab != 'cpu'"
+			title="CPU Processes"
+			[key]="key"
+			priority="true"
+			[chartData]="data | delegate: cpuDelegate"
+			[subtitleLeft]="cpuProcessLabelNode"
+			[subtitleRight]="cpuProcessLabelVal">
+		</app-machinechart>
 
-  <div id="cpu" [hidden]="selectedTab != 'cpu'" class="data-container">
-    <app-machinechart [hidden]="selectedTab != 'cpu'" title="CPU Processes" [key]="key" priority="true"
-      [chartData]="data | delegate: cpuDelegate"
-      [subtitleLeft]="cpuProcessLabelNode"
-      [subtitleRight]="cpuProcessLabelVal">
-    </app-machinechart>
+		<app-machinechart title="CPU System" [key]="key" [chartData]="data | delegate: cpuSystemDelegate" priority="true" [subtitleLeft]="cpuLabelTotal">
+		</app-machinechart>
 
-    <app-machinechart title="CPU System" [key]="key" [chartData]="data | delegate: cpuSystemDelegate" priority="true"
-    [subtitleLeft]="cpuLabelTotal">
-    </app-machinechart>
+		<div class="bottomFiller"></div>
+	</div>
 
-    <div class="bottomFiller"></div>
-  </div>
+	<div id="memory" [hidden]="selectedTab != 'memory'" class="data-container">
+		<ion-card *ngIf="memoryAttention != null" class="sync-alert-container">
+			<ion-card-header>
+				<ion-card-title class="sync-alert" style="font-weight: bold">
+					<ion-icon name="warning-outline" class="sync-alert alert-icon" style="margin-bottom: 4px; margin-right: 15px"></ion-icon>
+					<span style="padding-bottom: 5px">Attention</span>
+				</ion-card-title>
+			</ion-card-header>
 
-  <div id="memory" [hidden]="selectedTab != 'memory'" class="data-container">
-    <ion-card *ngIf="memoryAttention != null" class="sync-alert-container">
-      <ion-card-header>
-        <ion-card-title class="sync-alert" style="font-weight: bold;">
-          <ion-icon name="warning-outline" class="sync-alert alert-icon" style="margin-bottom: 4px; margin-right:15px;"></ion-icon>
-          <span style="padding-bottom: 5px;">Attention</span>
-        </ion-card-title>
-      </ion-card-header>
-    
-      <ion-card-content>
-        <ion-label class="alert-text">{{ memoryAttention }}</ion-label>
-      </ion-card-content>
-    </ion-card>
+			<ion-card-content>
+				<ion-label class="alert-text">{{ memoryAttention }}</ion-label>
+			</ion-card-content>
+		</ion-card>
 
-   
-    <app-machinechart title="Memory Processes" [key]="key" [chartData]="data | delegate: memoryDelegate"
-    [subtitleLeft]="memoryProcessLabelNode"
-    [subtitleRight]="memoryProcessLabelVal">
-    </app-machinechart>
+		<app-machinechart
+			title="Memory Processes"
+			[key]="key"
+			[chartData]="data | delegate: memoryDelegate"
+			[subtitleLeft]="memoryProcessLabelNode"
+			[subtitleRight]="memoryProcessLabelVal">
+		</app-machinechart>
 
-    <app-machinechart title="Memory System" [key]="key" [chartData]="data | delegate: memorySystemDelegate"
-    [subtitleLeft]="memoryLabelFree"
-    [subtitleRight]="memoryLabelTotal">
-    </app-machinechart>
+		<app-machinechart
+			title="Memory System"
+			[key]="key"
+			[chartData]="data | delegate: memorySystemDelegate"
+			[subtitleLeft]="memoryLabelFree"
+			[subtitleRight]="memoryLabelTotal">
+		</app-machinechart>
 
-    <div class="bottomFiller"></div>
-  </div>
+		<div class="bottomFiller"></div>
+	</div>
 
-  <div id="network" [hidden]="selectedTab != 'network'" class="data-container">
-    <app-machinechart title="Network" [key]="key" [chartData]="data | delegate: networkDelegate"
-    [subtitleLeft]="networkLabelRx"
-    [subtitleRight]="networkLabelTx">
-    </app-machinechart>
+	<div id="network" [hidden]="selectedTab != 'network'" class="data-container">
+		<app-machinechart
+			title="Network"
+			[key]="key"
+			[chartData]="data | delegate: networkDelegate"
+			[subtitleLeft]="networkLabelRx"
+			[subtitleRight]="networkLabelTx">
+		</app-machinechart>
 
-    <app-machinechart title="Peers" [key]="key" [chartData]="data | delegate: peerDelegate"
-    [subtitleLeft]="peerLabel">
-    </app-machinechart>
+		<app-machinechart title="Peers" [key]="key" [chartData]="data | delegate: peerDelegate" [subtitleLeft]="peerLabel"> </app-machinechart>
 
-    <div class="bottomFiller"></div>
-  </div>
+		<div class="bottomFiller"></div>
+	</div>
 
-  <div id="disk" [hidden]="selectedTab != 'disk'" class="data-container">
+	<div id="disk" [hidden]="selectedTab != 'disk'" class="data-container">
+		<ion-card *ngIf="diskAttention != null" class="sync-alert-container">
+			<ion-card-header>
+				<ion-card-title class="sync-alert" style="font-weight: bold">
+					<ion-icon name="warning-outline" class="sync-alert alert-icon" style="margin-bottom: 4px; margin-right: 15px"></ion-icon>
+					<span style="padding-bottom: 5px">Attention</span>
+				</ion-card-title>
+			</ion-card-header>
 
-    <ion-card *ngIf="diskAttention != null" class="sync-alert-container">
-      <ion-card-header>
-        <ion-card-title class="sync-alert" style="font-weight: bold;">
-          <ion-icon name="warning-outline" class="sync-alert alert-icon" style="margin-bottom: 4px; margin-right:15px;"></ion-icon>
-          <span style="padding-bottom: 5px;">Attention</span>
-        </ion-card-title>
-      </ion-card-header>
-    
-      <ion-card-content>
-        <ion-label class="alert-text">{{ diskAttention }}</ion-label>
-      </ion-card-content>
-    </ion-card>
+			<ion-card-content>
+				<ion-label class="alert-text">{{ diskAttention }}</ion-label>
+			</ion-card-content>
+		</ion-card>
 
-    <app-machinechart title="Disk" [key]="key" [chartData]="data | delegate: diskDelegate"
-    [subtitleLeft]="diskLabel"
-    [subtitleRight]="diskFullEst > 0? (diskFullEst | date:'\'Est. Full Disk: \'dd MMM y') : ''">
-    </app-machinechart>
+		<app-machinechart
+			title="Disk"
+			[key]="key"
+			[chartData]="data | delegate: diskDelegate"
+			[subtitleLeft]="diskLabel"
+			[subtitleRight]="diskFullEst > 0? (diskFullEst | date:'\'Est. Full Disk: \'dd MMM y') : ''">
+		</app-machinechart>
 
-    <app-machinechart title="Disk Usage" [key]="key" [chartData]="data | delegate: diskIoDelegate"
-    [subtitleLeft]="diskUsageLabelReads"
-    [subtitleRight]="diskUsageLabelWrites">
-    </app-machinechart>
+		<app-machinechart
+			title="Disk Usage"
+			[key]="key"
+			[chartData]="data | delegate: diskIoDelegate"
+			[subtitleLeft]="diskUsageLabelReads"
+			[subtitleRight]="diskUsageLabelWrites">
+		</app-machinechart>
 
-    <app-machinechart title="Beaconchain" [key]="key" [chartData]="data | delegate: beaconchainSizeDelegate"
-    [subtitleLeft]="beaconchainLabel">
-    </app-machinechart>
+		<app-machinechart title="Beaconchain" [key]="key" [chartData]="data | delegate: beaconchainSizeDelegate" [subtitleLeft]="beaconchainLabel">
+		</app-machinechart>
 
-    <div class="bottomFiller"></div>
-  </div>
+		<div class="bottomFiller"></div>
+	</div>
 
-  <div id="sync" [hidden]="selectedTab != 'sync'" class="data-container">
+	<div id="sync" [hidden]="selectedTab != 'sync'" class="data-container">
+		<ion-card *ngIf="syncAttention != null" class="sync-alert-container">
+			<ion-card-header>
+				<ion-card-title class="sync-alert" style="font-weight: bold">
+					<ion-icon name="warning-outline" class="sync-alert alert-icon" style="margin-bottom: 4px; margin-right: 15px"></ion-icon>
+					<span style="padding-bottom: 5px">Attention</span>
+				</ion-card-title>
+			</ion-card-header>
 
-    <ion-card *ngIf="syncAttention != null" class="sync-alert-container">
-      <ion-card-header>
-        <ion-card-title class="sync-alert" style="font-weight: bold;">
-          <ion-icon name="warning-outline" class="sync-alert alert-icon" style="margin-bottom: 4px; margin-right:15px;"></ion-icon>
-          <span style="padding-bottom: 5px;">Attention</span>
-        </ion-card-title>
-      </ion-card-header>
-    
-      <ion-card-content>
-        <ion-label class="alert-text" [innerHtml]="syncAttention"></ion-label>
-      </ion-card-content>
-    </ion-card>
+			<ion-card-content>
+				<ion-label class="alert-text" [innerHtml]="syncAttention"></ion-label>
+			</ion-card-content>
+		</ion-card>
 
-    <app-machinechart title="Sync State" [key]="key" [chartData]="data | delegate: syncDelegate"
-    [subtitleLeft]="syncLabelState"
-    [subtitleRight]="syncLabelEth1Connected">
-    </app-machinechart>
+		<app-machinechart
+			title="Sync State"
+			[key]="key"
+			[chartData]="data | delegate: syncDelegate"
+			[subtitleLeft]="syncLabelState"
+			[subtitleRight]="syncLabelEth1Connected">
+		</app-machinechart>
 
-    <app-machinechart title="Validators" [key]="key" [chartData]="data | delegate: validatorDelegate"
-    [subtitleLeft]="validatorLabelActive"
-    [subtitleRight]="validatorLabelTotal">
-    </app-machinechart>
+		<app-machinechart
+			title="Validators"
+			[key]="key"
+			[chartData]="data | delegate: validatorDelegate"
+			[subtitleLeft]="validatorLabelActive"
+			[subtitleRight]="validatorLabelTotal">
+		</app-machinechart>
 
-    <div class="bottomFiller"></div>
-  </div>
+		<div class="bottomFiller"></div>
+	</div>
 
-  <div id="gen" [hidden]="selectedTab != 'gen'" class="performances" class="data-container">
+	<div id="gen" [hidden]="selectedTab != 'gen'" class="performances" class="data-container">
+		<ion-list-header>
+			<ion-label>System</ion-label>
+		</ion-list-header>
 
-    <ion-list-header>
-      <ion-label>System</ion-label>
-    </ion-list-header>
+		<ion-list>
+			<ion-item lines="none">
+				<ion-label> CPU Cores </ion-label>
+				<ion-label class="value"> {{ coreCount ? coreCount : "-" }} </ion-label>
+			</ion-item>
 
-    <ion-list>
-      <ion-item lines="none">
+			<ion-item lines="none">
+				<ion-label> CPU Threads </ion-label>
+				<ion-label class="value"> {{ threadCount ? threadCount : "-" }} </ion-label>
+			</ion-item>
+		</ion-list>
 
-        <ion-label>
-          CPU Cores
-        </ion-label>
-        <ion-label class="value">
-          {{ coreCount ? coreCount : "-" }}
-        </ion-label>
+		<ion-list-header>
+			<ion-label>OS</ion-label>
+		</ion-list-header>
 
-      </ion-item>
+		<ion-list>
+			<ion-item lines="none">
+				<ion-label> OS </ion-label>
+				<ion-label class="value"> {{ os }} </ion-label>
+			</ion-item>
 
-      <ion-item lines="none">
+			<ion-item lines="none">
+				<ion-label>
+					<span> Uptime </span>
+				</ion-label>
+				<ion-label class="value"> {{ uptime | date:'MMM d, y, h:mm a' }} </ion-label>
+			</ion-item>
+		</ion-list>
 
-        <ion-label>
-          CPU Threads
-        </ion-label>
-        <ion-label class="value">
-          {{ threadCount ? threadCount : "-" }}
-        </ion-label>
+		<ion-list-header>
+			<ion-label>Client</ion-label>
+		</ion-list-header>
 
-      </ion-item>
-    </ion-list>
+		<ion-list>
+			<ion-item lines="none">
+				<ion-label> Client </ion-label>
+				<ion-label class="value"> {{ data.client }} </ion-label>
+			</ion-item>
 
-    <ion-list-header>
-      <ion-label>OS</ion-label>
-    </ion-list-header>
+			<ion-item lines="none">
+				<ion-label> Version </ion-label>
+				<ion-label class="value"> {{ data.clientVersion }} </ion-label>
+			</ion-item>
+		</ion-list>
 
-    <ion-list>
-      <ion-item lines="none">
+		<ion-list-header>
+			<ion-label>Sync</ion-label>
+		</ion-list-header>
 
-        <ion-label>
-          OS
-        </ion-label>
-        <ion-label class="value">
-          {{ os }}
-        </ion-label>
+		<ion-list>
+			<ion-item lines="none">
+				<ion-label>
+					<span> Head Slot </span>
+				</ion-label>
+				<ion-label class="value"> {{ headslot }} </ion-label>
+			</ion-item>
 
-      </ion-item>
+			<ion-item lines="none">
+				<ion-label>
+					<span> Status </span>
+				</ion-label>
+				<ion-label class="value"> {{ stateSynced }} </ion-label>
+			</ion-item>
 
-      <ion-item lines="none">
-        <ion-label>
-          <span>
-            Uptime
-          </span>
-        </ion-label>
-        <ion-label class="value">
-          {{ uptime | date:'MMM d, y, h:mm a' }}
-        </ion-label>
+			<ion-item lines="none">
+				<ion-label>
+					<span> ETH2 Fallback </span>
+				</ion-label>
+				<ion-label class="value"> {{ fallbacks.eth2Configured ? "Configured" : "-" }} </ion-label>
+			</ion-item>
 
-      </ion-item>
-    </ion-list>
+			<ion-item lines="none">
+				<ion-label>
+					<span> ETH1 Fallback </span>
+				</ion-label>
+				<ion-label class="value"> {{ fallbacks.eth1Configured ? "Configured" : "-" }} </ion-label>
+			</ion-item>
+		</ion-list>
 
-    <ion-list-header>
-      <ion-label>Client</ion-label>
-    </ion-list-header>
+		<ion-list-header>
+			<ion-label>Meta</ion-label>
+		</ion-list-header>
 
-    <ion-list>
-
-      <ion-item lines="none">
-
-        <ion-label>
-          Client
-        </ion-label>
-        <ion-label class="value">
-          {{ data.client }}
-        </ion-label>
-
-      </ion-item>
-
-
-      <ion-item lines="none">
-        <ion-label>
-          Version
-        </ion-label>
-        <ion-label class="value">
-          {{ data.clientVersion }}
-        </ion-label>
-
-      </ion-item>
-
-    </ion-list>
-
-    <ion-list-header>
-      <ion-label>Sync</ion-label>
-    </ion-list-header>
-
-    <ion-list>
-
-      <ion-item lines="none">
-        <ion-label>
-          <span>
-            Head Slot
-          </span>
-        </ion-label>
-        <ion-label class="value">
-          {{ headslot }}
-        </ion-label>
-
-      </ion-item>
-
-      <ion-item lines="none">
-        <ion-label>
-          <span>
-            Status
-          </span>
-        </ion-label>
-        <ion-label class="value">
-          {{ stateSynced }}
-        </ion-label>
-
-      </ion-item>
-
-      <ion-item lines="none">
-        <ion-label>
-          <span>
-            ETH2 Fallback 
-          </span>
-        </ion-label>
-        <ion-label class="value">
-          {{ fallbacks.eth2Configured ? "Configured" : "-" }}
-        </ion-label>
-
-      </ion-item>
-
-      <ion-item lines="none">
-        <ion-label>
-          <span>
-            ETH1 Fallback 
-          </span>
-        </ion-label>
-        <ion-label class="value">
-          {{ fallbacks.eth1Configured ? "Configured" : "-" }}
-        </ion-label>
-
-      </ion-item>
-
-     
-    </ion-list>
-
-
-  <ion-list-header>
-    <ion-label>Meta</ion-label>
-  </ion-list-header>
-
-
-    <ion-list>
-      <ion-item lines="none">
-        <ion-label>
-          <span>
-            Last update
-          </span>
-        </ion-label>
-        <ion-label class="value">
-          {{ data.formattedDate | date:'MMM d, y, h:mm a' }}
-        </ion-label>
-
-      </ion-item>
-    </ion-list>
-    <div class="bottomFiller"></div>
-  </div>
-
+		<ion-list>
+			<ion-item lines="none">
+				<ion-label>
+					<span> Last update </span>
+				</ion-label>
+				<ion-label class="value"> {{ data.formattedDate | date:'MMM d, y, h:mm a' }} </ion-label>
+			</ion-item>
+		</ion-list>
+		<div class="bottomFiller"></div>
+	</div>
 </ion-content>

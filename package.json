@@ -8,8 +8,9 @@
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "prettier-format": "prettier --config .prettierrc.yml 'src/**/*.{ts,html,scss}' --write",
+    "lint": "eslint . --ext .ts"
   },
   "private": true,
   "dependencies": {
@@ -36,8 +37,8 @@
     "@capacitor/ios": "^4.5.0",
     "@capacitor/keyboard": "^4.0.0",
     "@capacitor/local-notifications": "https://gitpkg.now.sh/manuelsc/capacitor-plugins/local-notifications?feature/pushnotifications",
-    "@capacitor/push-notifications": "https://gitpkg.now.sh/manuelsc/capacitor-plugins/push-notifications?feature/pushnotifications",
     "@capacitor/preferences": "^4.0.2",
+    "@capacitor/push-notifications": "https://gitpkg.now.sh/manuelsc/capacitor-plugins/push-notifications?feature/pushnotifications",
     "@capacitor/splash-screen": "^4.1.2",
     "@capacitor/status-bar": "^4.1.0",
     "@capacitor/toast": "^4.1.0",
@@ -71,8 +72,11 @@
     "@ionic/angular-toolkit": "^7.0.0",
     "@types/jasmine": "~3.6.0",
     "@types/jasminewd2": "~2.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
     "ajv": "^7.2.4",
     "codelyzer": "^6.0.0",
+    "eslint": "^8.28.0",
     "jasmine-core": "~3.5.0",
     "jasmine-spec-reporter": "~5.0.0",
     "karma": "~5.0.0",
