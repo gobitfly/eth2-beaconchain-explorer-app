@@ -1,6 +1,6 @@
 [submodule "android/app/src/main/java/in/beaconcha/mobile/widget"]
 	path = android/app/src/main/java/in/beaconcha/mobile/widget
-	url = git@gitlab.com:bitfly/eth2/app-android-widget.git
+	url = git@gitlab.bitfly.at:bitfly/eth2/app-android-widget.git
 [submodule "ios/App/Beaconchain Widget"]
 	path = ios/App/Beaconchain Widget
-	url = git@gitlab.com:bitfly/eth2/app-ios-widget.git
+	url = git@gitlab.bitfly.at:bitfly/eth2/app-ios-widget.git
