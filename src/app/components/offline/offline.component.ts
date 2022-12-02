@@ -18,15 +18,11 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core'
+import { Component } from '@angular/core'
 
 @Component({
 	selector: 'app-offline',
 	templateUrl: './offline.component.html',
 	styleUrls: ['./offline.component.scss'],
 })
-export class OfflineComponent implements OnInit {
-	constructor() {}
-
-	ngOnInit() {}
-}
+export class OfflineComponent {}

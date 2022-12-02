@@ -31,7 +31,6 @@ import axios, { AxiosResponse } from 'axios'
 import { Device } from '@capacitor/device'
 
 const LOGTAG = '[ApiService]'
-var cacheKey = 'api-cache'
 
 const SERVER_TIMEOUT = 25000
 
@@ -86,7 +85,7 @@ export class ApiService extends CacheModule {
 
 	async updateNetworkConfig() {
 		this.networkConfig = this.storage.getNetworkPreferences().then((config) => {
-			let temp = findConfigForKey(config.key)
+			const temp = findConfigForKey(config.key)
 			if (temp) {
 				return temp
 			}
@@ -109,7 +108,7 @@ export class ApiService extends CacheModule {
 	}
 
 	private async getAuthHeader(isTokenRefreshCall: boolean) {
-		var user = await this.storage.getAuthUser()
+		let user = await this.storage.getAuthUser()
 		if (!user || !user.accessToken) return null
 
 		if (!isTokenRefreshCall && user.expiresIn <= Date.now() - (SERVER_TIMEOUT + 1000)) {
@@ -148,7 +147,7 @@ export class ApiService extends CacheModule {
 		const now = Date.now()
 		const req = new RefreshTokenRequest(user.refreshToken)
 
-		var formBody = new FormData()
+		const formBody = new FormData()
 		formBody.set('grant_type', 'refresh_token')
 		formBody.set('refresh_token', user.refreshToken)
 		const url = await this.getResourceUrl(req.resource, req.endPoint)
@@ -203,7 +202,7 @@ export class ApiService extends CacheModule {
 		return null
 	}
 
-	async execute(request: APIRequest<any>) {
+	async execute(request: APIRequest<any>): Promise<Response> {
 		await this.initialized
 
 		if (!this.connectionStateOK) {
@@ -211,14 +210,14 @@ export class ApiService extends CacheModule {
 		}
 
 		// If cached and not stale, return cache
-		let cached = await this.getCache(await this.getCacheKey(request))
+		const cached = await this.getCache(await this.getCacheKey(request))
 		if (cached) {
 			if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
 			cached.cached = true
 			return cached
 		}
 
-		var options = request.options
+		const options = request.options
 
 		// second is special case for notifications
 		// notifications are rescheduled if response is != 200
@@ -237,7 +236,7 @@ export class ApiService extends CacheModule {
 		await this.lockOrWait(request.resource)
 
 		console.log(LOGTAG + ' Send request: ' + request.resource, request)
-		let startTs = Date.now()
+		const startTs = Date.now()
 
 		if (this.forceNativeAll) {
 			// android appears to have issues with native POST right now
@@ -245,7 +244,7 @@ export class ApiService extends CacheModule {
 			request.nativeHttp = false
 		}
 
-		var response: Promise<Response>
+		let response: Promise<Response>
 		switch (request.method) {
 			case Method.GET:
 				if (request.nativeHttp) {
@@ -298,7 +297,7 @@ export class ApiService extends CacheModule {
 		}
 	}
 
-	private async get(resource: string, endpoint: string = 'default', ignoreFails = false, options = { headers: {} }) {
+	private async get(resource: string, endpoint = 'default', ignoreFails = false, options = { headers: {} }) {
 		const getOptions = {
 			url: await this.getResourceUrl(resource, endpoint),
 			method: 'get',
@@ -312,8 +311,8 @@ export class ApiService extends CacheModule {
 			.then((response: Response) => this.validateResponse(ignoreFails, response))
 	}
 
-	private async post(resource: string, data: any, endpoint: string = 'default', ignoreFails = false, options = { headers: {} }) {
-		if (!options.headers.hasOwnProperty('Content-Type')) {
+	private async post(resource: string, data: any, endpoint = 'default', ignoreFails = false, options = { headers: {} }) {
+		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
 			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentType(data) } }
 		}
 
@@ -331,7 +330,7 @@ export class ApiService extends CacheModule {
 			.then((response: Response) => this.validateResponse(ignoreFails, response))
 	}
 
-	private async legacyGet(resource: string, endpoint: string = 'default', ignoreFails = false, options = { headers: {} }) {
+	private async legacyGet(resource: string, endpoint = 'default', ignoreFails = false, options = { headers: {} }) {
 		return this.httpLegacy
 			.get(await this.getResourceUrl(resource, endpoint), options)
 			.catch((err) => {
@@ -341,8 +340,8 @@ export class ApiService extends CacheModule {
 			.then((response: AxiosResponse<any>) => this.validateResponseLegacy(ignoreFails, response))
 	}
 
-	private async legacyPost(resource: string, data: any, endpoint: string = 'default', ignoreFails = false, options = { headers: {} }) {
-		if (!options.headers.hasOwnProperty('Content-Type')) {
+	private async legacyPost(resource: string, data: any, endpoint = 'default', ignoreFails = false, options = { headers: {} }) {
+		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
 			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentType(data) } }
 		}
 		/* return this.httpLegacy
@@ -424,7 +423,7 @@ export class ApiService extends CacheModule {
 		return response
 	}
 
-	async getResourceUrl(resource: string, endpoint: string = 'default'): Promise<string> {
+	async getResourceUrl(resource: string, endpoint = 'default'): Promise<string> {
 		const base = await this.getBaseUrl()
 		if (endpoint == 'default') {
 			return (await this.getApiBaseUrl()) + '/' + resource
@@ -436,7 +435,6 @@ export class ApiService extends CacheModule {
 
 	async getApiBaseUrl() {
 		const cfg = await this.networkConfig
-		const base = await this.getBaseUrl()
 		return (await this.getBaseUrl()) + cfg.endpoint + cfg.version
 	}
 
@@ -448,7 +446,7 @@ export class ApiService extends CacheModule {
 	private async isDebugMode() {
 		const devMode = isDevMode()
 		if (devMode) return true
-		const permanentDevMode = await this.storage.getObject('dev_mode')
+		const permanentDevMode = (await this.storage.getObject('dev_mode')) as DevModeEnabled
 		return permanentDevMode && permanentDevMode.enabled
 	}
 
@@ -456,7 +454,7 @@ export class ApiService extends CacheModule {
 		const debug = await this.isDebugMode()
 		const re: string[][] = []
 
-		for (let entry of MAP) {
+		for (const entry of MAP) {
 			if (entry.key == 'main') continue
 			if (!entry.active) continue
 			if (entry.onlyDebug && !debug) continue
@@ -470,6 +468,10 @@ export class ApiService extends CacheModule {
 	}
 }
 
-interface Response extends HttpResponse {
+export interface Response extends HttpResponse {
 	cached: boolean
+}
+
+export interface DevModeEnabled {
+	enabled: boolean
 }

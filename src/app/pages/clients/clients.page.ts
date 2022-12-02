@@ -10,7 +10,7 @@ import { SyncService } from '../../services/sync.service'
 	styleUrls: ['./clients.page.scss'],
 })
 export class ClientsPage implements OnInit {
-	@Input() clientIdentifier: string = ''
+	@Input() clientIdentifier = ''
 
 	constructor(
 		private modalCtrl: ModalController,

@@ -14,7 +14,7 @@ import FirebaseUtils from '../utils/FirebaseUtils'
 export class NotificationBase implements OnInit {
 	notifyInitialized = false
 
-	notify: boolean = false
+	notify = false
 
 	storageThreshold = 90
 	cpuThreshold = 60
@@ -25,9 +25,9 @@ export class NotificationBase implements OnInit {
 
 	offlineThreshold = 3
 
-	activeSubscriptionsPerEventMap = new Map<String, number>() // map storing the count of subscribed validators per event
-	notifyTogglesMap = new Map<String, boolean>()
-	clientUpdatesTogglesMap = new Map<String, boolean>() // identifier = client key
+	activeSubscriptionsPerEventMap = new Map<string, number>() // map storing the count of subscribed validators per event
+	notifyTogglesMap = new Map<string, boolean>()
+	clientUpdatesTogglesMap = new Map<string, boolean>() // identifier = client key
 
 	settingsChanged = false
 
@@ -115,13 +115,13 @@ export class NotificationBase implements OnInit {
 
 		const isNotifyClientUpdatesEnabled = await this.storage.isNotifyClientUpdatesEnabled()
 
-		var network = await this.api.getNetworkName()
+		let network = await this.api.getNetworkName()
 		if (network == 'main') {
 			network = 'mainnet'
 		}
 		console.log('result', results, network)
 
-		var clientsToActivate = <string[]>[]
+		const clientsToActivate = <string[]>[]
 
 		for (const result of results) {
 			this.setToggleFromEvent(result.EventName, network, true, net)
@@ -284,8 +284,8 @@ export class NotificationBase implements OnInit {
 	}
 
 	private setToggleFromEvent(eventNameTagges, network, value, net) {
-		var parts = eventNameTagges.split(':')
-		var eventName = eventNameTagges
+		const parts = eventNameTagges.split(':')
+		let eventName = eventNameTagges
 		if (parts.length == 2) {
 			if (parts[0] != network) {
 				return
@@ -339,8 +339,8 @@ export class NotificationBase implements OnInit {
 		if (this.lockedToggle) {
 			return
 		}
-		let key = eventName + filter
-		let value = this.getNotifyToggleFromEvent(eventName)
+		const key = eventName + filter
+		const value = this.getNotifyToggleFromEvent(eventName)
 		this.settingsChanged = true
 		this.storage.setBooleanSetting(eventName, value)
 

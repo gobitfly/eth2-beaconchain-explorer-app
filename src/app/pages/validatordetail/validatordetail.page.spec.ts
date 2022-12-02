@@ -20,9 +20,7 @@
 
 import { async, ComponentFixture, TestBed } from '@angular/core/testing'
 import { IonicModule, ModalController } from '@ionic/angular'
-import BigNumber from 'bignumber.js'
-import { StorageService } from 'src/app/services/storage.service'
-import { MEMORY, ValidatorState, ValidatorUtils } from 'src/app/utils/ValidatorUtils'
+import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 
 import { ValidatordetailPage } from './validatordetail.page'
 
@@ -39,30 +37,6 @@ describe('ValidatordetailPage', () => {
 
 		fixture = TestBed.createComponent(ValidatordetailPage)
 		component = fixture.componentInstance
-		component.setInput({
-			index: 0,
-			pubkey: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-			name: '',
-			storage: MEMORY,
-			synced: true,
-			version: 1,
-			data: {
-				activationeligibilityepoch: 1,
-				activationepoch: 1,
-				balance: new BigNumber(1000000000000000),
-				effectivebalance: new BigNumber(1000000000000000),
-				exitepoch: 9999,
-				lastattestationslot: 1,
-				name: '',
-				pubkey: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-				slashed: false,
-				validatorindex: 0,
-				withdrawableepoch: 9999,
-				withdrawalcredentials: 'BBBBBBB',
-			},
-			state: ValidatorState.ACTIVE,
-			attrEffectiveness: 100,
-		})
 
 		fixture.detectChanges()
 	}))

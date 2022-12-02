@@ -77,7 +77,9 @@ export class AlertService {
 					text: 'Cancel',
 					role: 'cancel',
 					cssClass: 'secondary',
-					handler: () => {},
+					handler: () => {
+						return
+					},
 				},
 				{
 					text: confirmButton,

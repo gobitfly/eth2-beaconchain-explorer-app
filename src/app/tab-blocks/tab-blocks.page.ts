@@ -1,14 +1,11 @@
 import { Component, OnInit } from '@angular/core'
-import { ModalController, Platform } from '@ionic/angular'
+import { ModalController } from '@ionic/angular'
 import { BlockDetailPage } from '../pages/block-detail/block-detail.page'
 import { BlockResponse } from '../requests/requests'
 import { AlertService } from '../services/alert.service'
 import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
 import { UnitconvService } from '../services/unitconv.service'
 import { BlockUtils, Luck } from '../utils/BlockUtils'
-import { MerchantUtils } from '../utils/MerchantUtils'
-import ThemeUtils from '../utils/ThemeUtils'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
 
 @Component({
@@ -24,8 +21,6 @@ export class TabBlocksPage implements OnInit {
 	static itemCount = 0
 
 	items: BlockResponse[] = []
-
-	details: any
 
 	loading = false
 
@@ -74,7 +69,7 @@ export class TabBlocksPage implements OnInit {
 			return
 		}
 
-		let blocks = await this.blockUtils.getMyBlocks(initial ? 0 : this.items.length)
+		const blocks = await this.blockUtils.getMyBlocks(initial ? 0 : this.items.length)
 		if (initial) {
 			this.items = blocks
 			this.initialized = true

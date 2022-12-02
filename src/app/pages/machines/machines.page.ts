@@ -18,7 +18,7 @@ import { Browser } from '@capacitor/browser'
 })
 export class MachinesPage extends MachineController implements OnInit {
 	data: ProcessedStats[] = null
-	scrolling: boolean = false
+	scrolling = false
 	selectedChart = 'cpu'
 	showData = true
 	selectedTimeFrame = '3h'
@@ -26,7 +26,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	hasHistoryPremium = false
 	loggedIn = false
 
-	orderedKeys: String[] = []
+	orderedKeys: string[] = []
 	legacyApi = false
 
 	cpuDelegate = (data) => {
@@ -101,7 +101,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	}
 
 	formatClientText(data: ProcessedStats) {
-		var result = null
+		let result = null
 		if (data.client) result = data.client
 		if (!result) return result
 
@@ -210,11 +210,11 @@ export class MachinesPage extends MachineController implements OnInit {
 	}
 
 	private async getOrderedKeys(data: ProcessedStats[]): Promise<string[]> {
-		var online = []
-		var attention = []
-		var offline = []
+		const online = []
+		const attention = []
+		const offline = []
 
-		for (var key in data) {
+		for (const key in data) {
 			const it = data[key]
 			const status = await this.getOnlineState(it)
 			if (status == 'online') {
@@ -238,9 +238,9 @@ export class MachinesPage extends MachineController implements OnInit {
 	}
 
 	async openMachineDetail(key) {
-		let attention = this.getSyncAttention(this.data[key])
-		let diskAttention = await this.getDiskAttention(this.data[key])
-		let memoryAttention = await this.getMemoryAttention(this.data[key])
+		const attention = this.getSyncAttention(this.data[key])
+		const diskAttention = await this.getDiskAttention(this.data[key])
+		const memoryAttention = await this.getMemoryAttention(this.data[key])
 
 		const modal = await this.modalController.create({
 			component: MachineDetailPage,
@@ -262,9 +262,9 @@ export class MachinesPage extends MachineController implements OnInit {
 			return
 		}
 
-		var offlineCount = 0
-		var count = 0
-		for (var key in data) {
+		let offlineCount = 0
+		let count = 0
+		for (const key in data) {
 			const it = data[key]
 			const status = await this.getOnlineState(it)
 			if (status == 'offline') offlineCount++

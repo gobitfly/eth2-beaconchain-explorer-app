@@ -19,33 +19,11 @@
  */
 
 import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
 import { Injectable } from '@angular/core'
-import {
-	EpochRequest,
-	EpochResponse,
-	RemoveMyValidatorsRequest,
-	AttestationPerformanceResponse,
-	ValidatorRequest,
-	ValidatorResponse,
-	ValidatorETH1Request,
-	GetMyValidatorsRequest,
-	MyValidatorResponse,
-	DashboardRequest,
-	DashboardResponse,
-	RocketPoolResponse,
-	RocketPoolNetworkStats,
-	ExecutionResponse,
-	BlockProducedByRequest,
-	BlockResponse,
-} from '../requests/requests'
-import { AlertService } from '../services/alert.service'
+import { BlockProducedByRequest, BlockResponse } from '../requests/requests'
 import { CacheModule } from './CacheModule'
-import { MerchantUtils } from './MerchantUtils'
 import BigNumber from 'bignumber.js'
-import { UnitconvService } from '../services/unitconv.service'
 import { ValidatorUtils } from './ValidatorUtils'
-import { time } from 'highcharts'
 
 export const ROCKETPOOL_SMOOTHING_POOL = '0xd4e96ef8eee8678dbff4d535e033ed1a4f7605b7'
 export const ETHPOOL = '0xb364e75b1189dcbbf7f0c856456c1ba8e4d6481b'
@@ -68,26 +46,26 @@ export class BlockUtils extends CacheModule {
 	}
 
 	async getBlockRewardWithShare(block: BlockResponse): Promise<BigNumber> {
-		let proposer = block.posConsensus.proposerIndex
-		let validator = await this.validatorUtils.getLocalValidatorByIndex(proposer)
+		const proposer = block.posConsensus.proposerIndex
+		const validator = await this.validatorUtils.getLocalValidatorByIndex(proposer)
 		if (validator == null || validator.execshare == null) return new BigNumber(block.producerReward)
 		return new BigNumber(block.producerReward).multipliedBy(validator.execshare)
 	}
 
 	async getBlocksBy(validatorIndex: number[], offset: number): Promise<BlockResponse[]> {
-		let request = new BlockProducedByRequest(offset, 25, validatorIndex)
-		let response = await this.api.execute(request)
-		let result = request.parse(response)
+		const request = new BlockProducedByRequest(offset, 25, validatorIndex)
+		const response = await this.api.execute(request)
+		const result = request.parse(response)
 		return result
 	}
 
 	async getMyBlocks(offset: number): Promise<BlockResponse[]> {
-		let valis = await this.validatorUtils.getLocalValidatorIndexes()
+		const valis = await this.validatorUtils.getLocalValidatorIndexes()
 		if (valis.length == 0) return []
 
-		let request = new BlockProducedByRequest(offset, this.getLimit(valis.length), valis)
-		let response = await this.api.execute(request)
-		let result = request.parse(response)
+		const request = new BlockProducedByRequest(offset, this.getLimit(valis.length), valis)
+		const response = await this.api.execute(request)
+		const result = request.parse(response)
 		return result
 	}
 
@@ -103,24 +81,24 @@ export class BlockUtils extends CacheModule {
 
 	async getProposalLuck(blocks: BlockResponse[]): Promise<Luck> {
 		if (blocks.length <= 0) return null
-		let earliestBlock = blocks[blocks.length - 1]
+		const earliestBlock = blocks[blocks.length - 1]
 
-		let valis = await this.validatorUtils.getAllValidatorsLocal()
+		const valis = await this.validatorUtils.getAllValidatorsLocal()
 		if (valis.length <= 0) return null
-		let currentEpoch = await this.validatorUtils.getRemoteCurrentEpoch()
+		const currentEpoch = await this.validatorUtils.getRemoteCurrentEpoch()
 
 		// calculate blocks with 30d timeframe to see how many blocks we would get
-		let blocksIn30d = this.calculateExpectedBlocksInTimeframe(MONTH, currentEpoch.validatorscount, valis.length)
+		const blocksIn30d = this.calculateExpectedBlocksInTimeframe(MONTH, currentEpoch.validatorscount, valis.length)
 
 		// var timeframe = this.getTimeframe(earliestBlock.timestamp * 1000, blocksIn30d)
-		var timeframe = this.findTimeFrameNew(earliestBlock.timestamp * 1000, blocksIn30d)
+		const timeframe = this.findTimeFrameNew(earliestBlock.timestamp * 1000, blocksIn30d)
 
 		if (timeframe == -1) return null
 
-		let blocksAfterTimeframe = this.getBlocksAfterTs(blocks, timeframe)
+		const blocksAfterTimeframe = this.getBlocksAfterTs(blocks, timeframe)
 		if (blocksAfterTimeframe.length <= 0) return null
 
-		let avgBlockInTimeframe = this.calculateExpectedBlocksInTimeframe(timeframe, currentEpoch.validatorscount, valis.length)
+		const avgBlockInTimeframe = this.calculateExpectedBlocksInTimeframe(timeframe, currentEpoch.validatorscount, valis.length)
 
 		return {
 			luckPercentage: blocksAfterTimeframe.length / avgBlockInTimeframe,
@@ -134,13 +112,13 @@ export class BlockUtils extends CacheModule {
 	async getNextBlockEstimate(blocks: BlockResponse[]): Promise<number> {
 		if (blocks.length <= 0) return null
 
-		let valis = await this.validatorUtils.getAllValidatorsLocal()
+		const valis = await this.validatorUtils.getAllValidatorsLocal()
 		if (valis.length <= 0) return null
-		let currentEpoch = await this.validatorUtils.getRemoteCurrentEpoch()
+		const currentEpoch = await this.validatorUtils.getRemoteCurrentEpoch()
 
-		let blocksIn30d = this.calculateExpectedBlocksInTimeframe(MONTH, currentEpoch.validatorscount, valis.length)
+		const blocksIn30d = this.calculateExpectedBlocksInTimeframe(MONTH, currentEpoch.validatorscount, valis.length)
 
-		let newBlockOnAvgDays = MONTH / blocksIn30d
+		const newBlockOnAvgDays = MONTH / blocksIn30d
 		return blocks[0].timestamp * 1000 + newBlockOnAvgDays
 	}
 
@@ -167,13 +145,13 @@ export class BlockUtils extends CacheModule {
 	}
 
 	private calculateExpectedBlocksInTimeframe(ts: number, validatorTotalCount: number, userValidatorCount: number): number {
-		let slotsInTimeframe = ts / 1000 / 12
+		const slotsInTimeframe = ts / 1000 / 12
 		return (slotsInTimeframe / validatorTotalCount) * userValidatorCount
 	}
 
 	private getBlocksAfterTs(blocks: BlockResponse[], after: number): BlockResponse[] {
-		let result = []
-		let curMilies = Date.now()
+		const result = []
+		const curMilies = Date.now()
 		for (const block of blocks) {
 			if (block.timestamp * 1000 > curMilies - after) {
 				result.push(block)
@@ -183,8 +161,8 @@ export class BlockUtils extends CacheModule {
 	}
 
 	private findTimeFrameNew(earliestBlockTs: number, blocksPer30d: number) {
-		let curMilies = Date.now()
-		let diff = curMilies - earliestBlockTs
+		const curMilies = Date.now()
+		const diff = curMilies - earliestBlockTs
 
 		if (diff < FIVEDAYS) {
 			return FIVEDAYS

@@ -18,23 +18,21 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, Input } from '@angular/core'
+import { Component, Input } from '@angular/core'
 import { Browser } from '@capacitor/browser'
 import { Toast } from '@capacitor/toast'
-import ClientUpdateUtils from '../../utils/ClientUpdateUtils'
+import ClientUpdateUtils, { Release } from '../../utils/ClientUpdateUtils'
 
 @Component({
 	selector: 'app-clientupdate',
 	templateUrl: './clientupdate.component.html',
 	styleUrls: ['./clientupdate.component.scss'],
 })
-export class ClientupdateComponent implements OnInit {
-	@Input() data: any
+export class ClientupdateComponent {
+	@Input() data: Release
 	version: string = null
 
 	constructor(private updateUtils: ClientUpdateUtils) {}
-
-	ngOnInit() {}
 
 	ngOnChanges() {
 		if (this.data && this.data.data) {
@@ -50,7 +48,7 @@ export class ClientupdateComponent implements OnInit {
 	async dismiss() {
 		if (!this.data) return
 
-		this.updateUtils.dismissRelease(this.data.client.key, this.data.data.id)
+		this.updateUtils.dismissRelease(this.data.client.key, this.data.data.id.toString())
 		this.data = null
 		this.version = null
 

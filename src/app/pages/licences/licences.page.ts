@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, Input } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { ModalController } from '@ionic/angular'
 import { fromEvent, Subscription } from 'rxjs'
 
@@ -40,7 +40,7 @@ export class LicencesPage implements OnInit {
 	}
 
 	populatePre(url) {
-		var xhr = new XMLHttpRequest()
+		const xhr = new XMLHttpRequest()
 		xhr.onload = function () {
 			document.getElementById('contents').textContent += this.responseText
 		}

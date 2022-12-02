@@ -19,10 +19,9 @@
  */
 
 import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
+import { StorageService, StoredShare, StoredTimestamp } from '../services/storage.service'
 import { Injectable } from '@angular/core'
 import {
-	EpochRequest,
 	EpochResponse,
 	RemoveMyValidatorsRequest,
 	AttestationPerformanceResponse,
@@ -32,13 +31,11 @@ import {
 	GetMyValidatorsRequest,
 	MyValidatorResponse,
 	DashboardRequest,
-	DashboardResponse,
 	RocketPoolResponse,
 	RocketPoolNetworkStats,
 	ExecutionResponse,
 	SyncCommitteeResponse,
 } from '../requests/requests'
-import { AlertService } from '../services/alert.service'
 import { CacheModule } from './CacheModule'
 import { MerchantUtils } from './MerchantUtils'
 import BigNumber from 'bignumber.js'
@@ -101,7 +98,6 @@ export class ValidatorUtils extends CacheModule {
 	constructor(
 		private api: ApiService,
 		private storage: StorageService,
-		private alerts: AlertService,
 		private merchantUtils: MerchantUtils,
 		private unitConversion: UnitconvService
 	) {
@@ -130,20 +126,20 @@ export class ValidatorUtils extends CacheModule {
 
 	async migrateTo3Dot2() {
 		const share = await this.storage.getStakingShare()
-		var valis = await this.getAllValidatorsLocal()
-		for (var i = 0; i < valis.length; i++) {
+		const valis = await this.getAllValidatorsLocal()
+		for (let i = 0; i < valis.length; i++) {
 			valis[i].share = share.toNumber()
 		}
 		this.saveValidatorsLocal(valis)
 	}
 
-	public async getMap(storageKey: string): Promise<Map<String, Validator>> {
+	public async getMap(storageKey: string): Promise<Map<string, Validator>> {
 		const erg = await this.storage.getObject(storageKey)
 		if (erg && erg instanceof Map) return erg
-		return new Map<String, Validator>()
+		return new Map<string, Validator>()
 	}
 
-	private async getMapWithoutDeleted(storageKey): Promise<Map<String, Validator>> {
+	private async getMapWithoutDeleted(storageKey): Promise<Map<string, Validator>> {
 		const local = await this.getMap(storageKey)
 		const deleted = await this.getDeletedSet(storageKey)
 		if (await this.storage.isLoggedIn()) {
@@ -173,7 +169,7 @@ export class ValidatorUtils extends CacheModule {
 	async deleteAll() {
 		const storageKey = await this.getStorageKey()
 		const current = await this.getMap(storageKey)
-		this.storage.setObject(storageKey, new Map<String, Validator>())
+		this.storage.setObject(storageKey, new Map<string, Validator>())
 
 		const deletedList = await this.getDeletedSet(storageKey)
 		current.forEach((_, key) => {
@@ -204,8 +200,8 @@ export class ValidatorUtils extends CacheModule {
 	async saveValidatorsLocal(validators: Validator[]) {
 		const storageKey = await this.getStorageKey()
 
-		var current = await this.getMap(storageKey)
-		var newMap = new Map<String, Validator>()
+		const current = await this.getMap(storageKey)
+		const newMap = new Map<string, Validator>()
 
 		validators.forEach((validator) => {
 			newMap.set(validator.pubkey, validator)
@@ -220,11 +216,11 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	async saveRocketpoolCollateralShare(nodeAddress: string, sharePercent: number) {
-		this.storage.setObject('rpl_share_' + nodeAddress, { share: sharePercent })
+		this.storage.setObject('rpl_share_' + nodeAddress, { share: sharePercent } as StoredShare)
 	}
 
 	async getRocketpoolCollateralShare(nodeAddress: string): Promise<number> {
-		const temp = await this.storage.getObject('rpl_share_' + nodeAddress)
+		const temp = (await this.storage.getObject('rpl_share_' + nodeAddress)) as StoredShare
 		if (!temp) return null
 		return temp.share
 	}
@@ -241,7 +237,7 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	async getLocalValidatorByIndex(index: number): Promise<Validator> {
-		let localValidators = await this.getAllValidatorsLocal()
+		const localValidators = await this.getAllValidatorsLocal()
 		for (const vali of localValidators) {
 			if (vali.index == index) {
 				return vali
@@ -271,6 +267,7 @@ export class ValidatorUtils extends CacheModule {
          }*/
 
 		const remoteUpdatesPromise = this.getDashboardDataValidators(SAVED, validatorString).catch((err) => {
+			console.warn('error getAllMyValidators getDashboardDataValidators', err)
 			return []
 		})
 		if (remoteUpdatesPromise == null) return null
@@ -300,7 +297,7 @@ export class ValidatorUtils extends CacheModule {
 
 	// checks if remote validators are already known locally.
 	// If not, return all indizes of non locally known validators
-	public async getAllNewIndizesOnly(myRemotes: MyValidatorResponse[]): Promise<number[]> {
+	public async getAllNewIndicesOnly(myRemotes: MyValidatorResponse[]): Promise<number[]> {
 		const storageKey = await this.getStorageKey()
 		const current = await this.getMap(storageKey)
 
@@ -337,10 +334,11 @@ export class ValidatorUtils extends CacheModule {
 	public async removeValidatorRemote(pubKey: string) {
 		const request = new RemoveMyValidatorsRequest(pubKey)
 		const response = await this.api.execute(request).catch((error) => {
+			console.warn('error in removeValidatorRemote', error)
 			return false
 		})
 		if (!response) return false
-		return request.wasSuccessfull(response)
+		return request.wasSuccessful(response)
 	}
 
 	async getMyRemoteValidators(): Promise<MyValidatorResponse[]> {
@@ -362,7 +360,7 @@ export class ValidatorUtils extends CacheModule {
 		const request = new DashboardRequest(validators)
 		const response = await this.api.execute(request)
 
-		if (!request.wasSuccessfull(response)) {
+		if (!request.wasSuccessful(response)) {
 			if (response && response.data && response.data.status && response.data.status.indexOf('only a maximum of') >= 0) {
 				throw new Error(response.data.status)
 			}
@@ -387,14 +385,14 @@ export class ValidatorUtils extends CacheModule {
 			this.currentEpoch.lastCachedTimestamp = lastCachedTime
 		}
 
-		var local = null
+		let local = null
 		if (storage == SAVED) {
 			local = await this.getMapWithoutDeleted(await this.getStorageKey())
 		}
 
 		const temp = this.convertToValidatorModel({ synced: false, storage: storage, validatorResponse: validatorsResponse })
 		await this.updateValidatorStates(temp)
-		for (let vali of temp) {
+		for (const vali of temp) {
 			vali.attrEffectiveness = this.findAttributionEffectiveness(validatorEffectivenessResponse, vali.index)
 			vali.rocketpool = this.findRocketpoolResponse(result.rocketpool_validators, vali.index)
 			vali.execution = this.findExecutionResponse(result.execution_performance, vali.index)
@@ -438,7 +436,7 @@ export class ValidatorUtils extends CacheModule {
 
 	private findExecutionResponse(list: ExecutionResponse[], index: number): ExecutionResponse {
 		if (list == null || list.length == 0) return null
-		for (let attr of list) {
+		for (const attr of list) {
 			if (attr.validatorindex == index) {
 				return attr
 			}
@@ -447,7 +445,7 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	private findRocketpoolResponse(list: RocketPoolResponse[], index: number): RocketPoolResponse {
-		for (let attr of list) {
+		for (const attr of list) {
 			if (attr.index == index) {
 				return attr
 			}
@@ -456,7 +454,7 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	private findAttributionEffectiveness(list: AttestationPerformanceResponse[], index: number): number {
-		for (let attr of list) {
+		for (const attr of list) {
 			if (attr.validatorindex == index && attr.attestation_efficiency) {
 				return new BigNumber(1).dividedBy(attr.attestation_efficiency).multipliedBy(100).decimalPlaces(1).toNumber()
 			}
@@ -482,19 +480,19 @@ export class ValidatorUtils extends CacheModule {
 		if (!args || !args[0]) return []
 		const request = new ValidatorRequest(args)
 		const response = await this.api.execute(request)
-		if (request.wasSuccessfull(response)) {
+		if (request.wasSuccessful(response)) {
 			return request.parse(response)
 		} else {
 			return this.apiStatusHandler(response)
 		}
 	}
 
-	async getRemoteValidatorViaETH1(arg: string, enforceMax: number = -1): Promise<Validator[]> {
+	async getRemoteValidatorViaETH1(arg: string, enforceMax = -1): Promise<Validator[]> {
 		if (!arg) return []
 		const request = new ValidatorETH1Request(arg)
 		const response = await this.api.execute(request)
 
-		if (request.wasSuccessfull(response)) {
+		if (request.wasSuccessful(response)) {
 			const eth1ValidatorList = request.parse(response)
 			const queryString = getValidatorQueryString(eth1ValidatorList, 2000, enforceMax)
 
@@ -535,7 +533,7 @@ export class ValidatorUtils extends CacheModule {
 	async convertToValidatorModelsAndSaveLocal(synced: boolean, validator: ValidatorResponse[]) {
 		this.saveValidatorsLocal(this.convertToValidatorModel({ synced, storage: SAVED, validatorResponse: validator }))
 		if (!synced) {
-			this.storage.setObject(LAST_TIME_ADDED_KEY, { timestamp: Date.now() })
+			this.storage.setObject(LAST_TIME_ADDED_KEY, { timestamp: Date.now() } as StoredTimestamp)
 			this.clearCache()
 		}
 	}
@@ -571,13 +569,14 @@ export class ValidatorUtils extends CacheModule {
 
 	async searchValidators(search: string): Promise<Validator[]> {
 		const result = await this.getDashboardDataValidators(MEMORY, search).catch((err) => {
+			console.warn('error in searchValidators', err)
 			return null
 		})
 		if (result == null) return []
 		return result
 	}
 
-	async searchValidatorsViaETH1(search: string, enforceMax: number = -1): Promise<Validator[]> {
+	async searchValidatorsViaETH1(search: string, enforceMax = -1): Promise<Validator[]> {
 		const result = await this.getRemoteValidatorViaETH1(search, enforceMax)
 		if (result == null) return []
 		return result
@@ -592,12 +591,12 @@ export class ValidatorUtils extends CacheModule {
 	}
 }
 
-export function getValidatorQueryString(validators: any[], getParamMaxLimit: number, maxValLimit: number = -1) {
+export function getValidatorQueryString(validators: any[], getParamMaxLimit: number, maxValLimit = -1) {
 	// Validator
-	var erg = ''
-	var count = 0
+	let erg = ''
+	let count = 0
 	validators.forEach((item) => {
-		var temp = ''
+		let temp = ''
 		if (item.validatorindex !== undefined && item.validatorindex != null) {
 			temp = item.validatorindex + ','
 		} else if (item.index !== undefined && item.index != null) {

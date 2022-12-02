@@ -32,8 +32,8 @@ import { Browser } from '@capacitor/browser'
 	styleUrls: ['./help.component.scss'],
 })
 export class HelpComponent implements OnInit {
-	@Input() onlyGuides: any
-	isAlreadyLoggedIn: boolean = false
+	@Input() onlyGuides: boolean
+	isAlreadyLoggedIn = false
 
 	constructor(private oauthUtils: OAuthUtils, private validator: ValidatorUtils, private storage: StorageService, private router: Router) {}
 

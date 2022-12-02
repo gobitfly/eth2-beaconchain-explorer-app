@@ -48,7 +48,7 @@ export default class MachineUtils extends CacheModule {
 		const local = await this.getAllLocalMachineNames()
 		console.log('getAllMachineNames local', local)
 		if (!local || local.length == 0) {
-			let remote = await this.getAndProcessDataBase()
+			const remote = await this.getAndProcessDataBase()
 			return this.getAllMachineNamesFrom(remote)
 		}
 		return local
@@ -56,9 +56,9 @@ export default class MachineUtils extends CacheModule {
 
 	private async registerNewRemotesForSync(remote: string[]): Promise<boolean> {
 		const local = await this.getAllLocalMachineNames()
-		var returnOK = true
-		for (var i = 0; i < remote.length; i++) {
-			let it = remote[i] // TODO think about default scenario
+		let returnOK = true
+		for (let i = 0; i < remote.length; i++) {
+			const it = remote[i] // TODO think about default scenario
 			if (!local || !local.includes(it)) {
 				console.log(LOGTAG + 'found a new machine, applying your notification preferences...')
 				returnOK = (await this.sync.reapplyNotifyEvent('monitoring_machine_offline', it)) && returnOK
@@ -76,22 +76,20 @@ export default class MachineUtils extends CacheModule {
 	}
 
 	private async getAllLocalMachineNames(): Promise<string[]> {
-		return this.storage.getObject(MACHINES_STORAGE_KEY)
+		return this.storage.getObject(MACHINES_STORAGE_KEY) as Promise<string[]>
 	}
 
 	private getAllMachineNamesFrom(data: ProcessedStats[]): string[] {
-		var result: string[] = []
-		for (var key in data) {
-			const it = data[key]
+		const result: string[] = []
+		for (const key in data) {
 			result.push(key)
 		}
 		return result
 	}
 
 	private unsupportedPrysmVersion(data: ProcessedStats[], machineController: MachineController): boolean {
-		var result = false
-		for (var key in data) {
-			const it = data[key]
+		let result = false
+		for (const key in data) {
 			const machine = data[key]
 
 			if (machineController.isBuggyPrysmVersion(machine)) {
@@ -101,9 +99,9 @@ export default class MachineUtils extends CacheModule {
 		return result
 	}
 
-	async getAndProcessData(timeslot: number = 180) {
-		let result = await this.getAndProcessDataBase(timeslot)
-		let machineNames = this.getAllMachineNamesFrom(result)
+	async getAndProcessData(timeslot = 180) {
+		const result = await this.getAndProcessDataBase(timeslot)
+		const machineNames = this.getAllMachineNamesFrom(result)
 		console.log(LOGTAG + ' machine names', machineNames)
 
 		this.registerNewRemotesForSync(machineNames).then((result) => {
@@ -117,10 +115,10 @@ export default class MachineUtils extends CacheModule {
 		return result
 	}
 
-	private async getAndProcessDataBase(timeslot: number = 180) {
-		const data = await this.getData(timeslot).catch(() => {
+	private async getAndProcessDataBase(timeslot = 180) {
+		const data = (await this.getData(timeslot).catch(() => {
 			return null
-		})
+		})) as StatsResponse
 		console.log('machine data', data)
 		if (data == null) {
 			return []
@@ -128,7 +126,7 @@ export default class MachineUtils extends CacheModule {
 
 		const machineController = new MachineController(this.storage)
 
-		let result = machineController.combineByMachineName(
+		const result = machineController.combineByMachineName(
 			machineController.filterMachines(data.validator),
 			machineController.filterMachines(data.node),
 			machineController.filterMachines(data.system)
@@ -142,7 +140,7 @@ export default class MachineUtils extends CacheModule {
 	}
 
 	private async getData(timeslot: number): Promise<StatsResponse> {
-		let cached = await this.getCache(MACHINE_CACHE + timeslot)
+		const cached = await this.getCache(MACHINE_CACHE + timeslot)
 		if (cached) return cached
 		const request = new GetMyMachinesRequest(0, timeslot)
 		const response = await this.api.execute(request)

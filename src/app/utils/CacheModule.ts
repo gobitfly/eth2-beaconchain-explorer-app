@@ -18,7 +18,6 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { resolve } from '@angular/compiler-cli/src/ngtsc/file_system'
 import { StorageService } from '../services/storage.service'
 
 interface CachedData {
@@ -34,7 +33,7 @@ export class CacheModule {
 	private hardStorage: StorageService = null
 	initialized: Promise<any>
 
-	constructor(keyPrefix: string = '', staleTime = 6 * 60 * 1000, hardStorage: StorageService = null) {
+	constructor(keyPrefix = '', staleTime = 6 * 60 * 1000, hardStorage: StorageService = null) {
 		this.keyPrefix = keyPrefix
 		this.staleTime = staleTime
 		this.hardStorage = hardStorage
@@ -45,7 +44,7 @@ export class CacheModule {
 		if (this.hardStorage) {
 			this.hardStorage.setObject('cachemodule_' + this.keyPrefix, null)
 			this.initialized = this.hardStorage.getObject('cachemodule2_' + this.keyPrefix)
-			let result = await this.initialized
+			const result = await this.initialized
 			if (result) this.cache = result
 			console.log('[CacheModule] initialized with ', this.cache)
 		} else {
@@ -56,8 +55,8 @@ export class CacheModule {
 		}
 	}
 
-	private cache: Map<String, CachedData> = new Map()
-	private hotOnly: Map<String, CachedData> = new Map()
+	private cache: Map<string, CachedData> = new Map()
+	private hotOnly: Map<string, CachedData> = new Map()
 
 	protected putCache(key: string, data: any, staleTime = this.staleTime) {
 		const cacheKey = this.getKey(key)
@@ -107,11 +106,11 @@ export class CacheModule {
 			console.log('[CacheModule] ignore cache attempt of empty data set', data)
 			return
 		}
-		for (var i = 0; i < data.length; i++) {
+		for (let i = 0; i < data.length; i++) {
 			const current = data[i]
-			const index = current.hasOwnProperty('validatorindex')
+			const index = Object.prototype.hasOwnProperty.call(current, 'validatorindex')
 				? data[i].validatorindex
-				: current.hasOwnProperty('index')
+				: Object.prototype.hasOwnProperty.call(current, 'index')
 				? data[i].index
 				: console.error('[CacheModule] can not store cache entry - no index')
 			if (!index) return
@@ -120,14 +119,14 @@ export class CacheModule {
 	}
 
 	protected invalidateMultiple(prefix: string, keys) {
-		for (var i = 0; i < keys.length; i++) {
+		for (let i = 0; i < keys.length; i++) {
 			this.putCache(prefix + keys[i], null)
 		}
 	}
 
 	protected async getMultipleCached(prefix: string, keys: string[]) {
-		var result = new Array(keys.length)
-		for (var i = 0; i < keys.length; i++) {
+		const result = new Array(keys.length)
+		for (let i = 0; i < keys.length; i++) {
 			result[i] = await this.getCache(prefix + keys[i])
 			if (!result[i]) return null
 		}

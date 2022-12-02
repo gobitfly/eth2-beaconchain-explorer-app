@@ -46,7 +46,7 @@ export class BlockComponent implements OnInit {
 		}
 	}
 
-	async setInput(block: any) {
+	async setInput(block: BlockResponse) {
 		this.block = block
 		this.ngOnChanges()
 	}

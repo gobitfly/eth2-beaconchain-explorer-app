@@ -54,7 +54,7 @@ export default class Unit {
 	public static NZDETH = new Unit('NZ$', new BigNumber('455.55'), 2, 'ETH-NZD', 'New Zealand Dollar')
 	public static BTCETH = new Unit('₿', new BigNumber('455.55'), 6, 'ETH-BTC', 'Bitcoin') // coinbase endpoit: invalid currency :/ workaroung in unit converter
 
-	private constructor(symbol: string, value: BigNumber, rounding: number = 2, coinbaseSpot = null, settingsName = null) {
+	private constructor(symbol: string, value: BigNumber, rounding = 2, coinbaseSpot = null, settingsName = null) {
 		this.display = symbol
 		this.value = value
 		this.rounding = rounding
@@ -100,7 +100,7 @@ export const MAPPING = new Map([
 ])
 
 export function convertEthUnits(value: BigNumber, from: Unit, to: Unit, enforceDecimalPlaces = true): BigNumber {
-	var temp = value.multipliedBy(to.value).dividedBy(from.value)
+	let temp = value.multipliedBy(to.value).dividedBy(from.value)
 
 	if (enforceDecimalPlaces) temp = temp.decimalPlaces(to.rounding)
 

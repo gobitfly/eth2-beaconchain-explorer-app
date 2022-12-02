@@ -45,7 +45,7 @@ const STORAGE_KEY = 'theme'
 })
 export default class ThemeUtils {
 	userPreference: Theme
-	currentThemeColor: string = ''
+	currentThemeColor = ''
 	private lock: Promise<void | ThemeStorage>
 
 	private snowFlakes
@@ -56,12 +56,12 @@ export default class ThemeUtils {
 
 	async init(splashScreenCallback: () => void) {
 		this.lock = this.storage.getObject(STORAGE_KEY).then((preferenceDarkMode) => {
-			this.internalInit(preferenceDarkMode)
+			this.internalInit(preferenceDarkMode as StoredTheme)
 			setTimeout(() => {
 				splashScreenCallback()
 				this.applyColorInitially()
 			}, 200)
-			return preferenceDarkMode
+			return preferenceDarkMode as StoredTheme
 		})
 	}
 
@@ -70,7 +70,7 @@ export default class ThemeUtils {
 	// and splashscreen won't instantly close either. So we retry setting the status bar color a couple times a few
 	// milliseconds apart so the color change won't blob in too late and annoy the user nor won't it change at all
 	// and annoy the user either ¯\_(ツ)_/¯
-	private applyColorInitially(count: number = 0) {
+	private applyColorInitially(count = 0) {
 		if (count >= 11) return
 		setTimeout(
 			() => {
@@ -103,12 +103,12 @@ export default class ThemeUtils {
 		if (themeColor && themeColor != '') document.body.classList.remove(themeColor)
 	}
 
-	async toggle(darkModeEnabled: boolean, setColorHandler: boolean = true, themeColor: string = this.currentThemeColor) {
+	async toggle(darkModeEnabled: boolean, setColorHandler = true, themeColor: string = this.currentThemeColor) {
 		document.body.classList.toggle('dark', darkModeEnabled)
 		if (themeColor && themeColor != '') document.body.classList.toggle(themeColor, true)
 		if (setColorHandler) this.colorHandler()
 		const themeString = darkModeEnabled ? Theme.DARK : Theme.LIGHT
-		this.storage.setObject(STORAGE_KEY, { theme: themeString, themeColor: themeColor })
+		this.storage.setObject(STORAGE_KEY, { theme: themeString, themeColor: themeColor } as StoredTheme)
 		this.userPreference = themeString
 		this.currentThemeColor = themeColor
 
@@ -118,7 +118,7 @@ export default class ThemeUtils {
 	resetTheming() {
 		this.undoColor()
 		this.colorHandler()
-		this.storage.setObject(STORAGE_KEY, { theme: this.userPreference, themeColor: '' })
+		this.storage.setObject(STORAGE_KEY, { theme: this.userPreference, themeColor: '' } as StoredTheme)
 	}
 
 	async isWinterEnabled() {
@@ -128,12 +128,12 @@ export default class ThemeUtils {
 	}
 
 	isWinterSeason() {
-		var d = new Date()
+		const d = new Date()
 		return d.getMonth() == 11 && d.getDate() >= 24 && d.getDate() <= 24
 	}
 
 	isSilvester() {
-		var d = new Date()
+		const d = new Date()
 		const silvesterday = d.getMonth() == 11 && d.getDate() == 31 && d.getHours() == 23
 		const januaryFirst = d.getMonth() == 0 && d.getDate() == 1 && d.getHours() == 0
 		return silvesterday || januaryFirst
@@ -141,22 +141,22 @@ export default class ThemeUtils {
 
 	// TODO: Should start thinking about increasing the minimum system requirements for this app ¯\_(ツ)_/¯
 	silvesterFireworks() {
-		var duration = 10 * 1000
-		var animationEnd = Date.now() + duration
-		var defaults = { startVelocity: 30, spread: 100, ticks: 70, zIndex: 0 }
+		const duration = 10 * 1000
+		const animationEnd = Date.now() + duration
+		const defaults = { startVelocity: 30, spread: 100, ticks: 70, zIndex: 0 }
 
 		function randomInRange(min, max) {
 			return Math.random() * (max - min) + min
 		}
 
-		var interval = setInterval(function () {
-			var timeLeft = animationEnd - Date.now()
+		const interval = setInterval(function () {
+			const timeLeft = animationEnd - Date.now()
 
 			if (timeLeft <= 0) {
 				return clearInterval(interval)
 			}
 
-			var particleCount = 20 * (timeLeft / duration)
+			const particleCount = 20 * (timeLeft / duration)
 
 			confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }))
 			confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }))
@@ -201,13 +201,15 @@ export default class ThemeUtils {
 				if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#000000' })
 				else NavigationBar.setBackgroundColor({ color: '#f7f7f7' })
 			}
-		} catch (e) {}
+		} catch (e) {
+			console.warn('error in changeNavigationBarColor', e)
+		}
 	}
 
 	private async changeStatusBarColor(color, isDarkThemed) {
 		if (this.platform.is('android')) {
 			const themeColor = await this.getThemeColor()
-			var darker = isDarkThemed ? '#000000' : color //this.shadeColor(color, -12)
+			let darker = isDarkThemed ? '#000000' : color //this.shadeColor(color, -12)
 			if (themeColor == 'ethpool') {
 				darker = isDarkThemed ? '#262327' : '#e1d8d8'
 			}
@@ -268,15 +270,17 @@ export default class ThemeUtils {
 		if (snow) {
 			try {
 				snow.destroy()
-			} catch (error) {}
+			} catch (error) {
+				console.warn('error in stopSnow()', error)
+			}
 		}
 	}
 
-	private shadeColor(color_: string, percent: number): string {
+	/*private shadeColor(color_: string, percent: number): string {
 		const color = color_.trim()
-		var R = parseInt(color.substring(1, 3), 16)
-		var G = parseInt(color.substring(3, 5), 16)
-		var B = parseInt(color.substring(5, 7), 16)
+		let R = parseInt(color.substring(1, 3), 16)
+		let G = parseInt(color.substring(3, 5), 16)
+		let B = parseInt(color.substring(5, 7), 16)
 
 		R = Math.round(R * ((100 + percent) / 100))
 		G = Math.round(G * ((100 + percent) / 100))
@@ -291,5 +295,10 @@ export default class ThemeUtils {
 		const BB = B.toString(16).length == 1 ? '0' + B.toString(16) : B.toString(16)
 
 		return '#' + RR + GG + BB
-	}
+	}*/
+}
+
+interface StoredTheme {
+	theme: Theme
+	themeColor: string
 }

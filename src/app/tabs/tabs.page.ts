@@ -19,7 +19,6 @@
  */
 
 import { Component } from '@angular/core'
-import { ApiService } from '../services/api.service'
 import { StorageService } from '../services/storage.service'
 import { SyncService } from '../services/sync.service'
 import FirebaseUtils from '../utils/FirebaseUtils'
@@ -36,7 +35,6 @@ export class TabsPage {
 		private firebaseUtils: FirebaseUtils,
 		private sync: SyncService,
 		private storage: StorageService,
-		private api: ApiService,
 		private merchant: MerchantUtils,
 		private theme: ThemeUtils
 	) {}
@@ -99,7 +97,7 @@ export class TabsPage {
 		preloadArea.appendChild(document.createElement('app-offline'))
 
 		// optimize ion-icon loading by preloading every icon used in preferences / validators page
-		var icons = document.createElement('div')
+		const icons = document.createElement('div')
 		icons.innerHTML =
 			'<ion-icon name="telescope-outline"></ion-icon>' +
 			'<ion-icon name="close-circle-outline"></ion-icon>' +

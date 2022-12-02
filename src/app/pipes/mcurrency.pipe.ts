@@ -28,7 +28,7 @@ export class McurrencyPipe implements PipeTransform {
 	constructor(private unit: UnitconvService) {}
 
 	transform(value: any, ...args: any[]): any {
-		var displayAble = args.length == 2
+		const displayAble = args.length == 2
 		return this.unit.convert(value, args[0], args[1], displayAble)
 	}
 }

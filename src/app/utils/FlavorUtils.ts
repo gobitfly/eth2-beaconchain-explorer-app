@@ -6,8 +6,6 @@ import { App } from '@capacitor/app'
 	providedIn: 'root',
 })
 export default class FlavorUtils {
-	constructor() {}
-
 	async isBetaFlavor(): Promise<boolean> {
 		const info = await App.getInfo()
 		return info.id.indexOf('beta') > 0
