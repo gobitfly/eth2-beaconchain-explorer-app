@@ -224,7 +224,7 @@ export class DashboardComponent implements OnInit {
 			this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber('1e9'))
 			this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
 		} catch (e) {
-			console.warn('can not update smoothing pool', e)
+			console.warn('cannot update smoothing pool', e)
 		}
 	}
 
@@ -244,7 +244,7 @@ export class DashboardComponent implements OnInit {
 				this.rplProjectedClaim = null
 			}
 		} catch (e) {
-			console.warn('can not updateRplProjectedClaim', e)
+			console.warn('cannot updateRplProjectedClaim', e)
 		}
 	}
 
@@ -265,7 +265,7 @@ export class DashboardComponent implements OnInit {
 				.decimalPlaces(2)
 				.toFixed()
 		} catch (e) {
-			console.warn('can not updateRplApr', e)
+			console.warn('cannot updateRplApr', e)
 		}
 	}
 
@@ -273,7 +273,7 @@ export class DashboardComponent implements OnInit {
 		try {
 			this.rplCommission = Math.round(this.validatorUtils.rocketpoolStats.current_node_fee * 10000) / 100
 		} catch (e) {
-			console.warn('can not updateRplCommission', e)
+			console.warn('cannot updateRplCommission', e)
 		}
 	}
 
@@ -282,7 +282,7 @@ export class DashboardComponent implements OnInit {
 			const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(':')[0]
 			this.nextRewardRound = this.validatorUtils.rocketpoolStats.claim_interval_time_start * 1000 + parseInt(hoursToAdd) * 60 * 60 * 1000
 		} catch (e) {
-			console.warn('can not updateNextRewardRound', e)
+			console.warn('cannot updateNextRewardRound', e)
 		}
 	}
 

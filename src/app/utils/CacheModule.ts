@@ -112,7 +112,7 @@ export class CacheModule {
 				? data[i].validatorindex
 				: Object.prototype.hasOwnProperty.call(current, 'index')
 				? data[i].index
-				: console.error('[CacheModule] can not store cache entry - no index')
+				: console.error('[CacheModule] cannot store cache entry - no index')
 			if (!index) return
 			this.putCache(prefix + index, current)
 		}

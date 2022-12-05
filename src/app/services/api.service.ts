@@ -116,7 +116,7 @@ export class ApiService extends CacheModule {
 			console.log('Token expired, refreshing...', user.expiresIn)
 			user = await this.refreshToken()
 			if (!user || !user.accessToken) {
-				// logout logic if token can not be refreshed again within an 12 hour window
+				// logout logic if token cannot be refreshed again within an 12 hour window
 				const markForLogout = await this.storage.getItem('mark_for_logout')
 				const markForLogoutInt = parseInt(markForLogout)
 				if (!isNaN(markForLogoutInt) && markForLogoutInt + 12 * 60 * 1000 < Date.now()) {

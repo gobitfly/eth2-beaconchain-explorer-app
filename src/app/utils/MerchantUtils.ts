@@ -114,7 +114,7 @@ export class MerchantUtils {
 			this.initCustomValidator()
 			this.setupListeners()
 		} catch (e) {
-			console.warn('MerchantUtils can not be initialized', e)
+			console.warn('MerchantUtils cannot be initialized', e)
 		}
 	}
 

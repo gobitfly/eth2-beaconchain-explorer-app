@@ -42,7 +42,7 @@ export class MachinechartComponent implements OnInit {
 
 		setTimeout(() => {
 			try {
-				if (this.chartData && this.chartData.Data.length == 1 && this.chartData.Error == 'system_missing') {
+				if (this.chartData && this.chartData.Error == 'system_missing') {
 					this.specificError = 'system_missing'
 					this.chartError = true
 					return
@@ -51,6 +51,7 @@ export class MachinechartComponent implements OnInit {
 
 				this.chartError = this.chartData.Data.length <= 0 || this.chartData.Data[0].data.length <= 1
 			} catch (e) {
+				console.warn("cannot get chart data", e)
 				this.chartError = true
 			}
 		}, 400 + priorityDelay)
