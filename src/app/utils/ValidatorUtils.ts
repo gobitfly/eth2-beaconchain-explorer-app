@@ -35,6 +35,7 @@ import {
 	RocketPoolNetworkStats,
 	ExecutionResponse,
 	SyncCommitteeResponse,
+	ETH1ValidatorResponse,
 } from '../requests/requests'
 import { CacheModule } from './CacheModule'
 import { MerchantUtils } from './MerchantUtils'
@@ -357,7 +358,7 @@ export class ValidatorUtils extends CacheModule {
         console.log("request cached, return processed cached data", cached)
         if (cached != null && cached.length > 0 && this.lastFreshTime + 6 * 60 * 1000 > Date.now()) return cached
 */
-		const request = new DashboardRequest(validators)
+		const request = new DashboardRequest(...validators)
 		const response = await this.api.execute(request)
 
 		if (!request.wasSuccessful(response)) {
@@ -476,9 +477,9 @@ export class ValidatorUtils extends CacheModule {
 		return result
 	}
 
-	async getRemoteValidatorInfo(...args: any): Promise<ValidatorResponse[]> {
+	async getRemoteValidatorInfo(...args: number[]): Promise<ValidatorResponse[]> {
 		if (!args || !args[0]) return []
-		const request = new ValidatorRequest(args)
+		const request = new ValidatorRequest(...args)
 		const response = await this.api.execute(request)
 		if (request.wasSuccessful(response)) {
 			return request.parse(response)
@@ -591,12 +592,13 @@ export class ValidatorUtils extends CacheModule {
 	}
 }
 
-export function getValidatorQueryString(validators: any[], getParamMaxLimit: number, maxValLimit = -1) {
+export function getValidatorQueryString(validators: Validator[] | ETH1ValidatorResponse[], getParamMaxLimit: number, maxValLimit = -1) {
 	// Validator
 	let erg = ''
 	let count = 0
 	validators.forEach((item) => {
 		let temp = ''
+
 		if (item.validatorindex !== undefined && item.validatorindex != null) {
 			temp = item.validatorindex + ','
 		} else if (item.index !== undefined && item.index != null) {

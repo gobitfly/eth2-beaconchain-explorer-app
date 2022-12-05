@@ -53,7 +53,7 @@ export class BlockUtils extends CacheModule {
 	}
 
 	async getBlocksBy(validatorIndex: number[], offset: number): Promise<BlockResponse[]> {
-		const request = new BlockProducedByRequest(offset, 25, validatorIndex)
+		const request = new BlockProducedByRequest(offset, 25, ...validatorIndex)
 		const response = await this.api.execute(request)
 		const result = request.parse(response)
 		return result

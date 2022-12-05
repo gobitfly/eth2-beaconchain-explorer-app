@@ -222,7 +222,7 @@ export class NotificationBase implements OnInit {
 		}
 
 		if (this.notify == false) {
-			for (const [key, value] of this.notifyTogglesMap) {
+			for (const key of this.notifyTogglesMap.keys()) {
 				this.notifyTogglesMap.set(key, this.notify)
 			}
 		}

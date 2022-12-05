@@ -64,7 +64,7 @@ export class ValidatorSyncUtils {
 			return
 		}
 
-		const newValidators = await this.validator.getRemoteValidatorInfo(newValidatorIndizes).catch((err) => {
+		const newValidators = await this.validator.getRemoteValidatorInfo(...newValidatorIndizes).catch((err) => {
 			console.warn('error in syncDown getRemoteValidatorInfo', err)
 			return null
 		})

@@ -19,11 +19,12 @@
  */
 
 import { StorageService } from '../services/storage.service'
+import { Validator } from './ValidatorUtils'
 
 interface CachedData {
 	maxStaleTime: number
 	time: number
-	data: any
+	data: unknown
 }
 
 export class CacheModule {
@@ -31,7 +32,7 @@ export class CacheModule {
 
 	private keyPrefix = ''
 	private hardStorage: StorageService = null
-	initialized: Promise<any>
+	initialized: Promise<Map<string, CachedData>>
 
 	constructor(keyPrefix = '', staleTime = 6 * 60 * 1000, hardStorage: StorageService = null) {
 		this.keyPrefix = keyPrefix
@@ -43,13 +44,13 @@ export class CacheModule {
 	async init() {
 		if (this.hardStorage) {
 			this.hardStorage.setObject('cachemodule_' + this.keyPrefix, null)
-			this.initialized = this.hardStorage.getObject('cachemodule2_' + this.keyPrefix)
+			this.initialized = this.hardStorage.getObject('cachemodule2_' + this.keyPrefix) as Promise<Map<string, CachedData>>
 			const result = await this.initialized
 			if (result) this.cache = result
 			console.log('[CacheModule] initialized with ', this.cache)
 		} else {
-			this.initialized = new Promise<void>((resolve) => {
-				resolve()
+			this.initialized = new Promise<Map<string, CachedData>>((resolve) => {
+				resolve(new Map<string, CachedData>())
 			})
 			await this.initialized
 		}
@@ -58,7 +59,7 @@ export class CacheModule {
 	private cache: Map<string, CachedData> = new Map()
 	private hotOnly: Map<string, CachedData> = new Map()
 
-	protected putCache(key: string, data: any, staleTime = this.staleTime) {
+	protected putCache(key: string, data: unknown, staleTime = this.staleTime) {
 		const cacheKey = this.getKey(key)
 
 		// rationale: don't store big data objects in hardStorage due to severe performance impacts
@@ -101,18 +102,14 @@ export class CacheModule {
 		return temp.data
 	}
 
-	protected cacheMultiple(prefix: string, data: any[]) {
+	protected cacheMultiple(prefix: string, data: Validator[]) {
 		if (!data || data.length <= 0) {
 			console.log('[CacheModule] ignore cache attempt of empty data set', data)
 			return
 		}
 		for (let i = 0; i < data.length; i++) {
 			const current = data[i]
-			const index = Object.prototype.hasOwnProperty.call(current, 'validatorindex')
-				? data[i].validatorindex
-				: Object.prototype.hasOwnProperty.call(current, 'index')
-				? data[i].index
-				: console.error('[CacheModule] cannot store cache entry - no index')
+			const index = data[i].index
 			if (!index) return
 			this.putCache(prefix + index, current)
 		}

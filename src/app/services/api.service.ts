@@ -28,7 +28,7 @@ import { findConfigForKey, MAP } from '../utils/NetworkData'
 import { Http, HttpResponse } from '@capacitor-community/http'
 import { CacheModule } from '../utils/CacheModule'
 import axios, { AxiosResponse } from 'axios'
-import { Device } from '@capacitor/device'
+import { HttpOptions } from '@capacitor/core'
 
 const LOGTAG = '[ApiService]'
 
@@ -193,7 +193,7 @@ export class ApiService extends CacheModule {
 		return test
 	}
 
-	private async getCacheKey(request: APIRequest<any>): Promise<string> {
+	private async getCacheKey(request: APIRequest<unknown>): Promise<string> {
 		if (request.method == Method.GET) {
 			return request.method + (await this.getResourceUrl(request.resource, request.endPoint))
 		} else if (request.cacheablePOST) {
@@ -202,7 +202,7 @@ export class ApiService extends CacheModule {
 		return null
 	}
 
-	async execute(request: APIRequest<any>): Promise<Response> {
+	async execute(request: APIRequest<unknown>): Promise<Response> {
 		await this.initialized
 
 		if (!this.connectionStateOK) {
@@ -210,7 +210,7 @@ export class ApiService extends CacheModule {
 		}
 
 		// If cached and not stale, return cache
-		const cached = await this.getCache(await this.getCacheKey(request))
+		const cached = await this.getCache(await this.getCacheKey(request)) as Response
 		if (cached) {
 			if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
 			cached.cached = true
@@ -287,7 +287,7 @@ export class ApiService extends CacheModule {
 		return result
 	}
 
-	async clearSpecificCache(request: APIRequest<any>) {
+	async clearSpecificCache(request: APIRequest<unknown>) {
 		this.putCache(await this.getCacheKey(request), null, request.maxCacheAge)
 	}
 
@@ -297,7 +297,7 @@ export class ApiService extends CacheModule {
 		}
 	}
 
-	private async get(resource: string, endpoint = 'default', ignoreFails = false, options = { headers: {} }) {
+	private async get(resource: string, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
 		const getOptions = {
 			url: await this.getResourceUrl(resource, endpoint),
 			method: 'get',
@@ -311,7 +311,7 @@ export class ApiService extends CacheModule {
 			.then((response: Response) => this.validateResponse(ignoreFails, response))
 	}
 
-	private async post(resource: string, data: any, endpoint = 'default', ignoreFails = false, options = { headers: {} }) {
+	private async post(resource: string, data: unknown, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
 		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
 			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentType(data) } }
 		}
@@ -330,17 +330,18 @@ export class ApiService extends CacheModule {
 			.then((response: Response) => this.validateResponse(ignoreFails, response))
 	}
 
-	private async legacyGet(resource: string, endpoint = 'default', ignoreFails = false, options = { headers: {} }) {
+	private async legacyGet(resource: string, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
 		return this.httpLegacy
 			.get(await this.getResourceUrl(resource, endpoint), options)
 			.catch((err) => {
 				this.updateConnectionState(ignoreFails, false)
 				console.warn('Connection err', err)
 			})
-			.then((response: AxiosResponse<any>) => this.validateResponseLegacy(ignoreFails, response))
+			.then((response: AxiosResponse<unknown>) => this.validateResponseLegacy(ignoreFails, response))
 	}
 
-	private async legacyPost(resource: string, data: any, endpoint = 'default', ignoreFails = false, options = { headers: {} }) {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	private async legacyPost(resource: string, data: unknown, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
 		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
 			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentType(data) } }
 		}
@@ -364,22 +365,12 @@ export class ApiService extends CacheModule {
 		}
 	}
 
-	private async isIOS15(): Promise<boolean> {
-		const osVersion = (await Device.getInfo()).osVersion
-		if (!osVersion) return false
-		const splitVersion = osVersion.split('.')
-		if (!splitVersion || splitVersion.length < 1) return false
-		const majorVersion = parseInt(splitVersion[0])
-		if (isNaN(majorVersion)) return false
-		return (await Device.getInfo()).platform == 'ios' && majorVersion >= 15
-	}
-
-	private getContentType(data: any): string {
+	private getContentType(data: unknown): string {
 		if (data instanceof FormDataContainer) return 'application/x-www-form-urlencoded'
 		return 'application/json'
 	}
 
-	private formatPostData(data: any) {
+	private formatPostData(data: unknown) {
 		if (data instanceof FormDataContainer) return data.getBody()
 		return data
 	}
@@ -390,7 +381,7 @@ export class ApiService extends CacheModule {
 		console.log(LOGTAG + ' setting status', working)
 	}
 
-	private validateResponseLegacy(ignoreFails, response: AxiosResponse<any>): Response {
+	private validateResponseLegacy(ignoreFails, response: AxiosResponse<unknown>): Response {
 		if (!response || !response.data) {
 			// || !response.data.data
 			this.updateConnectionState(ignoreFails, false)

@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core'
 import { ModalController } from '@ionic/angular'
+import { Options } from 'highcharts'
 import { fromEvent, Subscription } from 'rxjs'
 import { StorageService } from 'src/app/services/storage.service'
 import MachineController, { ProcessedStats, bytes, FallbackConfigurations, MachineChartData } from '../../controllers/MachineController'
@@ -15,37 +16,37 @@ export class MachineDetailPage extends MachineController implements OnInit {
 	@Input() timeframe: number
 	@Input() selectedTab = 'cpu'
 
-	cpuDelegate = (data) => {
+	cpuDelegate = (data: ProcessedStats) => {
 		return this.doCPUCharts(data)
 	}
-	cpuSystemDelegate = (data) => {
+	cpuSystemDelegate = (data: ProcessedStats) => {
 		return this.doCPUSystemCharts(data)
 	}
-	memoryDelegate = (data) => {
+	memoryDelegate =  (data: ProcessedStats) => {
 		return this.doMemoryCharts(data)
 	}
-	syncDelegate = (data) => {
+	syncDelegate =  (data: ProcessedStats) => {
 		return this.doSyncCharts(data)
 	}
-	diskDelegate = (data) => {
+	diskDelegate =  (data: ProcessedStats) => {
 		return this.doDiskCharts(data)
 	}
-	diskIoDelegate = (data) => {
+	diskIoDelegate =  (data: ProcessedStats) => {
 		return this.doDiskIoUsageCharts(data)
 	}
-	networkDelegate = (data) => {
+	networkDelegate =  (data: ProcessedStats) => {
 		return this.doNetworkCharts(data)
 	}
-	memorySystemDelegate = (data) => {
+	memorySystemDelegate = (data: ProcessedStats) => {
 		return this.doMemorySystemCharts(data)
 	}
-	peerDelegate = (data) => {
+	peerDelegate = (data: ProcessedStats) => {
 		return this.doPeerCharts(data)
 	}
-	beaconchainSizeDelegate = (data) => {
+	beaconchainSizeDelegate = (data: ProcessedStats) => {
 		return this.doBeaconchainSizeChart(data)
 	}
-	validatorDelegate = (data) => {
+	validatorDelegate = (data: ProcessedStats) => {
 		return this.doValidatorChart(data)
 	}
 
@@ -559,7 +560,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 							},
 						},
 					},
-				},
+				} as Options,
 			},
 		} as MachineChartData
 	}
@@ -612,7 +613,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		} as MachineChartData
 	}
 
-	getDiskFullTimeEstimate(data: any[]): number {
+	getDiskFullTimeEstimate(data: number[][]): number {
 		const amount = data[data.length - 1][1] - data[0][1]
 		const tsDiff = Math.abs(data[data.length - 1][0] - data[0][0])
 		if (amount > 0) return 0

@@ -18,13 +18,14 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Options } from 'highcharts'
 import { HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from '../services/storage.service'
 
 const OFFLINE_THRESHOLD = 8 * 60 * 1000
 
 export interface MachineChartData {
 	Data: Highcharts.SeriesAreaOptions[]
-	Config: any
+	Config: MachineChartConfig
 	Error: string
 }
 
@@ -62,7 +63,7 @@ export default class MachineController {
 						},
 					},
 				},
-			},
+			} as Options
 		}
 	}
 
@@ -85,7 +86,7 @@ export default class MachineController {
 							return this.value
 						},
 					},
-				},
+				} as Options
 			},
 		}
 	}
@@ -136,7 +137,7 @@ export default class MachineController {
 		const chartData = []
 
 		if (!current) return { Data: chartData } as MachineChartData
-		if (!current.system) return { Data: chartData, Error: 'system_missing' } as MachineChartData
+		if (!current.system) return { Error: 'system_missing' } as MachineChartData
 
 		const cpuSystemTotal = this.timeAxisChanges(
 			current.system,
@@ -178,20 +179,6 @@ export default class MachineController {
 			})
 		}
 
-		/* if (current && current.system) {
-            chartData.push(
-                {
-                    name: 'CPU: System',
-                    color: '#3FF5ec',
-                    data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }, true),
-                    pointWidth: 25,
-                }
-            )
-        }*/
-		/*
-
-    }*/
-
 		return {
 			Data: chartData,
 			Config: {
@@ -213,7 +200,7 @@ export default class MachineController {
 							},
 						},
 					},
-				},
+				} as Options
 			},
 		} as MachineChartData
 	}
@@ -329,7 +316,7 @@ export default class MachineController {
 							},
 						},
 					},
-				},
+				} as Options
 			},
 		} as MachineChartData
 	}
@@ -455,17 +442,6 @@ export default class MachineController {
 		console.log('getAvgRelativeFrom', Math.round((erg / length) * 10000) / 10000)
 		return Math.round((erg / length) * 10000) / 10000
 	}
-
-	/*protected getLastFromDiffPair<T>(dataArray: T[], callbackValue: (array: T) => (number | unknown)): (number | unknown) {
-		if (!dataArray || dataArray.length <= 0) return null
-		const first = callbackValue(dataArray[dataArray.length - 1])
-		
-			if (dataArray.length <= 2) return null
-			const second = callbackValue(dataArray[dataArray.length - 2])
-			if(typeof first !== 'number' || typeof second !== 'number') return null
-			return Number(first) - Number(second)
-		
-	}*/
 
 	protected getLastFrom<T, V>(dataArray: T[], callbackValue: (array: T) => V): V {
 		if (!dataArray || dataArray.length <= 0) return null
@@ -699,6 +675,10 @@ export const bytes = (function () {
 		return value
 	}
 })()
+
+export interface MachineChartConfig {
+	config: Options
+}
 
 export interface ProcessedStats extends StatsResponse {
 	client: string

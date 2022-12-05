@@ -29,22 +29,22 @@ export class MachinesPage extends MachineController implements OnInit {
 	orderedKeys: string[] = []
 	legacyApi = false
 
-	cpuDelegate = (data) => {
+	cpuDelegate =  (data: ProcessedStats) => {
 		return this.doCPUCharts(data)
 	}
-	memoryDelegate = (data) => {
+	memoryDelegate =  (data: ProcessedStats) => {
 		return this.doMemoryCharts(data)
 	}
-	syncDelegate = (data) => {
+	syncDelegate =  (data: ProcessedStats) => {
 		return this.doSyncCharts(data)
 	}
-	clientFormatter = (data) => {
+	clientFormatter =  (data: ProcessedStats) => {
 		return this.formatClientText(data)
 	}
-	onlineStateDelegate = async (data) => {
+	onlineStateDelegate = async  (data: ProcessedStats) => {
 		return await this.getOnlineState(data)
 	}
-	machineClickDelegate = (data) => {
+	machineClickDelegate =  (data: ProcessedStats) => {
 		return () => {
 			return this.openMachineDetail(data)
 		}

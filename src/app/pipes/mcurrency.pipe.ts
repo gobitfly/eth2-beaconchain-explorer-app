@@ -19,6 +19,7 @@
  */
 
 import { Pipe, PipeTransform } from '@angular/core'
+import BigNumber from 'bignumber.js'
 import { UnitconvService } from '../services/unitconv.service'
 
 @Pipe({
@@ -27,8 +28,8 @@ import { UnitconvService } from '../services/unitconv.service'
 export class McurrencyPipe implements PipeTransform {
 	constructor(private unit: UnitconvService) {}
 
-	transform(value: any, ...args: any[]): any {
+	transform(value: (BigNumber | number | string), ...args: unknown[]): BigNumber | string | number {
 		const displayAble = args.length == 2
-		return this.unit.convert(value, args[0], args[1], displayAble)
+		return this.unit.convert(value, args[0] as string, args[1] as string, displayAble)
 	}
 }

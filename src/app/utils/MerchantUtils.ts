@@ -222,14 +222,14 @@ export class MerchantUtils {
 		const loading = await this.alertService.presentLoading('')
 		loading.present()
 		this.store.order(product).then(
-			async (product) => {
+			async () => {
 				this.restorePurchase = true
 
 				setTimeout(() => {
 					loading.dismiss()
 				}, 1500)
 			},
-			(e) => {
+			(e: unknown) => {
 				loading.dismiss()
 				this.alertService.showError('Purchase failed', `Failed to purchase: ${e}`, PURCHASEUTILS + 1)
 				console.warn('purchase error', e)

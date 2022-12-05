@@ -18,6 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { HttpHeaders, HttpOptions } from '@capacitor/core'
 import BigNumber from 'bignumber.js'
 import { StatsResponse } from '../controllers/MachineController'
 import { Response } from '../services/api.service'
@@ -43,7 +44,12 @@ export abstract class APIRequest<T> {
 		return this.parseBase(response)
 	}
 
+	// Since we use native http and axios we have various response types
+	// Usually you can expect either a Response or a boolean
+	// response.status can be a string though depending on the type of http connector used
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	wasSuccessful(response: any, hasDataStatus = true): boolean {
+		if(typeof response === 'boolean') { return response }
 		if (this.nativeHttp) {
 			if (!response || !response.status) return false
 			return response.status == 200 && (response.data.status == 'OK' || !hasDataStatus)
@@ -65,12 +71,13 @@ export abstract class APIRequest<T> {
 		}
 	}
 
-	options: any = {
+	options: HttpOptions = {
+		url: null, // unused
 		headers: {
 			'Content-Type': 'application/json',
 			Accept: 'application/json',
 			'User-Agent': 'Beaconcha.in Dashboard',
-		},
+		} as HttpHeaders
 	}
 
 	cacheablePOST = false
@@ -302,7 +309,7 @@ export class DashboardRequest extends APIRequest<DashboardResponse> {
 	/**
 	 * @param validator Index or PubKey
 	 */
-	constructor(...validator: any) {
+	constructor(...validator: (number[] | string[])) {
 		super()
 		this.postData = { indicesOrPubkey: validator.join().replace(/\s/g, '') }
 	}
@@ -315,7 +322,7 @@ export class ValidatorRequest extends APIRequest<ValidatorResponse> {
 	/**
 	 * @param validator Index or PubKey
 	 */
-	constructor(...validator: any) {
+	constructor(...validator: (number[] | string[])) {
 		super()
 		this.resource += validator.join().replace(/\s/g, '')
 	}
@@ -348,7 +355,7 @@ export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 	/**
 	 * @param validator Index or PubKey
 	 */
-	constructor(offset: number, limit: number, ...validator: any) {
+	constructor(offset: number, limit: number, ...validator: (number[] | string[])) {
 		super()
 		this.resource += validator.join().replace(/\s/g, '') + '/produced?offset=' + offset + '&limit=' + limit
 	}
@@ -369,7 +376,7 @@ export class DashboardDataRequest extends APIRequest<number[]> {
 	/**
 	 * @param validator Index or PubKey
 	 */
-	constructor(data: 'allbalances' | 'proposals', ...validator: any) {
+	constructor(data: 'allbalances' | 'proposals', ...validator: (number[] | string[])) {
 		super()
 		this.resource += data + '?validators=' + validator.join().replace(/\s/g, '')
 	}
@@ -457,6 +464,7 @@ export class RemoveMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	nativeHttp = false
 
 	options = {
+		url: null, // unused
 		headers: {
 			'Content-Type': 'application/text',
 			Accept: 'application/json',
@@ -482,6 +490,7 @@ export class AddMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	nativeHttp = false
 
 	options = {
+		url: null, // unused
 		headers: {
 			'Content-Type': 'application/text',
 			Accept: 'application/json',
@@ -665,6 +674,7 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 	ignoreFails = true
 	maxCacheAge = 4 * 60 * 60 * 1000
 	options = {
+		url: null, // unused
 		headers: {
 			'Content-Type': 'application/json',
 			Accept: 'application/json',

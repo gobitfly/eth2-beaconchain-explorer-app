@@ -173,7 +173,7 @@ export class UnitconvService {
 		return this.convert(value, from, this.pref)
 	}
 
-	convert(value: BigNumber, from, to, displayable = true) {
+	convert(value: (BigNumber | number | string), from: string, to: string, displayable = true) {
 		if (!value || !from || !to) return value
 
 		const tempValue = value instanceof BigNumber ? value : new BigNumber(value)

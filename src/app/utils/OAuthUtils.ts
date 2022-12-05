@@ -52,14 +52,15 @@ export class OAuthUtils {
 
 	async login(statusCallback: (finished: boolean) => void = null) {
 		return OAuth2Client.authenticate(await this.getOAuthOptions())
-			.then(async (response: any) => {
+			.then(async (response: AccessTokenResponse) => {
 				const loadingScreen = await this.presentLoading()
 				loadingScreen.present()
 
 				let result = response.access_token_response
-				if (!Object.prototype.hasOwnProperty.call(result, 'access_token')) {
-					result = JSON.parse(response.access_token_response)
-				}
+				if (typeof result === 'string') {
+					result = JSON.parse(response.access_token_response as string) 
+				} 
+				result = result as Token
 				const accessToken = result.access_token
 				const refreshToken = result.refresh_token
 
@@ -91,7 +92,7 @@ export class OAuthUtils {
 
 				return true
 			})
-			.catch((reason: any) => {
+			.catch((reason: unknown) => {
 				if (statusCallback) statusCallback(true)
 				console.error('OAuth rejected', reason)
 				Toast.show({
@@ -163,4 +164,13 @@ export class OAuthUtils {
 			},
 		}
 	}
+}
+
+interface AccessTokenResponse {
+	access_token_response: Token | string
+}
+
+interface Token {
+	access_token: string
+	refresh_token: string
 }

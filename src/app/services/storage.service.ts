@@ -223,7 +223,7 @@ export class StorageService extends CacheModule {
 	}
 
 	async getItem(key: string): Promise<string | null> {
-		const cached = await this.getCache(key)
+		const cached = await this.getCache(key) as string
 		if (cached != null) return cached
 
 		const { value } = await Preferences.get({ key: key })
