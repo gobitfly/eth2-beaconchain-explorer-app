@@ -22,19 +22,19 @@ export class MachineDetailPage extends MachineController implements OnInit {
 	cpuSystemDelegate = (data: ProcessedStats) => {
 		return this.doCPUSystemCharts(data)
 	}
-	memoryDelegate =  (data: ProcessedStats) => {
+	memoryDelegate = (data: ProcessedStats) => {
 		return this.doMemoryCharts(data)
 	}
-	syncDelegate =  (data: ProcessedStats) => {
+	syncDelegate = (data: ProcessedStats) => {
 		return this.doSyncCharts(data)
 	}
-	diskDelegate =  (data: ProcessedStats) => {
+	diskDelegate = (data: ProcessedStats) => {
 		return this.doDiskCharts(data)
 	}
-	diskIoDelegate =  (data: ProcessedStats) => {
+	diskIoDelegate = (data: ProcessedStats) => {
 		return this.doDiskIoUsageCharts(data)
 	}
-	networkDelegate =  (data: ProcessedStats) => {
+	networkDelegate = (data: ProcessedStats) => {
 		return this.doNetworkCharts(data)
 	}
 	memorySystemDelegate = (data: ProcessedStats) => {

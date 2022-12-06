@@ -210,7 +210,7 @@ export class ApiService extends CacheModule {
 		}
 
 		// If cached and not stale, return cache
-		const cached = await this.getCache(await this.getCacheKey(request)) as Response
+		const cached = (await this.getCache(await this.getCacheKey(request))) as Response
 		if (cached) {
 			if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
 			cached.cached = true
@@ -341,7 +341,13 @@ export class ApiService extends CacheModule {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	private async legacyPost(resource: string, data: unknown, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
+	private async legacyPost(
+		resource: string,
+		data: unknown,
+		endpoint = 'default',
+		ignoreFails = false,
+		options: HttpOptions = { url: null, headers: {} }
+	) {
 		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
 			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentType(data) } }
 		}
