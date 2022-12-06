@@ -18,8 +18,10 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { HttpHeaders, HttpOptions } from '@capacitor/core'
 import BigNumber from 'bignumber.js'
 import { StatsResponse } from '../controllers/MachineController'
+import { Response } from '../services/api.service'
 
 export enum Method {
 	GET,
@@ -28,21 +30,26 @@ export enum Method {
 
 export interface APIResponse {
 	status: string
-	data: any
+	data: unknown
 }
 
 export abstract class APIRequest<T> {
 	abstract resource: string
 	abstract method: Method
 
-	endPoint: string = 'default'
-	postData?: any
+	endPoint = 'default'
+	postData?: unknown
 
-	parse(response: any): T[] {
+	parse(response: Response): T[] {
 		return this.parseBase(response)
 	}
 
-	wasSuccessfull(response: any, hasDataStatus = true): boolean {
+	// Since we use native http and axios we have various response types
+	// Usually you can expect either a Response or a boolean
+	// response.status can be a string though depending on the type of http connector used
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	wasSuccessful(response: any, hasDataStatus = true): boolean {
+		if(typeof response === 'boolean') { return response }
 		if (this.nativeHttp) {
 			if (!response || !response.status) return false
 			return response.status == 200 && (response.data.status == 'OK' || !hasDataStatus)
@@ -51,8 +58,8 @@ export abstract class APIRequest<T> {
 		}
 	}
 
-	protected parseBase(response: any, hasDataStatus = true): T[] {
-		if (!this.wasSuccessfull(response, hasDataStatus)) {
+	protected parseBase(response: Response, hasDataStatus = true): T[] {
+		if (!this.wasSuccessful(response, hasDataStatus)) {
 			return []
 		}
 
@@ -64,12 +71,13 @@ export abstract class APIRequest<T> {
 		}
 	}
 
-	options: any = {
+	options: HttpOptions = {
+		url: null, // unused
 		headers: {
 			'Content-Type': 'application/json',
 			Accept: 'application/json',
 			'User-Agent': 'Beaconcha.in Dashboard',
-		},
+		} as HttpHeaders
 	}
 
 	cacheablePOST = false
@@ -301,7 +309,7 @@ export class DashboardRequest extends APIRequest<DashboardResponse> {
 	/**
 	 * @param validator Index or PubKey
 	 */
-	constructor(...validator: any) {
+	constructor(...validator: (number[] | string[])) {
 		super()
 		this.postData = { indicesOrPubkey: validator.join().replace(/\s/g, '') }
 	}
@@ -314,7 +322,7 @@ export class ValidatorRequest extends APIRequest<ValidatorResponse> {
 	/**
 	 * @param validator Index or PubKey
 	 */
-	constructor(...validator: any) {
+	constructor(...validator: (number[] | string[])) {
 		super()
 		this.resource += validator.join().replace(/\s/g, '')
 	}
@@ -332,55 +340,13 @@ export class ValidatorETH1Request extends APIRequest<ETH1ValidatorResponse> {
 		this.resource += ethAddress.replace(/\s/g, '')
 	}
 }
-/*
-export class PerformanceRequest extends APIRequest<PerformanceResponse> {
-  resource = "validator/";
-  method = Method.GET;
-  updatesLastRefreshState = true
-
-
-  constructor(...validator: any) {
-    super()
-    this.resource += validator.join().replace(/\s/g, "") + "/performance";
-  }
-}
-*/
-
-export class AttestationPerformanceRequest extends APIRequest<AttestationPerformanceResponse> {
-	resource = 'validator/'
-	method = Method.GET
-	updatesLastRefreshState = true
-	ignoreFails = true
-
-	/**
-	 * @param validator Index or PubKey
-	 */
-	constructor(...validator: any) {
-		super()
-		this.resource += validator.join().replace(/\s/g, '') + '/attestationefficiency'
-	}
-}
-
-export class BalanceHistoryRequest extends APIRequest<BalanceHistoryResponse> {
-	resource = 'validator/'
-	method = Method.GET
-
-	/**
-	 * @param validator Index or PubKey
-	 */
-	constructor(...validator: any) {
-		super()
-		this.resource += validator.join().replace(/\s/g, '') + '/balancehistory'
-	}
-}
-
 export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 	resource = 'execution/'
 	method = Method.GET
 	ignoreFails = true
 
-	parse(response: any): BlockResponse[] {
-		if (!this.wasSuccessfull(response, true)) {
+	parse(response: Response): BlockResponse[] {
+		if (!this.wasSuccessful(response, true)) {
 			return []
 		}
 		return response.data.data
@@ -389,19 +355,19 @@ export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 	/**
 	 * @param validator Index or PubKey
 	 */
-	constructor(offset: number, limit: number, ...validator: any) {
+	constructor(offset: number, limit: number, ...validator: (number[] | string[])) {
 		super()
 		this.resource += validator.join().replace(/\s/g, '') + '/produced?offset=' + offset + '&limit=' + limit
 	}
 }
 
-export class DasboardDataRequest extends APIRequest<any> {
+export class DashboardDataRequest extends APIRequest<number[]> {
 	resource = 'dashboard/data/'
 	method = Method.GET
 	ignoreFails = true
 
-	parse(response: any): any[] {
-		if (!this.wasSuccessfull(response, false)) {
+	parse(response: Response): number[][] {
+		if (!this.wasSuccessful(response, false)) {
 			return []
 		}
 		return response.data
@@ -410,22 +376,9 @@ export class DasboardDataRequest extends APIRequest<any> {
 	/**
 	 * @param validator Index or PubKey
 	 */
-	constructor(data: 'allbalances' | 'proposals', ...validator: any) {
+	constructor(data: 'allbalances' | 'proposals', ...validator: (number[] | string[])) {
 		super()
 		this.resource += data + '?validators=' + validator.join().replace(/\s/g, '')
-	}
-}
-
-export class EpochRequest extends APIRequest<EpochResponse> {
-	resource = 'epoch/'
-	method = Method.GET
-
-	constructor(epoch: string = 'latest') {
-		super()
-		if (epoch != 'latest') {
-			this.ignoreFails = true
-		}
-		this.resource += epoch
 	}
 }
 
@@ -434,12 +387,12 @@ export class EpochRequest extends APIRequest<EpochResponse> {
 export class SetMobileSettingsRequest extends APIRequest<MobileSettingsResponse> {
 	resource = 'user/mobile/settings'
 	method = Method.POST
-	postData: any
+
 	requiresAuth = true
 	ignoreFails = true
 	nativeHttp = false
 
-	parse(response: any): MobileSettingsResponse[] {
+	parse(response: Response): MobileSettingsResponse[] {
 		if (!response || !response.data) return null
 		return response.data as MobileSettingsResponse[]
 	}
@@ -496,7 +449,7 @@ export class GetMyMachinesRequest extends APIRequest<StatsResponse> {
 	requiresAuth = true
 	ignoreFails = true
 
-	constructor(offset: number = 0, limit: number = 180) {
+	constructor(offset = 0, limit = 180) {
 		super()
 		this.resource += '/' + offset + '/' + limit
 	}
@@ -510,14 +463,15 @@ export class RemoveMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	ignoreFails = true
 	nativeHttp = false
 
-	options: any = {
+	options = {
+		url: null, // unused
 		headers: {
 			'Content-Type': 'application/text',
 			Accept: 'application/json',
 		},
 	}
 
-	parse(response: any): ApiTokenResponse[] {
+	parse(response: Response): ApiTokenResponse[] {
 		if (!response || !response.data) return null
 		return response.data as ApiTokenResponse[]
 	}
@@ -532,18 +486,18 @@ export class AddMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	resource = 'user/dashboard/save'
 	method = Method.POST
 	requiresAuth = true
-	postData: any
 	ignoreFails = true
 	nativeHttp = false
 
-	options: any = {
+	options = {
+		url: null, // unused
 		headers: {
 			'Content-Type': 'application/text',
 			Accept: 'application/json',
 		},
 	}
 
-	parse(response: any): ApiTokenResponse[] {
+	parse(response: Response): ApiTokenResponse[] {
 		if (!response || !response.data) return null
 		return response.data as ApiTokenResponse[]
 	}
@@ -558,14 +512,14 @@ export class NotificationGetRequest extends APIRequest<NotificationGetResponse> 
 	resource = 'user/notifications'
 	method = Method.GET
 	requiresAuth = true
-	postData: any = {}
+	postData = {}
 	ignoreFails = true
 
 	constructor() {
 		super()
 	}
 
-	parse(response: any): NotificationGetResponse[] {
+	parse(response: Response): NotificationGetResponse[] {
 		if (!response || !response.data || !response.data.data) return null
 		return response.data.data as NotificationGetResponse[]
 	}
@@ -578,7 +532,7 @@ export class NotificationSubsRequest extends APIRequest<ApiTokenResponse> {
 	resource = 'user/notifications/'
 	method = Method.POST
 	requiresAuth = true
-	postData: any = {}
+	postData = {}
 	ignoreFails = true
 
 	constructor(eventName: string, filter: string = null, enabled: boolean) {
@@ -604,7 +558,7 @@ export class NotificationBundleSubsRequest extends APIRequest<ApiTokenResponse> 
 	resource = 'user/notifications/bundled/'
 	method = Method.POST
 	requiresAuth = true
-	postData: any = {}
+	postData = {}
 	ignoreFails = true
 	nativeHttp = false
 
@@ -619,11 +573,10 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 	resource = 'user/token'
 	method = Method.POST
 	requiresAuth = true
-	postData: any
 	ignoreFails = true
 	maxCacheAge = 1000
 
-	parse(response: any): ApiTokenResponse[] {
+	parse(response: Response): ApiTokenResponse[] {
 		if (response && response.data) return [response.data] as ApiTokenResponse[]
 		else return []
 	}
@@ -640,12 +593,11 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 export class UpdateTokenRequest extends APIRequest<APIResponse> {
 	resource = 'user/mobile/notify/register'
 	method = Method.POST
-	postData: any
 	requiresAuth = true
 	ignoreFails = true
 	nativeHttp = false
 
-	parse(response: any): APIResponse[] {
+	parse(response: Response): APIResponse[] {
 		if (response && response.data) return response.data as APIResponse[]
 		return null
 	}
@@ -658,7 +610,7 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 
 // ------------ Special external api requests -----------------
 
-export class AdSeenRequest extends APIRequest<any> {
+export class AdSeenRequest extends APIRequest<unknown> {
 	endPoint = 'https://request-global.czilladx.com'
 
 	resource = ''
@@ -682,8 +634,8 @@ export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
 	maxCacheAge = 4 * 60 * 1000
 	nativeHttp = false
 
-	parse(response: any): CoinzillaAdResponse[] {
-		if (!this.wasSuccessfull(response, false) || !response || !response.data || !response.data.ad) {
+	parse(response: Response): CoinzillaAdResponse[] {
+		if (!this.wasSuccessful(response, false) || !response || !response.data || !response.data.ad) {
 			return []
 		}
 
@@ -704,7 +656,7 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
 	ignoreFails = true
 	maxCacheAge = 40 * 60 * 1000
 
-	parse(response: any): CoinbaseExchangeResponse[] {
+	parse(response: Response): CoinbaseExchangeResponse[] {
 		return this.parseBase(response, false)
 	}
 
@@ -722,6 +674,7 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 	ignoreFails = true
 	maxCacheAge = 4 * 60 * 60 * 1000
 	options = {
+		url: null, // unused
 		headers: {
 			'Content-Type': 'application/json',
 			Accept: 'application/json',
@@ -729,8 +682,8 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 		},
 	}
 
-	parse(response: any): GithubReleaseResponse[] {
-		if (!this.wasSuccessfull(response, false)) {
+	parse(response: Response): GithubReleaseResponse[] {
+		if (!this.wasSuccessful(response, false)) {
 			return []
 		}
 
@@ -751,8 +704,8 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 export default class {}
 
 export class FormDataContainer {
-	private data: any
-	constructor(data: any) {
+	private data: unknown
+	constructor(data: unknown) {
 		this.data = data
 	}
 

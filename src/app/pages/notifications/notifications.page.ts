@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { Router } from '@angular/router'
-import { IonRange, ModalController, Platform } from '@ionic/angular'
+import { ModalController, Platform } from '@ionic/angular'
 import { AlertService } from 'src/app/services/alert.service'
 import { ApiService } from 'src/app/services/api.service'
 import { CPU_THRESHOLD, HDD_THRESHOLD, OFFLINE_THRESHOLD, RAM_THRESHOLD, StorageService } from 'src/app/services/storage.service'
@@ -19,7 +19,7 @@ import { Browser } from '@capacitor/browser'
 	styleUrls: ['./notifications.page.scss'],
 })
 export class NotificationsPage extends NotificationBase implements OnInit {
-	network: string = 'main'
+	network = 'main'
 	authUser = null
 
 	canCustomizeThresholds = false
@@ -27,9 +27,9 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 	initialized = false
 
 	allMachines: Promise<string[]>
-	noMachines: boolean = true
+	noMachines = true
 
-	unsupportedPrysm: boolean = false
+	unsupportedPrysm = false
 
 	noGoogle = false
 
@@ -83,7 +83,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 		this.api.getNetworkName().then((result) => {
 			this.network = this.api.capitalize(result)
 		})
-		this.merchantUtils.hasCustomizeableNotifications().then((result) => {
+		this.merchantUtils.hasCustomizableNotifications().then((result) => {
 			this.canCustomizeThresholds = result
 		})
 
@@ -123,7 +123,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 	changeRocketpoolMaxCollateral() {
 		if (!this.initialized) return
 
-		var thresholdConv = 0
+		let thresholdConv = 0
 		if (this.maxCollateralThreshold >= 0) {
 			thresholdConv = 1 + (this.maxCollateralThreshold - 100) / 1000
 		} else {
@@ -141,7 +141,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 	}
 
 	async notifyEventToggleAllMachines(event: string, threshold: number = null) {
-		let array = await this.allMachines
+		const array = await this.allMachines
 		array.forEach((machine) => {
 			this.notifyEventFilterToggle(event, machine, threshold)
 		})
@@ -149,7 +149,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 
 	async ngOnInit() {
 		this.allMachines = this.machineUtils.getAllMachineNames()
-		let result = await this.allMachines
+		const result = await this.allMachines
 		this.noMachines = result.length == 0
 	}
 
@@ -168,6 +168,4 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 		})
 		return await modal.present()
 	}
-
-	ionViewWillLeave() {}
 }

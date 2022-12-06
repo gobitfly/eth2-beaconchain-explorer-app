@@ -56,11 +56,11 @@ export class StorageService extends CacheModule {
 	}
 
 	async restoreAuthUser() {
-		return this.setAuthUser(await this.getObject(AUTH_USER + '_backup'))
+		return this.setAuthUser((await this.getObject(AUTH_USER + '_backup')) as StorageTypes.AuthUser)
 	}
 
 	async getAuthUser(): Promise<StorageTypes.AuthUser> {
-		return this.getObject(AUTH_USER)
+		return this.getObject(AUTH_USER) as Promise<StorageTypes.AuthUser>
 	}
 
 	async setAuthUser(value: StorageTypes.AuthUser) {
@@ -82,7 +82,7 @@ export class StorageService extends CacheModule {
 		if (!result) {
 			return findConfigForKey('main')
 		}
-		return result
+		return result as Promise<StorageTypes.ApiNetwork>
 	}
 
 	async setNetworkPreferences(value: StorageTypes.ApiNetwork) {
@@ -97,7 +97,7 @@ export class StorageService extends CacheModule {
 	}
 
 	getPremiumPackage(): Promise<PremiumObject> {
-		return this.getObject('PREMIUM')
+		return this.getObject('PREMIUM') as Promise<PremiumObject>
 	}
 
 	async loadPreferencesToggles(network: string): Promise<boolean> {
@@ -109,17 +109,17 @@ export class StorageService extends CacheModule {
 		this.setSetting(key, value)
 	}
 
-	getBooleanSetting(key: string, defaultV: boolean = true) {
-		return this.getSetting(key, defaultV)
+	getBooleanSetting(key: string, defaultV = true): Promise<boolean> {
+		return this.getSetting(key, defaultV) as Promise<boolean>
 	}
 
 	setSetting(key, value) {
-		this.setObject(key, { value: value })
+		this.setObject(key, { value: value } as ValueWrapper)
 	}
 
-	getSetting(key: string, defaultV: any = 0) {
+	getSetting(key: string, defaultV: unknown = 0) {
 		return this.getObject(key).then((result) => {
-			if (result) return result.value
+			if (result) return (result as ValueWrapper).value
 			return defaultV
 		})
 	}
@@ -140,27 +140,27 @@ export class StorageService extends CacheModule {
 	}
 
 	async setLastEpochRequestTime(time: number) {
-		await this.setObject('last_epoch_time', { ts: time })
+		await this.setObject('last_epoch_time', { ts: time } as EpochRequestTime)
 	}
 
 	async getLastEpochRequestTime() {
-		const result = await this.getObject('last_epoch_time')
+		const result = (await this.getObject('last_epoch_time')) as EpochRequestTime
 		if (!result || !result.ts) return Date.now()
 		return result.ts
 	}
 
 	async migrateToCapacitor3() {
 		if (!this.platform.is('ios')) return
-		let alreadyMigrated = await this.getBooleanSetting('migrated_to_cap3', false)
+		const alreadyMigrated = await this.getBooleanSetting('migrated_to_cap3', false)
 		if (!alreadyMigrated) {
 			console.log('migrating to capacitor 3 storage...')
-			let result = await Preferences.migrate()
+			await Preferences.migrate()
 			this.setBooleanSetting('migrated_to_cap3', true)
 		}
 	}
 
 	async openLogSession(modalCtr, offset: number) {
-		var lastLogSession = parseInt(await window.localStorage.getItem('last_log_session'))
+		let lastLogSession = parseInt(await window.localStorage.getItem('last_log_session'))
 		if (isNaN(lastLogSession)) lastLogSession = 0
 
 		const modal = await modalCtr.create({
@@ -179,12 +179,12 @@ export class StorageService extends CacheModule {
 
 	// --- Low level ---
 
-	async setObject(key: string, value: any) {
+	async setObject(key: string, value: unknown) {
 		this.putCache(key, value)
 		await this.setItem(key, JSON.stringify(value, replacer), false)
 	}
 
-	async getObject(key: string): Promise<any | null> {
+	async getObject(key: string): Promise<unknown | null> {
 		const cached = await this.getCache(key)
 		if (cached != null) return cached
 
@@ -193,7 +193,7 @@ export class StorageService extends CacheModule {
 		return JSON.parse(value, reviver)
 	}
 
-	async setItem(key: string, value: string, cache: boolean = true) {
+	async setItem(key: string, value: string, cache = true) {
 		if (cache) this.putCache(key, value)
 		await Preferences.set({
 			key: key,
@@ -223,7 +223,7 @@ export class StorageService extends CacheModule {
 	}
 
 	async getItem(key: string): Promise<string | null> {
-		const cached = await this.getCache(key)
+		const cached = await this.getCache(key) as string
 		if (cached != null) return cached
 
 		const { value } = await Preferences.get({ key: key })
@@ -285,20 +285,18 @@ interface PremiumObject {
 	numValidators: number
 }
 
-interface NotificationToggles {
-	notify: boolean
-	notifySlashed: boolean
-	notifyDecreased: boolean
-	notifyClientUpdate: boolean
-	notifyProposalsSubmitted: boolean
-	notifyProposalsMissed: boolean
-	notifyAttestationsMissed: boolean
-	notifyMachineOffline: boolean
-	notifyMachineHddWarn: boolean
-	notifyMachineCpuWarn: boolean
-	notifyMachineMemoryLoad: boolean
-	notifyRPLMaxColletaral: boolean
-	notifyRPLMinColletaral: boolean
-	notifySyncDuty: boolean
-	notifyRPLNewRewardRound: boolean
+interface EpochRequestTime {
+	ts: number
+}
+
+interface ValueWrapper {
+	value: unknown
+}
+
+export interface StoredTimestamp {
+	timestamp: number
+}
+
+export interface StoredShare {
+	share: number
 }

@@ -25,12 +25,12 @@ import BigNumber from 'bignumber.js'
 	name: 'percentageabs',
 })
 export class PercentageabsPipe implements PipeTransform {
-	transform(value_: any, max_: any, percentMode: boolean, preablePrct: string = ''): string {
+	transform(value_: (number | BigNumber), max_: (number | BigNumber), percentMode: boolean, preablePrct = ''): string {
 		const value = value_ instanceof BigNumber ? value_ : new BigNumber(value_)
 		const max = max_ instanceof BigNumber ? max_ : new BigNumber(max_)
 
 		if (percentMode) {
-			var percentValue = value.dividedBy(max).multipliedBy(100).decimalPlaces(1)
+			let percentValue = value.dividedBy(max).multipliedBy(100).decimalPlaces(1)
 			if (percentValue.toNumber() <= 0.1) {
 				percentValue = value.dividedBy(max).multipliedBy(100).decimalPlaces(3)
 			}

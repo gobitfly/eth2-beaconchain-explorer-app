@@ -21,7 +21,7 @@
 import { Component, OnInit, Input, SimpleChange } from '@angular/core'
 import { UnitconvService } from '../../services/unitconv.service'
 import { ApiService } from '../../services/api.service'
-import { DasboardDataRequest, EpochResponse, SyncCommitteeResponse } from '../../requests/requests'
+import { DashboardDataRequest, EpochResponse, SyncCommitteeResponse } from '../../requests/requests'
 import * as HighCharts from 'highcharts'
 import * as Highstock from 'highcharts/highstock'
 import BigNumber from 'bignumber.js'
@@ -57,7 +57,7 @@ export class DashboardComponent implements OnInit {
 	finalizationIssue = false
 	awaitGenesis = false
 	earlyGenesis = false
-	utilizationAvg: number = -1
+	utilizationAvg = -1
 
 	chartData
 	chartDataProposals
@@ -97,7 +97,7 @@ export class DashboardComponent implements OnInit {
 	currentSyncCommitteeMessage: SyncCommitteeMessage = null
 	nextSyncCommitteeMessage: SyncCommitteeMessage = null
 
-	notificationPermissionPending: boolean = false
+	notificationPermissionPending = false
 
 	constructor(
 		public unit: UnitconvService,
@@ -167,21 +167,21 @@ export class DashboardComponent implements OnInit {
 
 				if (!this.data.foreignValidator) {
 					this.checkForFinalization()
-					this.checkForGenesisOccured()
+					this.checkForGenesisOccurred()
 				}
 			}
 		}
 	}
 
 	async epochToTimestamp(epoch: number) {
-		let network = await this.api.getNetwork()
+		const network = await this.api.getNetwork()
 		return (network.genesisTs + epoch * 32 * 12) * 1000
 	}
 
 	async updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			let endTs = await this.epochToTimestamp(committee.end_epoch)
-			let startTs = await this.epochToTimestamp(committee.start_epoch)
+			const endTs = await this.epochToTimestamp(committee.end_epoch)
+			const startTs = await this.epochToTimestamp(committee.start_epoch)
 			this.currentSyncCommitteeMessage = {
 				title: 'Sync Committee',
 				text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${
@@ -199,8 +199,8 @@ export class DashboardComponent implements OnInit {
 
 	async updateNextSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			let endTs = await this.epochToTimestamp(committee.end_epoch)
-			let startTs = await this.epochToTimestamp(committee.start_epoch)
+			const endTs = await this.epochToTimestamp(committee.end_epoch)
+			const startTs = await this.epochToTimestamp(committee.start_epoch)
 			this.nextSyncCommitteeMessage = {
 				title: 'Sync Committee Soon',
 				text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${
@@ -223,23 +223,13 @@ export class DashboardComponent implements OnInit {
 			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber('1e9'))
 			this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber('1e9'))
 			this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
-		} catch (e) {}
+		} catch (e) {
+			console.warn('cannot update smoothing pool', e)
+		}
 	}
 
 	updateRplProjectedClaim() {
 		try {
-			/*const inflationIntervalRate = new BigNumber("1000133680617113500")
-      const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(":")[0]
-      const hoursNumber = parseInt(hoursToAdd)
-      const rewardsIntervalDays = hoursNumber / 24
-      const inflationPerDay = inflationIntervalRate.dividedBy(Unit.WEI.value) //eth.WeiToEth(inflationInterval)
-
-      const totalRplSupply = new BigNumber("18203250540089170224426290")
-      const totalRplSupplyEth = totalRplSupply.dividedBy(Unit.WEI.value).toNumber()
-      var totalRplAtNextCheckpoint = 1 - (Math.pow(inflationPerDay.toNumber(), rewardsIntervalDays) - 1)
-      if (totalRplAtNextCheckpoint < 0) {
-          totalRplAtNextCheckpoint = 0
-      }*/
 			if (this.data.rocketpool.currentRpl.isLessThanOrEqualTo(this.data.rocketpool.minRpl)) {
 				this.rplProjectedClaim = 0
 				return
@@ -247,14 +237,15 @@ export class DashboardComponent implements OnInit {
 
 			const temp = this.getEffectiveRplStake(this.data.rocketpool)
 				.dividedBy(new BigNumber(this.validatorUtils.rocketpoolStats.effective_rpl_staked))
-				//.multipliedBy(new BigNumber(totalRplAtNextCheckpoint.toString()))
 				.multipliedBy(new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards))
 
 			this.rplProjectedClaim = temp
 			if (temp.isLessThanOrEqualTo(new BigNumber('0'))) {
 				this.rplProjectedClaim = null
 			}
-		} catch {}
+		} catch (e) {
+			console.warn('cannot updateRplProjectedClaim', e)
+		}
 	}
 
 	getEffectiveRplStake(data: Rocketpool): BigNumber {
@@ -273,20 +264,26 @@ export class DashboardComponent implements OnInit {
 				.multipliedBy(new BigNumber(36500))
 				.decimalPlaces(2)
 				.toFixed()
-		} catch (e) {}
+		} catch (e) {
+			console.warn('cannot updateRplApr', e)
+		}
 	}
 
 	updateRplCommission() {
 		try {
 			this.rplCommission = Math.round(this.validatorUtils.rocketpoolStats.current_node_fee * 10000) / 100
-		} catch (e) {}
+		} catch (e) {
+			console.warn('cannot updateRplCommission', e)
+		}
 	}
 
 	updateNextRewardRound() {
 		try {
 			const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(':')[0]
 			this.nextRewardRound = this.validatorUtils.rocketpoolStats.claim_interval_time_start * 1000 + parseInt(hoursToAdd) * 60 * 60 * 1000
-		} catch (e) {}
+		} catch (e) {
+			console.warn('cannot updateNextRewardRound', e)
+		}
 	}
 
 	ngOnInit() {
@@ -300,7 +297,7 @@ export class DashboardComponent implements OnInit {
 		})
 	}
 
-	async checkForGenesisOccured() {
+	private async checkForGenesisOccurred() {
 		if (!this.data || !this.data.currentEpoch) return
 		const currentEpoch = this.data.currentEpoch as EpochResponse
 		this.awaitGenesis = currentEpoch.epoch == 0 && currentEpoch.proposedblocks <= 1
@@ -308,7 +305,7 @@ export class DashboardComponent implements OnInit {
 	}
 
 	async checkForFinalization() {
-		const cachedFinalizationIssue = await this.storage.getObject('finalization_issues')
+		const cachedFinalizationIssue = (await this.storage.getObject('finalization_issues')) as FinalizationIssue
 		if (cachedFinalizationIssue) {
 			if (cachedFinalizationIssue.ts && cachedFinalizationIssue.ts + 4 * 60 * 60 * 1000 > Date.now()) {
 				console.log('returning cached finalization issue state', cachedFinalizationIssue)
@@ -321,13 +318,13 @@ export class DashboardComponent implements OnInit {
 		if (!this.data || !this.data.currentEpoch || !olderResult) return
 		console.log('checkForFinalization', olderResult)
 		this.finalizationIssue = new BigNumber(olderResult.globalparticipationrate).isLessThan('0.664') && olderResult.epoch > 7
-		this.storage.setObject('finalization_issues', { ts: Date.now(), value: this.finalizationIssue })
+		this.storage.setObject('finalization_issues', { ts: Date.now(), value: this.finalizationIssue } as FinalizationIssue)
 	}
 
 	async getChartData(data: 'allbalances' | 'proposals') {
 		if (!this.data || !this.data.lazyChartValidators) return null
-		const chartReq = new DasboardDataRequest(data, this.data.lazyChartValidators)
-		const response = await this.api.execute(chartReq).catch((error) => {
+		const chartReq = new DashboardDataRequest(data, this.data.lazyChartValidators)
+		const response = await this.api.execute(chartReq).catch(() => {
 			return null
 		})
 		if (!response) {
@@ -405,9 +402,9 @@ export class DashboardComponent implements OnInit {
 			return
 		}
 
-		var proposed = []
-		var missed = []
-		var orphaned = []
+		const proposed = []
+		const missed = []
+		const orphaned = []
 		this.chartDataProposals.map((d) => {
 			if (d[1] == 1) proposed.push([d[0] * 1000, 1])
 			else if (d[1] == 2) missed.push([d[0] * 1000, 1])
@@ -489,89 +486,95 @@ export class DashboardComponent implements OnInit {
 	}
 
 	createProposedChart(proposed, missed, orphaned) {
-		// @ts-ignore     ¯\_(ツ)_/¯
-		const chart = Highstock.stockChart('highchartsBlocks' + this.randomChartId, {
-			chart: {
-				type: 'column',
-				marginLeft: 0,
-				marginRight: 0,
-				spacingLeft: 0,
-				spacingRight: 0,
-				spacingTop: 10,
-			},
-			legend: {
-				enabled: true,
-			},
-			title: {
-				text: '', //Balance History for all Validators
-			},
-			colors: ['var(--chart-default)', '#ff835c', '#e4a354', '#2b908f', '#f45b5b', '#91e8e1'],
-			xAxis: {
-				lineWidth: 0,
-				tickColor: '#e5e1e1',
-				type: 'datetime',
-				range: 32 * 24 * 60 * 60 * 1000,
-			},
-			yAxis: [
-				{
-					title: {
-						text: '',
-					},
-					allowDecimals: false,
-					opposite: false,
-					labels: {
-						align: 'left',
-						x: 1,
-						y: -2,
-					},
+		Highstock.stockChart(
+			'highchartsBlocks' + this.randomChartId,
+			{
+				chart: {
+					type: 'column',
+					marginLeft: 0,
+					marginRight: 0,
+					spacingLeft: 0,
+					spacingRight: 0,
+					spacingTop: 10,
 				},
-			],
-			tooltip: {
-				style: {
-					color: 'var(--text-color)',
-					fontWeight: 'bold',
+				legend: {
+					enabled: true,
 				},
-			},
-			plotOptions: {
-				series: {
-					dataGrouping: {
-						units: [['day', [1]]],
-						forced: true,
-						enabled: true,
-						groupAll: true,
+				title: {
+					text: '', //Balance History for all Validators
+				},
+				colors: ['var(--chart-default)', '#ff835c', '#e4a354', '#2b908f', '#f45b5b', '#91e8e1'],
+				xAxis: {
+					lineWidth: 0,
+					tickColor: '#e5e1e1',
+					type: 'datetime',
+					range: 32 * 24 * 60 * 60 * 1000,
+				},
+				yAxis: [
+					{
+						title: {
+							text: '',
+						},
+						allowDecimals: false,
+						opposite: false,
+						labels: {
+							align: 'left',
+							x: 1,
+							y: -2,
+						},
+					},
+				],
+				tooltip: {
+					style: {
+						color: 'var(--text-color)',
+						fontWeight: 'bold',
 					},
 				},
-			},
-			series: [
-				{
-					name: 'Proposed',
-					color: 'var(--chart-default)',
-					data: proposed,
-					pointWidth: 5,
+				plotOptions: {
+					series: {
+						dataGrouping: {
+							units: [['day', [1]]],
+							forced: true,
+							enabled: true,
+							groupAll: true,
+						},
+					},
 				},
-				{
-					name: 'Missed',
-					color: '#ff835c',
-					data: missed,
-					pointWidth: 5,
+				series: [
+					{
+						name: 'Proposed',
+						color: 'var(--chart-default)',
+						data: proposed,
+						pointWidth: 5,
+						type: 'column',
+					},
+					{
+						name: 'Missed',
+						color: '#ff835c',
+						data: missed,
+						pointWidth: 5,
+						type: 'column',
+					},
+					{
+						name: 'Orphaned',
+						color: '#e4a354',
+						data: orphaned,
+						pointWidth: 5,
+						type: 'column',
+					},
+				],
+				rangeSelector: {
+					enabled: false,
 				},
-				{
-					name: 'Orphaned',
-					color: '#e4a354',
-					data: orphaned,
-					pointWidth: 5,
+				scrollbar: {
+					enabled: false,
 				},
-			],
-			rangeSelector: {
-				enabled: false,
+				navigator: {
+					enabled: true,
+				},
 			},
-			scrollbar: {
-				enabled: false,
-			},
-			navigator: {
-				enabled: true,
-			},
-		})
+			null
+		)
 	}
 
 	async createBalanceChart(consensusIncome, executionIncome) {
@@ -580,16 +583,16 @@ export class DashboardComponent implements OnInit {
 		const ticksDecimalPlaces = 3
 		const network = await this.api.getNetwork()
 
-		let getValueString = (value: BigNumber): string => {
-			var text = `${value.toFixed(5)} ETH`
+		const getValueString = (value: BigNumber): string => {
+			let text = `${value.toFixed(5)} ETH`
 			if (this.unit.pref != 'ETHER' && network.key == 'main') {
 				text += ` (${this.unit.convertToPref(value, 'ETHER')})`
 			}
 			return text
 		}
 
-		let getEpochString = (timestamp: number): string => {
-			let dateToEpoch = (ts: number): number => {
+		const getEpochString = (timestamp: number): string => {
+			const dateToEpoch = (ts: number): number => {
 				const slot = Math.floor((ts / 1000 - network.genesisTs) / 12)
 				const epoch = Math.floor(slot / 32)
 				return Math.max(0, epoch)
@@ -602,7 +605,6 @@ export class DashboardComponent implements OnInit {
 			return `(Epochs ${startEpoch} - ${endEpoch})<br/>`
 		}
 
-		// @ts-ignore     ¯\_(ツ)_/¯
 		Highstock.chart('highcharts' + this.randomChartId, {
 			exporting: {
 				scale: 1,
@@ -615,7 +617,6 @@ export class DashboardComponent implements OnInit {
 			},
 			chart: {
 				type: 'column',
-				pointInterval: 24 * 3600 * 1000,
 				marginLeft: 0,
 				marginRight: 0,
 				spacingLeft: 0,
@@ -636,16 +637,16 @@ export class DashboardComponent implements OnInit {
 				style: {
 					color: 'var(--text-color)',
 					display: `inline-block`,
-					width: `250px`,
+					width: 250,
 				},
 				shared: true,
 				formatter: (tooltip) => {
 					// date and epoch
-					var text = `${new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString()} ${getEpochString(tooltip.chart.hoverPoints[0].x)}`
+					let text = `${new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString()} ${getEpochString(tooltip.chart.hoverPoints[0].x)}`
 
 					// income
-					var total = new BigNumber(0)
-					for (var i = 0; i < tooltip.chart.hoverPoints.length; i++) {
+					let total = new BigNumber(0)
+					for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
 						const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
 						text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${getValueString(value)}</b><br/>`
 						total = total.plus(value)
@@ -700,7 +701,7 @@ export class DashboardComponent implements OnInit {
 						}
 
 						// only show 3 ticks if min < 0 && max > 0
-						var positions
+						let positions
 						if (min < 0) {
 							if (max < 0) {
 								positions = [min, 0]
@@ -741,7 +742,7 @@ export class DashboardComponent implements OnInit {
 		})
 	}
 
-	onDismissed(event) {
+	onDismissed() {
 		this.updateMergeListDismissed()
 	}
 
@@ -775,4 +776,9 @@ interface Proposals {
 interface SyncCommitteeMessage {
 	title: string
 	text: string
+}
+
+interface FinalizationIssue {
+	ts: number
+	value: boolean
 }

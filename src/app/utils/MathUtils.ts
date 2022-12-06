@@ -33,7 +33,7 @@ export function sumBigInt<T>(validators: T[], field: (cur: T) => BigNumber) {
 }
 
 export function findHighest<T>(validators: T[], field: (cur: T) => number): number {
-	var highest = Number.MIN_SAFE_INTEGER
+	let highest = Number.MIN_SAFE_INTEGER
 	validators.forEach((cur) => {
 		const resolvedField = field(cur)
 		if (resolvedField > highest) highest = resolvedField
@@ -42,7 +42,7 @@ export function findHighest<T>(validators: T[], field: (cur: T) => number): numb
 }
 
 export function findLowest<T>(validators: T[], field: (cur: T) => number): number {
-	var lowest = Number.MAX_SAFE_INTEGER
+	let lowest = Number.MAX_SAFE_INTEGER
 	validators.forEach((cur) => {
 		const resolvedField = field(cur)
 		if (resolvedField < lowest) lowest = resolvedField

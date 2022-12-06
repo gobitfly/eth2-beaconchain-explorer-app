@@ -35,20 +35,20 @@ import FirebaseUtils from 'src/app/utils/FirebaseUtils'
 })
 export class MessageComponent implements OnInit {
 	@Input() title: string
-	@Input() icon: any
-	@Input() iconStyle: any
-	@Input() openUrl: any
-	@Input() openUrlExternal: boolean = false
-	@Input() dismissAble: boolean = false
+	@Input() icon: string
+	@Input() iconStyle: string
+	@Input() openUrl: string
+	@Input() openUrlExternal = false
+	@Input() dismissAble = false
 	@Input() dismissKey: string
-	@Input() msgTitle: any
-	@Input() msgText: any
-	@Input() confettiOnClick: boolean = false
-	@Input() mergeChecklist: boolean = false
-	@Input() notificationPermission: boolean = false
+	@Input() msgTitle: string
+	@Input() msgText: string
+	@Input() confettiOnClick = false
+	@Input() mergeChecklist = false
+	@Input() notificationPermission = false
 	@Output() onResult = new EventEmitter<string>()
 
-	notDismissed: boolean = true
+	notDismissed = true
 
 	constructor(
 		private alertController: AlertController,

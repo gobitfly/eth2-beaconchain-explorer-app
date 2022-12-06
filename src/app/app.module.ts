@@ -31,10 +31,11 @@ import { InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx'
 import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser'
 import 'hammerjs'
 
-declare var Hammer: any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare let Hammer: any
 export class MyHammerConfig extends HammerGestureConfig {
 	buildHammer(element: HTMLElement) {
-		let mc = new Hammer(element, {
+		const mc = new Hammer(element, {
 			touchAction: 'auto',
 		})
 		return mc

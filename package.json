@@ -10,6 +10,7 @@
     "test": "ng test",
     "e2e": "ng e2e",
     "prettier-format": "prettier --config .prettierrc.yml 'src/**/*.{ts,html,scss}' --write",
+    "prettier-check": "prettier -c --config .prettierrc.yml 'src/**/*.{ts,html,scss}'",
     "lint": "eslint . --ext .ts"
   },
   "private": true,

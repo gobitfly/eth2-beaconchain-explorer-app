@@ -104,7 +104,7 @@ export class SyncService {
 		await this.validatorSyncUtils.syncDown()
 	}
 
-	async syncAllSettings(useForce: boolean = false) {
+	async syncAllSettings(useForce = false) {
 		const loggedIn = await this.storage.isLoggedIn()
 		if (!loggedIn) return false
 
@@ -212,16 +212,16 @@ export class SyncService {
 			return this.getClientUpdateSyncAction()
 		}
 
-		return this.getNotifySubSyncAction(key)
+		return this.getNotifySubSyncAction()
 	}
 
 	getGeneralFilter(item: SyncChanged): string {
 		return item.eventFilter
 	}
 
-	getNotifySubSyncAction(key) {
+	getNotifySubSyncAction() {
 		return async (syncChange: SyncChanged, superOnComplete: (boolean) => void) => {
-			var eventFilter = syncChange.eventFilter
+			let eventFilter = syncChange.eventFilter
 			if (eventFilter) {
 				eventFilter = eventFilter.replace('unsub_', '').replace('sub_', '')
 			}
@@ -251,7 +251,7 @@ export class SyncService {
 
 	private getClientUpdateSyncAction() {
 		return async (syncChange: SyncChanged, superOnComplete: (boolean) => void) => {
-			return this.getNotifySubSyncAction(syncChange.eventName)(syncChange, superOnComplete)
+			return this.getNotifySubSyncAction()(syncChange, superOnComplete)
 		}
 	}
 
@@ -265,10 +265,10 @@ export class SyncService {
 
 	private getNetworkBundles(filterEnabled: boolean): NetworkBundle[] {
 		// Prepare by filtering to networks
-		var networkMap = new Map<string, BundleSubWithAction[]>()
+		const networkMap = new Map<string, BundleSubWithAction[]>()
 		this.bundleList.forEach((it) => {
 			if (it.enabled == filterEnabled) {
-				var array: BundleSubWithAction[] = []
+				let array: BundleSubWithAction[] = []
 				if (networkMap.has(it.network)) {
 					array = networkMap.get(it.network)
 				}
@@ -279,7 +279,7 @@ export class SyncService {
 		})
 
 		// Adding all networks in an array for return
-		var result: NetworkBundle[] = []
+		const result: NetworkBundle[] = []
 		networkMap.forEach((value, key) => {
 			result.push({
 				bundles: value,
@@ -295,15 +295,15 @@ export class SyncService {
 	}
 
 	async postNotifyBundles() {
-		let bundles = this.getBundles()
-		for (var i = 0; i < bundles.length; i++) {
-			let bundle = bundles[i]
+		const bundles = this.getBundles()
+		for (let i = 0; i < bundles.length; i++) {
+			const bundle = bundles[i]
 			while (bundle.bundles.length) {
-				let splice = bundle.bundles.splice(0, MAX_SERVER_BUNDLE_SIZE)
-				let success = await this.postNotifyBundle(bundle.subscribe, splice, bundle.network)
+				const splice = bundle.bundles.splice(0, MAX_SERVER_BUNDLE_SIZE)
+				const success = await this.postNotifyBundle(bundle.subscribe, splice, bundle.network)
 				if (success) this.lastNotifySync = Date.now()
 
-				for (var j = 0; j < splice.length; j++) {
+				for (let j = 0; j < splice.length; j++) {
 					await splice[j].onComplete(success)
 				}
 			}
@@ -320,7 +320,7 @@ export class SyncService {
 		}
 
 		const response = await this.api.execute(request)
-		const result = request.wasSuccessfull(response)
+		const result = request.wasSuccessful(response)
 		if (!result) {
 			return false
 		}
@@ -360,7 +360,7 @@ export class SyncService {
 		return false
 	}
 
-	async changeClient(clientKey: string, value: string, force: boolean = false) {
+	async changeClient(clientKey: string, value: string) {
 		// do not sync to remote if notification for client updates isn't enabled in the first place
 		const isEnabled = await this.storage.isNotifyClientUpdatesEnabled()
 		if (!isEnabled) return
@@ -406,7 +406,7 @@ export class SyncService {
 			return false
 		}
 
-		var subscribeAction = current.subscribeAction
+		let subscribeAction = current.subscribeAction
 		if (!subscribeAction) {
 			subscribeAction = (await this.storage.getBooleanSetting(current.eventName)) ? 'subscribe' : 'unsubscribe'
 		}
@@ -415,11 +415,11 @@ export class SyncService {
 		return true
 	}
 
-	async changeNotifyClientUpdate(key: string, value: boolean, filter: string = null) {
+	async changeNotifyClientUpdate(key: string, value: boolean) {
 		this.storage.setBooleanSetting(key, value)
 
 		Clients.forEach(async (client) => {
-			var clientName = await this.updateUtils.getClient(client.key)
+			const clientName = await this.updateUtils.getClient(client.key)
 			if (clientName != 'null') {
 				this.setLastChanged(client.storageKey, 'eth_client_update', clientName.toLocaleLowerCase(), null, value ? 'subscribe' : 'unsubscribe')
 			}
@@ -468,7 +468,7 @@ export class SyncService {
 	}
 
 	private async getChanged(key: string): Promise<SyncChanged> {
-		const temp: SyncChanged = await this.storage.getObject(NOTIFY_SYNCCHANGE + key)
+		const temp: SyncChanged = (await this.storage.getObject(NOTIFY_SYNCCHANGE + key)) as SyncChanged
 		if (temp && temp.lastChanged) return temp
 		return {
 			lastChanged: 0,
@@ -483,8 +483,8 @@ export class SyncService {
 
 	// finds newest changed key with similar name
 	private async findSimilarChanged(keySearch: string) {
-		var erg: string = null
-		var ergRetrieved: SyncChanged
+		let erg: string = null
+		let ergRetrieved: SyncChanged
 		const allNotifyKeys = await this.getAllSyncChangeKeys()
 		for (const key of allNotifyKeys) {
 			const cleanKey = key.replace(NOTIFY_SYNCCHANGE, '').replace('unsub_', '').replace('sub_', '')

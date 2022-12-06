@@ -21,7 +21,7 @@
 import { Component, OnInit, Input } from '@angular/core'
 import { ValidatorUtils, Validator, getDisplayName, SAVED } from '../../utils/ValidatorUtils'
 import { ModalController } from '@ionic/angular'
-import OverviewController from '../../controllers/OverviewController'
+import OverviewController, { OverviewData } from '../../controllers/OverviewController'
 import { fromEvent, Subscription } from 'rxjs'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 
@@ -34,15 +34,15 @@ export class ValidatordetailPage implements OnInit {
 	@Input() item: Validator
 	name: string
 
-	data: any
+	data: OverviewData
 
-	tagged: boolean = false
+	tagged = false
 
-	currentY: number = 0
+	currentY = 0
 
 	private backbuttonSubscription: Subscription
 
-	scrolling: boolean = false
+	scrolling = false
 
 	constructor(private validatorUtils: ValidatorUtils, private modalCtrl: ModalController, private merchant: MerchantUtils) {}
 
@@ -88,15 +88,15 @@ export class ValidatordetailPage implements OnInit {
 
 		const epoch = await this.validatorUtils.getRemoteCurrentEpoch()
 		const overviewController = new OverviewController(null, await this.merchant.getCurrentPlanMaxValidator())
-		this.data = overviewController.proccessDetail([item], epoch)
+		this.data = overviewController.processDetail([item], epoch)
 	}
 
-	tag(event) {
+	tag() {
 		this.validatorUtils.convertToValidatorModelAndSaveValidatorLocal(false, this.item.data)
 		this.tagged = true
 	}
 
-	untag(event) {
+	untag() {
 		this.validatorUtils.deleteValidatorLocal(this.item.data)
 		this.tagged = false
 	}

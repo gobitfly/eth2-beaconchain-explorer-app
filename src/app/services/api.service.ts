@@ -28,10 +28,9 @@ import { findConfigForKey, MAP } from '../utils/NetworkData'
 import { Http, HttpResponse } from '@capacitor-community/http'
 import { CacheModule } from '../utils/CacheModule'
 import axios, { AxiosResponse } from 'axios'
-import { Device } from '@capacitor/device'
+import { HttpOptions } from '@capacitor/core'
 
 const LOGTAG = '[ApiService]'
-var cacheKey = 'api-cache'
 
 const SERVER_TIMEOUT = 25000
 
@@ -86,7 +85,7 @@ export class ApiService extends CacheModule {
 
 	async updateNetworkConfig() {
 		this.networkConfig = this.storage.getNetworkPreferences().then((config) => {
-			let temp = findConfigForKey(config.key)
+			const temp = findConfigForKey(config.key)
 			if (temp) {
 				return temp
 			}
@@ -109,7 +108,7 @@ export class ApiService extends CacheModule {
 	}
 
 	private async getAuthHeader(isTokenRefreshCall: boolean) {
-		var user = await this.storage.getAuthUser()
+		let user = await this.storage.getAuthUser()
 		if (!user || !user.accessToken) return null
 
 		if (!isTokenRefreshCall && user.expiresIn <= Date.now() - (SERVER_TIMEOUT + 1000)) {
@@ -117,7 +116,7 @@ export class ApiService extends CacheModule {
 			console.log('Token expired, refreshing...', user.expiresIn)
 			user = await this.refreshToken()
 			if (!user || !user.accessToken) {
-				// logout logic if token can not be refreshed again within an 12 hour window
+				// logout logic if token cannot be refreshed again within an 12 hour window
 				const markForLogout = await this.storage.getItem('mark_for_logout')
 				const markForLogoutInt = parseInt(markForLogout)
 				if (!isNaN(markForLogoutInt) && markForLogoutInt + 12 * 60 * 1000 < Date.now()) {
@@ -148,7 +147,7 @@ export class ApiService extends CacheModule {
 		const now = Date.now()
 		const req = new RefreshTokenRequest(user.refreshToken)
 
-		var formBody = new FormData()
+		const formBody = new FormData()
 		formBody.set('grant_type', 'refresh_token')
 		formBody.set('refresh_token', user.refreshToken)
 		const url = await this.getResourceUrl(req.resource, req.endPoint)
@@ -194,7 +193,7 @@ export class ApiService extends CacheModule {
 		return test
 	}
 
-	private async getCacheKey(request: APIRequest<any>): Promise<string> {
+	private async getCacheKey(request: APIRequest<unknown>): Promise<string> {
 		if (request.method == Method.GET) {
 			return request.method + (await this.getResourceUrl(request.resource, request.endPoint))
 		} else if (request.cacheablePOST) {
@@ -203,7 +202,7 @@ export class ApiService extends CacheModule {
 		return null
 	}
 
-	async execute(request: APIRequest<any>) {
+	async execute(request: APIRequest<unknown>): Promise<Response> {
 		await this.initialized
 
 		if (!this.connectionStateOK) {
@@ -211,14 +210,14 @@ export class ApiService extends CacheModule {
 		}
 
 		// If cached and not stale, return cache
-		let cached = await this.getCache(await this.getCacheKey(request))
+		const cached = await this.getCache(await this.getCacheKey(request)) as Response
 		if (cached) {
 			if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
 			cached.cached = true
 			return cached
 		}
 
-		var options = request.options
+		const options = request.options
 
 		// second is special case for notifications
 		// notifications are rescheduled if response is != 200
@@ -237,7 +236,7 @@ export class ApiService extends CacheModule {
 		await this.lockOrWait(request.resource)
 
 		console.log(LOGTAG + ' Send request: ' + request.resource, request)
-		let startTs = Date.now()
+		const startTs = Date.now()
 
 		if (this.forceNativeAll) {
 			// android appears to have issues with native POST right now
@@ -245,7 +244,7 @@ export class ApiService extends CacheModule {
 			request.nativeHttp = false
 		}
 
-		var response: Promise<Response>
+		let response: Promise<Response>
 		switch (request.method) {
 			case Method.GET:
 				if (request.nativeHttp) {
@@ -288,7 +287,7 @@ export class ApiService extends CacheModule {
 		return result
 	}
 
-	async clearSpecificCache(request: APIRequest<any>) {
+	async clearSpecificCache(request: APIRequest<unknown>) {
 		this.putCache(await this.getCacheKey(request), null, request.maxCacheAge)
 	}
 
@@ -298,7 +297,7 @@ export class ApiService extends CacheModule {
 		}
 	}
 
-	private async get(resource: string, endpoint: string = 'default', ignoreFails = false, options = { headers: {} }) {
+	private async get(resource: string, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
 		const getOptions = {
 			url: await this.getResourceUrl(resource, endpoint),
 			method: 'get',
@@ -312,8 +311,8 @@ export class ApiService extends CacheModule {
 			.then((response: Response) => this.validateResponse(ignoreFails, response))
 	}
 
-	private async post(resource: string, data: any, endpoint: string = 'default', ignoreFails = false, options = { headers: {} }) {
-		if (!options.headers.hasOwnProperty('Content-Type')) {
+	private async post(resource: string, data: unknown, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
+		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
 			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentType(data) } }
 		}
 
@@ -331,18 +330,19 @@ export class ApiService extends CacheModule {
 			.then((response: Response) => this.validateResponse(ignoreFails, response))
 	}
 
-	private async legacyGet(resource: string, endpoint: string = 'default', ignoreFails = false, options = { headers: {} }) {
+	private async legacyGet(resource: string, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
 		return this.httpLegacy
 			.get(await this.getResourceUrl(resource, endpoint), options)
 			.catch((err) => {
 				this.updateConnectionState(ignoreFails, false)
 				console.warn('Connection err', err)
 			})
-			.then((response: AxiosResponse<any>) => this.validateResponseLegacy(ignoreFails, response))
+			.then((response: AxiosResponse<unknown>) => this.validateResponseLegacy(ignoreFails, response))
 	}
 
-	private async legacyPost(resource: string, data: any, endpoint: string = 'default', ignoreFails = false, options = { headers: {} }) {
-		if (!options.headers.hasOwnProperty('Content-Type')) {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	private async legacyPost(resource: string, data: unknown, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
+		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
 			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentType(data) } }
 		}
 		/* return this.httpLegacy
@@ -365,22 +365,12 @@ export class ApiService extends CacheModule {
 		}
 	}
 
-	private async isIOS15(): Promise<boolean> {
-		const osVersion = (await Device.getInfo()).osVersion
-		if (!osVersion) return false
-		const splitVersion = osVersion.split('.')
-		if (!splitVersion || splitVersion.length < 1) return false
-		const majorVersion = parseInt(splitVersion[0])
-		if (isNaN(majorVersion)) return false
-		return (await Device.getInfo()).platform == 'ios' && majorVersion >= 15
-	}
-
-	private getContentType(data: any): string {
+	private getContentType(data: unknown): string {
 		if (data instanceof FormDataContainer) return 'application/x-www-form-urlencoded'
 		return 'application/json'
 	}
 
-	private formatPostData(data: any) {
+	private formatPostData(data: unknown) {
 		if (data instanceof FormDataContainer) return data.getBody()
 		return data
 	}
@@ -391,7 +381,7 @@ export class ApiService extends CacheModule {
 		console.log(LOGTAG + ' setting status', working)
 	}
 
-	private validateResponseLegacy(ignoreFails, response: AxiosResponse<any>): Response {
+	private validateResponseLegacy(ignoreFails, response: AxiosResponse<unknown>): Response {
 		if (!response || !response.data) {
 			// || !response.data.data
 			this.updateConnectionState(ignoreFails, false)
@@ -424,7 +414,7 @@ export class ApiService extends CacheModule {
 		return response
 	}
 
-	async getResourceUrl(resource: string, endpoint: string = 'default'): Promise<string> {
+	async getResourceUrl(resource: string, endpoint = 'default'): Promise<string> {
 		const base = await this.getBaseUrl()
 		if (endpoint == 'default') {
 			return (await this.getApiBaseUrl()) + '/' + resource
@@ -436,7 +426,6 @@ export class ApiService extends CacheModule {
 
 	async getApiBaseUrl() {
 		const cfg = await this.networkConfig
-		const base = await this.getBaseUrl()
 		return (await this.getBaseUrl()) + cfg.endpoint + cfg.version
 	}
 
@@ -448,7 +437,7 @@ export class ApiService extends CacheModule {
 	private async isDebugMode() {
 		const devMode = isDevMode()
 		if (devMode) return true
-		const permanentDevMode = await this.storage.getObject('dev_mode')
+		const permanentDevMode = (await this.storage.getObject('dev_mode')) as DevModeEnabled
 		return permanentDevMode && permanentDevMode.enabled
 	}
 
@@ -456,7 +445,7 @@ export class ApiService extends CacheModule {
 		const debug = await this.isDebugMode()
 		const re: string[][] = []
 
-		for (let entry of MAP) {
+		for (const entry of MAP) {
 			if (entry.key == 'main') continue
 			if (!entry.active) continue
 			if (entry.onlyDebug && !debug) continue
@@ -470,6 +459,10 @@ export class ApiService extends CacheModule {
 	}
 }
 
-interface Response extends HttpResponse {
+export interface Response extends HttpResponse {
 	cached: boolean
+}
+
+export interface DevModeEnabled {
+	enabled: boolean
 }

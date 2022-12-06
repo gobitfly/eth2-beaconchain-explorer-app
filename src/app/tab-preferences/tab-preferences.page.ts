@@ -59,7 +59,7 @@ export class Tab3Page {
 
 	darkMode: boolean
 
-	network: string = 'main'
+	network = 'main'
 
 	allTestNetworks: string[][]
 
@@ -76,10 +76,9 @@ export class Tab3Page {
 	snowing: boolean
 
 	themeColor: string
-	//widgetThemeColor: string
 	currentPlan: string
 
-	premiumLabel: string = ''
+	premiumLabel = ''
 
 	protected package = ''
 
@@ -155,8 +154,6 @@ export class Tab3Page {
 		}, 1500)
 	}
 
-	changeWidgetTheme() {}
-
 	async goToNotificationPage() {
 		await this.sync.syncAllSettings(true)
 		this.router.navigate(['/notifications'])
@@ -190,7 +187,7 @@ export class Tab3Page {
 			return
 		}
 
-		var tutorialText = 'MISSINGNO'
+		let tutorialText = 'MISSINGNO'
 		if (this.platform.is('ios')) {
 			tutorialText =
 				'1. Go to your homescreen<br/>' +
@@ -276,7 +273,7 @@ export class Tab3Page {
 		this.updateUtils.checkAllUpdates()
 	}
 
-	async openBrowser(link, native: boolean = false) {
+	async openBrowser(link, native = false) {
 		if (native) {
 			window.open(link, '_system', 'location=yes')
 		} else {
@@ -296,12 +293,13 @@ export class Tab3Page {
 		if (this.count % 3 != 0) return
 		const random = Math.floor(Math.random() * 2)
 		switch (random) {
-			case 0:
-				const snow = this.theme.snow()
+			case 0: {
+				const currentSnow = this.theme.snow()
 				setTimeout(() => {
-					this.theme.stopSnow(snow)
+					this.theme.stopSnow(currentSnow)
 				}, 45000)
 				break
+			}
 			case 1:
 				this.theme.silvesterFireworks()
 				break

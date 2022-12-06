@@ -19,12 +19,15 @@
  */
 
 import { Pipe, PipeTransform } from '@angular/core'
+import { ProcessedStats } from '../controllers/MachineController'
 
 @Pipe({
 	name: 'delegate',
 })
 export class DelegatorPipe implements PipeTransform {
-	transform(data: any, delegateMethod: (any) => any) {
+	// TODO: improve this typing, unknown not working when used with async pipe in template, investigate
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	transform(data: ProcessedStats, delegateMethod: (any: ProcessedStats) => any) {
 		return delegateMethod(data)
 	}
 }

@@ -10,7 +10,7 @@ import { Clipboard } from '@capacitor/clipboard'
 })
 export class LogviewPage implements OnInit {
 	@Input() logs: [LogEntry] = [{ text: '', extra: '' }]
-	open: any[]
+	open: boolean[]
 	openAll = false
 
 	constructor(private modalCtrl: ModalController) {}
@@ -41,7 +41,7 @@ export class LogviewPage implements OnInit {
 	}
 
 	copyToClipboard() {
-		var result = '```\n'
+		let result = '```\n'
 		this.logs.forEach((data) => {
 			result += data.text + '\n' + data.extra
 		})
