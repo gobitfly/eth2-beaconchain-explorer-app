@@ -340,11 +340,11 @@ export class ApiService extends CacheModule {
 			.then((response: AxiosResponse<unknown>) => this.validateResponseLegacy(ignoreFails, response))
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async legacyPost(
 		resource: string,
 		data: unknown,
 		endpoint = 'default',
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		ignoreFails = false,
 		options: HttpOptions = { url: null, headers: {} }
 	) {
