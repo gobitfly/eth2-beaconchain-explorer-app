@@ -459,7 +459,7 @@ export class DashboardComponent implements OnInit {
 			d.setMilliseconds(0)
 			return d.getTime()
 		}
-		
+
 		// force timestamp to be at 00:00AM for the day to keep columns centered on ticks
 		for (let i = 0; i < this.chartData.consensusChartData.length; i++) {
 			this.chartData.consensusChartData[i].x = setTimestampToMidnight(this.chartData.consensusChartData[i].x)
