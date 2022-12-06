@@ -41,7 +41,7 @@ export class AlertService {
 		await alert.present()
 	}
 
-	async showSelect(title: string, inputs: any[], callback: (data) => void) {
+	async showSelect(title: string, inputs: unknown[], callback: (data) => void) {
 		const alert = await this.alertController.create({
 			header: title,
 			inputs: inputs,
@@ -77,7 +77,9 @@ export class AlertService {
 					text: 'Cancel',
 					role: 'cancel',
 					cssClass: 'secondary',
-					handler: () => {},
+					handler: () => {
+						return
+					},
 				},
 				{
 					text: confirmButton,

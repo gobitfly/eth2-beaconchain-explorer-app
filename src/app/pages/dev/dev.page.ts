@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core'
-import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from 'src/app/services/storage.service'
+import { DEBUG_SETTING_OVERRIDE_PACKAGE } from 'src/app/services/storage.service'
 import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils'
 import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page'
 import { Toast } from '@capacitor/toast'
 import { Clients } from '../../utils/ClientUpdateUtils'
+import { DevModeEnabled } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-dev',
@@ -11,14 +12,14 @@ import { Clients } from '../../utils/ClientUpdateUtils'
 	styleUrls: ['./dev.page.scss'],
 })
 export class DevPage extends Tab3Page implements OnInit {
-	packageOverride: string = 'default'
-	firebaseToken: string = ''
-	notificationConsent: boolean = false
+	packageOverride = 'default'
+	firebaseToken = ''
+	notificationConsent = false
 
 	ngOnInit() {
 		this.notificationBase.disableToggleLock()
 		this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default').then((result) => {
-			this.packageOverride = result
+			this.packageOverride = result as string
 		})
 
 		this.storage.getItem(CURRENT_TOKENKEY).then((result) => {
@@ -70,7 +71,7 @@ export class DevPage extends Tab3Page implements OnInit {
 	}
 
 	permanentDevMode() {
-		this.storage.setObject('dev_mode', { enabled: true })
+		this.storage.setObject('dev_mode', { enabled: true } as DevModeEnabled)
 		Toast.show({
 			text: 'Permanent dev mode enabled',
 		})
@@ -98,7 +99,7 @@ export class DevPage extends Tab3Page implements OnInit {
 			500
 		)
 		setTimeout(
-			() => this.alerts.showInfo('Success', 'Toggle test was successfull if this alert only appears once and toggle returns to disabled'),
+			() => this.alerts.showInfo('Success', 'Toggle test was successful if this alert only appears once and toggle returns to disabled'),
 			650
 		)
 	}
@@ -160,7 +161,9 @@ export class DevPage extends Tab3Page implements OnInit {
 					text: 'Cancel',
 					role: 'cancel',
 					cssClass: 'secondary',
-					handler: () => {},
+					handler: () => {
+						return
+					},
 				},
 				{
 					text: 'Ok',
@@ -179,17 +182,17 @@ export class DevPage extends Tab3Page implements OnInit {
 	}
 
 	async restoreAuthUser() {
-		let result = await this.storage.restoreAuthUser()
+		await this.storage.restoreAuthUser()
 		this.alerts.confirmDialog('Success', 'Restart app with restored user?', 'OK', () => {
 			this.restartApp()
 		})
 	}
 
 	async backupAuthUser() {
-		let result = await this.storage.backupAuthUser()
+		await this.storage.backupAuthUser()
 		console.log('backup success')
 		Toast.show({
-			text: 'Backup successfull',
+			text: 'Backup successful',
 		})
 	}
 

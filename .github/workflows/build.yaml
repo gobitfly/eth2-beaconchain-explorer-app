@@ -18,16 +18,16 @@ jobs:
     steps:
 
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
     
       - name: Dependency install
         run: |
-         npm install @ionic/cli@6.20.4 native-run@1.3.0 cordova-res@0.15.3 
+         npm install @ionic/cli@6.20.4 native-run@1.3.0 
          npm install
    
       - name: Build

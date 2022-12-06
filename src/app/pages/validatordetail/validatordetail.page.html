@@ -26,10 +26,10 @@
 			</ion-button>
 		</ion-buttons>
 		<ion-buttons slot="end">
-			<ion-button (click)="tag($event)" *ngIf="!tagged">
+			<ion-button (click)="tag()" *ngIf="!tagged">
 				<ion-icon slot="end" name="bookmark-outline"></ion-icon>
 			</ion-button>
-			<ion-button (click)="untag($event)" *ngIf="tagged">
+			<ion-button (click)="untag()" *ngIf="tagged">
 				<ion-icon slot="end" class="bookmarked" name="bookmark"></ion-icon>
 			</ion-button>
 		</ion-buttons>

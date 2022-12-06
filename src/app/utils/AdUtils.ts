@@ -84,11 +84,12 @@ export default class AdUtils {
 		const token = this.getToken(location)
 		if (!token) return null
 
-		let request = new CoinzillaAdRequest(token)
-		let response = await this.api.execute(request).catch((err) => {
+		const request = new CoinzillaAdRequest(token)
+		const response = await this.api.execute(request).catch((err) => {
+			console.warn('error adUtils get', err)
 			return null
 		})
-		let result = request.parse(response)
+		const result = request.parse(response)
 
 		if (result && result.length > 0) {
 			return result[0]

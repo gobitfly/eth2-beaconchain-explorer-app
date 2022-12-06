@@ -29,7 +29,7 @@ const NEGATIVE = 'negative-value'
 	name: 'valuestyle',
 })
 export class ValuestylePipe implements PipeTransform {
-	transform(tempvalue: any, ...args: any[]): string {
+	transform(tempvalue: (number | string | BigNumber), ...args: (number | BigNumber)[]): string {
 		const value = tempvalue instanceof BigNumber ? tempvalue : new BigNumber(tempvalue)
 		const firstDrop = args[0] instanceof BigNumber ? args[0] : new BigNumber(args[0])
 

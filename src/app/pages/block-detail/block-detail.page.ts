@@ -23,9 +23,9 @@ export class BlockDetailPage implements OnInit {
 	gasUsedPercent = ''
 	burned = new BigNumber(0)
 
-	currentY: number = 0
+	currentY = 0
 
-	scrolling: boolean = false
+	scrolling = false
 
 	showGasUsedPercent = true
 	nameResolved = ''
@@ -50,10 +50,6 @@ export class BlockDetailPage implements OnInit {
 			this.nameResolved = 'Distributed via ethpool.eth'
 		}
 	}
-
-	/* ngOnChanges() {
-    this.updateDetails(this.item)
-  }*/
 
 	closeModal() {
 		this.modalCtrl.dismiss()

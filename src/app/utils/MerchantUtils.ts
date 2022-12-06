@@ -28,8 +28,6 @@ import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from '../services/stor
 
 import { SplashScreen } from '@capacitor/splash-screen'
 
-const FIRST_PURCHASE_RETRY = 'first_purchase_retry'
-
 export const PRODUCT_STANDARD = 'standard'
 const MAX_PRODUCT = 'whale'
 
@@ -116,7 +114,7 @@ export class MerchantUtils {
 			this.initCustomValidator()
 			this.setupListeners()
 		} catch (e) {
-			console.warn('MerchantUtils can not be initialized', e)
+			console.warn('MerchantUtils cannot be initialized', e)
 		}
 	}
 
@@ -157,7 +155,7 @@ export class MerchantUtils {
 	private async registerPurchaseOnRemote(data: SubscriptionData): Promise<boolean> {
 		const request = new PostMobileSubscription(data)
 		const response = await this.api.execute(request)
-		const result = request.wasSuccessfull(response, false)
+		const result = request.wasSuccessful(response, false)
 
 		if (!result) {
 			console.log('registering purchase receipt failed', response)
@@ -167,7 +165,7 @@ export class MerchantUtils {
 	}
 
 	private initProducts() {
-		for (var i = 0; i < this.PACKAGES.length; i++) {
+		for (let i = 0; i < this.PACKAGES.length; i++) {
 			if (this.PACKAGES[i].purchaseKey) {
 				this.store.register({
 					id: this.PACKAGES[i].purchaseKey,
@@ -180,7 +178,7 @@ export class MerchantUtils {
 	}
 
 	private updatePrice(id, price) {
-		for (var i = 0; i < this.PACKAGES.length; i++) {
+		for (let i = 0; i < this.PACKAGES.length; i++) {
 			if (this.PACKAGES[i].purchaseKey == id) this.PACKAGES[i].price = price
 		}
 	}
@@ -224,14 +222,14 @@ export class MerchantUtils {
 		const loading = await this.alertService.presentLoading('')
 		loading.present()
 		this.store.order(product).then(
-			async (product) => {
+			async () => {
 				this.restorePurchase = true
 
 				setTimeout(() => {
 					loading.dismiss()
 				}, 1500)
 			},
-			(e) => {
+			(e: unknown) => {
 				loading.dismiss()
 				this.alertService.showError('Purchase failed', `Failed to purchase: ${e}`, PURCHASEUTILS + 1)
 				console.warn('purchase error', e)
@@ -285,7 +283,7 @@ export class MerchantUtils {
 		loading.dismiss()
 
 		if (result) {
-			this.alertService.confirmDialog('Upgrade successfull', 'App requires a restart. Do you want to restart it now?', 'Restart App', () => {
+			this.alertService.confirmDialog('Upgrade successful', 'App requires a restart. Do you want to restart it now?', 'Restart App', () => {
 				this.api.invalidateCache()
 				this.restartApp()
 			})
@@ -296,7 +294,7 @@ export class MerchantUtils {
 
 	restartDialogLogin() {
 		this.alertService.confirmDialog(
-			'Login successfull',
+			'Login successful',
 			'App requires a restart to unlock all your premium features. Do you want to restart it now?',
 			'Restart App',
 			() => {
@@ -310,7 +308,7 @@ export class MerchantUtils {
 		if (this.api.debug) {
 			const debugPackage = await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')
 			if (debugPackage != 'default') {
-				return debugPackage
+				return debugPackage as string
 			}
 		}
 
@@ -329,14 +327,14 @@ export class MerchantUtils {
 		if (!authUser || !authUser.accessToken) return ''
 		const jwtParts = authUser.accessToken.split('.')
 		const claims: ClaimParts = JSON.parse(atob(jwtParts[1]))
-		if (claims && claims.hasOwnProperty('theme') && claims.theme) {
+		if (claims && Object.prototype.hasOwnProperty.call(claims, 'theme') && claims.theme) {
 			return claims.theme
 		}
 		return ''
 	}
 
 	findProduct(name: string): Package {
-		for (var i = 0; i < this.PACKAGES.length; i++) {
+		for (let i = 0; i < this.PACKAGES.length; i++) {
 			const current = this.PACKAGES[i]
 			if (current.purchaseKey == name) {
 				return current
@@ -355,7 +353,7 @@ export class MerchantUtils {
 		return currentPlan != PRODUCT_STANDARD && currentPlan != '' && currentPlan != 'plankton'
 	}
 
-	async hasCustomizeableNotifications() {
+	async hasCustomizableNotifications() {
 		return await this.isNotFreeTier()
 	}
 

@@ -19,7 +19,7 @@
  */
 
 import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
+import { StorageService, StoredTimestamp } from '../services/storage.service'
 import { Injectable } from '@angular/core'
 import { MyValidatorResponse, AddMyValidatorsRequest } from '../requests/requests'
 import { Mutex } from 'async-mutex'
@@ -54,7 +54,7 @@ export class ValidatorSyncUtils {
 		const myRemotes = await this.validator.getMyRemoteValidators()
 		if (!myRemotes || myRemotes.length <= 0) return
 
-		const newValidatorIndizes = await this.validator.getAllNewIndizesOnly(myRemotes)
+		const newValidatorIndizes = await this.validator.getAllNewIndicesOnly(myRemotes)
 		console.log('newValidatorIndizes', newValidatorIndizes)
 
 		this.syncRemoteRemovals(myRemotes)
@@ -64,7 +64,8 @@ export class ValidatorSyncUtils {
 			return
 		}
 
-		const newValidators = await this.validator.getRemoteValidatorInfo(newValidatorIndizes).catch((err) => {
+		const newValidators = await this.validator.getRemoteValidatorInfo(...newValidatorIndizes).catch((err) => {
+			console.warn('error in syncDown getRemoteValidatorInfo', err)
 			return null
 		})
 		if (newValidators == null) return
@@ -83,15 +84,15 @@ export class ValidatorSyncUtils {
 			return
 		}
 
-		const lastTimeUpSynced = await this.storage.getObject(LAST_TIME_UPSYNCED_KEY)
+		const lastTimeUpSynced = (await this.storage.getObject(LAST_TIME_UPSYNCED_KEY)) as StoredTimestamp
 
 		// Upload only when new validators were added locally
-		const lastTimeAdded = await this.storage.getObject(LAST_TIME_ADDED_KEY)
+		const lastTimeAdded = (await this.storage.getObject(LAST_TIME_ADDED_KEY)) as StoredTimestamp
 		if (lastTimeAdded && (!lastTimeUpSynced || lastTimeAdded.timestamp > lastTimeUpSynced.timestamp)) {
 			this.upSyncLastTry = Date.now()
 			const success = await this.syncUp(syncNotificationsForNewValidators)
 			if (success) {
-				this.storage.setObject(LAST_TIME_UPSYNCED_KEY, { timestamp: Date.now() })
+				this.storage.setObject(LAST_TIME_UPSYNCED_KEY, { timestamp: Date.now() } as StoredTimestamp)
 			}
 		}
 	}
@@ -112,8 +113,8 @@ export class ValidatorSyncUtils {
 			return
 		}
 
-		const lastTimeUpDeleted = await this.storage.getObject(LAST_TIME_UPDELETED_KEY)
-		const lastTimeRemoved = await this.storage.getObject(LAST_TIME_REMOVED_KEY)
+		const lastTimeUpDeleted = (await this.storage.getObject(LAST_TIME_UPDELETED_KEY)) as StoredTimestamp
+		const lastTimeRemoved = (await this.storage.getObject(LAST_TIME_REMOVED_KEY)) as StoredTimestamp
 
 		console.log('mayDeleteUp', lastTimeRemoved, lastTimeUpDeleted)
 
@@ -140,8 +141,8 @@ export class ValidatorSyncUtils {
 		this.upDeleteSyncLastTry = Date.now()
 		console.log('== starting delete sync queue ==')
 
-		var count = 0
-		var finished = true
+		let count = 0
+		let finished = true
 		for (const value of deletedSet) {
 			const success = await this.validator.removeValidatorRemote(value.toString())
 			if (success) {
@@ -220,6 +221,6 @@ export class ValidatorSyncUtils {
 		const response = await this.api.execute(request)
 		const result = request.parse(response)
 		console.log('add validators remote', response, result)
-		return request.wasSuccessfull(response)
+		return request.wasSuccessful(response)
 	}
 }

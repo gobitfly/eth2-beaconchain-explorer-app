@@ -37,7 +37,7 @@ export const REAPPLY_KEY = 'reapply_notification2'
 	styleUrls: ['tab-dashboard.page.scss'],
 })
 export class Tab1Page {
-	lastRefreshTs: number = 0
+	lastRefreshTs = 0
 	overallData: OverviewData
 	initialized = true
 	currentY = 0
@@ -93,8 +93,8 @@ export class Tab1Page {
 	}
 
 	private async removeTooltips() {
-		var inputs = Array.from(document.getElementsByTagName('tooltip') as HTMLCollectionOf<HTMLElement>)
-		for (var i = 0; i < inputs.length; i++) {
+		const inputs = Array.from(document.getElementsByTagName('tooltip') as HTMLCollectionOf<HTMLElement>)
+		for (let i = 0; i < inputs.length; i++) {
 			inputs[i].style.display = 'none'
 		}
 	}
@@ -113,9 +113,11 @@ export class Tab1Page {
 		}
 		this.updates.checkAllUpdates()
 		const validators = await this.validatorUtils.getAllMyValidators().catch((error) => {
+			console.warn('error getAllMyValidators', error)
 			return []
 		})
 		const epoch = await this.validatorUtils.getRemoteCurrentEpoch().catch((error) => {
+			console.warn('error getRemoteCurrentEpoch', error)
 			return null
 		})
 		const overviewController = new OverviewController(() => {
@@ -124,7 +126,7 @@ export class Tab1Page {
 			this.refresh()
 		}, await this.merchant.getCurrentPlanMaxValidator())
 
-		this.overallData = overviewController.proccessDashboard(validators, epoch)
+		this.overallData = overviewController.processDashboard(validators, epoch)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}
 

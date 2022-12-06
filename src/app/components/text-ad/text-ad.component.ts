@@ -6,7 +6,7 @@ import { ApiService } from 'src/app/services/api.service'
 import AdUtils, { AdLocation, BEACONCHAIN_AD_ACTION } from 'src/app/utils/AdUtils'
 
 const TRANSITION_SPEED = 650
-var DELAY_SPEED = 5000
+let DELAY_SPEED = 5000
 
 @Component({
 	selector: 'app-text-ad',

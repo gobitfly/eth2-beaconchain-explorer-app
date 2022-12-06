@@ -23,11 +23,9 @@ import { ValidatorResponse } from 'src/app/requests/requests'
 import * as blockies from 'ethereum-blockies'
 import { ValidatorUtils, SAVED, getDisplayName, Validator, ValidatorState } from 'src/app/utils/ValidatorUtils'
 import { UnitconvService } from '../../services/unitconv.service'
-import { AlertController } from '@ionic/angular'
 import { AlertService } from 'src/app/services/alert.service'
 import BigNumber from 'bignumber.js'
 import OverviewController from 'src/app/controllers/OverviewController'
-declare const Buffer
 
 @Component({
 	selector: 'app-validator',
@@ -66,7 +64,7 @@ export class ValidatorComponent implements OnInit {
 		this.stateCss = this.interpretStateCss(this.validator)
 	}
 
-	setInput(validator: any) {
+	setInput(validator: Validator) {
 		this.validator = validator
 		this.data = validator.data
 		this.balance = this.calculateBalanceShare(this.validator)

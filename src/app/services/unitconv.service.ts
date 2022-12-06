@@ -25,10 +25,6 @@ import BigNumber from 'bignumber.js'
 import { ApiService } from './api.service'
 import { CoinbaseExchangeRequest, CoinbaseExchangeResponse } from '../requests/requests'
 
-interface UnitStorage {
-	prefered: 'ETHER' | 'FINNEY' | 'EURO' | 'DOLLAR'
-}
-
 const STORAGE_KEY = 'prefered_unit'
 const STORAGE_KEY_ROCKETPOOL = 'prefered_unit_rocketpool'
 
@@ -36,8 +32,8 @@ const STORAGE_KEY_ROCKETPOOL = 'prefered_unit_rocketpool'
 	providedIn: 'root',
 })
 export class UnitconvService {
-	pref: string = 'ETHER'
-	prefRpl: string = 'RPL'
+	pref = 'ETHER'
+	prefRpl = 'RPL'
 	lastPrice: BigNumber
 
 	static currencyPipe = null
@@ -51,7 +47,8 @@ export class UnitconvService {
 		if (unitPair == 'ETH-BTC') return this.getExchangeRateBitcoin()
 
 		const req = new CoinbaseExchangeRequest(unitPair)
-		const response = await this.api.execute(req).catch((error) => {
+		const response = await this.api.execute(req).catch((e) => {
+			console.warn('error in response getExchangeRate', e)
 			return null
 		})
 		const temp = req.parse(response)
@@ -87,7 +84,7 @@ export class UnitconvService {
 
 		const unit: Unit = this.getCurrentPrefAsUnit()
 
-		const lastUpdatedPrice = await this.storage.getObject('last_price_' + this.pref)
+		const lastUpdatedPrice = (await this.storage.getObject('last_price_' + this.pref)) as LastPrice
 
 		if (lastUpdatedPrice && lastUpdatedPrice.lastPrice) {
 			const price = new BigNumber(lastUpdatedPrice.lastPrice)
@@ -135,7 +132,7 @@ export class UnitconvService {
 				unit.value = bigNumAmount
 				this.lastPrice = bigNumAmount
 				this.triggerPropertyChange()
-				this.storage.setObject('last_price_' + this.pref, { lastPrice: bigNumAmount })
+				this.storage.setObject('last_price_' + this.pref, { lastPrice: bigNumAmount } as LastPrice)
 			} else {
 				// Handles the case if we get no price data atm
 				// Currently we fall back to ether being the default unit (since price is 1:1)
@@ -176,7 +173,7 @@ export class UnitconvService {
 		return this.convert(value, from, this.pref)
 	}
 
-	convert(value: BigNumber, from, to, displayable = true) {
+	convert(value: (BigNumber | number | string), from: string, to: string, displayable = true) {
 		if (!value || !from || !to) return value
 
 		const tempValue = value instanceof BigNumber ? value : new BigNumber(value)
@@ -200,4 +197,8 @@ export class UnitconvService {
 			rounding: rplUnit.rounding,
 		})
 	}
+}
+
+interface LastPrice {
+	lastPrice: BigNumber
 }
