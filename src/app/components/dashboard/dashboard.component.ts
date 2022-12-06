@@ -451,6 +451,31 @@ export class DashboardComponent implements OnInit {
 
 		this.chartError = false
 
+		const setTimestampToMidnight = (ts: number): number => {
+			const d = new Date(ts)
+			d.setHours(0)
+			d.setMinutes(0)
+			d.setSeconds(0)
+			d.setMilliseconds(0)
+			return d.getTime()
+		}
+
+		// force timestamp to be at 00:00AM for the day to keep columns centered on ticks
+		for (let i = 0; i < this.chartData.consensusChartData.length; i++) {
+			this.chartData.consensusChartData[i].x = setTimestampToMidnight(this.chartData.consensusChartData[i].x)
+		}
+		for (let i = 0; i < this.chartData.executionChartData.length; i++) {
+			this.chartData.executionChartData[i].x = setTimestampToMidnight(this.chartData.executionChartData[i].x)
+		}
+
+		// accumulate all execution income entries per day into a single entry
+		for (let i = this.chartData.executionChartData.length - 1; i > 0; i--) {
+			if (this.chartData.executionChartData[i].x == this.chartData.executionChartData[i - 1].x) {
+				this.chartData.executionChartData[i - 1].y += this.chartData.executionChartData[i].y
+				this.chartData.executionChartData.splice(i, 1)
+			}
+		}
+
 		this.createBalanceChart(this.chartData.consensusChartData, this.chartData.executionChartData)
 	}
 
@@ -551,8 +576,8 @@ export class DashboardComponent implements OnInit {
 		)
 	}
 
-	async createBalanceChart(income, execIncome) {
-		execIncome = execIncome || []
+	async createBalanceChart(consensusIncome, executionIncome) {
+		executionIncome = executionIncome || []
 
 		const ticksDecimalPlaces = 3
 		const network = await this.api.getNetwork()
@@ -572,15 +597,10 @@ export class DashboardComponent implements OnInit {
 				return Math.max(0, epoch)
 			}
 
-			const msForOneHour = 60 * 60 * 1000
-			const msForOneDay = 24 * msForOneHour
-
-			// force timestamp to be at 00:00AM for the day
-			// note that a timestamp of 0 equals 1/1/1970 01:00AM so we have to additionally remove msForOneHour
-			timestamp -= msForOneHour + (timestamp % msForOneDay)
-
 			const startEpoch = dateToEpoch(timestamp)
-			const endEpoch = dateToEpoch(timestamp + msForOneDay) - 1
+			const dateForNextDay = new Date(timestamp)
+			dateForNextDay.setDate(dateForNextDay.getDate() + 1)
+			const endEpoch = dateToEpoch(dateForNextDay.getTime()) - 1
 			return `(Epochs ${startEpoch} - ${endEpoch})<br/>`
 		}
 
@@ -644,7 +664,7 @@ export class DashboardComponent implements OnInit {
 				navigator: {
 					enabled: true,
 					series: {
-						data: income,
+						data: consensusIncome,
 						color: '#7cb5ec',
 					},
 				},
@@ -673,7 +693,13 @@ export class DashboardComponent implements OnInit {
 							const padding = 1.15
 							// make sure that the top and bottom tick are exactly at a position with [ticksDecimalPlaces] decimal places
 							const min = Math.round(this.chart.series[1].dataMin * padding * precision) / precision
-							const max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
+							let max
+							if (this.chart.series[0].dataMax != undefined) {
+								// series[0] contains accumulated income for execution and consensus but only if both rewards are currently on screen
+								max = Math.round(this.chart.series[0].dataMax * padding * precision) / precision
+							} else {
+								max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
+							}
 
 							// only show 3 ticks if min < 0 && max > 0
 							let positions
@@ -705,13 +731,13 @@ export class DashboardComponent implements OnInit {
 				series: [
 					{
 						name: 'Consensus',
-						data: income,
+						data: consensusIncome,
 						index: 2,
 						type: 'column',
 					},
 					{
 						name: 'Execution',
-						data: execIncome,
+						data: executionIncome,
 						index: 1,
 						type: 'column',
 					},
