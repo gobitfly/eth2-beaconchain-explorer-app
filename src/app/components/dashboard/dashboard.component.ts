@@ -487,8 +487,26 @@ export class DashboardComponent implements OnInit {
 		this.storage.setBooleanSetting('rank_percent_mode', this.rankPercentMode)
 	}
 
-	createProposedChart(proposed, missed, orphaned) {
-		Highstock.stockChart(
+	private getChartToolTipCaption(timestamp: number, genesisTs: number) {
+		const dateToEpoch = (ts: number): number => {
+			const slot = Math.floor((ts / 1000 - genesisTs) / 12)
+			const epoch = Math.floor(slot / 32)
+			return Math.max(0, epoch)
+		}
+
+		const startEpoch = dateToEpoch(timestamp)
+		const dateForNextDay = new Date(timestamp)
+		dateForNextDay.setDate(dateForNextDay.getDate() + 1)
+		const endEpoch = dateToEpoch(dateForNextDay.getTime()) - 1
+		const epochText = `(Epochs ${startEpoch} - ${endEpoch})<br/>`
+
+		return `${new Date(timestamp).toLocaleDateString()} ${epochText}`
+	}
+
+	async createProposedChart(proposed, missed, orphaned) {
+		const network = await this.api.getNetwork()
+
+		Highstock.chart(
 			'highchartsBlocks' + this.randomChartId,
 			{
 				chart: {
@@ -497,20 +515,20 @@ export class DashboardComponent implements OnInit {
 					marginRight: 0,
 					spacingLeft: 0,
 					spacingRight: 0,
-					spacingTop: 10,
+					spacingTop: 12,
 				},
 				legend: {
 					enabled: true,
 				},
 				title: {
-					text: '', //Balance History for all Validators
+					text: '',
 				},
 				colors: ['var(--chart-default)', '#ff835c', '#e4a354', '#2b908f', '#f45b5b', '#91e8e1'],
 				xAxis: {
 					lineWidth: 0,
 					tickColor: '#e5e1e1',
 					type: 'datetime',
-					range: 32 * 24 * 60 * 60 * 1000,
+					range: 31 * 24 * 60 * 60 * 1000,
 				},
 				yAxis: [
 					{
@@ -529,7 +547,20 @@ export class DashboardComponent implements OnInit {
 				tooltip: {
 					style: {
 						color: 'var(--text-color)',
-						fontWeight: 'bold',
+						display: `inline-block`,
+						width: 250,
+					},
+					shared: true,
+					formatter: (tooltip) => {
+						// date and epoch
+						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs)
+
+						// summary
+						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
+							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${tooltip.chart.hoverPoints[i].series.name}: ${tooltip.chart.hoverPoints[i].y}</b><br/>`
+						}
+
+						return text
 					},
 				},
 				plotOptions: {
@@ -540,6 +571,9 @@ export class DashboardComponent implements OnInit {
 							enabled: true,
 							groupAll: true,
 						},
+					},
+					column: {
+						centerInCategory: true,
 					},
 				},
 				series: [
@@ -593,20 +627,6 @@ export class DashboardComponent implements OnInit {
 			return text
 		}
 
-		const getEpochString = (timestamp: number): string => {
-			const dateToEpoch = (ts: number): number => {
-				const slot = Math.floor((ts / 1000 - network.genesisTs) / 12)
-				const epoch = Math.floor(slot / 32)
-				return Math.max(0, epoch)
-			}
-
-			const startEpoch = dateToEpoch(timestamp)
-			const dateForNextDay = new Date(timestamp)
-			dateForNextDay.setDate(dateForNextDay.getDate() + 1)
-			const endEpoch = dateToEpoch(dateForNextDay.getTime()) - 1
-			return `(Epochs ${startEpoch} - ${endEpoch})<br/>`
-		}
-
 		Highstock.chart(
 			'highcharts' + this.randomChartId,
 			{
@@ -646,13 +666,15 @@ export class DashboardComponent implements OnInit {
 					shared: true,
 					formatter: (tooltip) => {
 						// date and epoch
-						let text = `${new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString()} ${getEpochString(tooltip.chart.hoverPoints[0].x)}`
+						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs)
 
 						// income
 						let total = new BigNumber(0)
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
 							const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
-							text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${getValueString(value)}</b><br/>`
+							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${
+								tooltip.chart.hoverPoints[i].series.name
+							}: ${getValueString(value)}</b><br/>`
 							total = total.plus(value)
 						}
 
