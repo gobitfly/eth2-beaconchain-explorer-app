@@ -137,24 +137,6 @@ export class DashboardComponent implements OnInit {
 			if (event.data.currentValue) {
 				this.chartError = false
 				this.chartData = null
-				this.fadeIn = 'fade-in'
-				setTimeout(() => {
-					this.fadeIn = null
-				}, 1500)
-
-				this.updateRplDisplay()
-				this.drawBalanceChart()
-				this.drawProposalChart()
-				this.beaconChainUrl = await this.getBaseBrowserUrl()
-				this.updateNextRewardRound()
-				this.updateRplCommission()
-				this.updateRplApr()
-				this.updateRplProjectedClaim()
-				this.updateSmoothingPool()
-				this.updateActiveSyncCommitteeMessage(this.data.currentSyncCommittee)
-				this.updateNextSyncCommitteeMessage(this.data.nextSyncCommittee)
-				this.doneLoading = true
-				console.log('dashboard data', this.data)
 
 				if (this.platform.is('ios') || this.platform.is('android')) {
 					this.firebaseUtils.hasNotificationConsent().then(async (result) => {
@@ -165,10 +147,31 @@ export class DashboardComponent implements OnInit {
 					})
 				}
 
+				this.beaconChainUrl = await this.getBaseBrowserUrl()
+				await Promise.all([
+					this.updateRplDisplay(),
+					this.drawBalanceChart(),
+					this.drawProposalChart(),
+					this.updateNextRewardRound(),
+					this.updateRplCommission(),
+					this.updateRplApr(),
+					this.updateRplProjectedClaim(),
+					this.updateSmoothingPool(),
+					this.updateActiveSyncCommitteeMessage(this.data.currentSyncCommittee),
+					this.updateNextSyncCommitteeMessage(this.data.nextSyncCommittee),
+				])
+
+				console.log('dashboard data', this.data)
+
 				if (!this.data.foreignValidator) {
-					this.checkForFinalization()
-					this.checkForGenesisOccurred()
+					await Promise.all([this.checkForFinalization(), this.checkForGenesisOccurred()])
 				}
+
+				this.doneLoading = true
+				this.fadeIn = 'fade-in'
+				setTimeout(() => {
+					this.fadeIn = null
+				}, 1000)
 			}
 		}
 	}
