@@ -451,22 +451,21 @@ export class DashboardComponent implements OnInit {
 
 		this.chartError = false
 
+		const setTimestampToMidnight = (ts: number): number => {
+			const d = new Date(ts)
+			d.setHours(0)
+			d.setMinutes(0)
+			d.setSeconds(0)
+			d.setMilliseconds(0)
+			return d.getTime()
+		}
+
 		// force timestamp to be at 00:00AM for the day to keep columns centered on ticks
 		for (let i = 0; i < this.chartData.consensusChartData.length; i++) {
-			const d = new Date(this.chartData.consensusChartData[i].x)
-			d.setHours(0)
-			d.setMinutes(0)
-			d.setSeconds(0)
-			d.setMilliseconds(0)
-			this.chartData.consensusChartData[i].x = d.getTime()
+			this.chartData.consensusChartData[i].x = setTimestampToMidnight(this.chartData.consensusChartData[i].x)
 		}
 		for (let i = 0; i < this.chartData.executionChartData.length; i++) {
-			const d = new Date(this.chartData.executionChartData[i].x)
-			d.setHours(0)
-			d.setMinutes(0)
-			d.setSeconds(0)
-			d.setMilliseconds(0)
-			this.chartData.executionChartData[i].x = d.getTime()
+			this.chartData.executionChartData[i].x = setTimestampToMidnight(this.chartData.executionChartData[i].x)
 		}
 
 		// accumulate all execution income entries per day into a single entry
@@ -605,141 +604,147 @@ export class DashboardComponent implements OnInit {
 			return `(Epochs ${startEpoch} - ${endEpoch})<br/>`
 		}
 
-		Highstock.chart('highcharts' + this.randomChartId, {
-			exporting: {
-				scale: 1,
-			},
-			rangeSelector: {
-				enabled: false,
-			},
-			scrollbar: {
-				enabled: false,
-			},
-			chart: {
-				type: 'column',
-				marginLeft: 0,
-				marginRight: 0,
-				spacingLeft: 0,
-				spacingRight: 0,
-				spacingTop: 12,
-			},
-			legend: {
-				enabled: true,
-			},
-			title: {
-				text: '', //Balance History for all Validators
-			},
-			xAxis: {
-				type: 'datetime',
-				range: 31 * 24 * 60 * 60 * 1000,
-			},
-			tooltip: {
-				style: {
-					color: 'var(--text-color)',
-					display: `inline-block`,
-					width: 250,
+		Highstock.chart(
+			'highcharts' + this.randomChartId,
+			{
+				exporting: {
+					scale: 1,
 				},
-				shared: true,
-				formatter: (tooltip) => {
-					// date and epoch
-					let text = `${new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString()} ${getEpochString(tooltip.chart.hoverPoints[0].x)}`
-
-					// income
-					let total = new BigNumber(0)
-					for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
-						const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
-						text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${getValueString(value)}</b><br/>`
-						total = total.plus(value)
-					}
-
-					// add total if hovered point contains rewards for both EL and CL
-					if (tooltip.chart.hoverPoints.length > 1) {
-						text += `<b>Total: ${getValueString(total)}</b>`
-					}
-
-					return text
+				rangeSelector: {
+					enabled: false,
 				},
-			},
-			navigator: {
-				enabled: true,
-				series: {
-					data: consensusIncome,
-					color: '#7cb5ec',
+				scrollbar: {
+					enabled: false,
 				},
-			},
-			plotOptions: {
-				column: {
-					stacking: 'stacked',
-					dataLabels: {
-						enabled: false,
+				chart: {
+					type: 'column',
+					marginLeft: 0,
+					marginRight: 0,
+					spacingLeft: 0,
+					spacingRight: 0,
+					spacingTop: 12,
+				},
+				legend: {
+					enabled: true,
+				},
+				title: {
+					text: '', //Balance History for all Validators
+				},
+				xAxis: {
+					type: 'datetime',
+					range: 31 * 24 * 60 * 60 * 1000,
+				},
+				tooltip: {
+					style: {
+						color: 'var(--text-color)',
+						display: `inline-block`,
+						width: 250,
 					},
-					pointInterval: 24 * 3600 * 1000,
-					dataGrouping: {
-						forced: true,
-						units: [['day', [1]]],
-					},
-				},
-			},
-			yAxis: [
-				{
-					title: {
-						text: '',
-					},
-					opposite: false,
-					tickPositioner: function () {
-						const precision = Math.pow(10, ticksDecimalPlaces)
-						// make sure that no bar reaches the top or bottom of the chart (looks nicer)
-						const padding = 1.15
-						// make sure that the top and bottom tick are exactly at a position with [ticksDecimalPlaces] decimal places
-						const min = Math.round(this.chart.series[1].dataMin * padding * precision) / precision
-						let max
-						if (this.chart.series[0].dataMax != undefined) {
-							// series[0] contains accumulated income for execution and consensus but only if both rewards are currently on screen
-							max = Math.round(this.chart.series[0].dataMax * padding * precision) / precision
-						} else {
-							max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
+					shared: true,
+					formatter: (tooltip) => {
+						// date and epoch
+						let text = `${new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString()} ${getEpochString(tooltip.chart.hoverPoints[0].x)}`
+
+						// income
+						let total = new BigNumber(0)
+						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
+							const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
+							text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${getValueString(value)}</b><br/>`
+							total = total.plus(value)
 						}
 
-						// only show 3 ticks if min < 0 && max > 0
-						let positions
-						if (min < 0) {
-							if (max < 0) {
-								positions = [min, 0]
-							} else {
-								positions = [min, 0, max]
-							}
-						} else {
-							positions = [0, max]
+						// add total if hovered point contains rewards for both EL and CL
+						if (tooltip.chart.hoverPoints.length > 1) {
+							text += `<b>Total: ${getValueString(total)}</b>`
 						}
 
-						return positions
+						return text
 					},
-					labels: {
-						align: 'left',
-						x: 1,
-						y: -2,
-						formatter: function () {
-							if (this.value == 0) {
-								return '0'
-							}
-							return parseFloat(this.value.toString()).toFixed(ticksDecimalPlaces)
+				},
+				navigator: {
+					enabled: true,
+					series: {
+						data: consensusIncome,
+						color: '#7cb5ec',
+					},
+				},
+				plotOptions: {
+					column: {
+						stacking: 'stacked',
+						dataLabels: {
+							enabled: false,
+						},
+						pointInterval: 24 * 3600 * 1000,
+						dataGrouping: {
+							forced: true,
+							units: [['day', [1]]],
 						},
 					},
 				},
-			],
-			series: [
-				{
-					name: 'Consensus',
-					data: consensusIncome,
-					index: 2,
-				},
-				{
-					name: 'Execution',
-					data: executionIncome,
-					index: 1,
-				},
-			],
-		})
+				yAxis: [
+					{
+						title: {
+							text: '',
+						},
+						opposite: false,
+						tickPositioner: function () {
+							const precision = Math.pow(10, ticksDecimalPlaces)
+							// make sure that no bar reaches the top or bottom of the chart (looks nicer)
+							const padding = 1.15
+							// make sure that the top and bottom tick are exactly at a position with [ticksDecimalPlaces] decimal places
+							const min = Math.round(this.chart.series[1].dataMin * padding * precision) / precision
+							let max
+							if (this.chart.series[0].dataMax != undefined) {
+								// series[0] contains accumulated income for execution and consensus but only if both rewards are currently on screen
+								max = Math.round(this.chart.series[0].dataMax * padding * precision) / precision
+							} else {
+								max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
+							}
+
+							// only show 3 ticks if min < 0 && max > 0
+							let positions
+							if (min < 0) {
+								if (max < 0) {
+									positions = [min, 0]
+								} else {
+									positions = [min, 0, max]
+								}
+							} else {
+								positions = [0, max]
+							}
+
+							return positions
+						},
+						labels: {
+							align: 'left',
+							x: 1,
+							y: -2,
+							formatter: function () {
+								if (this.value == 0) {
+									return '0'
+								}
+								return parseFloat(this.value.toString()).toFixed(ticksDecimalPlaces)
+							},
+						},
+					},
+				],
+				series: [
+					{
+						name: 'Consensus',
+						data: consensusIncome,
+						index: 2,
+						type: 'column',
+					},
+					{
+						name: 'Execution',
+						data: executionIncome,
+						index: 1,
+						type: 'column',
+					},
+				],
+			},
+			null
+		)
 	}
 
 	onDismissed() {
