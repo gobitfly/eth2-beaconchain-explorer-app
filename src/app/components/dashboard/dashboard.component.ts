@@ -498,7 +498,7 @@ export class DashboardComponent implements OnInit {
 		const epochText = `(Epochs ${startEpoch} - ${endEpoch})<br/>`
 
 		return `${new Date(timestamp).toLocaleDateString()} ${epochText}`
-	}	
+	}
 
 	async createProposedChart(proposed, missed, orphaned) {
 		const network = await this.api.getNetwork()
@@ -551,12 +551,12 @@ export class DashboardComponent implements OnInit {
 					formatter: (tooltip) => {
 						// date and epoch
 						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs)
-	
+
 						// summary
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
 							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${tooltip.chart.hoverPoints[i].series.name}: ${tooltip.chart.hoverPoints[i].y}</b><br/>`
 						}
-	
+
 						return text
 					},
 				},
@@ -669,7 +669,9 @@ export class DashboardComponent implements OnInit {
 						let total = new BigNumber(0)
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
 							const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
-							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${tooltip.chart.hoverPoints[i].series.name}: ${getValueString(value)}</b><br/>`
+							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${
+								tooltip.chart.hoverPoints[i].series.name
+							}: ${getValueString(value)}</b><br/>`
 							total = total.plus(value)
 						}
 
