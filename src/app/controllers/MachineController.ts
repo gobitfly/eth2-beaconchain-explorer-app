@@ -63,7 +63,7 @@ export default class MachineController {
 						},
 					},
 				},
-			} as Options
+			} as Options,
 		}
 	}
 
@@ -86,7 +86,7 @@ export default class MachineController {
 							return this.value
 						},
 					},
-				} as Options
+				} as Options,
 			},
 		}
 	}
@@ -200,7 +200,7 @@ export default class MachineController {
 							},
 						},
 					},
-				} as Options
+				} as Options,
 			},
 		} as MachineChartData
 	}
@@ -316,7 +316,7 @@ export default class MachineController {
 							},
 						},
 					},
-				} as Options
+				} as Options,
 			},
 		} as MachineChartData
 	}
@@ -568,6 +568,12 @@ export default class MachineController {
 			const unixTime = this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => {
 				return value.timestamp
 			})
+
+			// do not display machines that have not been online for more than 4 days
+			if (unixTime && Date.now() - unixTime > 96 * 60 * 60 * 1000) {
+				continue
+			}
+
 			result[key] = {
 				validator: sortedVal,
 				node: sortedNode,

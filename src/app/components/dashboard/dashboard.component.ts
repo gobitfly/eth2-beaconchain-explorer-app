@@ -137,24 +137,6 @@ export class DashboardComponent implements OnInit {
 			if (event.data.currentValue) {
 				this.chartError = false
 				this.chartData = null
-				this.fadeIn = 'fade-in'
-				setTimeout(() => {
-					this.fadeIn = null
-				}, 1500)
-
-				this.updateRplDisplay()
-				this.drawBalanceChart()
-				this.drawProposalChart()
-				this.beaconChainUrl = await this.getBaseBrowserUrl()
-				this.updateNextRewardRound()
-				this.updateRplCommission()
-				this.updateRplApr()
-				this.updateRplProjectedClaim()
-				this.updateSmoothingPool()
-				this.updateActiveSyncCommitteeMessage(this.data.currentSyncCommittee)
-				this.updateNextSyncCommitteeMessage(this.data.nextSyncCommittee)
-				this.doneLoading = true
-				console.log('dashboard data', this.data)
 
 				if (this.platform.is('ios') || this.platform.is('android')) {
 					this.firebaseUtils.hasNotificationConsent().then(async (result) => {
@@ -164,11 +146,32 @@ export class DashboardComponent implements OnInit {
 						this.notificationPermissionPending = !result
 					})
 				}
+				this.drawBalanceChart()
+				this.drawProposalChart()
+				this.beaconChainUrl = await this.getBaseBrowserUrl()
+
+				await Promise.all([
+					this.updateRplDisplay(),
+					this.updateNextRewardRound(),
+					this.updateRplCommission(),
+					this.updateRplApr(),
+					this.updateRplProjectedClaim(),
+					this.updateSmoothingPool(),
+					this.updateActiveSyncCommitteeMessage(this.data.currentSyncCommittee),
+					this.updateNextSyncCommitteeMessage(this.data.nextSyncCommittee),
+				])
+
+				console.log('dashboard data', this.data)
 
 				if (!this.data.foreignValidator) {
-					this.checkForFinalization()
-					this.checkForGenesisOccurred()
+					await Promise.all([this.checkForFinalization(), this.checkForGenesisOccurred()])
 				}
+
+				this.doneLoading = true
+				this.fadeIn = 'fade-in'
+				setTimeout(() => {
+					this.fadeIn = null
+				}, 1000)
 			}
 		}
 	}
@@ -451,6 +454,31 @@ export class DashboardComponent implements OnInit {
 
 		this.chartError = false
 
+		const setTimestampToMidnight = (ts: number): number => {
+			const d = new Date(ts)
+			d.setHours(0)
+			d.setMinutes(0)
+			d.setSeconds(0)
+			d.setMilliseconds(0)
+			return d.getTime()
+		}
+
+		// force timestamp to be at 00:00AM for the day to keep columns centered on ticks
+		for (let i = 0; i < this.chartData.consensusChartData.length; i++) {
+			this.chartData.consensusChartData[i].x = setTimestampToMidnight(this.chartData.consensusChartData[i].x)
+		}
+		for (let i = 0; i < this.chartData.executionChartData.length; i++) {
+			this.chartData.executionChartData[i].x = setTimestampToMidnight(this.chartData.executionChartData[i].x)
+		}
+
+		// accumulate all execution income entries per day into a single entry
+		for (let i = this.chartData.executionChartData.length - 1; i > 0; i--) {
+			if (this.chartData.executionChartData[i].x == this.chartData.executionChartData[i - 1].x) {
+				this.chartData.executionChartData[i - 1].y += this.chartData.executionChartData[i].y
+				this.chartData.executionChartData.splice(i, 1)
+			}
+		}
+
 		this.createBalanceChart(this.chartData.consensusChartData, this.chartData.executionChartData)
 	}
 
@@ -459,8 +487,26 @@ export class DashboardComponent implements OnInit {
 		this.storage.setBooleanSetting('rank_percent_mode', this.rankPercentMode)
 	}
 
-	createProposedChart(proposed, missed, orphaned) {
-		Highstock.stockChart(
+	private getChartToolTipCaption(timestamp: number, genesisTs: number) {
+		const dateToEpoch = (ts: number): number => {
+			const slot = Math.floor((ts / 1000 - genesisTs) / 12)
+			const epoch = Math.floor(slot / 32)
+			return Math.max(0, epoch)
+		}
+
+		const startEpoch = dateToEpoch(timestamp)
+		const dateForNextDay = new Date(timestamp)
+		dateForNextDay.setDate(dateForNextDay.getDate() + 1)
+		const endEpoch = dateToEpoch(dateForNextDay.getTime()) - 1
+		const epochText = `(Epochs ${startEpoch} - ${endEpoch})<br/>`
+
+		return `${new Date(timestamp).toLocaleDateString()} ${epochText}`
+	}
+
+	async createProposedChart(proposed, missed, orphaned) {
+		const network = await this.api.getNetwork()
+
+		Highstock.chart(
 			'highchartsBlocks' + this.randomChartId,
 			{
 				chart: {
@@ -469,20 +515,20 @@ export class DashboardComponent implements OnInit {
 					marginRight: 0,
 					spacingLeft: 0,
 					spacingRight: 0,
-					spacingTop: 10,
+					spacingTop: 12,
 				},
 				legend: {
 					enabled: true,
 				},
 				title: {
-					text: '', //Balance History for all Validators
+					text: '',
 				},
 				colors: ['var(--chart-default)', '#ff835c', '#e4a354', '#2b908f', '#f45b5b', '#91e8e1'],
 				xAxis: {
 					lineWidth: 0,
 					tickColor: '#e5e1e1',
 					type: 'datetime',
-					range: 32 * 24 * 60 * 60 * 1000,
+					range: 31 * 24 * 60 * 60 * 1000,
 				},
 				yAxis: [
 					{
@@ -501,7 +547,20 @@ export class DashboardComponent implements OnInit {
 				tooltip: {
 					style: {
 						color: 'var(--text-color)',
-						fontWeight: 'bold',
+						display: `inline-block`,
+						width: 250,
+					},
+					shared: true,
+					formatter: (tooltip) => {
+						// date and epoch
+						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs)
+
+						// summary
+						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
+							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${tooltip.chart.hoverPoints[i].series.name}: ${tooltip.chart.hoverPoints[i].y}</b><br/>`
+						}
+
+						return text
 					},
 				},
 				plotOptions: {
@@ -512,6 +571,9 @@ export class DashboardComponent implements OnInit {
 							enabled: true,
 							groupAll: true,
 						},
+					},
+					column: {
+						centerInCategory: true,
 					},
 				},
 				series: [
@@ -551,8 +613,8 @@ export class DashboardComponent implements OnInit {
 		)
 	}
 
-	async createBalanceChart(income, execIncome) {
-		execIncome = execIncome || []
+	async createBalanceChart(consensusIncome, executionIncome) {
+		executionIncome = executionIncome || []
 
 		const ticksDecimalPlaces = 3
 		const network = await this.api.getNetwork()
@@ -563,25 +625,6 @@ export class DashboardComponent implements OnInit {
 				text += ` (${this.unit.convertToPref(value, 'ETHER')})`
 			}
 			return text
-		}
-
-		const getEpochString = (timestamp: number): string => {
-			const dateToEpoch = (ts: number): number => {
-				const slot = Math.floor((ts / 1000 - network.genesisTs) / 12)
-				const epoch = Math.floor(slot / 32)
-				return Math.max(0, epoch)
-			}
-
-			const msForOneHour = 60 * 60 * 1000
-			const msForOneDay = 24 * msForOneHour
-
-			// force timestamp to be at 00:00AM for the day
-			// note that a timestamp of 0 equals 1/1/1970 01:00AM so we have to additionally remove msForOneHour
-			timestamp -= msForOneHour + (timestamp % msForOneDay)
-
-			const startEpoch = dateToEpoch(timestamp)
-			const endEpoch = dateToEpoch(timestamp + msForOneDay) - 1
-			return `(Epochs ${startEpoch} - ${endEpoch})<br/>`
 		}
 
 		Highstock.chart(
@@ -623,13 +666,15 @@ export class DashboardComponent implements OnInit {
 					shared: true,
 					formatter: (tooltip) => {
 						// date and epoch
-						let text = `${new Date(tooltip.chart.hoverPoints[0].x).toLocaleDateString()} ${getEpochString(tooltip.chart.hoverPoints[0].x)}`
+						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs)
 
 						// income
 						let total = new BigNumber(0)
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
 							const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
-							text += `<b>${tooltip.chart.hoverPoints[i].series.name}: ${getValueString(value)}</b><br/>`
+							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${
+								tooltip.chart.hoverPoints[i].series.name
+							}: ${getValueString(value)}</b><br/>`
 							total = total.plus(value)
 						}
 
@@ -644,7 +689,7 @@ export class DashboardComponent implements OnInit {
 				navigator: {
 					enabled: true,
 					series: {
-						data: income,
+						data: consensusIncome,
 						color: '#7cb5ec',
 					},
 				},
@@ -673,7 +718,13 @@ export class DashboardComponent implements OnInit {
 							const padding = 1.15
 							// make sure that the top and bottom tick are exactly at a position with [ticksDecimalPlaces] decimal places
 							const min = Math.round(this.chart.series[1].dataMin * padding * precision) / precision
-							const max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
+							let max
+							if (this.chart.series[0].dataMax != undefined) {
+								// series[0] contains accumulated income for execution and consensus but only if both rewards are currently on screen
+								max = Math.round(this.chart.series[0].dataMax * padding * precision) / precision
+							} else {
+								max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
+							}
 
 							// only show 3 ticks if min < 0 && max > 0
 							let positions
@@ -705,13 +756,13 @@ export class DashboardComponent implements OnInit {
 				series: [
 					{
 						name: 'Consensus',
-						data: income,
+						data: consensusIncome,
 						index: 2,
 						type: 'column',
 					},
 					{
 						name: 'Execution',
-						data: execIncome,
+						data: executionIncome,
 						index: 1,
 						type: 'column',
 					},

@@ -30,8 +30,8 @@
 
 					var console = (function (oldCons, storage, debug) {
 						return {
-							log: (text, extra) => {
-								if (debug) oldCons.log(text)
+							log: (text, ...extra) => {
+								if (debug) oldCons.log(text, ...extra)
 								try {
 									if (typeof text === 'object') {
 										text = JSON.stringify(text)
@@ -43,8 +43,8 @@
 									storage.setItem('log_session_' + newLogSession, JSON.stringify(logSession))
 								} catch (e) {}
 							},
-							info: (text, extra) => {
-								if (debug) oldCons.info(text)
+							info: (text, ...extra) => {
+								if (debug) oldCons.info(text, ...extra)
 								try {
 									if (typeof text === 'object') {
 										text = JSON.stringify(text)
@@ -56,8 +56,8 @@
 									storage.setItem('log_session_' + newLogSession, JSON.stringify(logSession))
 								} catch (e) {}
 							},
-							warn: (text, extra) => {
-								if (debug) oldCons.warn(text)
+							warn: (text, ...extra) => {
+								if (debug) oldCons.warn(text, ...extra)
 								try {
 									if (typeof text === 'object') {
 										text = JSON.stringify(text)
@@ -69,8 +69,8 @@
 									storage.setItem('log_session_' + newLogSession, JSON.stringify(logSession))
 								} catch (e) {}
 							},
-							error: (text, err) => {
-								if (debug) oldCons.error(text, err)
+							error: (text, ...err) => {
+								if (debug) oldCons.error(text, ...err)
 								try {
 									if (typeof text === 'object') {
 										text = JSON.stringify(text)

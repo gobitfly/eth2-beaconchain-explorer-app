@@ -58,8 +58,8 @@ export class OAuthUtils {
 
 				let result = response.access_token_response
 				if (typeof result === 'string') {
-					result = JSON.parse(response.access_token_response as string) 
-				} 
+					result = JSON.parse(response.access_token_response as string)
+				}
 				result = result as Token
 				const accessToken = result.access_token
 				const refreshToken = result.refresh_token

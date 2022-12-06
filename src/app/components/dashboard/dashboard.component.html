@@ -21,11 +21,11 @@
 <div class="container" [ngClass]="fadeIn" *ngIf="data && api.connectionStateOK" [hidden]="!doneLoading">
 	<ion-list class="status">
 		<div lines="none" class="status-container">
-			<div [ngStyle]="{ opacity: currentY | fadeoutpipe: 73 }">
+			<div [ngStyle]="{ opacity: currentY | fadeoutpipe : 73 }">
 				<ion-icon class="status-icon" [class]="data.dashboardState.iconCss" name="{{ data.dashboardState.icon }}"> </ion-icon>
 			</div>
 
-			<div class="status-text" [ngStyle]="{ opacity: currentY | fadeoutpipe: 173 }">
+			<div class="status-text" [ngStyle]="{ opacity: currentY | fadeoutpipe : 173 }">
 				<ion-label class="validator-count" *ngIf="!data.foreignValidator">
 					<strong>{{ data.dashboardState.title }}</strong>
 				</ion-label>
@@ -187,7 +187,7 @@
 				<div class="grid-cell left" (click)="switchCurrencyPipe()">
 					<div class="grid">
 						<ion-label class="value left">
-							{{ data.overallBalance | mcurrency: 'GWEI':unit.pref }}
+							{{ data.overallBalance | mcurrency : 'GWEI' : unit.pref }}
 						</ion-label>
 					</div>
 					<div class="grid">
@@ -197,7 +197,7 @@
 
 				<div class="grid-cell">
 					<div>
-						<ion-label class="value" [class]="data.apr | valuestyle: 0"> {{ data.apr }} % </ion-label>
+						<ion-label class="value" [class]="data.apr | valuestyle : 0"> {{ data.apr }} % </ion-label>
 					</div>
 					<div>
 						<ion-label class="income-title right">
@@ -214,7 +214,7 @@
 
 				<div class="grid-cell left">
 					<div>
-						<ion-label class="value left" [class]="data.attrEffectiveness | valuestyle: 80"> {{ data.attrEffectiveness }} % </ion-label>
+						<ion-label class="value left" [class]="data.attrEffectiveness | valuestyle : 80"> {{ data.attrEffectiveness }} % </ion-label>
 					</div>
 					<div>
 						<ion-label class="income-title">
@@ -251,8 +251,8 @@
 
 				<div class="grid-cell left" (click)="switchCurrencyPipe()">
 					<div class="grid">
-						<ion-label class="value left" [class]="data.consensusPerformance.performance1d | valuestyle: 0">
-							{{ data.consensusPerformance.performance1d | mcurrency: 'GWEI':unit.pref }}
+						<ion-label class="value left" [class]="data.consensusPerformance.performance1d | valuestyle : 0">
+							{{ data.consensusPerformance.performance1d | mcurrency : 'GWEI' : unit.pref }}
 						</ion-label>
 					</div>
 					<div class="grid">
@@ -262,8 +262,8 @@
 
 				<div class="grid-cell" (click)="switchCurrencyPipe()">
 					<div>
-						<ion-label class="value" [class]="data.consensusPerformance.performance7d | valuestyle: 0">
-							{{ data.consensusPerformance.performance7d | mcurrency: 'GWEI':unit.pref }}
+						<ion-label class="value" [class]="data.consensusPerformance.performance7d | valuestyle : 0">
+							{{ data.consensusPerformance.performance7d | mcurrency : 'GWEI' : unit.pref }}
 						</ion-label>
 					</div>
 					<div>
@@ -273,8 +273,8 @@
 
 				<div class="grid-cell left" (click)="switchCurrencyPipe()">
 					<div>
-						<ion-label class="value left" [class]="data.consensusPerformance.performance31d | valuestyle: 0">
-							{{ data.consensusPerformance.performance31d | mcurrency: 'GWEI':unit.pref }}
+						<ion-label class="value left" [class]="data.consensusPerformance.performance31d | valuestyle : 0">
+							{{ data.consensusPerformance.performance31d | mcurrency : 'GWEI' : unit.pref }}
 						</ion-label>
 					</div>
 					<div>
@@ -284,8 +284,8 @@
 
 				<div class="grid-cell" (click)="switchCurrencyPipe()">
 					<div>
-						<ion-label class="value" [class]="data.consensusPerformance.total | valuestyle: 0">
-							{{ data.consensusPerformance.total | mcurrency: 'GWEI':unit.pref }}
+						<ion-label class="value" [class]="data.consensusPerformance.total | valuestyle : 0">
+							{{ data.consensusPerformance.total | mcurrency : 'GWEI' : unit.pref }}
 						</ion-label>
 					</div>
 					<div>
@@ -306,8 +306,8 @@
 				<div class="grid">
 					<div class="grid-cell left" (click)="switchCurrencyPipe()">
 						<div>
-							<ion-label class="value left" [class]="data.executionPerformance.performance31d | valuestyle: 0">
-								{{ data.executionPerformance.performance31d | mcurrency: 'GWEI':unit.pref }}
+							<ion-label class="value left" [class]="data.executionPerformance.performance31d | valuestyle : 0">
+								{{ data.executionPerformance.performance31d | mcurrency : 'GWEI' : unit.pref }}
 							</ion-label>
 						</div>
 						<div>
@@ -324,7 +324,7 @@
 
 					<div class="grid-cell" (click)="switchCurrencyPipe()">
 						<div>
-							<ion-label class="value" [class]="data.executionPerformance.apr | valuestyle: 0"> {{ data.executionPerformance.apr }} % </ion-label>
+							<ion-label class="value" [class]="data.executionPerformance.apr | valuestyle : 0"> {{ data.executionPerformance.apr }} % </ion-label>
 						</div>
 						<div>
 							<ion-label class="income-title right">
@@ -351,8 +351,8 @@
 			<div class="grid">
 				<div class="grid-cell left">
 					<div>
-						<ion-label [class]="smoothingClaimed.plus(smoothingUnclaimed) | valuestyle: 0" class="value left" (click)="switchCurrencyPipe()">
-							{{ smoothingClaimed.plus(smoothingUnclaimed) | mcurrency: 'GWEI':unit.pref }}
+						<ion-label [class]="smoothingClaimed.plus(smoothingUnclaimed) | valuestyle : 0" class="value left" (click)="switchCurrencyPipe()">
+							{{ smoothingClaimed.plus(smoothingUnclaimed) | mcurrency : 'GWEI' : unit.pref }}
 						</ion-label>
 					</div>
 					<div>
@@ -368,8 +368,8 @@
 
 				<div class="grid-cell" *ngIf="displaySmoothingPool">
 					<div>
-						<ion-label [class]="smoothingUnclaimed | valuestyle: 0" class="value" (click)="switchCurrencyPipe()">
-							{{ smoothingUnclaimed | mcurrency: 'GWEI':unit.pref }}
+						<ion-label [class]="smoothingUnclaimed | valuestyle : 0" class="value" (click)="switchCurrencyPipe()">
+							{{ smoothingUnclaimed | mcurrency : 'GWEI' : unit.pref }}
 						</ion-label>
 					</div>
 					<div>
@@ -395,11 +395,11 @@
 			<div class="grid">
 				<div class="grid-cell left" (click)="switchRplStake(true)">
 					<div class="grid">
-						<ion-label class="value left" *ngIf="rplState == 'rpl' || rplState == '%'" [class]="rplProjectedClaim | valuestyle: 0">
-							{{ rplProjectedClaim | mcurrency: 'WEI':'RPL_NAKED' }}
+						<ion-label class="value left" *ngIf="rplState == 'rpl' || rplState == '%'" [class]="rplProjectedClaim | valuestyle : 0">
+							{{ rplProjectedClaim | mcurrency : 'WEI' : 'RPL_NAKED' }}
 						</ion-label>
-						<ion-label class="value left" *ngIf="rplState == 'conv'" [class]="rplProjectedClaim | valuestyle: 0">
-							{{ rplProjectedClaim | mcurrency: 'WEI':'RPL':false | mcurrency: 'ETHER':unit.pref }}
+						<ion-label class="value left" *ngIf="rplState == 'conv'" [class]="rplProjectedClaim | valuestyle : 0">
+							{{ rplProjectedClaim | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
 						</ion-label>
 					</div>
 					<div class="grid">
@@ -411,11 +411,11 @@
 
 				<div class="grid-cell" (click)="switchRplStake(true)">
 					<div>
-						<ion-label class="value" *ngIf="rplState == 'rpl' || rplState == '%'" [class]="data.rocketpool.totalClaims | valuestyle: 0">
-							{{ data.rocketpool.totalClaims.plus(unclaimedRpl) | mcurrency: 'WEI':'RPL_NAKED' }}
+						<ion-label class="value" *ngIf="rplState == 'rpl' || rplState == '%'" [class]="data.rocketpool.totalClaims | valuestyle : 0">
+							{{ data.rocketpool.totalClaims.plus(unclaimedRpl) | mcurrency : 'WEI' : 'RPL_NAKED' }}
 						</ion-label>
-						<ion-label class="value" *ngIf="rplState == 'conv'" [class]="data.rocketpool.totalClaims | valuestyle: 0">
-							{{ data.rocketpool.totalClaims.plus(unclaimedRpl) | mcurrency: 'WEI':'RPL':false | mcurrency: 'ETHER':unit.pref }}
+						<ion-label class="value" *ngIf="rplState == 'conv'" [class]="data.rocketpool.totalClaims | valuestyle : 0">
+							{{ data.rocketpool.totalClaims.plus(unclaimedRpl) | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
 						</ion-label>
 					</div>
 					<div>
@@ -431,13 +431,13 @@
 					<div>
 						<ion-label
 							*ngIf="rplState == 'rpl' || rplState == '%'"
-							[class]="unclaimedRpl | valuestyle: 0"
+							[class]="unclaimedRpl | valuestyle : 0"
 							class="value left"
 							(click)="switchRplStake()">
-							{{ unclaimedRpl | mcurrency: 'WEI':'NO_CURRENCY' }} RPL
+							{{ unclaimedRpl | mcurrency : 'WEI' : 'NO_CURRENCY' }} RPL
 						</ion-label>
-						<ion-label *ngIf="rplState == 'conv'" class="value left" [class]="unclaimedRpl | valuestyle: 0" (click)="switchRplStake()">
-							{{ unclaimedRpl | mcurrency: 'WEI':'RPL':false | mcurrency: 'ETHER':unit.pref }}
+						<ion-label *ngIf="rplState == 'conv'" class="value left" [class]="unclaimedRpl | valuestyle : 0" (click)="switchRplStake()">
+							{{ unclaimedRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
 						</ion-label>
 					</div>
 					<div>
@@ -479,7 +479,7 @@
 				<div class="grid-cell left" (click)="switchCurrencyPipe()">
 					<div class="grid">
 						<ion-label class="value left">
-							{{ 1 | mcurrency: 'ETHER':'RPL':false | mcurrency: 'ETHER':unit.pref }}
+							{{ 1 | mcurrency : 'ETHER' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
 						</ion-label>
 					</div>
 					<div class="grid">
@@ -489,7 +489,7 @@
 
 				<div class="grid-cell">
 					<div>
-						<ion-label class="value" [class]="rplApr | valuestyle: 0"> {{ rplApr }} % </ion-label>
+						<ion-label class="value" [class]="rplApr | valuestyle : 0"> {{ rplApr }} % </ion-label>
 					</div>
 					<div>
 						<ion-label class="income-title right">
@@ -503,19 +503,19 @@
 						<ion-label
 							class="value left"
 							*ngIf="rplState == 'rpl'"
-							[class]="data.rocketpool.currentRpl | valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1">
-							{{ data.rocketpool.currentRpl | mcurrency: 'WEI':'RPL_NAKED' }}
+							[class]="data.rocketpool.currentRpl | valuestyle : data.rocketpool.minRpl : data.rocketpool.maxRpl : -1">
+							{{ data.rocketpool.currentRpl | mcurrency : 'WEI' : 'RPL_NAKED' }}
 						</ion-label>
 						<ion-label
 							class="value left"
 							*ngIf="rplState == 'conv'"
-							[class]="data.rocketpool.currentRpl | valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1">
-							{{ data.rocketpool.currentRpl | mcurrency: 'WEI':'RPL':false | mcurrency: 'ETHER':unit.pref }}
+							[class]="data.rocketpool.currentRpl | valuestyle : data.rocketpool.minRpl : data.rocketpool.maxRpl : -1">
+							{{ data.rocketpool.currentRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
 						</ion-label>
 						<ion-label
 							class="value left"
 							*ngIf="rplState == '%'"
-							[class]="data.rocketpool.currentRpl | valuestyle: data.rocketpool.minRpl:data.rocketpool.maxRpl:-1">
+							[class]="data.rocketpool.currentRpl | valuestyle : data.rocketpool.minRpl : data.rocketpool.maxRpl : -1">
 							{{ rplDisplay }} %
 						</ion-label>
 					</div>
@@ -550,11 +550,11 @@
 				<div class="grid-cell left">
 					<div>
 						<ion-label *ngIf="rplState == 'rpl' || rplState == '%'" class="value left" (click)="switchRplStake()">
-							{{ data.rocketpool.minRpl | mcurrency: 'WEI':'NO_CURRENCY' }} - {{ data.rocketpool.maxRpl | mcurrency: 'WEI':'NO_CURRENCY' }} RPL
+							{{ data.rocketpool.minRpl | mcurrency : 'WEI' : 'NO_CURRENCY' }} - {{ data.rocketpool.maxRpl | mcurrency : 'WEI' : 'NO_CURRENCY' }} RPL
 						</ion-label>
 						<ion-label *ngIf="rplState == 'conv'" class="value left" (click)="switchRplStake()">
-							{{ data.rocketpool.minRpl | mcurrency: 'WEI':'RPL':false | mcurrency: 'ETHER':unit.pref }} -
-							{{ data.rocketpool.maxRpl | mcurrency: 'WEI':'RPL':false | mcurrency: 'ETHER':unit.pref }}
+							{{ data.rocketpool.minRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }} -
+							{{ data.rocketpool.maxRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
 						</ion-label>
 					</div>
 					<div>
@@ -571,7 +571,7 @@
 				<div class="grid-cell">
 					<div>
 						<ion-label class="value">
-							{{ nextRewardRound | date: 'MMM dd, h:mm a' }}
+							{{ nextRewardRound | date : 'MMM dd, h:mm a' }}
 						</ion-label>
 					</div>
 					<div>
@@ -637,7 +637,7 @@
 				<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
 
 				<span class="rank-text">
-					{{ data.bestRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:'Top ' }}
+					{{ data.bestRank | percentageabs : data.currentEpoch.validatorscount : rankPercentMode : 'Top ' }}
 				</span>
 			</ion-label>
 		</ion-item>
@@ -649,7 +649,7 @@
 						<ion-label class="value left">
 							<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
 							<span class="rank-text">
-								{{ data.bestRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:'Top ' }}
+								{{ data.bestRank | percentageabs : data.currentEpoch.validatorscount : rankPercentMode : 'Top ' }}
 							</span>
 						</ion-label>
 					</div>
@@ -671,7 +671,7 @@
 						<ion-label class="value">
 							<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
 							<span class="rank-text">
-								{{ data.worstRank | percentageabs: data.currentEpoch.validatorscount:rankPercentMode:'Top ' }}
+								{{ data.worstRank | percentageabs : data.currentEpoch.validatorscount : rankPercentMode : 'Top ' }}
 							</span>
 						</ion-label>
 					</div>
@@ -702,7 +702,7 @@
 					Effective Performance
 				</span>
 			</ion-label>
-			<ion-label class="value" [class]="utilizationAvg | valuestyle: 80"> {{ utilizationAvg }} % </ion-label>
+			<ion-label class="value" [class]="utilizationAvg | valuestyle : 80"> {{ utilizationAvg }} % </ion-label>
 		</ion-item>
 
 		<ion-item lines="none">
@@ -716,7 +716,7 @@
 				</span>
 			</ion-label>
 			<ion-label class="value" (click)="switchCurrencyPipe()">
-				{{ data.effectiveBalance | mcurrency: 'GWEI':'ETHER' }}
+				{{ data.effectiveBalance | mcurrency : 'GWEI' : 'ETHER' }}
 			</ion-label>
 		</ion-item>
 	</ion-list>
@@ -725,7 +725,7 @@
 		<ion-item lines="none" *ngIf="data.foreignValidator">
 			<ion-label class="stat-title"> Unique Index </ion-label>
 			<ion-label class="value">
-				{{ data.foreignValidatorItem.data.validatorindex | number: '1.0':'en-US' }}
+				{{ data.foreignValidatorItem.data.validatorindex | number : '1.0' : 'en-US' }}
 			</ion-label>
 		</ion-item>
 
@@ -739,23 +739,23 @@
 			<ion-label class="stat-title"> Withdrawal Cred </ion-label>
 			<ion-label
 				class="value"
-				[class]="(data.foreignValidatorItem.data.withdrawalcredentials | slice: 0:4) == '0x01' ? 'ok-proposals' : 'warn'"
+				[class]="(data.foreignValidatorItem.data.withdrawalcredentials | slice : 0 : 4) == '0x01' ? 'ok-proposals' : 'warn'"
 				(click)="switchCurrencyPipe()">
-				{{ data.foreignValidatorItem.data.withdrawalcredentials | slice: 0:4 }}
+				{{ data.foreignValidatorItem.data.withdrawalcredentials | slice : 0 : 4 }}
 			</ion-label>
 		</ion-item>
 
 		<ion-item lines="none" *ngIf="data.foreignValidator">
 			<ion-label class="stat-title"> Effective Balance </ion-label>
 			<ion-label class="value" (click)="switchCurrencyPipe()">
-				{{ data.effectiveBalance | mcurrency: 'GWEI':'ETHER' }}
+				{{ data.effectiveBalance | mcurrency : 'GWEI' : 'ETHER' }}
 			</ion-label>
 		</ion-item>
 
 		<ion-item lines="none" *ngIf="(unit.pref != 'ETHER' && unit.pref != 'FINNEY') || classReference.currencyPipe != null">
 			<ion-label class="stat-title"> Ether Price </ion-label>
 			<ion-label class="value" (click)="switchCurrencyPipe()">
-				{{ 1 | mcurrency: 'ETHER':unit.pref }}
+				{{ 1 | mcurrency : 'ETHER' : unit.pref }}
 			</ion-label>
 		</ion-item>
 

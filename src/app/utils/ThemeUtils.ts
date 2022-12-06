@@ -189,6 +189,7 @@ export default class ThemeUtils {
 	}
 
 	private async changeNavigationBarColor(isDarkThemed) {
+		if (!this.platform.is('android') && !this.platform.is('ios')) return
 		try {
 			const themeColor = await this.getThemeColor()
 			if (themeColor == 'ethpool') {
@@ -275,7 +276,6 @@ export default class ThemeUtils {
 			}
 		}
 	}
-
 }
 
 interface StoredTheme {
