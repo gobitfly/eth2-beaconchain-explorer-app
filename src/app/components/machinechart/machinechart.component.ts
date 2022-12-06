@@ -2,6 +2,7 @@ import { Component, Input, OnInit, SimpleChanges } from '@angular/core'
 import { highChartOptions } from 'src/app/utils/HighchartOptions'
 import * as HighCharts from 'highcharts'
 import * as Highstock from 'highcharts/highstock'
+import { MachineChartData } from 'src/app/controllers/MachineController'
 
 @Component({
 	selector: 'app-machinechart',
@@ -13,17 +14,17 @@ export class MachinechartComponent implements OnInit {
 	@Input() subtitleLeft?: string
 	@Input() subtitleRight?: string
 	@Input() icon?: string
-	@Input() priority: boolean = false
-	@Input() clickAction = () => {}
+	@Input() priority = false
+	@Input() clickAction = () => {
+		return
+	}
 
-	@Input() chartData: [] = []
+	@Input() chartData: MachineChartData
 	@Input() key: string
 
-	id: string = ''
-	chartError: boolean = false
+	id = ''
+	chartError = false
 	specificError: string = null
-
-	constructor() {}
 
 	doClick() {
 		this.clickAction()
@@ -41,16 +42,16 @@ export class MachinechartComponent implements OnInit {
 
 		setTimeout(() => {
 			try {
-				// @ts-ignore
-				if (this.chartData && this.chartData.length == 1 && this.chartData[0] == 'system_missing') {
+				if (this.chartData && this.chartData.Error == 'system_missing') {
 					this.specificError = 'system_missing'
 					this.chartError = true
 					return
 				}
 				this.doChart(this.key, this.id, this.chartData)
-				//@ts-ignore
-				this.chartError = this.chartData.length <= 0 || this.chartData[0].data.length <= 1
+
+				this.chartError = this.chartData.Data.length <= 0 || this.chartData.Data[0].data.length <= 1
 			} catch (e) {
+				console.warn("cannot get chart data", e)
 				this.chartError = true
 			}
 		}, 400 + priorityDelay)
@@ -61,13 +62,12 @@ export class MachinechartComponent implements OnInit {
 		this.id = makeid(6)
 	}
 
-	public doChart(key, type = '', data) {
+	public doChart(key, type = '', data: MachineChartData) {
 		const id = 'machinechart_' + type + '_' + this.hashCode(key)
 
-		var overrideConfig = {}
-		if (data[data.length - 1].hasOwnProperty('config')) {
-			overrideConfig = data[data.length - 1].config
-			data.pop()
+		let overrideConfig = {}
+		if (Object.prototype.hasOwnProperty.call(data.Config, 'config')) {
+			overrideConfig = data.Config.config
 		}
 
 		const baseConfig = {
@@ -111,7 +111,7 @@ export class MachinechartComponent implements OnInit {
 			plotOptions: {
 				series: {},
 			},
-			series: data,
+			series: data.Data || [],
 			rangeSelector: {
 				enabled: false,
 			},
@@ -121,17 +121,16 @@ export class MachinechartComponent implements OnInit {
 			navigator: {
 				enabled: false,
 			},
-		}
+		} as HighCharts.Options
 		const mergedConfig = Object.assign(baseConfig, overrideConfig)
 
-		// @ts-ignore     ¯\_(ツ)_/¯
-		const chart = Highstock.stockChart(id, mergedConfig)
+		Highstock.stockChart(id, mergedConfig, null)
 	}
 
 	public hashCode(string: string) {
-		var hash = 0
-		for (var i = 0; i < string.length; i++) {
-			var character = string.charCodeAt(i)
+		let hash = 0
+		for (let i = 0; i < string.length; i++) {
+			const character = string.charCodeAt(i)
 			hash = (hash << 5) - hash + character
 			hash = hash & hash
 		}
@@ -140,10 +139,10 @@ export class MachinechartComponent implements OnInit {
 }
 
 function makeid(length) {
-	var result = ''
-	var characters = 'abcdefghijklmnopqrstuvwxyz0123456789'
-	var charactersLength = characters.length
-	for (var i = 0; i < length; i++) {
+	let result = ''
+	const characters = 'abcdefghijklmnopqrstuvwxyz0123456789'
+	const charactersLength = characters.length
+	for (let i = 0; i < length; i++) {
 		result += characters.charAt(Math.floor(Math.random() * charactersLength))
 	}
 	return result

@@ -20,12 +20,10 @@
 
 import { EpochResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
 import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
-import Unit, { convertEthUnits } from '../utils/EthereumUnits'
 import BigNumber from 'bignumber.js'
 import { Validator } from '../utils/ValidatorUtils'
 import { formatDate } from '@angular/common'
 import { getValidatorQueryString, ValidatorState } from '../utils/ValidatorUtils'
-import { ApiService } from '../services/api.service'
 
 export type OverviewData = {
 	overallBalance: BigNumber
@@ -98,11 +96,11 @@ export type Description = {
 export default class OverviewController {
 	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280) {}
 
-	proccessDashboard(validators: Validator[], currentEpoch: EpochResponse) {
+	processDashboard(validators: Validator[], currentEpoch: EpochResponse) {
 		return this.process(validators, currentEpoch, false)
 	}
 
-	proccessDetail(validators: Validator[], currentEpoch: EpochResponse) {
+	processDetail(validators: Validator[], currentEpoch: EpochResponse) {
 		return this.process(validators, currentEpoch, true)
 	}
 
@@ -149,7 +147,7 @@ export default class OverviewController {
 			total: consensusPerf.total.plus(executionPerf.total),
 		}
 
-		var attrEffectiveness = 0
+		let attrEffectiveness = 0
 		if (activeValidators.length > 0) {
 			attrEffectiveness = sumBigInt(validators, (cur) => (cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()) : new BigNumber(0)))
 				.dividedBy(activeValidators.length)
@@ -163,7 +161,7 @@ export default class OverviewController {
 		const feeSum = sumBigInt(validators, (cur) =>
 			cur.rocketpool ? new BigNumber(cur.rocketpool.minipool_node_fee).multipliedBy('100') : new BigNumber('0')
 		)
-		var feeAvg = 0
+		let feeAvg = 0
 		if (feeSum.decimalPlaces(3).toNumber() != 0) {
 			feeAvg = feeSum.dividedBy(rocketpoolValiCount).decimalPlaces(1).toNumber()
 		}
@@ -317,8 +315,8 @@ export default class OverviewController {
 	}
 
 	getRocketpoolCheatingStatus(validators: Validator[]): RocketpoolCheatingStatus {
-		var strikes = 0
-		var penalties = 0
+		let strikes = 0
+		let penalties = 0
 
 		validators.forEach((cur) => {
 			if (cur.rocketpool && cur.rocketpool.node_address) {
@@ -337,7 +335,7 @@ export default class OverviewController {
 		}
 	}
 
-	sumBigIntBalanceRpl<T>(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
+	sumBigIntBalanceRpl(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
 		return sumBigInt(validators, (cur) => {
 			const fieldVal = field(cur)
 			if (!cur.rocketpool) return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
@@ -352,7 +350,7 @@ export default class OverviewController {
 		})
 	}
 
-	sumBigIntPerformanceRpl<T>(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
+	sumBigIntPerformanceRpl(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
 		return sumBigInt(validators, (cur) => {
 			if (!cur.rocketpool) return field(cur)
 			if (!cur.rocketpool.node_address) return field(cur)
@@ -363,7 +361,7 @@ export default class OverviewController {
 		})
 	}
 
-	sumRocketpoolBigIntPerNodeAddress<T>(
+	sumRocketpoolBigIntPerNodeAddress(
 		applyShare: boolean,
 		validators: Validator[],
 		field: (cur: Validator) => string,
@@ -581,13 +579,13 @@ export default class OverviewController {
 				return null
 			}
 
-			var date = new Date(currentEpoch.lastCachedTimestamp)
+			const date = new Date(currentEpoch.lastCachedTimestamp)
 
 			const inEpochOffset = (32 - currentEpoch.scheduledblocks) * 12 // block time 12s
 
 			date.setSeconds(diff * 6.4 * 60 - inEpochOffset)
 
-			var timeString = formatDate(date, 'medium', 'en-US')
+			const timeString = formatDate(date, 'medium', 'en-US')
 			return timeString
 		} catch (e) {
 			console.warn('could not get activation time', e)

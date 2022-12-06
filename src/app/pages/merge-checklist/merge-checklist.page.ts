@@ -1,16 +1,16 @@
-import { Component, OnInit, Input } from '@angular/core'
-import { AlertController, ModalController } from '@ionic/angular'
+import { Component, Input } from '@angular/core'
 import { Browser } from '@capacitor/browser'
 import { StorageService } from 'src/app/services/storage.service'
 import { AlertService } from 'src/app/services/alert.service'
+import { ModalController } from '@ionic/angular'
 
 @Component({
 	selector: 'app-merge-checklist',
 	templateUrl: './merge-checklist.page.html',
 	styleUrls: ['./merge-checklist.page.scss'],
 })
-export class MergeChecklistPage implements OnInit {
-	@Input() fromSettings: boolean = false
+export class MergeChecklistPage {
+	@Input() fromSettings = false
 
 	public todo = [
 		{ val: 'Run your own execution client', isChecked: false, key: 'cl_own_client', timing: 'Timing: Do this now' },
@@ -36,12 +36,10 @@ export class MergeChecklistPage implements OnInit {
 	}
 
 	async loadCheckedState(array) {
-		for (var i = 0; i < array.length; i++) {
+		for (let i = 0; i < array.length; i++) {
 			array[i].isChecked = await this.getChecked(array[i])
 		}
 	}
-
-	ngOnInit() {}
 
 	closeModal() {
 		this.modalCtrl.dismiss()

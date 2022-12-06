@@ -19,9 +19,6 @@
  */
 
 import { ApiService } from '../services/api.service'
-import { registerWebPlugin } from '@capacitor/core'
-//import { OAuth2Client } from "@byteowls/capacitor-oauth2";
-import { Plugins } from '@capacitor/core'
 import { Injectable } from '@angular/core'
 import { StorageService } from '../services/storage.service'
 import FirebaseUtils from './FirebaseUtils'
@@ -34,7 +31,6 @@ import { Toast } from '@capacitor/toast'
 import { Device } from '@capacitor/device'
 import { OAuth2Client } from '@byteowls/capacitor-oauth2'
 import FlavorUtils from './FlavorUtils'
-import { Browser } from '@capacitor/browser'
 
 @Injectable({
 	providedIn: 'root',
@@ -56,14 +52,15 @@ export class OAuthUtils {
 
 	async login(statusCallback: (finished: boolean) => void = null) {
 		return OAuth2Client.authenticate(await this.getOAuthOptions())
-			.then(async (response: any) => {
+			.then(async (response: AccessTokenResponse) => {
 				const loadingScreen = await this.presentLoading()
 				loadingScreen.present()
 
-				var result = response.access_token_response
-				if (!result.hasOwnProperty('access_token')) {
-					result = JSON.parse(response.access_token_response)
-				}
+				let result = response.access_token_response
+				if (typeof result === 'string') {
+					result = JSON.parse(response.access_token_response as string) 
+				} 
+				result = result as Token
 				const accessToken = result.access_token
 				const refreshToken = result.refresh_token
 
@@ -71,7 +68,7 @@ export class OAuthUtils {
 				// and kick off real expiration times
 				const expiresIn = Date.now() + 10 * 60 * 1000
 
-				console.log('successfull', accessToken, refreshToken, expiresIn)
+				console.log('successful', accessToken, refreshToken, expiresIn)
 				await this.storage.setAuthUser({
 					accessToken: accessToken,
 					refreshToken: refreshToken,
@@ -82,7 +79,7 @@ export class OAuthUtils {
 				await this.firebaseUtils.pushLastTokenUpstream(true)
 				await this.sync.fullSync()
 
-				let isPremium = await this.merchantUtils.hasMachineHistoryPremium()
+				const isPremium = await this.merchantUtils.hasMachineHistoryPremium()
 
 				loadingScreen.dismiss()
 				if (isPremium) {
@@ -95,7 +92,7 @@ export class OAuthUtils {
 
 				return true
 			})
-			.catch((reason: any) => {
+			.catch((reason: unknown) => {
 				if (statusCallback) statusCallback(true)
 				console.error('OAuth rejected', reason)
 				Toast.show({
@@ -114,9 +111,9 @@ export class OAuthUtils {
 	}
 
 	public hashCode(string: string): string {
-		var hash = 0
-		for (var i = 0; i < string.length; i++) {
-			var character = string.charCodeAt(i)
+		let hash = 0
+		for (let i = 0; i < string.length; i++) {
+			const character = string.charCodeAt(i)
 			hash = (hash << 5) - hash + character
 			hash = hash & hash
 		}
@@ -167,4 +164,13 @@ export class OAuthUtils {
 			},
 		}
 	}
+}
+
+interface AccessTokenResponse {
+	access_token_response: Token | string
+}
+
+interface Token {
+	access_token: string
+	refresh_token: string
 }

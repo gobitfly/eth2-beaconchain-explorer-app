@@ -24,7 +24,7 @@ import { ModalController, Platform } from '@ionic/angular'
 import { ValidatordetailPage } from '../pages/validatordetail/validatordetail.page'
 import { ApiService } from '../services/api.service'
 import { AlertController } from '@ionic/angular'
-import { ValidatorResponse, AttestationPerformanceResponse } from '../requests/requests'
+import { ValidatorResponse } from '../requests/requests'
 import { StorageService } from '../services/storage.service'
 import { AlertService } from '../services/alert.service'
 import { SyncService } from '../services/sync.service'
@@ -37,7 +37,7 @@ import { Keyboard } from '@capacitor/keyboard'
 import { Toast } from '@capacitor/toast'
 import ThemeUtils from '../utils/ThemeUtils'
 
-import { Haptics, ImpactStyle } from '@capacitor/haptics'
+import { Haptics } from '@capacitor/haptics'
 import { UnitconvService } from '../services/unitconv.service'
 
 @Component({
@@ -54,8 +54,6 @@ export class Tab2Page {
 
 	items: Validator[] = []
 
-	details: any
-
 	searchResultMode = false
 	loading = false
 
@@ -65,7 +63,7 @@ export class Tab2Page {
 
 	initialized = false
 
-	currentPackageMaxValidators: number = 100
+	currentPackageMaxValidators = 100
 
 	selectMode = false
 
@@ -130,7 +128,8 @@ export class Tab2Page {
 
 		this.setLoading(true)
 
-		var temp = await this.validatorUtils.getAllMyValidators().catch((error) => {
+		let temp = await this.validatorUtils.getAllMyValidators().catch((error) => {
+			console.warn('error getAllMyValidators', error)
 			return [] as Validator[]
 		})
 
@@ -374,7 +373,7 @@ export class Tab2Page {
 	}
 
 	getValidatorsByIndex(indexMap): Validator[] {
-		var result = []
+		const result = []
 		indexMap.forEach((value, key) => {
 			const temp = this.items.find((item) => {
 				return item.index == key
@@ -392,8 +391,8 @@ export class Tab2Page {
 	 */
 	getCurrentShare(subArray: Validator[]): number {
 		if (subArray.length <= 0) return null
-		var lastShare = subArray[0].share
-		for (var i = 1; i < subArray.length; i++) {
+		const lastShare = subArray[0].share
+		for (let i = 1; i < subArray.length; i++) {
 			if (lastShare != subArray[i].share) return null
 		}
 		return lastShare
@@ -401,8 +400,8 @@ export class Tab2Page {
 
 	getCurrentELShare(subArray: Validator[]): number {
 		if (subArray.length <= 0) return null
-		var lastShare = subArray[0].execshare
-		for (var i = 1; i < subArray.length; i++) {
+		const lastShare = subArray[0].execshare
+		for (let i = 1; i < subArray.length; i++) {
 			if (lastShare != subArray[i].execshare) return null
 		}
 		return lastShare
@@ -442,8 +441,8 @@ export class Tab2Page {
 		const minShareStake = 0
 		const maxStakeShare = new BigNumber(onlyOneNodeAddress.rocketpool.node_rpl_stake).dividedBy(new BigNumber(1e18)).decimalPlaces(2)
 
-		var currentShares = await this.validatorUtils.getRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address)
-		var current = null
+		const currentShares = await this.validatorUtils.getRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address)
+		let current = null
 		if (currentShares) {
 			current = new BigNumber(currentShares).multipliedBy(new BigNumber(maxStakeShare)).decimalPlaces(4)
 		}
@@ -468,7 +467,7 @@ export class Tab2Page {
 			buttons: [
 				{
 					text: 'Remove',
-					handler: async (_) => {
+					handler: async () => {
 						this.validatorUtils.saveRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address, null)
 						this.cancelSelect()
 						this.validatorUtils.notifyListeners()
@@ -516,9 +515,9 @@ export class Tab2Page {
 		const validatorSubArray = this.getValidatorsByIndex(this.selected)
 		console.log('selected', this.selected, validatorSubArray)
 
-		var sum = new BigNumber('0')
+		let sum = new BigNumber('0')
 		for (const val of validatorSubArray) {
-			var temp = new BigNumber(val.data.effectivebalance)
+			let temp = new BigNumber(val.data.effectivebalance)
 			if (val.rocketpool) {
 				temp = temp.dividedBy(2)
 			}
@@ -554,8 +553,8 @@ export class Tab2Page {
 			buttons: [
 				{
 					text: 'Remove',
-					handler: async (_) => {
-						for (var i = 0; i < validatorSubArray.length; i++) {
+					handler: async () => {
+						for (let i = 0; i < validatorSubArray.length; i++) {
 							validatorSubArray[i].share = null
 							validatorSubArray[i].execshare = null
 						}
@@ -586,7 +585,7 @@ export class Tab2Page {
 						const share = new BigNumber(alertData.share).div(new BigNumber(maxStakeShare))
 						const shareEL = new BigNumber(alertData.execshare).div(new BigNumber(maxStakeShare))
 
-						for (var i = 0; i < validatorSubArray.length; i++) {
+						for (let i = 0; i < validatorSubArray.length; i++) {
 							if (shares && !share.isNaN()) {
 								validatorSubArray[i].share = share.toNumber()
 							}

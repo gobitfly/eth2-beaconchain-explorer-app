@@ -80,7 +80,7 @@ export const MAP: ApiNetwork[] = [
 
 export function findConfigForKey(key: string): ApiNetwork {
 	console.log('looking for config', key, MAP)
-	for (let entry of MAP) {
+	for (const entry of MAP) {
 		if (entry.key == key) return entry
 	}
 	return MAP[0]

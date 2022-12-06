@@ -24,7 +24,7 @@ import { UpdateTokenRequest } from '../requests/requests'
 import { Injectable } from '@angular/core'
 import { AlertController, Platform } from '@ionic/angular'
 
-import { PushNotifications, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications'
+import { PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications'
 
 import { LocalNotifications } from '@capacitor/local-notifications'
 import FlavorUtils from './FlavorUtils'
@@ -64,7 +64,7 @@ export default class FirebaseUtils {
 		return (await LocalNotifications.checkPermissions()).display == 'granted'
 	}
 
-	async registerPush(iosTriggerConsent = false, onPermissionGranted: () => any = null) {
+	async registerPush(iosTriggerConsent = false, onPermissionGranted: () => void = null) {
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
 			return
 		}
@@ -117,7 +117,7 @@ export default class FirebaseUtils {
 		})
 
 		// Some issue with our setup and push will not work
-		PushNotifications.addListener('registrationError', (error: any) => {
+		PushNotifications.addListener('registrationError', (error) => {
 			console.warn(LOGTAG + 'Error on registration:' + JSON.stringify(error))
 		})
 
@@ -127,9 +127,9 @@ export default class FirebaseUtils {
 		})
 
 		// Method called when tapping on a notification
-		PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
+		/*PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
 			//alert("Push action performed: " + JSON.stringify(notification));
-		})
+		})*/
 	}
 
 	private async inAppNotification(title, message) {
@@ -139,7 +139,9 @@ export default class FirebaseUtils {
 			buttons: [
 				{
 					text: 'OK',
-					handler: () => {},
+					handler: () => {
+						return
+					},
 				},
 			],
 		})
@@ -193,10 +195,11 @@ export default class FirebaseUtils {
 			if (force || token != lastToken) {
 				const request = new UpdateTokenRequest(token)
 				const result = await this.api.execute(request).catch((error) => {
+					console.warn('error in updateRemoteNotificationToken execute', error)
 					return false
 				})
-				if (request.wasSuccessfull(result)) {
-					console.log(LOGTAG + ' update on remote was successfull')
+				if (request.wasSuccessful(result)) {
+					console.log(LOGTAG + ' update on remote was successful')
 					this.storage.setItem(firebaseTokenKey, token)
 				}
 			}

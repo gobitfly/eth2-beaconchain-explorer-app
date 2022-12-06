@@ -127,7 +127,9 @@ export function highChartOptions(where) {
 			xAxis: {
 				gridLineColor: 'var(--border-color)',
 				labels: {
-					formatter: function () {},
+					formatter: function () {
+						return
+					},
 				},
 			},
 		},

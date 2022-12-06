@@ -171,7 +171,7 @@ export default class ClientUpdateUtils {
 			return false
 		}
 
-		for (var i = 0; i < this.updates.length; i++) {
+		for (let i = 0; i < this.updates.length; i++) {
 			const value = this.updates[i]
 			if (value.client.key == clientKey) {
 				this.updates.splice(i, 1)
@@ -187,7 +187,7 @@ export default class ClientUpdateUtils {
 			return false
 		}
 
-		for (var i = 0; i < this.updates.length; i++) {
+		for (let i = 0; i < this.updates.length; i++) {
 			const value = this.updates[i]
 			if (value.client.key == info.client.key) {
 				return true
@@ -260,12 +260,13 @@ export default class ClientUpdateUtils {
 	}
 
 	private async getLastClosedVersion(clientKey: string): Promise<LocalReleaseMark> {
-		return await this.storage.getObject(LOCAL_UPDATED_KEY + clientKey)
+		return (await this.storage.getObject(LOCAL_UPDATED_KEY + clientKey)) as LocalReleaseMark
 	}
 
 	private async getReleases(client: ClientInfo): Promise<Release> {
 		const req = new GithubReleaseRequest(client.repo, !(await this.isPreReleaseAllowed()))
 		const response = await this.api.execute(req).catch((error) => {
+			console.warn('error getReleases', error)
 			return null
 		})
 		const temp = req.parse(response)
@@ -281,7 +282,7 @@ export default class ClientUpdateUtils {
 
 		const oldEth1StorageKey = 'setting_client_eth1'
 
-		var oldClient = await this.storage.getItem(oldEth1StorageKey)
+		let oldClient = await this.storage.getItem(oldEth1StorageKey)
 		if (oldClient != null) {
 			console.log('Old ETH1/ETH2 client settings found, converting them')
 

@@ -18,16 +18,23 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Options } from 'highcharts'
 import { HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from '../services/storage.service'
 
 const OFFLINE_THRESHOLD = 8 * 60 * 1000
 
+export interface MachineChartData {
+	Data: Highcharts.SeriesAreaOptions[]
+	Config: MachineChartConfig
+	Error: string
+}
+
 export default class MachineController {
 	constructor(private store: StorageService) {}
 
-	selectionTimeFrame: number = 180
+	selectionTimeFrame = 180
 
-	public addBytesConfig(perS: boolean = false) {
+	public addBytesConfig(perS = false) {
 		return {
 			config: {
 				tooltip: {
@@ -36,14 +43,13 @@ export default class MachineController {
 						fontWeight: 'bold',
 					},
 					pointFormatter: function () {
-						var point = this
 						return (
 							'<span style="color:' +
-							point.color +
+							this.color +
 							'">\u25CF</span> ' +
-							point.series.name +
+							this.series.name +
 							': <b>' +
-							bytes(point.y, true, true) +
+							bytes(this.y, true, true) +
 							(perS ? '/s' : '') +
 							'</b>'
 						)
@@ -57,7 +63,7 @@ export default class MachineController {
 						},
 					},
 				},
-			},
+			} as Options
 		}
 	}
 
@@ -70,8 +76,7 @@ export default class MachineController {
 						fontWeight: 'bold',
 					},
 					pointFormatter: function () {
-						var point = this
-						return '<span style="color:' + point.color + '">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(0) + postFix + '</b>'
+						return '<span style="color:' + this.color + '">\u25CF</span> ' + this.series.name + ': <b>' + this.y.toFixed(0) + postFix + '</b>'
 					},
 				},
 				yAxis: {
@@ -81,12 +86,12 @@ export default class MachineController {
 							return this.value
 						},
 					},
-				},
+				} as Options
 			},
 		}
 	}
 
-	public doMemoryCharts(current: ProcessedStats): any[] {
+	public doMemoryCharts(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
 		if (current && current.system) {
@@ -122,18 +127,19 @@ export default class MachineController {
 			})
 		}
 
-		chartData.push(this.addBytesConfig())
-
-		return chartData
+		return {
+			Data: chartData,
+			Config: this.addBytesConfig(),
+		} as MachineChartData
 	}
 
-	public doCPUCharts(current: ProcessedStats): any[] {
+	public doCPUCharts(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
-		if (!current) return chartData
-		if (!current.system) return ['system_missing']
+		if (!current) return { Data: chartData } as MachineChartData
+		if (!current.system) return { Error: 'system_missing' } as MachineChartData
 
-		let cpuSystemTotal = this.timeAxisChanges(
+		const cpuSystemTotal = this.timeAxisChanges(
 			current.system,
 			(value) => {
 				return value.cpu_node_system_seconds_total
@@ -142,7 +148,7 @@ export default class MachineController {
 		)
 
 		if (current && current.validator) {
-			let cpuValidator = this.timeAxisChanges(
+			const cpuValidator = this.timeAxisChanges(
 				current.validator,
 				(value) => {
 					return value.cpu_process_seconds_total
@@ -158,7 +164,7 @@ export default class MachineController {
 		}
 
 		if (current && current.node) {
-			let cpuNode = this.timeAxisChanges(
+			const cpuNode = this.timeAxisChanges(
 				current.node,
 				(value) => {
 					return value.cpu_process_seconds_total
@@ -173,44 +179,30 @@ export default class MachineController {
 			})
 		}
 
-		/* if (current && current.system) {
-            chartData.push(
-                {
-                    name: 'CPU: System',
-                    color: '#3FF5ec',
-                    data: this.timeAxisChanges(current.system, (value) => { return value.cpu_node_system_seconds_total }, true),
-                    pointWidth: 25,
-                }
-            )
-        }*/
-
-		chartData.push({
-			config: {
-				tooltip: {
-					style: {
-						color: 'var(--text-color)',
-						fontWeight: 'bold',
-					},
-					pointFormatter: function () {
-						var point = this
-						return '<span style="color:' + point.color + '">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(2) + '%' + '</b>'
-					},
-				},
-				yAxis: {
-					labels: {
-						x: -5,
-						formatter: function () {
-							return this.value + '%'
+		return {
+			Data: chartData,
+			Config: {
+				config: {
+					tooltip: {
+						style: {
+							color: 'var(--text-color)',
+							fontWeight: 'bold',
+						},
+						pointFormatter: function () {
+							return '<span style="color:' + this.color + '">\u25CF</span> ' + this.series.name + ': <b>' + this.y.toFixed(2) + '%' + '</b>'
 						},
 					},
-				},
+					yAxis: {
+						labels: {
+							x: -5,
+							formatter: function () {
+								return this.value + '%'
+							},
+						},
+					},
+				} as Options
 			},
-		})
-		/*
-
-    }*/
-
-		return chartData
+		} as MachineChartData
 	}
 
 	public getFallbackConfigurations(data: ProcessedStats): FallbackConfigurations {
@@ -220,7 +212,7 @@ export default class MachineController {
 				eth2Configured: false,
 			}
 		}
-		let isLighthouse = data.client == 'lighthouse'
+		const isLighthouse = data.client == 'lighthouse'
 		/*
             TODO:
             Workaround Lighthouse: lighthouse sync_eth2_fallback_connected & sync_eth1_fallback_connected
@@ -228,18 +220,18 @@ export default class MachineController {
             we are excluding this sync attention data
         */
 
-		let eth2FallbackConfigured = this.getLastFrom(data.node, (array) => array.sync_eth2_fallback_configured)
-		let eth1FallbackConfigured = this.getLastFrom(data.node, (array) => array.sync_eth1_fallback_configured)
+		const eth2FallbackConfigured = this.getLastFrom(data.node, (array) => array.sync_eth2_fallback_configured)
+		const eth1FallbackConfigured = this.getLastFrom(data.node, (array) => array.sync_eth1_fallback_configured)
 		return {
 			eth1Configured: eth1FallbackConfigured && !isLighthouse,
 			eth2Configured: eth2FallbackConfigured && !isLighthouse,
 		}
 	}
 
-	public doSyncCharts(current: ProcessedStats): any[] {
+	public doSyncCharts(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
-		let fallbacks = this.getFallbackConfigurations(current)
+		const fallbacks = this.getFallbackConfigurations(current)
 
 		if (current && current.node && fallbacks.eth1Configured) {
 			chartData.push({
@@ -301,32 +293,32 @@ export default class MachineController {
 			})
 		}
 
-		chartData.push({
-			config: {
-				tooltip: {
-					style: {
-						color: 'var(--text-color)',
-						fontWeight: 'bold',
-					},
-					pointFormatter: function () {
-						var point = this
-						return '<span style="color:' + point.color + '">\u25CF</span> ' + point.series.name + ': <b>' + (point.y ? 'True' : 'False') + '</b>'
-					},
-				},
-				yAxis: {
-					allowDecimals: false,
-					labels: {
-						x: -5,
-						step: 1,
-						formatter: function () {
-							return this.value >= 1 ? 'True' : 'False'
+		return {
+			Data: chartData,
+			Config: {
+				config: {
+					tooltip: {
+						style: {
+							color: 'var(--text-color)',
+							fontWeight: 'bold',
+						},
+						pointFormatter: function () {
+							return '<span style="color:' + this.color + '">\u25CF</span> ' + this.series.name + ': <b>' + (this.y ? 'True' : 'False') + '</b>'
 						},
 					},
-				},
+					yAxis: {
+						allowDecimals: false,
+						labels: {
+							x: -5,
+							step: 1,
+							formatter: function () {
+								return this.value >= 1 ? 'True' : 'False'
+							},
+						},
+					},
+				} as Options
 			},
-		})
-
-		return chartData
+		} as MachineChartData
 	}
 
 	isBuggyPrysmVersion(data: ProcessedStats): boolean {
@@ -334,17 +326,17 @@ export default class MachineController {
 	}
 
 	async getAnyAttention(data: ProcessedStats) {
-		let sync = this.getSyncAttention(data)
+		const sync = this.getSyncAttention(data)
 		if (sync) return sync
-		let disk = await this.getDiskAttention(data)
+		const disk = await this.getDiskAttention(data)
 		if (disk) return disk
 		return await this.getMemoryAttention(data)
 	}
 
 	protected async getDiskAttention(data: ProcessedStats): Promise<string> {
 		if (!data || !data.system) return null
-		let freePercentage = this.getLastFrom(data.system, (array) => array.disk_node_bytes_free / array.disk_node_bytes_total)
-		const threshold = 100 - (await this.store.getSetting(HDD_THRESHOLD, 90))
+		const freePercentage = this.getLastFrom(data.system, (array) => array.disk_node_bytes_free / array.disk_node_bytes_total)
+		const threshold = 100 - ((await this.store.getSetting(HDD_THRESHOLD, 90)) as number)
 		console.log('HDD threshold', threshold)
 
 		if (freePercentage < threshold / 100) {
@@ -356,13 +348,13 @@ export default class MachineController {
 
 	protected async getMemoryAttention(data: ProcessedStats): Promise<string> {
 		if (!data || !data.system) return null
-		let usagePercentage =
+		const usagePercentage =
 			1 -
 			this.getLastFrom(
 				data.system,
 				(array) => (array.memory_node_bytes_free + array.memory_node_bytes_buffers + array.memory_node_bytes_cached) / array.memory_node_bytes_total
 			)
-		const threshold = await this.store.getSetting(RAM_THRESHOLD, 80)
+		const threshold = (await this.store.getSetting(RAM_THRESHOLD, 80)) as number
 		console.log('RAM threshold', threshold, usagePercentage)
 
 		if (usagePercentage > threshold / 100) {
@@ -385,12 +377,12 @@ export default class MachineController {
 	}
 
 	protected getSyncAttention(data: ProcessedStats): string {
-		let synced = this.getLastFrom(data.node, (array) => array.sync_eth2_synced)
-		let eth1Connected = this.getLastFrom(data.node, (array) => array.sync_eth1_connected)
+		const synced = this.getLastFrom(data.node, (array) => array.sync_eth2_synced)
+		const eth1Connected = this.getLastFrom(data.node, (array) => array.sync_eth1_connected)
 
-		let fallbacksConfigured = this.getFallbackConfigurations(data)
-		let eth2Fallback = this.getLastFrom(data.node, (array) => array.sync_eth2_fallback_connected)
-		let eth1Fallback = this.getLastFrom(data.node, (array) => array.sync_eth1_fallback_connected)
+		const fallbacksConfigured = this.getFallbackConfigurations(data)
+		const eth2Fallback = this.getLastFrom(data.node, (array) => array.sync_eth2_fallback_connected)
+		const eth1Fallback = this.getLastFrom(data.node, (array) => array.sync_eth1_fallback_connected)
 
 		if (!data.node) {
 			return "No beaconnode data found. If you wish to track this data, make sure to configure metric tracking on your beaconnode machine too. <a target='_blank' href='https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node'>Learn more here</a>."
@@ -408,15 +400,15 @@ export default class MachineController {
 		return null
 	}
 
-	protected getLastN<T>(dataArray: T[], callbackValue: (array: T) => any, isDiffPair: boolean = false, depth = 10) {
-		var erg = []
+	protected getLastN<T>(dataArray: T[], callbackValue: (array: T) => number, isDiffPair = false, depth = 10): number[] {
+		const erg = []
 		if (!dataArray) return null
 		const length = Math.min(dataArray.length, depth)
 		if (length <= 0) return null
 
 		if (isDiffPair && length <= 2) return null
 
-		for (var i = 1; i < length; i++) {
+		for (let i = 1; i < length; i++) {
 			if (isDiffPair) {
 				erg[i - 1] = callbackValue(dataArray[dataArray.length - i]) - callbackValue(dataArray[dataArray.length - (i + 1)])
 			} else {
@@ -427,22 +419,22 @@ export default class MachineController {
 		return erg
 	}
 
-	protected getAvgFrom<T>(dataArray: T[], callbackValue: (array: T) => any, isDiffPair: boolean = false, depth = 10): any {
-		let data = this.getLastN(dataArray, callbackValue, isDiffPair, depth)
+	protected getAvgFrom<T>(dataArray: T[], callbackValue: (array: T) => number, isDiffPair = false, depth = 10): number {
+		const data = this.getLastN(dataArray, callbackValue, isDiffPair, depth)
 		if (!data) return null
 
-		let erg = data.reduce((sum, cur) => sum + cur)
+		const erg = data.reduce((sum, cur) => sum + cur)
 
 		return Math.round((erg / (depth - 1)) * 100) / 100
 	}
 
-	protected getAvgRelativeFrom(data1LastN: any[], data2LastN: any[], callback: (val1, val2) => any) {
+	protected getAvgRelativeFrom(data1LastN: number[], data2LastN: number[], callback: (val1, val2) => number) {
 		if (!data1LastN || !data2LastN) return null
 		const length = Math.min(data1LastN.length, data2LastN.length)
 
-		var erg = 0
-		for (var i = 0; i < length; i++) {
-			let second = data2LastN[i]
+		let erg = 0
+		for (let i = 0; i < length; i++) {
+			const second = data2LastN[i]
 			if (second == 0) continue
 			erg += callback(data1LastN[i], second)
 		}
@@ -451,14 +443,10 @@ export default class MachineController {
 		return Math.round((erg / length) * 10000) / 10000
 	}
 
-	protected getLastFrom<T>(dataArray: T[], callbackValue: (array: T) => any, isDiffPair: boolean = false): any {
+	protected getLastFrom<T, V>(dataArray: T[], callbackValue: (array: T) => V): V {
 		if (!dataArray || dataArray.length <= 0) return null
-		if (isDiffPair) {
-			if (dataArray.length <= 2) return null
-			return callbackValue(dataArray[dataArray.length - 1]) - callbackValue(dataArray[dataArray.length - 2])
-		} else {
-			return callbackValue(dataArray[dataArray.length - 1])
-		}
+		const first = callbackValue(dataArray[dataArray.length - 1])
+		return first
 	}
 
 	// --- Data helper functions ---
@@ -480,52 +468,49 @@ export default class MachineController {
 	}
 
 	normalizeTimeframeNumber(dataSet: StatsBase[]): number {
-		let gapSize = Math.round(this.getGapSize(dataSet) / 1000)
+		const gapSize = Math.round(this.getGapSize(dataSet) / 1000)
 		return gapSize
 	}
 
-	timeAxisRelative(max: any[], current: any[], inverted: boolean = false, rounding = 10) {
-		var result = []
-		/*if (max.length != current.length) {
-            console.warn("timeAxisRelative max and current array is differently sized")
-            return [] 
-        }*/
+	timeAxisRelative(max: StatsBase[], current: number[], inverted = false, rounding = 10) {
+		const result = []
 		const gapSize = this.normalizeTimeframeNumber(max)
 
-		var maxOffset = 0
-		var currentOffest = 0
+		let maxOffset = 0
+		let currentOffset = 0
 
+		// eslint-disable-next-line no-constant-condition
 		while (true) {
-			if (current.length <= currentOffest) break
+			if (current.length <= currentOffset) break
 			if (max.length <= maxOffset) break
-			var curV = current[currentOffest]
-			var maxV = max[maxOffset]
+			const curV = current[currentOffset]
+			const maxV = max[maxOffset]
 
-			let drift = curV[0] - maxV[0]
+			const drift = curV[0] - maxV[0]
 
 			if (drift > gapSize * 1500) {
 				maxOffset++
 				continue
 			} else if (drift < gapSize * -1500) {
-				currentOffest++
+				currentOffset++
 				continue
 			}
 
-			let tempValue = maxV[1] == 0 ? 0 : Math.round((curV[1] / maxV[1]) * (100 * rounding)) / rounding
-			let value = inverted ? Math.round((100 - tempValue) * 10) / 10 : tempValue
+			const tempValue = maxV[1] == 0 ? 0 : Math.round((curV[1] / maxV[1]) * (100 * rounding)) / rounding
+			const value = inverted ? Math.round((100 - tempValue) * 10) / 10 : tempValue
 			result.push([maxV[0], maxV[1] == 0 ? 0 : value])
 
 			maxOffset++
-			currentOffest++
+			currentOffset++
 		}
 		return result
 	}
 
-	public timeAxisChanges<T extends StatsBase>(data: T[], delegateValue: (value: T, timeDiff?) => number, accumilative: boolean = false) {
-		var result = []
-		var summedUp = -1
-		var lastValue = 0
-		var lastTimestamp = -1
+	public timeAxisChanges<T extends StatsBase>(data: T[], delegateValue: (value: T, timeDiff?) => number, accumilative = false) {
+		let result = []
+		let summedUp = -1
+		let lastValue = 0
+		let lastTimestamp = -1
 		data.forEach((value) => {
 			const current = delegateValue(value, value.timestamp - lastTimestamp)
 			if (accumilative && current < summedUp) summedUp = 0
@@ -563,21 +548,22 @@ export default class MachineController {
 		return result
 	}
 
-	fillWithZeros(array: any[], from: number, to: number): any[] {
+	fillWithZeros(array: number[][], from: number, to: number): number[][] {
 		const interval = 60000
-		for (var i: number = from + interval; i < to - interval; i += interval) {
+		for (let i: number = from + interval; i < to - interval; i += interval) {
 			array.push([i, 0])
 		}
 		return array
 	}
 
-	public combineByMachineName(validator: any[], node: any[], system: any[]) {
+	public combineByMachineName(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
 		const allKeys = this.findAllKeys(validator, node, system)
-		var result: ProcessedStats[] = []
-		for (var key in allKeys) {
-			let sortedVal = this.sortData(validator[key]) as StatsValidator[]
-			let sortedNode = this.sortData(node[key]) as StatsNode[]
-			let sortedSystem = this.sortData(system[key]) as StatsSystem[]
+
+		const result: ProcessedStats[] = []
+		for (const key in allKeys) {
+			const sortedVal = this.sortData(validator.get(key)) as StatsValidator[]
+			const sortedNode = this.sortData(node.get(key)) as StatsNode[]
+			const sortedSystem = this.sortData(system.get(key)) as StatsSystem[]
 
 			const unixTime = this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => {
 				return value.timestamp
@@ -609,14 +595,14 @@ export default class MachineController {
 		})
 	}
 
-	public findAnyData(validator: any[], node: any[], system: any[], dataCallback: (value) => any) {
+	public findAnyData<V>(validator: StatsValidator[], node: StatsNode[], system: StatsSystem[], dataCallback: (value) => V) {
 		const result1 = this.findAnyDataIn(validator, dataCallback)
 		const result3 = this.findAnyDataIn(node, dataCallback)
 		const result4 = this.findAnyDataIn(system, dataCallback)
 		return result1 != null ? result1 : result3 != null ? result3 : result4 != null ? result4 : null
 	}
 
-	public findAnyDataIn<T>(current: T[], dataCallback: (value: T) => string) {
+	public findAnyDataIn<T, V>(current: T[], dataCallback: (value: T) => V) {
 		if (!current || current.length <= 0) return null
 		const result = dataCallback(current[current.length - 1])
 		if (result && result != '') {
@@ -625,35 +611,38 @@ export default class MachineController {
 		return null
 	}
 
-	public findAllKeys(validator: any[], node: any[], system: any[]) {
-		var result = []
-		for (var key in validator) {
+	public findAllKeys(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
+		const result = []
+		for (const key of validator.keys()) {
 			result[key] = true
 		}
-		for (var key in node) {
+		for (const key of node.keys()) {
 			result[key] = true
 		}
-		for (var key in system) {
+		for (const key of system.keys()) {
 			result[key] = true
 		}
 		return result
 	}
 
-	public filterMachines<Type extends StatsBase>(data: Type[]): Type[] {
-		var result: Type[] = []
+	public filterMachines<Type extends StatsBase>(data: Type[]): Map<string, Type[]> {
+		const result = new Map()
 		for (let i = 0; i < data.length; i++) {
-			if (result[data[i].machine] == null) {
-				result[data[i].machine] = []
+			let array = result.get(data[i].machine)
+			if (array == null) {
+				array = []
 			}
-			result[data[i].machine].push(data[i])
+			array.push(data[i])
+			result.set(data[i].machine, array)
 		}
+
 		return result
 	}
 
 	public hashCode(string: string) {
-		var hash = 0
-		for (var i = 0; i < string.length; i++) {
-			var character = string.charCodeAt(i)
+		let hash = 0
+		for (let i = 0; i < string.length; i++) {
+			const character = string.charCodeAt(i)
 			hash = (hash << 5) - hash + character
 			hash = hash & hash
 		}
@@ -662,12 +651,12 @@ export default class MachineController {
 }
 
 export const bytes = (function () {
-	var s = ['b', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
-		tempLabel = [],
-		count
+	const s = ['b', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
+		tempLabel = []
+	let count
 
 	return function (bytes, label, isFirst, precision = 3) {
-		var e, value
+		let e, value
 
 		if (bytes == 0) return 0
 
@@ -686,6 +675,10 @@ export const bytes = (function () {
 		return value
 	}
 })()
+
+export interface MachineChartConfig {
+	config: Options
+}
 
 export interface ProcessedStats extends StatsResponse {
 	client: string
