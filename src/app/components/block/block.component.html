@@ -7,12 +7,12 @@
 			</div>
 
 			<div class="info">
-				<ion-text class="title">Reward: {{ producerReward | mcurrency: 'WEI':unit.pref }}</ion-text>
+				<ion-text class="title">Reward: {{ producerReward | mcurrency : 'WEI' : unit.pref }}</ion-text>
 				<ion-label class="smaller-info" style="padding-bottom: 0px">
 					<span>Proposer: {{ block.posConsensus.proposerIndex }}</span>
 				</ion-label>
 				<ion-label class="smaller-info" style="padding-bottom: 0px">
-					<span *ngIf="!resolvedName">To: {{ feeRecipient | slice: 0:8 }}…{{ feeRecipient | slice: 35:42 }}</span>
+					<span *ngIf="!resolvedName">To: {{ feeRecipient | slice : 0 : 8 }}…{{ feeRecipient | slice : 35 : 42 }}</span>
 					<span *ngIf="resolvedName"
 						>To: <span [class]="resolvedClass">{{ resolvedName }}</span></span
 					>
