@@ -146,12 +146,12 @@ export class DashboardComponent implements OnInit {
 						this.notificationPermissionPending = !result
 					})
 				}
-
+				this.drawBalanceChart()
+				this.drawProposalChart()
 				this.beaconChainUrl = await this.getBaseBrowserUrl()
+
 				await Promise.all([
 					this.updateRplDisplay(),
-					this.drawBalanceChart(),
-					this.drawProposalChart(),
 					this.updateNextRewardRound(),
 					this.updateRplCommission(),
 					this.updateRplApr(),
