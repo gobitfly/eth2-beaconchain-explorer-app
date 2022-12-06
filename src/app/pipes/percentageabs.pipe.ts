@@ -25,7 +25,7 @@ import BigNumber from 'bignumber.js'
 	name: 'percentageabs',
 })
 export class PercentageabsPipe implements PipeTransform {
-	transform(value_: (number | BigNumber), max_: (number | BigNumber), percentMode: boolean, preablePrct = ''): string {
+	transform(value_: number | BigNumber, max_: number | BigNumber, percentMode: boolean, preablePrct = ''): string {
 		const value = value_ instanceof BigNumber ? value_ : new BigNumber(value_)
 		const max = max_ instanceof BigNumber ? max_ : new BigNumber(max_)
 

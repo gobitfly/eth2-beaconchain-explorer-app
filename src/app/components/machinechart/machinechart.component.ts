@@ -51,7 +51,7 @@ export class MachinechartComponent implements OnInit {
 
 				this.chartError = this.chartData.Data.length <= 0 || this.chartData.Data[0].data.length <= 1
 			} catch (e) {
-				console.warn("cannot get chart data", e)
+				console.warn('cannot get chart data', e)
 				this.chartError = true
 			}
 		}, 400 + priorityDelay)

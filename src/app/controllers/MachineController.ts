@@ -63,7 +63,7 @@ export default class MachineController {
 						},
 					},
 				},
-			} as Options
+			} as Options,
 		}
 	}
 
@@ -86,7 +86,7 @@ export default class MachineController {
 							return this.value
 						},
 					},
-				} as Options
+				} as Options,
 			},
 		}
 	}
@@ -200,7 +200,7 @@ export default class MachineController {
 							},
 						},
 					},
-				} as Options
+				} as Options,
 			},
 		} as MachineChartData
 	}
@@ -316,7 +316,7 @@ export default class MachineController {
 							},
 						},
 					},
-				} as Options
+				} as Options,
 			},
 		} as MachineChartData
 	}
