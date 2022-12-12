@@ -28,7 +28,7 @@ interface CachedData {
 }
 
 export class CacheModule {
-	private staleTime = 5 * 60 * 1000 // 6 Minutes
+	private staleTime
 
 	private keyPrefix = ''
 	private hardStorage: StorageService = null
