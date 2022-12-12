@@ -18,9 +18,9 @@
 
     </style>
 
-
-        <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-            <item name="windowSplashScreenBackground">@color/splashscreenbg</item>
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splashscreenbg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
     </style>
 
     <style name="Widget">
