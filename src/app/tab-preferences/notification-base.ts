@@ -1,7 +1,7 @@
 import { Injectable, OnInit } from '@angular/core'
 import { Platform } from '@ionic/angular'
 import { ApiService } from 'src/app/services/api.service'
-import { CPU_THRESHOLD, HDD_THRESHOLD, OFFLINE_THRESHOLD, RAM_THRESHOLD, SETTING_NOTIFY, StorageService } from 'src/app/services/storage.service'
+import { CPU_THRESHOLD, HDD_THRESHOLD, RAM_THRESHOLD, SETTING_NOTIFY, StorageService } from 'src/app/services/storage.service'
 import { GetMobileSettingsRequest, MobileSettingsResponse, NotificationGetRequest } from '../requests/requests'
 import { AlertService, SETTINGS_PAGE } from '../services/alert.service'
 import { SyncService } from '../services/sync.service'
