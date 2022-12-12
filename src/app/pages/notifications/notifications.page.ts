@@ -95,8 +95,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 
 	changeValidatorOffline() {
 		if (!this.initialized) return
-		this.storage.setSetting(OFFLINE_THRESHOLD, this.offlineThreshold)
-		this.notifyEventFilterToggle('validator_is_offline', null, this.offlineThreshold)
+		this.notifyEventFilterToggle('validator_is_offline', null, 3)
 	}
 
 	changeDiskNotification() {
