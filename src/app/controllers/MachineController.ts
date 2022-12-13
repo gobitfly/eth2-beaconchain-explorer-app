@@ -689,8 +689,3 @@ export interface StatsSystem extends StatsBase {
 	network_node_bytes_total_receive: number
 	network_node_bytes_total_transmit: number
 }
-
-export interface FallbackConfigurations {
-	eth1Configured: boolean
-	eth2Configured: boolean
-}

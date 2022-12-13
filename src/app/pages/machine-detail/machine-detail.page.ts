@@ -3,7 +3,7 @@ import { ModalController } from '@ionic/angular'
 import { Options } from 'highcharts'
 import { fromEvent, Subscription } from 'rxjs'
 import { StorageService } from 'src/app/services/storage.service'
-import MachineController, { ProcessedStats, bytes, FallbackConfigurations, MachineChartData } from '../../controllers/MachineController'
+import MachineController, { ProcessedStats, bytes, MachineChartData } from '../../controllers/MachineController'
 
 @Component({
 	selector: 'app-machine-detail',

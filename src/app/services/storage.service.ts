@@ -34,7 +34,6 @@ const AUTH_USER = 'auth_user'
 const PREFERENCES = 'network_preferences'
 
 export const SETTING_NOTIFY = 'setting_notify'
-export const OFFLINE_THRESHOLD = 'offline_threshold'
 export const CPU_THRESHOLD = 'cpu_usage_threshold'
 export const HDD_THRESHOLD = 'hdd_usage_threshold'
 export const RAM_THRESHOLD = 'ram_usage_threshold'
