@@ -487,7 +487,7 @@ export class DashboardComponent implements OnInit {
 		this.storage.setBooleanSetting('rank_percent_mode', this.rankPercentMode)
 	}
 
-	private getChartToolTipCaption(timestamp: number, genesisTs: number) {
+	private getChartToolTipCaption(timestamp: number, genesisTs: number, dataGroupLength: number) {
 		const dateToEpoch = (ts: number): number => {
 			const slot = Math.floor((ts / 1000 - genesisTs) / 12)
 			const epoch = Math.floor(slot / 32)
@@ -496,11 +496,15 @@ export class DashboardComponent implements OnInit {
 
 		const startEpoch = dateToEpoch(timestamp)
 		const dateForNextDay = new Date(timestamp)
-		dateForNextDay.setDate(dateForNextDay.getDate() + 1)
+		dateForNextDay.setDate(dateForNextDay.getDate() + dataGroupLength)
 		const endEpoch = dateToEpoch(dateForNextDay.getTime()) - 1
 		const epochText = `(Epochs ${startEpoch} - ${endEpoch})<br/>`
 
-		return `${new Date(timestamp).toLocaleDateString()} ${epochText}`
+		if (dataGroupLength == 1) {
+			return `${new Date(timestamp).toLocaleDateString()} ${epochText}`
+		} else {
+			return `${new Date(timestamp).toLocaleDateString()} - ${new Date(dateForNextDay).toLocaleDateString()} <br/>${epochText}`
+		}
 	}
 
 	async createProposedChart(proposed, missed, orphaned) {
@@ -553,7 +557,7 @@ export class DashboardComponent implements OnInit {
 					shared: true,
 					formatter: (tooltip) => {
 						// date and epoch
-						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs)
+						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
 
 						// summary
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
@@ -566,7 +570,11 @@ export class DashboardComponent implements OnInit {
 				plotOptions: {
 					series: {
 						dataGrouping: {
-							units: [['day', [1]]],
+							units: [
+								['day', [1, 2, 3]],
+								['week', [1, 2]],
+								['month', [1, 2, 3, 6]],
+							],
 							forced: true,
 							enabled: true,
 							groupAll: true,
@@ -666,7 +674,7 @@ export class DashboardComponent implements OnInit {
 					shared: true,
 					formatter: (tooltip) => {
 						// date and epoch
-						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs)
+						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
 
 						// income
 						let total = new BigNumber(0)
@@ -699,10 +707,15 @@ export class DashboardComponent implements OnInit {
 						dataLabels: {
 							enabled: false,
 						},
-						pointInterval: 24 * 3600 * 1000,
 						dataGrouping: {
 							forced: true,
-							units: [['day', [1]]],
+							enabled: true,
+
+							units: [
+								['day', [1, 2, 3]],
+								['week', [1, 2]],
+								['month', [1, 2, 3, 6]],
+							],
 						},
 					},
 				},
