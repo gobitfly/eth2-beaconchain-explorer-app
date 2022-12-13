@@ -96,11 +96,11 @@ export type Description = {
 export default class OverviewController {
 	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280) {}
 
-	processDashboard(validators: Validator[], currentEpoch: EpochResponse) {
+	public processDashboard(validators: Validator[], currentEpoch: EpochResponse) {
 		return this.process(validators, currentEpoch, false)
 	}
 
-	processDetail(validators: Validator[], currentEpoch: EpochResponse) {
+	public processDetail(validators: Validator[], currentEpoch: EpochResponse) {
 		return this.process(validators, currentEpoch, true)
 	}
 
@@ -216,13 +216,13 @@ export default class OverviewController {
 				fee: feeAvg,
 				status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
 				depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
-				smoothingPoolClaimed: this.sumRocketpoolBigIntPerNodeAddress(
+				smoothingPoolClaimed: this.sumRocketpoolSmoothingBigIntPerNodeAddress(
 					true,
 					validators,
 					(cur) => cur.rocketpool.claimed_smoothing_pool,
 					(cur) => cur.execshare
 				),
-				smoothingPoolUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(
+				smoothingPoolUnclaimed: this.sumRocketpoolSmoothingBigIntPerNodeAddress(
 					true,
 					validators,
 					(cur) => cur.rocketpool.unclaimed_smoothing_pool,
@@ -275,7 +275,7 @@ export default class OverviewController {
 		}
 	}
 
-	sumExcludeSmoothingPool(cur: Validator, field: (cur: Validator) => string) {
+	private sumExcludeSmoothingPool(cur: Validator, field: (cur: Validator) => string) {
 		// Exclude rocketpool minipool from execution rewards collection
 		if (!cur.rocketpool || !cur.rocketpool.smoothing_pool_opted_in) {
 			return cur.execution ? new BigNumber(field(cur)).dividedBy(new BigNumber('1e9')) : new BigNumber(0)
@@ -314,7 +314,7 @@ export default class OverviewController {
 		}
 	}
 
-	getRocketpoolCheatingStatus(validators: Validator[]): RocketpoolCheatingStatus {
+	private getRocketpoolCheatingStatus(validators: Validator[]): RocketpoolCheatingStatus {
 		let strikes = 0
 		let penalties = 0
 
@@ -335,7 +335,7 @@ export default class OverviewController {
 		}
 	}
 
-	sumBigIntBalanceRpl(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
+	public sumBigIntBalanceRpl(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
 		return sumBigInt(validators, (cur) => {
 			const fieldVal = field(cur)
 			if (!cur.rocketpool) return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
@@ -350,7 +350,7 @@ export default class OverviewController {
 		})
 	}
 
-	sumBigIntPerformanceRpl(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
+	private sumBigIntPerformanceRpl(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
 		return sumBigInt(validators, (cur) => {
 			if (!cur.rocketpool) return field(cur)
 			if (!cur.rocketpool.node_address) return field(cur)
@@ -361,7 +361,7 @@ export default class OverviewController {
 		})
 	}
 
-	sumRocketpoolBigIntPerNodeAddress(
+	private sumRocketpoolBigIntPerNodeAddress(
 		applyShare: boolean,
 		validators: Validator[],
 		field: (cur: Validator) => string,
@@ -381,12 +381,46 @@ export default class OverviewController {
 		})
 	}
 
-	getAPRFromMonth(effectiveBalance: BigNumber, performance: BigNumber): number {
+	private sumRocketpoolSmoothingBigIntPerNodeAddress(
+		applyShare: boolean,
+		validators: Validator[],
+		field: (cur: Validator) => string,
+		share: (cur: Validator) => number
+	): BigNumber {
+		const totalMinipoolFeeForNodeCache = new Map<string, number>()
+
+		return sumBigInt(validators, (cur) => {
+			if (!cur.rocketpool) return new BigNumber(0)
+			if (!cur.rocketpool.node_address) return new BigNumber(0)
+
+			if (!totalMinipoolFeeForNodeCache.has(cur.rocketpool.node_address)) {
+				const totalMinipoolFeeForNode = validators
+					.filter((item) => {
+						if (!item.rocketpool) return false
+						if (!item.rocketpool.node_address) return false
+						return item.rocketpool.node_address == cur.rocketpool.node_address
+					})
+					.reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue.rocketpool.minipool_node_fee.toString()), 0)
+				totalMinipoolFeeForNodeCache.set(cur.rocketpool.node_address, totalMinipoolFeeForNode)
+			}
+
+			const nodeFeeShare =
+				parseFloat(cur.rocketpool.minipool_node_fee.toString()) / (totalMinipoolFeeForNodeCache.get(cur.rocketpool.node_address) || 1)
+			let temp = new BigNumber(field(cur).toString())
+			temp = temp.multipliedBy(nodeFeeShare)
+			if (applyShare) {
+				return temp.multipliedBy(share(cur) == null ? 1 : share(cur))
+			}
+			return temp
+		})
+	}
+
+	private getAPRFromMonth(effectiveBalance: BigNumber, performance: BigNumber): number {
 		if (effectiveBalance.toNumber() == 0) return 0
 		return new BigNumber(performance.toString()).multipliedBy('1177').dividedBy(effectiveBalance).decimalPlaces(1).toNumber()
 	}
 
-	getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
+	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
 		const activeValidatorCount = activeValidators.length
