@@ -58,10 +58,6 @@ export class MachineDetailPage extends MachineController implements OnInit {
 	uptime = 0
 	os: string
 	stateSynced: string
-	fallbacks: FallbackConfigurations = {
-		eth1Configured: false,
-		eth2Configured: false,
-	}
 
 	validatorLabelActive = ''
 	validatorLabelTotal = ''
@@ -233,7 +229,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 				'Writes: ' + Math.round(this.getAvgFrom(this.data.system, (array) => array.disk_node_writes_total / this.magicGapNumber, true)) + ' iops'
 
 			const eth1Connected = this.getLastFrom(this.data.node, (array) => array.sync_eth1_connected)
-			this.syncLabelEth1Connected = eth1Connected ? 'ETH1 Connected' : 'ETH1 Offline'
+			this.syncLabelEth1Connected = eth1Connected ? 'Exec Connected' : 'Exec Offline'
 
 			const fullySynced = this.getLastFrom(this.data.node, (array) => array.sync_eth2_synced)
 			this.syncLabelState = fullySynced ? 'Synced' : 'Syncing...'
@@ -241,8 +237,6 @@ export class MachineDetailPage extends MachineController implements OnInit {
 			this.syncAttention = this.getSyncAttention(this.data)
 			this.diskAttention = await this.getDiskAttention(this.data)
 			this.memoryAttention = await this.getMemoryAttention(this.data)
-
-			this.fallbacks = this.getFallbackConfigurations(this.data)
 
 			this.isBuggyPrismVersion = this.isBuggyPrysmVersion(this.data)
 		}

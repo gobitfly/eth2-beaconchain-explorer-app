@@ -205,67 +205,12 @@ export default class MachineController {
 		} as MachineChartData
 	}
 
-	public getFallbackConfigurations(data: ProcessedStats): FallbackConfigurations {
-		if (!data) {
-			return {
-				eth1Configured: false,
-				eth2Configured: false,
-			}
-		}
-		const isLighthouse = data.client == 'lighthouse'
-		/*
-            TODO:
-            Workaround Lighthouse: lighthouse sync_eth2_fallback_connected & sync_eth1_fallback_connected
-            are currently reflecting the sync_eth2_fallback_configured flag. This is a known issue,
-            we are excluding this sync attention data
-        */
-
-		const eth2FallbackConfigured = this.getLastFrom(data.node, (array) => array.sync_eth2_fallback_configured)
-		const eth1FallbackConfigured = this.getLastFrom(data.node, (array) => array.sync_eth1_fallback_configured)
-		return {
-			eth1Configured: eth1FallbackConfigured && !isLighthouse,
-			eth2Configured: eth2FallbackConfigured && !isLighthouse,
-		}
-	}
-
 	public doSyncCharts(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
-		const fallbacks = this.getFallbackConfigurations(current)
-
-		if (current && current.node && fallbacks.eth1Configured) {
-			chartData.push({
-				name: 'ETH1 Fallback',
-				color: '#ffcc9c',
-				data: this.timeAxisChanges(
-					current.node,
-					(value) => {
-						return value.sync_eth1_fallback_connected ? 1 : 0
-					},
-					false
-				),
-				pointWidth: 25,
-			})
-		}
-
-		if (current && current.validator && fallbacks.eth2Configured) {
-			chartData.push({
-				name: 'ETH2 Fallback',
-				color: '#Dcb5ec',
-				data: this.timeAxisChanges(
-					current.validator,
-					(value) => {
-						return value.sync_eth2_fallback_connected ? 1.1 : 0
-					},
-					false
-				),
-				pointWidth: 25,
-			})
-		}
-
 		if (current && current.node) {
 			chartData.push({
-				name: 'ETH1 Connected',
+				name: 'Exec Connected',
 				color: '#3335FF',
 				data: this.timeAxisChanges(
 					current.node,
@@ -280,7 +225,7 @@ export default class MachineController {
 
 		if (current && current.node) {
 			chartData.push({
-				name: 'ETH2 Synced',
+				name: 'Cons Synced',
 				color: '#3FF5ec',
 				data: this.timeAxisChanges(
 					current.node,
@@ -380,18 +325,10 @@ export default class MachineController {
 		const synced = this.getLastFrom(data.node, (array) => array.sync_eth2_synced)
 		const eth1Connected = this.getLastFrom(data.node, (array) => array.sync_eth1_connected)
 
-		const fallbacksConfigured = this.getFallbackConfigurations(data)
-		const eth2Fallback = this.getLastFrom(data.node, (array) => array.sync_eth2_fallback_connected)
-		const eth1Fallback = this.getLastFrom(data.node, (array) => array.sync_eth1_fallback_connected)
-
 		if (!data.node) {
 			return "No beaconnode data found. If you wish to track this data, make sure to configure metric tracking on your beaconnode machine too. <a target='_blank' href='https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node'>Learn more here</a>."
 		} else if (!eth1Connected) {
-			return 'No ETH1 connection, make sure you have configured an ETH1 endpoint and it is currently active and synced.'
-		} else if (eth2Fallback && fallbacksConfigured.eth2Configured) {
-			return 'Main ETH2 node is not reachable, you are currently connected via a fallback connection.'
-		} else if (eth1Fallback && fallbacksConfigured.eth1Configured) {
-			return 'Main ETH1 is not reachable, you are currently connected via a fallback connection.'
+			return 'No execution client connection, make sure you have configured an execution endpoint and it is currently active and synced.'
 		} else if (!synced) {
 			return 'Your beaconnode is currently syncing. It might take some time to get fully synced.'
 		} else if (!data.validator) {
