@@ -731,16 +731,22 @@ export class DashboardComponent implements OnInit {
 							const padding = 1.15
 							// make sure that the top and bottom tick are exactly at a position with [ticksDecimalPlaces] decimal places
 							const min = Math.round(this.chart.series[1].dataMin * padding * precision) / precision
-							let max
-							if (this.chart.series[0].dataMax != undefined) {
-								// series[1].dataMax contains the consensus reward only and is therefore always available
-								// series[0].dataMax contains the highest visible bar that contains BOTH consensus and execution reward
-								// i.e. series[0].dataMax is undefined if no execution reward is shown
-								// if series[0].dataMax has a proper value, we choose the max between series[0].dataMax and series[1].dataMax
-								max = Math.round(Math.max(this.chart.series[0].dataMax, this.chart.series[1].dataMax) * padding * precision) / precision
-							} else {
-								max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
+
+							// series[1].dataMax contains the consensus reward only and is therefore always available (we use it as default)
+							// series[0].dataMax contains the highest visible bar that contains BOTH consensus AND execution reward
+							// 	=> i.e. series[0].dataMax is undefined if no execution reward is shown
+							// keep in mind that the user can toggle series on/off (can be checked via the series' visible parameter)
+							let maxSeries = 1
+							if (
+								this.chart.series[0].visible &&
+								this.chart.series[0].dataMax != undefined &&
+								(!this.chart.series[1].visible || this.chart.series[0].dataMax > this.chart.series[1].dataMax)
+							) {
+								// use series[0] to calculate max since it is available and series[1] is either hidden or lower than series[0]
+								maxSeries = 0
 							}
+
+							const max = Math.round(this.chart.series[maxSeries].dataMax * padding * precision) / precision
 
 							// only show 3 ticks if min < 0 && max > 0
 							let positions
