@@ -740,9 +740,11 @@ export class DashboardComponent implements OnInit {
 							if (
 								this.chart.series[0].visible &&
 								this.chart.series[0].dataMax != undefined &&
-								(!this.chart.series[1].visible || this.chart.series[0].dataMax > this.chart.series[1].dataMax)
+								(this.chart.series[1].dataMax == undefined ||
+									!this.chart.series[1].visible ||
+									this.chart.series[0].dataMax > this.chart.series[1].dataMax)
 							) {
-								// use series[0] to calculate max since it is available and series[1] is either hidden or lower than series[0]
+								// use series[0] to calculate max since it is available and series[1] is either unavailable/hidden or lower than series[0]
 								maxSeries = 0
 							}
 
