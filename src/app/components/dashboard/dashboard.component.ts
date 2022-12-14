@@ -733,8 +733,10 @@ export class DashboardComponent implements OnInit {
 							const min = Math.round(this.chart.series[1].dataMin * padding * precision) / precision
 							let max
 							if (this.chart.series[0].dataMax != undefined) {
-								// series[1].dataMax is always set while series[0].dataMax is not
-								// if both are set, use the higher one to calculate the max tick
+								// series[1].dataMax contains the consensus reward only and is therefore always available
+								// series[0].dataMax contains the highest visible bar that contains BOTH consensus and execution reward
+								// i.e. series[0].dataMax is undefined if no execution reward is shown
+								// if series[0].dataMax has a proper value, we choose the max between series[0].dataMax and series[1].dataMax
 								max = Math.round(Math.max(this.chart.series[0].dataMax, this.chart.series[1].dataMax) * padding * precision) / precision
 							} else {
 								max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
