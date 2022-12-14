@@ -641,8 +641,6 @@ export interface ProcessBase extends StatsBase {
 	client_version: string
 	cpu_process_seconds_total: number
 	memory_process_bytes: number
-	sync_eth2_fallback_configured: boolean
-	sync_eth2_fallback_connected: boolean
 }
 
 export interface StatsResponse {
@@ -664,8 +662,6 @@ export interface StatsNode extends ProcessBase {
 	sync_eth1_connected: boolean
 	sync_eth2_synced: boolean
 	sync_beacon_head_slot: number
-	sync_eth1_fallback_configured: boolean
-	sync_eth1_fallback_connected: boolean
 }
 
 export interface StatsSystem extends StatsBase {
