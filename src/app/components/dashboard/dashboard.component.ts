@@ -733,8 +733,9 @@ export class DashboardComponent implements OnInit {
 							const min = Math.round(this.chart.series[1].dataMin * padding * precision) / precision
 							let max
 							if (this.chart.series[0].dataMax != undefined) {
-								// series[0] contains accumulated income for execution and consensus but only if both rewards are currently on screen
-								max = Math.round(this.chart.series[0].dataMax * padding * precision) / precision
+								// series[1].dataMax is always set while series[0].dataMax is not
+								// if both are set, use the higher one to calculate the max tick
+								max = Math.round(Math.max(this.chart.series[0].dataMax, this.chart.series[1].dataMax) * padding * precision) / precision
 							} else {
 								max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
 							}
