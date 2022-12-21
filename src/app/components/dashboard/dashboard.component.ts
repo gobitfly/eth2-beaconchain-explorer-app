@@ -487,7 +487,7 @@ export class DashboardComponent implements OnInit {
 		this.storage.setBooleanSetting('rank_percent_mode', this.rankPercentMode)
 	}
 
-	private getChartToolTipCaption(timestamp: number, genesisTs: number) {
+	private getChartToolTipCaption(timestamp: number, genesisTs: number, dataGroupLength: number) {
 		const dateToEpoch = (ts: number): number => {
 			const slot = Math.floor((ts / 1000 - genesisTs) / 12)
 			const epoch = Math.floor(slot / 32)
@@ -496,11 +496,15 @@ export class DashboardComponent implements OnInit {
 
 		const startEpoch = dateToEpoch(timestamp)
 		const dateForNextDay = new Date(timestamp)
-		dateForNextDay.setDate(dateForNextDay.getDate() + 1)
+		dateForNextDay.setDate(dateForNextDay.getDate() + dataGroupLength)
 		const endEpoch = dateToEpoch(dateForNextDay.getTime()) - 1
 		const epochText = `(Epochs ${startEpoch} - ${endEpoch})<br/>`
 
-		return `${new Date(timestamp).toLocaleDateString()} ${epochText}`
+		if (dataGroupLength == 1) {
+			return `${new Date(timestamp).toLocaleDateString()} ${epochText}`
+		} else {
+			return `${new Date(timestamp).toLocaleDateString()} - ${new Date(dateForNextDay).toLocaleDateString()} <br/>${epochText}`
+		}
 	}
 
 	async createProposedChart(proposed, missed, orphaned) {
@@ -553,7 +557,7 @@ export class DashboardComponent implements OnInit {
 					shared: true,
 					formatter: (tooltip) => {
 						// date and epoch
-						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs)
+						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
 
 						// summary
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
@@ -566,7 +570,11 @@ export class DashboardComponent implements OnInit {
 				plotOptions: {
 					series: {
 						dataGrouping: {
-							units: [['day', [1]]],
+							units: [
+								['day', [1, 2, 3]],
+								['week', [1, 2]],
+								['month', [1, 2, 3, 6]],
+							],
 							forced: true,
 							enabled: true,
 							groupAll: true,
@@ -666,7 +674,7 @@ export class DashboardComponent implements OnInit {
 					shared: true,
 					formatter: (tooltip) => {
 						// date and epoch
-						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs)
+						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
 
 						// income
 						let total = new BigNumber(0)
@@ -699,10 +707,15 @@ export class DashboardComponent implements OnInit {
 						dataLabels: {
 							enabled: false,
 						},
-						pointInterval: 24 * 3600 * 1000,
 						dataGrouping: {
 							forced: true,
-							units: [['day', [1]]],
+							enabled: true,
+
+							units: [
+								['day', [1, 2, 3]],
+								['week', [1, 2]],
+								['month', [1, 2, 3, 6]],
+							],
 						},
 					},
 				},
@@ -718,13 +731,24 @@ export class DashboardComponent implements OnInit {
 							const padding = 1.15
 							// make sure that the top and bottom tick are exactly at a position with [ticksDecimalPlaces] decimal places
 							const min = Math.round(this.chart.series[1].dataMin * padding * precision) / precision
-							let max
-							if (this.chart.series[0].dataMax != undefined) {
-								// series[0] contains accumulated income for execution and consensus but only if both rewards are currently on screen
-								max = Math.round(this.chart.series[0].dataMax * padding * precision) / precision
-							} else {
-								max = Math.round(this.chart.series[1].dataMax * padding * precision) / precision
+
+							// series[1].dataMax contains the consensus reward only and is therefore always available (we use it as default)
+							// series[0].dataMax contains the highest visible bar that contains BOTH consensus AND execution reward
+							// 	=> i.e. series[0].dataMax is undefined if no execution reward is shown
+							// keep in mind that the user can toggle series on/off (can be checked via the series' visible parameter)
+							let maxSeries = 1
+							if (
+								this.chart.series[0].visible &&
+								this.chart.series[0].dataMax != undefined &&
+								(this.chart.series[1].dataMax == undefined ||
+									!this.chart.series[1].visible ||
+									this.chart.series[0].dataMax > this.chart.series[1].dataMax)
+							) {
+								// use series[0] to calculate max since it is available and series[1] is either unavailable/hidden or lower than series[0]
+								maxSeries = 0
 							}
+
+							const max = Math.round(this.chart.series[maxSeries].dataMax * padding * precision) / precision
 
 							// only show 3 ticks if min < 0 && max > 0
 							let positions

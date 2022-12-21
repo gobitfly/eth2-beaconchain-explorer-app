@@ -34,3 +34,4 @@ npm-debug.log*
 /android/app/src/beta/google-services.json
 /ios/App/GoogleService-Info.plist
 /appassets
+/android/.idea

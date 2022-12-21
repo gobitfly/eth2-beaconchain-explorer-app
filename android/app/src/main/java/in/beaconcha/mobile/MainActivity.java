@@ -19,16 +19,7 @@
  */
 
 package in.beaconcha.mobile;
-
-import android.os.Bundle;
-
 import com.getcapacitor.BridgeActivity;
-import com.getcapacitor.Plugin;
-import com.nikosdouvlis.navigationbar.NavigationBar;
-
-import java.util.ArrayList;
-
-import in.beaconcha.mobile.widget.WidgetService;
 
 public class MainActivity extends BridgeActivity {
 
