@@ -21,9 +21,9 @@
 import { EpochResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
 import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
 import BigNumber from 'bignumber.js'
-import { Validator } from '../utils/ValidatorUtils'
+import { getValidatorQueryString, ValidatorState, Validator } from '../utils/ValidatorUtils'
 import { formatDate } from '@angular/common'
-import { getValidatorQueryString, ValidatorState } from '../utils/ValidatorUtils'
+import { SyncCommitteesStatistics } from '../requests/requests'
 
 export type OverviewData = {
 	overallBalance: BigNumber
@@ -52,6 +52,7 @@ export type OverviewData = {
 	rocketpool: Rocketpool
 	currentSyncCommittee: SyncCommitteeResponse
 	nextSyncCommittee: SyncCommitteeResponse
+	syncCommitteesStats: SyncCommitteesStatistics
 }
 
 export type Performance = {
@@ -96,15 +97,15 @@ export type Description = {
 export default class OverviewController {
 	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280) {}
 
-	processDashboard(validators: Validator[], currentEpoch: EpochResponse) {
-		return this.process(validators, currentEpoch, false)
+	public processDashboard(validators: Validator[], currentEpoch: EpochResponse, syncCommitteesStats = null) {
+		return this.process(validators, currentEpoch, false, syncCommitteesStats)
 	}
 
-	processDetail(validators: Validator[], currentEpoch: EpochResponse) {
-		return this.process(validators, currentEpoch, true)
+	public processDetail(validators: Validator[], currentEpoch: EpochResponse) {
+		return this.process(validators, currentEpoch, true, null)
 	}
 
-	private process(validators: Validator[], currentEpoch: EpochResponse, foreignValidator = false): OverviewData {
+	private process(validators: Validator[], currentEpoch: EpochResponse, foreignValidator = false, syncCommitteesStats = null): OverviewData {
 		if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
 		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
@@ -188,6 +189,7 @@ export default class OverviewController {
 			apr: consensusPerf.apr,
 			currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
 			nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
+			syncCommitteesStats: syncCommitteesStats,
 			rocketpool: {
 				minRpl: this.sumRocketpoolBigIntPerNodeAddress(
 					true,

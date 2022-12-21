@@ -36,6 +36,7 @@ import {
 	ExecutionResponse,
 	SyncCommitteeResponse,
 	ETH1ValidatorResponse,
+	SyncCommitteesStatistics,
 } from '../requests/requests'
 import { CacheModule } from './CacheModule'
 import { MerchantUtils } from './MerchantUtils'
@@ -95,6 +96,7 @@ export class ValidatorUtils extends CacheModule {
 	private currentEpoch: EpochResponse
 	private olderEpoch: EpochResponse
 	rocketpoolStats: RocketPoolNetworkStats
+	syncCommitteesStats: SyncCommitteesStatistics
 
 	constructor(
 		private api: ApiService,
@@ -350,17 +352,9 @@ export class ValidatorUtils extends CacheModule {
 		return result
 	}
 
-	private lastFreshTime = 0
 	async getDashboardDataValidators(storage: 0 | 1, ...validators): Promise<Validator[]> {
-		/*const cacheKey = await this.getCachedValidatorKey()
-        // if request is cached, return processed cached data
-        const cached = await this.getMultipleCached(cacheKey, validators)
-        console.log("request cached, return processed cached data", cached)
-        if (cached != null && cached.length > 0 && this.lastFreshTime + 6 * 60 * 1000 > Date.now()) return cached
-*/
 		const request = new DashboardRequest(...validators)
 		const response = await this.api.execute(request)
-
 		if (!request.wasSuccessful(response)) {
 			if (response && response.data && response.data.status && response.data.status.indexOf('only a maximum of') >= 0) {
 				throw new Error(response.data.status)
@@ -370,12 +364,25 @@ export class ValidatorUtils extends CacheModule {
 		}
 
 		const result = request.parse(response)[0]
-		this.lastFreshTime = Date.now()
 		this.currentEpoch = result.currentEpoch[0]
 		this.olderEpoch = result.olderEpoch[0]
 		this.rocketpoolStats = result.rocketpool_network_stats[0]
 		const validatorEffectivenessResponse = result.effectiveness
 		const validatorsResponse = result.validators
+
+		const slotsTotal = result.sync_committees_stats.participated_slots + result.sync_committees_stats.missed_slots
+		if (slotsTotal > 0) {
+			this.syncCommitteesStats = {
+				committeesParticipated: Math.ceil(slotsTotal / 32 / 256),
+				committeesExpected: Math.round((result.sync_committees_stats.expected_slots * 100) / 32 / 265) / 100,
+				slotsTotal: slotsTotal,
+				slotsMissed: result.sync_committees_stats.missed_slots,
+				efficiency: Math.round(((result.sync_committees_stats.participated_slots * 100) / slotsTotal) * 100) / 100,
+				luck: (slotsTotal * 100) / result.sync_committees_stats.expected_slots,
+			}
+		} else {
+			this.syncCommitteesStats = null
+		}
 
 		this.updateRplAndRethPrice()
 
@@ -416,7 +423,6 @@ export class ValidatorUtils extends CacheModule {
 			}
 		}
 
-		// this.cacheMultiple(cacheKey, temp)
 		return temp
 	}
 

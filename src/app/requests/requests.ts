@@ -198,6 +198,21 @@ export interface SyncCommitteeResponse {
 	validators: number[]
 }
 
+export interface SyncCommitteesStatistics {
+	committeesParticipated: number
+	committeesExpected: number
+	slotsTotal: number
+	slotsMissed: number
+	efficiency: number
+	luck: number
+}
+
+export interface SyncCommitteesStatisticsResponse {
+	expected_slots: number
+	participated_slots: number
+	missed_slots: number
+}
+
 export interface EpochResponse {
 	attestationscount: number
 	attesterslashingscount: number
@@ -250,6 +265,7 @@ export interface DashboardResponse {
 	rocketpool_network_stats: RocketPoolNetworkStats[]
 	current_sync_committee: SyncCommitteeResponse[]
 	next_sync_committee: SyncCommitteeResponse[]
+	sync_committees_stats: SyncCommitteesStatisticsResponse
 }
 
 export interface RocketPoolNetworkStats {
