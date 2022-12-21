@@ -74,7 +74,7 @@ export default class AdUtils {
 		}
 
 		return {
-			html: "<a href='openPremium' target='_blank'><img src='/assets/ads/beaconchain_sample_ad.gif' width='320' height='62' alt='' title='' border='0' /></a></div>",
+			html: "<img src='/assets/ads/beaconchain_sample_ad.gif' width='320' height='62' alt='' title='' border='0' />",
 			width: '320',
 			height: '62',
 		}

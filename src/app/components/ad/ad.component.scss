@@ -40,17 +40,20 @@
 
 @media only screen and (min-width: 320px) {
 	.ad-info-container {
+		min-height: 0px !important;
 		position: absolute;
 		top: -8px;
 		left: 50%;
-		padding-left: 142px;
+		margin-left: 142px;
 	}
 }
 @media only screen and (max-width: 320px) {
 	.ad-info-container {
+		min-height: 0px !important;
 		position: absolute;
 		top: -8px;
-		text-align: right;
+		width: auto !important;
+		right: 0px;
 	}
 }
 
