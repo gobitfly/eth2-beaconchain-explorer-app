@@ -17,41 +17,32 @@
 
 import { ApiService } from '../services/api.service'
 import { Injectable } from '@angular/core'
-import { Platform } from '@ionic/angular'
-import { CoinzillaAdRequest, CoinzillaAdResponse } from '../requests/requests'
+import { BitflyAdRequest, BitflyAdResponse } from '../requests/requests'
 import { MerchantUtils } from './MerchantUtils'
 
-export type AdLocation = 'dashboard' | 'validator' | 'machines'
+export type AdLocation = 'dashboard' | 'validator' | 'machines' | 'blocks' | 'info'
 export const BEACONCHAIN_AD_ACTION = ':open-premium-upgrade:'
 
-interface AdOSPair {
-	ios: string
-	android: string
+export interface ZoneInfo {
+	zones: number
+	prefix: string
 }
 
-const map: Map<AdLocation, AdOSPair> = new Map([
+const defaultZone: ZoneInfo = {
+	zones: 20,
+	prefix: '',
+}
+
+const map: Map<AdLocation, ZoneInfo> = new Map([
+	['dashboard', defaultZone],
+	['validator', defaultZone],
+	['machines', defaultZone],
+	['blocks', defaultZone],
 	[
-		'dashboard',
+		'info',
 		{
-			// Zone 1
-			ios: '10960b620f7c3a4a229',
-			android: '84360b62011d142c980',
-		},
-	],
-	[
-		'validator',
-		{
-			// Zone 2
-			ios: '72760b620ff128e1661',
-			android: '73660b6205cc579781',
-		},
-	],
-	[
-		'machines',
-		{
-			// Zone 3
-			ios: '75560b621078697f998',
-			android: '2460b6207745035643',
+			zones: 22,
+			prefix: '',
 		},
 	],
 ])
@@ -62,29 +53,16 @@ const LOGTAG = '[AdUtils] '
 	providedIn: 'root',
 })
 export default class AdUtils {
-	constructor(private api: ApiService, private platform: Platform, private merchantUtils: MerchantUtils) {}
+	constructor(private api: ApiService, private merchantUtils: MerchantUtils) {}
 
-	private getToken(location: AdLocation) {
-		const adPair = map.get(location)
-		if (!adPair) {
-			console.warn(LOGTAG + 'invalid ad location')
-			return null
-		}
-		const isIOS = this.platform.is('ios')
-		return isIOS ? adPair.ios : adPair.android
-	}
-
-	async get(location: AdLocation): Promise<CoinzillaAdResponse> {
+	async get(location: AdLocation): Promise<BitflyAdResponse> {
 		const adFree = await this.merchantUtils.hasAdFree()
 		if (adFree) {
 			console.warn(LOGTAG + 'user is premium member, disabling ads')
 			return null
 		}
 
-		const token = this.getToken(location)
-		if (!token) return null
-
-		const request = new CoinzillaAdRequest(token)
+		const request = new BitflyAdRequest(map.get(location))
 		const response = await this.api.execute(request).catch((err) => {
 			console.warn('error adUtils get', err)
 			return null
@@ -95,18 +73,10 @@ export default class AdUtils {
 			return result[0]
 		}
 
-		// default ad
 		return {
-			title: 'Upgrade to Beaconcha.in Premium',
-			img: null,
-			thumbnail: null,
-			description_short: 'No ads. Widgets & themes, custom notifications and more.',
-			description: 'Support us and help keep beaconcha.in up and running.',
-			cta_button: '',
-			website: '',
-			name: '',
-			url: BEACONCHAIN_AD_ACTION,
-			impressionUrl: null,
+			html: "<a href='openPremium' target='_blank'><img src='/assets/ads/beaconchain_sample_ad.gif' width='320' height='62' alt='' title='' border='0' /></a></div>",
+			width: '320',
+			height: '62',
 		}
 	}
 }

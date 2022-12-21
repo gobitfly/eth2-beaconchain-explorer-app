@@ -1,0 +1,66 @@
+// Copyright (C) 2021 Bitfly GmbH
+//
+// This file is part of Beaconchain Dashboard.
+//
+// Beaconchain Dashboard is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Beaconchain Dashboard is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+
+@import '../../../theme/variables.scss';
+
+.ad-container {
+	background-color: var(--ion-item-background) !important;
+	position: relative;
+	max-height: 62px;
+}
+
+.ad-container div {
+	min-height: 62px;
+	width: 100%;
+}
+
+.ad-info {
+	text-align: right;
+	font-size: 0.6rem;
+	background: #fafafa;
+	border-radius: 4px;
+	border-top-right-radius: 0px;
+	border-top-left-radius: 0px;
+	padding: 0 4px;
+}
+
+@media only screen and (min-width: 320px) {
+	.ad-info-container {
+		position: absolute;
+		top: -8px;
+		left: 50%;
+		padding-left: 142px;
+	}
+}
+@media only screen and (max-width: 320px) {
+	.ad-info-container {
+		position: absolute;
+		top: -8px;
+		text-align: right;
+	}
+}
+
+.info {
+	min-height: 0px !important;
+	padding: 5px 25px;
+	background-color: var(--ion-color-secondary) !important;
+	--background: var(--ion-color-secondary) !important;
+	color: var(--x-toolbar-title-color) !important;
+	font-family: 'Varela';
+	font-size: 0.85rem;
+	text-align: center;
+}

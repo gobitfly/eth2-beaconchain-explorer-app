@@ -29,7 +29,7 @@ import { PipesModule } from '../../pipes/pipes.module'
 import { ClientupdateComponentModule } from '../../components/clientupdate/clientupdate.module'
 import { MessageComponentModule } from '../../components/message/message.module'
 import { TooltipModule } from 'ng2-tooltip-directive'
-import { TextAdComponentModule } from '../text-ad/text-ad.module'
+import { AdComponentModule } from '../ad/ad.module'
 
 @NgModule({
 	imports: [
@@ -40,7 +40,7 @@ import { TextAdComponentModule } from '../text-ad/text-ad.module'
 		ClientupdateComponentModule,
 		MessageComponentModule,
 		TooltipModule,
-		TextAdComponentModule,
+		AdComponentModule,
 	],
 	declarations: [DashboardComponent],
 	exports: [DashboardComponent],
