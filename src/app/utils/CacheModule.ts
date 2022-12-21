@@ -41,12 +41,14 @@ export class CacheModule {
 		this.init()
 	}
 
-	async init() {
+	private async init() {
 		if (this.hardStorage) {
 			this.hardStorage.setObject('cachemodule_' + this.keyPrefix, null)
 			this.initialized = this.hardStorage.getObject('cachemodule2_' + this.keyPrefix) as Promise<Map<string, CachedData>>
 			const result = await this.initialized
-			if (result) this.cache = result
+			if (result) {
+				this.cache = result
+			}
 			console.log('[CacheModule] initialized with ', this.cache)
 		} else {
 			this.initialized = new Promise<Map<string, CachedData>>((resolve) => {
@@ -59,12 +61,15 @@ export class CacheModule {
 	private cache: Map<string, CachedData> = new Map()
 	private hotOnly: Map<string, CachedData> = new Map()
 
-	protected putCache(key: string, data: unknown, staleTime = this.staleTime) {
-		const cacheKey = this.getKey(key)
-
+	private getStoreForCacheKey(cacheKey: string): Map<string, CachedData> {
 		// rationale: don't store big data objects in hardStorage due to severe performance impacts
 		const storeHotOnly = cacheKey.indexOf('user/stats/') >= 0
-		const store = storeHotOnly ? this.hotOnly : this.cache
+		return storeHotOnly ? this.hotOnly : this.cache
+	}
+
+	protected putCache(key: string, data: unknown, staleTime = this.staleTime) {
+		const cacheKey = this.getKey(key)
+		const store = this.getStoreForCacheKey(cacheKey)
 
 		store.set(cacheKey, {
 			maxStaleTime: staleTime ?? this.staleTime,
@@ -87,12 +92,12 @@ export class CacheModule {
 
 	protected async getCache(key: string) {
 		await this.initialized
-		if (!key) return null
-		const cacheKey = this.getKey(key)
+		if (!key) {
+			return null
+		}
 
-		// rationale: don't store big data objects in hardStorage due to severe performance impacts
-		const storeHotOnly = cacheKey.indexOf('user/stats/') >= 0
-		const store = storeHotOnly ? this.hotOnly : this.cache
+		const cacheKey = this.getKey(key)
+		const store = this.getStoreForCacheKey(cacheKey)
 
 		const temp = store.get(this.getKey(key))
 		if (!temp || temp.time + temp.maxStaleTime < this.getTimestamp()) {
@@ -107,17 +112,14 @@ export class CacheModule {
 			console.log('[CacheModule] ignore cache attempt of empty data set', data)
 			return
 		}
+
 		for (let i = 0; i < data.length; i++) {
 			const current = data[i]
 			const index = data[i].index
-			if (!index) return
+			if (!index) {
+				return
+			}
 			this.putCache(prefix + index, current)
-		}
-	}
-
-	protected invalidateMultiple(prefix: string, keys) {
-		for (let i = 0; i < keys.length; i++) {
-			this.putCache(prefix + keys[i], null)
 		}
 	}
 
@@ -125,7 +127,9 @@ export class CacheModule {
 		const result = new Array(keys.length)
 		for (let i = 0; i < keys.length; i++) {
 			result[i] = await this.getCache(prefix + keys[i])
-			if (!result[i]) return null
+			if (!result[i]) {
+				return null
+			}
 		}
 		return result
 	}
