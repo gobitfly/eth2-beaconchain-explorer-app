@@ -370,18 +370,19 @@ export class ValidatorUtils extends CacheModule {
 		const validatorEffectivenessResponse = result.effectiveness
 		const validatorsResponse = result.validators
 
-		const slotsTotal = result.sync_committees_stats.participated_slots + result.sync_committees_stats.missed_slots
-		if (slotsTotal > 0) {
-			this.syncCommitteesStats = {
-				committeesParticipated: Math.ceil(slotsTotal / 32 / 256),
-				committeesExpected: Math.round((result.sync_committees_stats.expected_slots * 100) / 32 / 265) / 100,
-				slotsTotal: slotsTotal,
-				slotsMissed: result.sync_committees_stats.missed_slots,
-				efficiency: Math.round(((result.sync_committees_stats.participated_slots * 100) / slotsTotal) * 100) / 100,
-				luck: (slotsTotal * 100) / result.sync_committees_stats.expected_slots,
+		this.syncCommitteesStats = null
+		if (result.sync_committees_stats) {
+			const slotsTotal = result.sync_committees_stats.participated_slots + result.sync_committees_stats.missed_slots
+			if (slotsTotal > 0) {
+				this.syncCommitteesStats = {
+					committeesParticipated: Math.ceil(slotsTotal / 32 / 256),
+					committeesExpected: Math.round((result.sync_committees_stats.expected_slots * 100) / 32 / 265) / 100,
+					slotsTotal: slotsTotal,
+					slotsMissed: result.sync_committees_stats.missed_slots,
+					efficiency: Math.round(((result.sync_committees_stats.participated_slots * 100) / slotsTotal) * 100) / 100,
+					luck: (slotsTotal * 100) / result.sync_committees_stats.expected_slots,
+				}
 			}
-		} else {
-			this.syncCommitteesStats = null
 		}
 
 		this.updateRplAndRethPrice()
