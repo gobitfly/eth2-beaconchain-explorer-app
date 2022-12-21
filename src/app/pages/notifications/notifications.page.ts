@@ -3,7 +3,7 @@ import { Router } from '@angular/router'
 import { ModalController, Platform } from '@ionic/angular'
 import { AlertService } from 'src/app/services/alert.service'
 import { ApiService } from 'src/app/services/api.service'
-import { CPU_THRESHOLD, HDD_THRESHOLD, OFFLINE_THRESHOLD, RAM_THRESHOLD, StorageService } from 'src/app/services/storage.service'
+import { CPU_THRESHOLD, HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from 'src/app/services/storage.service'
 import { SyncService } from 'src/app/services/sync.service'
 import { NotificationBase } from 'src/app/tab-preferences/notification-base'
 import ClientUpdateUtils from 'src/app/utils/ClientUpdateUtils'
@@ -95,8 +95,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 
 	changeValidatorOffline() {
 		if (!this.initialized) return
-		this.storage.setSetting(OFFLINE_THRESHOLD, this.offlineThreshold)
-		this.notifyEventFilterToggle('validator_is_offline', null, this.offlineThreshold)
+		this.notifyEventFilterToggle('validator_is_offline', null, 3)
 	}
 
 	changeDiskNotification() {

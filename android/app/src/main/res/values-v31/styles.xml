@@ -20,4 +20,9 @@
         <item name="statusColor">?android:attr/colorPrimary</item>
     </style>
 
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splashscreenbg</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+    </style>
+
 </resources>
