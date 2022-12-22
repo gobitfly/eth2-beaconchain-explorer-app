@@ -68,8 +68,9 @@ export default class AdUtils {
 			return null
 		})
 		const result = request.parse(response)
+		console.log('Bitfly ad response', result)
 
-		if (result && result.length > 0) {
+		if (result && result.length > 0 && result[0].height != '0') {
 			return result[0]
 		}
 
