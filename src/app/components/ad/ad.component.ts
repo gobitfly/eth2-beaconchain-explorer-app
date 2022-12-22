@@ -3,6 +3,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser'
 import { ModalController } from '@ionic/angular'
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
 import AdUtils, { AdLocation } from 'src/app/utils/AdUtils'
+import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 
 @Component({
 	selector: 'app-ad',
@@ -17,9 +18,19 @@ export class AdComponent implements OnInit {
 	adHtml: SafeHtml
 	openUpgradeToPremium = false
 
-	constructor(private adUtils: AdUtils, private sanitizer: DomSanitizer, private modalController: ModalController) {}
+	isAdFree = false
+
+	constructor(
+		private adUtils: AdUtils,
+		private sanitizer: DomSanitizer,
+		private modalController: ModalController,
+		private merchantUtils: MerchantUtils
+	) {}
 
 	ngOnInit() {
+		this.merchantUtils.hasAdFree().then((isAdFree) => {
+			this.isAdFree = isAdFree
+		})
 		this.adUtils.get(this.location).then((data) => {
 			if (data && data.html && data.html.length > 10) {
 				this.openUpgradeToPremium = data.html.indexOf('beaconchain_sample_ad') >= 0
