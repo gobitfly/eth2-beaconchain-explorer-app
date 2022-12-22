@@ -79,7 +79,6 @@ export abstract class APIRequest<T> {
 		headers: {
 			'Content-Type': 'application/json',
 			Accept: 'application/json',
-			'User-Agent': 'Beaconcha.in Dashboard',
 		} as HttpHeaders,
 	}
 
