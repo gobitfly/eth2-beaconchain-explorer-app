@@ -3,7 +3,7 @@ import { IonicModule } from '@ionic/angular'
 
 import { AdComponent } from './ad.component'
 
-describe('TextAdComponent', () => {
+describe('AdComponent', () => {
 	let component: AdComponent
 	let fixture: ComponentFixture<AdComponent>
 
