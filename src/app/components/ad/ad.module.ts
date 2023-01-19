@@ -21,11 +21,11 @@ import { FormsModule } from '@angular/forms'
 
 import { IonicModule } from '@ionic/angular'
 
-import { TextAdComponent } from './text-ad.component'
+import { AdComponent } from './ad.component'
 
 @NgModule({
 	imports: [CommonModule, FormsModule, IonicModule],
-	declarations: [TextAdComponent],
-	exports: [TextAdComponent],
+	declarations: [AdComponent],
+	exports: [AdComponent],
 })
-export class TextAdComponentModule {}
+export class AdComponentModule {}

@@ -27,7 +27,7 @@ import { ValidatorComponentModule } from '../components/validator/validator.modu
 import { OfflineComponentModule } from '../components/offline/offline.module'
 import { Tab2PageRoutingModule } from './tab-validators-routing.module'
 import { MessageComponentModule } from '../components/message/message.module'
-import { TextAdComponentModule } from '../components/text-ad/text-ad.module'
+import { AdComponentModule } from '../components/ad/ad.module'
 
 @NgModule({
 	imports: [
@@ -38,7 +38,7 @@ import { TextAdComponentModule } from '../components/text-ad/text-ad.module'
 		OfflineComponentModule,
 		Tab2PageRoutingModule,
 		MessageComponentModule,
-		TextAdComponentModule,
+		AdComponentModule,
 	],
 	declarations: [Tab2Page],
 })

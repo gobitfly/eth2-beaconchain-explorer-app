@@ -22,6 +22,7 @@ import { HttpHeaders, HttpOptions } from '@capacitor/core'
 import BigNumber from 'bignumber.js'
 import { StatsResponse } from '../controllers/MachineController'
 import { Response } from '../services/api.service'
+import { ZoneInfo } from '../utils/AdUtils'
 
 export enum Method {
 	GET,
@@ -78,7 +79,6 @@ export abstract class APIRequest<T> {
 		headers: {
 			'Content-Type': 'application/json',
 			Accept: 'application/json',
-			'User-Agent': 'Beaconcha.in Dashboard',
 		} as HttpHeaders,
 	}
 
@@ -242,19 +242,6 @@ export interface BalanceHistoryResponse {
 	validatorindex: number
 }
 
-export interface CoinzillaAdResponse {
-	title: string
-	img: string
-	thumbnail: string
-	description: string
-	description_short: string
-	cta_button: string
-	website: string
-	name: string
-	url: string
-	impressionUrl: string
-}
-
 export interface DashboardResponse {
 	validators: ValidatorResponse[]
 	effectiveness: AttestationPerformanceResponse[]
@@ -314,6 +301,12 @@ export interface NotificationGetResponse {
 	EventFilter: string
 	EventName: string
 	EventThreshold: string
+}
+
+export interface BitflyAdResponse {
+	html: string
+	width: string
+	height: string
 }
 
 // ------------- Reqests -------------
@@ -643,26 +636,27 @@ export class AdSeenRequest extends APIRequest<unknown> {
 	}
 }
 
-export class CoinzillaAdRequest extends APIRequest<CoinzillaAdResponse> {
-	endPoint = 'https://request-global.czilladx.com'
+export class BitflyAdRequest extends APIRequest<BitflyAdResponse> {
+	endPoint = 'https://ads.bitfly.at'
 
-	resource = 'serve/native-app.php?z='
+	resource = '/www/delivery/asyncspc.php?zones={ZONE}&prefix={PREFIX}'
 	method = Method.GET
 	ignoreFails = true
 	maxCacheAge = 4 * 60 * 1000
 	nativeHttp = false
 
-	parse(response: Response): CoinzillaAdResponse[] {
-		if (!this.wasSuccessful(response, false) || !response || !response.data || !response.data.ad) {
+	parse(response: Response): BitflyAdResponse[] {
+		if (!response || !response.data) {
 			return []
 		}
 
-		return [response.data.ad]
+		return Object.values(response.data)
 	}
 
-	constructor(tracker: string) {
+	constructor(zoneInfo: ZoneInfo) {
 		super()
-		this.resource += tracker
+		this.resource = this.resource.replace('{ZONE}', zoneInfo.zones.toString()).replace('{PREFIX}', zoneInfo.prefix)
+		console.log('bitfly ad resource', this.resource)
 	}
 }
 

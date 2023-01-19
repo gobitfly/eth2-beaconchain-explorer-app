@@ -94,7 +94,7 @@
 		*ngIf="((items && items.length >= currentPackageMaxValidators) || reachedMaxValidators) && currentPackageMaxValidators < 280">
 	</app-message>
 
-	<app-text-ad location="validator" *ngIf="items && items.length > 0 && !loading"></app-text-ad>
+	<app-ad location="validator" *ngIf="items && items.length > 0 && !loading"></app-ad>
 
 	<ion-virtual-scroll [items]="items" approxItemHeight="166px" [itemHeight]="itemHeightFn" *ngIf="items && items.length > 0 && !loading">
 		<div

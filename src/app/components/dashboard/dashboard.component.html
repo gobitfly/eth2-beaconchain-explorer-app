@@ -129,6 +129,8 @@
 			iconStyle="genesis"
 			*ngIf="data.validatorCount >= currentPackageMaxValidators && data.validatorCount > 100">
 		</app-message>
+
+		<app-ad location="info"></app-ad>
 	</ion-list>
 
 	<!--<ion-list-header>
@@ -295,7 +297,7 @@
 			</div>
 		</ion-item>
 
-		<app-text-ad location="dashboard"></app-text-ad>
+		<app-ad location="dashboard"></app-ad>
 
 		<ion-list-header *ngIf="hasNonSmoothingPoolAsWell">
 			<ion-label>Transaction Fees</ion-label>

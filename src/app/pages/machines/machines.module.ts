@@ -8,10 +8,10 @@ import { MachinesPageRoutingModule } from './machines-routing.module'
 import { MachinesPage } from './machines.page'
 import { MachineChartComponentModule } from 'src/app/components/machinechart/machinechart.module'
 import { PipesModule } from 'src/app/pipes/pipes.module'
-import { TextAdComponentModule } from 'src/app/components/text-ad/text-ad.module'
+import { AdComponentModule } from 'src/app/components/ad/ad.module'
 
 @NgModule({
-	imports: [CommonModule, FormsModule, IonicModule, MachinesPageRoutingModule, MachineChartComponentModule, PipesModule, TextAdComponentModule],
+	imports: [CommonModule, FormsModule, IonicModule, MachinesPageRoutingModule, MachineChartComponentModule, PipesModule, AdComponentModule],
 	declarations: [MachinesPage],
 })
 export class MachinesPageModule {}
