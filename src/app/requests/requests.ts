@@ -208,9 +208,9 @@ export interface SyncCommitteesStatistics {
 }
 
 export interface SyncCommitteesStatisticsResponse {
-	expected_slots: number
-	participated_slots: number
-	missed_slots: number
+	expectedSlots: number
+	participatedSlots: number
+	missedSlots: number
 }
 
 export interface EpochResponse {

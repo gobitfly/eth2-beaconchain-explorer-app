@@ -372,15 +372,15 @@ export class ValidatorUtils extends CacheModule {
 
 		this.syncCommitteesStats = null
 		if (result.sync_committees_stats) {
-			const slotsTotal = result.sync_committees_stats.participated_slots + result.sync_committees_stats.missed_slots
+			const slotsTotal = result.sync_committees_stats.participatedSlots + result.sync_committees_stats.missedSlots
 			if (slotsTotal > 0) {
 				this.syncCommitteesStats = {
 					committeesParticipated: Math.ceil(slotsTotal / 32 / 256),
-					committeesExpected: Math.round((result.sync_committees_stats.expected_slots * 100) / 32 / 265) / 100,
+					committeesExpected: Math.round((result.sync_committees_stats.expectedSlots * 100) / 32 / 256) / 100,
 					slotsTotal: slotsTotal,
-					slotsMissed: result.sync_committees_stats.missed_slots,
-					efficiency: Math.round(((result.sync_committees_stats.participated_slots * 100) / slotsTotal) * 100) / 100,
-					luck: (slotsTotal * 100) / result.sync_committees_stats.expected_slots,
+					slotsMissed: result.sync_committees_stats.missedSlots,
+					efficiency: Math.round(((result.sync_committees_stats.participatedSlots * 100) / slotsTotal) * 100) / 100,
+					luck: (slotsTotal * 100) / result.sync_committees_stats.expectedSlots,
 				}
 			}
 		}
