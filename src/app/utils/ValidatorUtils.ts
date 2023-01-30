@@ -371,7 +371,8 @@ export class ValidatorUtils extends CacheModule {
 		const validatorsResponse = result.validators
 
 		this.syncCommitteesStats = null
-		if (result.sync_committees_stats) {
+		const hideSyncCommitteesStats = true // wait for the explorer to show sync committee stats too before showing them in the app
+		if (result.sync_committees_stats && !hideSyncCommitteesStats) {
 			const slotsTotal = result.sync_committees_stats.participatedSlots + result.sync_committees_stats.missedSlots
 			if (slotsTotal > 0) {
 				this.syncCommitteesStats = {
