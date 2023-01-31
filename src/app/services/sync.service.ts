@@ -142,7 +142,7 @@ export class SyncService {
 		console.log('== Step 1: Loading notification preferences from beaconcha.in ==')
 		await this.notificationBase.loadAllToggles()
 
-		this.deleteAllTemp()
+		this.deleteAllSyncChangeKeys()
 
 		console.log('== Syncing notify completed ==')
 	}
@@ -167,7 +167,6 @@ export class SyncService {
 			if (cleanKey.indexOf('setting_notify_hddwarn') >= 0) continue
 			if (cleanKey.indexOf('setting_notify_cpuwarn') >= 0) continue
 			if (cleanKey.indexOf('setting_notify_memorywarn') >= 0) continue
-			if (cleanKey.indexOf('setting_notify_rplcommission') >= 0) continue
 
 			const syncAction = this.getSyncActionEvent(cleanKey)
 			if (syncAction != SyncActionEvent.NOTIFICATIONS) continue
@@ -183,12 +182,10 @@ export class SyncService {
 		this.syncAllSettings()
 	}
 
-	async deleteAllTemp() {
+	async deleteAllSyncChangeKeys() {
 		const allNotifyKeys = await this.getAllSyncChangeKeys()
 		for (const key of allNotifyKeys) {
-			if (key.indexOf('temponly') >= 0) {
-				this.storage.remove(key)
-			}
+			this.storage.remove(key)
 		}
 	}
 

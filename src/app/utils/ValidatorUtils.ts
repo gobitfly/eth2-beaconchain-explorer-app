@@ -289,6 +289,17 @@ export class ValidatorUtils extends CacheModule {
 		return result
 	}
 
+	async areRocketpoolValidatorsSubscribed(): Promise<boolean> {
+		const validators = await this.getAllValidatorsLocal()
+		for (const v of validators) {
+			if (v.rocketpool) {
+				return true
+			}
+		}
+
+		return false
+	}
+
 	async updateValidatorStates(validators: Validator[]) {
 		const epoch = await this.getRemoteCurrentEpoch()
 		validators.forEach((item) => {
