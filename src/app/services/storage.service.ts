@@ -174,10 +174,14 @@ export class StorageService extends CacheModule {
 
 	async setItem(key: string, value: string, cache = true) {
 		if (cache) this.putCache(key, value)
-		await Preferences.set({
-			key: key,
-			value: value,
-		})
+		try {
+			await Preferences.set({
+				key: key,
+				value: value,
+			})
+		} catch (e) {
+			console.error('Error while writing to local storage (might be full):', e)
+		}
 		this.reflectiOSStorage()
 	}
 
