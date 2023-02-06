@@ -572,8 +572,8 @@ export default class OverviewController {
 			icon: 'timer-outline',
 			title: activeValidatorCount + ' / ' + validatorCount,
 			description: this.descriptionSwitch(
-				pre + ' of your validators deposits are being processed',
-				'This validators deposit is being processed',
+				pre + " of your validators' deposits are being processed",
+				"This validator's deposit is being processed",
 				foreignValidator
 			),
 			extendedDescriptionPre: estEta ? 'Estimated on ' : null,
