@@ -36,7 +36,7 @@ import {
 	ExecutionResponse,
 	SyncCommitteeResponse,
 	ETH1ValidatorResponse,
-	SyncCommitteesStatistics,
+	SyncCommitteesStatisticsResponse,
 } from '../requests/requests'
 import { CacheModule } from './CacheModule'
 import { MerchantUtils } from './MerchantUtils'
@@ -96,7 +96,7 @@ export class ValidatorUtils extends CacheModule {
 	private currentEpoch: EpochResponse
 	private olderEpoch: EpochResponse
 	rocketpoolStats: RocketPoolNetworkStats
-	syncCommitteesStats: SyncCommitteesStatistics
+	syncCommitteesStatsResponse: SyncCommitteesStatisticsResponse
 
 	constructor(
 		private api: ApiService,
@@ -370,21 +370,7 @@ export class ValidatorUtils extends CacheModule {
 		const validatorEffectivenessResponse = result.effectiveness
 		const validatorsResponse = result.validators
 
-		this.syncCommitteesStats = null
-		const hideSyncCommitteesStats = true // wait for the explorer to show sync committee stats too before showing them in the app
-		if (result.sync_committees_stats && !hideSyncCommitteesStats) {
-			const slotsTotal = result.sync_committees_stats.participatedSlots + result.sync_committees_stats.missedSlots
-			if (slotsTotal > 0) {
-				this.syncCommitteesStats = {
-					committeesParticipated: Math.ceil(slotsTotal / 32 / 256),
-					committeesExpected: Math.round((result.sync_committees_stats.expectedSlots * 100) / 32 / 256) / 100,
-					slotsTotal: slotsTotal,
-					slotsMissed: result.sync_committees_stats.missedSlots,
-					efficiency: Math.round(((result.sync_committees_stats.participatedSlots * 100) / slotsTotal) * 100) / 100,
-					luck: (slotsTotal * 100) / result.sync_committees_stats.expectedSlots,
-				}
-			}
-		}
+		this.syncCommitteesStatsResponse = result.sync_committees_stats
 
 		this.updateRplAndRethPrice()
 
