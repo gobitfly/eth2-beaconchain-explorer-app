@@ -142,8 +142,6 @@ export class SyncService {
 		console.log('== Step 1: Loading notification preferences from beaconcha.in ==')
 		await this.notificationBase.loadAllToggles()
 
-		this.deleteAllSyncChangeKeys()
-
 		console.log('== Syncing notify completed ==')
 	}
 
@@ -180,13 +178,6 @@ export class SyncService {
 		}
 
 		this.syncAllSettings()
-	}
-
-	async deleteAllSyncChangeKeys() {
-		const allNotifyKeys = await this.getAllSyncChangeKeys()
-		for (const key of allNotifyKeys) {
-			this.storage.remove(key)
-		}
 	}
 
 	async developDeleteQueue() {
