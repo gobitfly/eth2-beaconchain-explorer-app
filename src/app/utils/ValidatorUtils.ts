@@ -290,7 +290,7 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	async areRocketpoolValidatorsSubscribed(): Promise<boolean> {
-		const validators = await this.getAllValidatorsLocal()
+		const validators = await this.getAllMyValidators()
 		for (const v of validators) {
 			if (v.rocketpool) {
 				return true
