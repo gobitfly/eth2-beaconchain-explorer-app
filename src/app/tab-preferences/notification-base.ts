@@ -116,6 +116,13 @@ export class NotificationBase implements OnInit {
 		let network = await this.api.getNetworkName()
 		if (network == 'main') {
 			network = 'mainnet'
+		} else if (network == 'local dev') {
+			console.warn(
+				'You have set your network to ',
+				network,
+				', subscriptions will not work unless you overwrite the variable below this warning in your code.'
+			)
+			//network = 'prater' // use me, dear developer
 		}
 		console.log('result', results, network)
 
@@ -141,7 +148,6 @@ export class NotificationBase implements OnInit {
 				}
 			} else if (result.EventName == network + ':rocketpool_colleteral_min') {
 				this.minCollateralThreshold = Math.round((parseFloat(result.EventThreshold) - 1) * 100) //1 + this.minCollateralThreshold / 100
-				console.log('minCollateralThreshold', result.EventThreshold, this.minCollateralThreshold)
 			} else if (isNotifyClientUpdatesEnabled && result.EventName == 'eth_client_update') {
 				if (
 					result.EventFilter &&
@@ -330,7 +336,7 @@ export class NotificationBase implements OnInit {
 
 	// include filter in key (fe used by machine toggles)
 	async notifyEventFilterToggle(eventName, filter = null, threshold = null) {
-		console.log('notifyEventToggle', this.lockedToggle)
+		console.log('notifyEventFilterToggle', this.lockedToggle)
 		if (this.lockedToggle) {
 			return
 		}
