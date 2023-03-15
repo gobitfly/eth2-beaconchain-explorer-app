@@ -30,7 +30,7 @@
 		<span style="font-style: normal">~{{ nextBlockEstimate | timeago }} </span>
 	</p>
 
-	<app-text-ad location="validator" *ngIf="items && items.length > 0 && !loading"></app-text-ad>
+	<app-ad location="blocks" *ngIf="items && items.length > 0 && !loading"></app-ad>
 
 	<ion-virtual-scroll [items]="items" approxItemHeight="125px" [itemHeight]="itemHeightFn" *ngIf="items && items.length > 0 && !loading">
 		<div *virtualItem="let item; let idx = index;" style="background-color: var(--ion-card-background)">

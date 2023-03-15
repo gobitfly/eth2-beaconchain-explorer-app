@@ -8,7 +8,7 @@
 </ion-header>
 
 <ion-content>
-	<div class="nogoogleinfo" *ngIf="noGoogle" (click)="configureWebhooks()">
+	<div class="notificationnote" *ngIf="noGoogle" (click)="configureWebhooks()">
 		<strong>Note: </strong>You are using the No-Google version of this app. Push notifications will not work, but you can configure webhook
 		notifications on beaconcha.in directly or by clicking here.
 	</div>
@@ -111,40 +111,6 @@
 			(ngModelChange)="setNotifyToggle('validator_is_offline', $event)"
 			(ionChange)="changeValidatorOffline()"
 			slot="end"></ion-toggle>
-	</ion-item>
-
-	<ion-item
-		[class]="!notifyTogglesMap.get('validator_is_offline') || !canCustomizeThresholds || !authUser || !notify || !notifyInitialized ? 'pseudo-disabled' : ''"
-		(click)="handleLockedClick()">
-		<ion-icon slot="start" name="lock-closed-outline" *ngIf="!canCustomizeThresholds"></ion-icon>
-		<ion-range
-			*ngIf="canCustomizeThresholds"
-			min="3"
-			max="80"
-			step="1"
-			[(ngModel)]="offlineThreshold"
-			[class]="canCustomizeThresholds ? 'range' : 'range-locked'"
-			(mouseup)="changeValidatorOffline()"
-			(touchend)="changeValidatorOffline()">
-		</ion-range>
-		<ion-range
-			*ngIf="!canCustomizeThresholds"
-			[(ngModel)]="offlineThreshold"
-			_ngcontent-ves-c134=""
-			min="-2"
-			max="225"
-			step="1"
-			ng-reflect-min="-2"
-			ng-reflect-max="225"
-			ng-reflect-step="1"
-			class="range-locked ng-untouched ng-pristine ion-untouched ion-pristine md in-item range-disabled hydrated"
-			ng-reflect-model="90"
-			ng-reflect-disabled="true"
-			ng-reflect-is-disabled="true"
-			><input type="hidden" class="aux-input" disabled="" name="" value="6"
-		/></ion-range>
-
-		<ion-note slot="end">≥ {{ offlineThreshold }} Att. Miss</ion-note>
 	</ion-item>
 
 	<ion-list-header>
@@ -355,7 +321,15 @@
 	</ion-list-header>
 
 	<ion-list>
-		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+		<div *ngIf="disableRocketpoolNode">
+			<ion-item>
+				<div class="notificationnote">
+					<strong>Note: </strong>You have not added any Rocketpool validators. Add at least one to enable these settings.
+				</div>
+			</ion-item>
+		</div>
+
+		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || disableRocketpoolNode">
 			<ion-icon slot="start" name="umbrella-outline"></ion-icon>
 
 			<ion-label> Max Collateral </ion-label>
@@ -369,7 +343,7 @@
 		</ion-item>
 
 		<ion-item
-			[class]="!authUser || !notify || !notifyInitialized || !notifyTogglesMap.get('rocketpool_colleteral_max') ? 'pseudo-disabled' : ''"
+			[class]="!authUser || !notify || !notifyInitialized || disableRocketpoolNode || !notifyTogglesMap.get('rocketpool_colleteral_max') ? 'pseudo-disabled' : ''"
 			(click)="handleLockedClick()">
 			<ion-icon slot="start" style="color: var(--ion-color-danger)" name="chevron-back-outline" *ngIf="maxCollateralThreshold < 0"></ion-icon>
 			<ion-icon slot="start" style="color: var(--ion-color-success)" name="chevron-forward-outline" *ngIf="maxCollateralThreshold >= 0"></ion-icon>
@@ -380,6 +354,7 @@
 				max="600"
 				step="10"
 				class="range"
+				[disabled]="disableRocketpoolNode"
 				[(ngModel)]="maxCollateralThreshold"
 				(mouseup)="changeRocketpoolMaxCollateral()"
 				(touchend)="changeRocketpoolMaxCollateral()">
@@ -393,7 +368,7 @@
 			>
 		</ion-item>
 
-		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || disableRocketpoolNode">
 			<ion-icon slot="start" name="thunderstorm-outline"></ion-icon>
 
 			<ion-label> Min Collateral </ion-label>
@@ -407,14 +382,15 @@
 		</ion-item>
 
 		<ion-item
-			[class]="!authUser || !notify || !notifyInitialized || !notifyTogglesMap.get('rocketpool_colleteral_min') ? 'pseudo-disabled' : ''"
+			[class]="!authUser || !notify || !notifyInitialized || disableRocketpoolNode || !notifyTogglesMap.get('rocketpool_colleteral_min') ? 'pseudo-disabled' : ''"
 			(click)="handleLockedClick()">
 			<ion-range
 				min="0"
 				max="300"
 				step="10"
-				[(ngModel)]="minCollateralThreshold"
 				class="range"
+				[disabled]="disableRocketpoolNode"
+				[(ngModel)]="minCollateralThreshold"
 				(mouseup)="changeRocketpoolMinCollateral()"
 				(touchend)="changeRocketpoolMinCollateral()">
 			</ion-range>

@@ -34,7 +34,6 @@ const AUTH_USER = 'auth_user'
 const PREFERENCES = 'network_preferences'
 
 export const SETTING_NOTIFY = 'setting_notify'
-export const OFFLINE_THRESHOLD = 'offline_threshold'
 export const CPU_THRESHOLD = 'cpu_usage_threshold'
 export const HDD_THRESHOLD = 'hdd_usage_threshold'
 export const RAM_THRESHOLD = 'ram_usage_threshold'
@@ -89,17 +88,6 @@ export class StorageService extends CacheModule {
 		return this.setObject(PREFERENCES, value)
 	}
 
-	async getValidatorLimit(): Promise<number> {
-		const premium = await this.getPremiumPackage()
-		if (!premium) return 100
-
-		return premium.numValidators
-	}
-
-	getPremiumPackage(): Promise<PremiumObject> {
-		return this.getObject('PREMIUM') as Promise<PremiumObject>
-	}
-
 	async loadPreferencesToggles(network: string): Promise<boolean> {
 		const notifyLocal = await this.getBooleanSetting(network + SETTING_NOTIFY, null)
 		return notifyLocal
@@ -124,19 +112,10 @@ export class StorageService extends CacheModule {
 		})
 	}
 
-	async isSubscribedTo(event): Promise<boolean> {
-		const notify = await this.getBooleanSetting(SETTING_NOTIFY)
-		return notify && (await this.getBooleanSetting(event))
-	}
-
 	async getStakingShare(): Promise<BigNumber> {
 		const value = await this.getItem('staking_share')
 		if (!value) return null
 		return new BigNumber(value)
-	}
-
-	async setStakingShare(value: BigNumber) {
-		await this.setItem('staking_share', value ? value.toString() : null)
 	}
 
 	async setLastEpochRequestTime(time: number) {
@@ -195,10 +174,14 @@ export class StorageService extends CacheModule {
 
 	async setItem(key: string, value: string, cache = true) {
 		if (cache) this.putCache(key, value)
-		await Preferences.set({
-			key: key,
-			value: value,
-		})
+		try {
+			await Preferences.set({
+				key: key,
+				value: value,
+			})
+		} catch (e) {
+			console.error('Error while writing to local storage (might be full):', e)
+		}
 		this.reflectiOSStorage()
 	}
 
@@ -245,11 +228,6 @@ export class StorageService extends CacheModule {
 		this.reflectiOSStorage()
 	}
 
-	async keys() {
-		const { keys } = await Preferences.keys()
-		return keys
-	}
-
 	async clear() {
 		this.invalidateAllCache()
 		await Preferences.clear()
@@ -276,13 +254,6 @@ function reviver(key, value) {
 		}
 	}
 	return value
-}
-
-interface PremiumObject {
-	key: string
-	description: string
-	price: number
-	numValidators: number
 }
 
 interface EpochRequestTime {
