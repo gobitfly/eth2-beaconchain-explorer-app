@@ -93,7 +93,7 @@ enum StateType {
 
 type DashboardDescription = {
 	text: string
-	opacity: number
+	highlight: boolean
 }
 
 export type DashboardStatus = {
@@ -551,7 +551,7 @@ export default class OverviewController {
 		const helpingVerb = this.singularPluralSwitch(validatorCount, slashedCount, 'was', 'were')
 		dashboardStatus.description.push({
 			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' slashed', 'This validator was slashed', foreignValidator),
-			opacity: 1.0,
+			highlight: true,
 		})
 	}
 
@@ -585,7 +585,7 @@ export default class OverviewController {
 				'This validator is waiting for activation',
 				foreignValidator
 			),
-			opacity: 1.0,
+			highlight: true,
 		})
 	}
 
@@ -619,7 +619,7 @@ export default class OverviewController {
 				"This validator's deposit is being processed",
 				foreignValidator
 			),
-			opacity: 1.0,
+			highlight: true,
 		})
 	}
 
@@ -640,11 +640,11 @@ export default class OverviewController {
 
 		const pre = allValidatorsExited ? 'All' : `${exitedCount}`
 		const helpingVerb = this.singularPluralSwitch(validatorCount, exitedCount, 'has', 'have')
-		// show lowered opacity only on dashboard and only if all validators are exited
-		const opacity = foreignValidator || allValidatorsExited ? 1.0 : 0.65
+		// exit message is only highlighted if it is about foreign validators or if all validators are exited
+		const highlight = foreignValidator || allValidatorsExited
 		dashboardStatus.description.push({
 			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' exited', 'This validator has exited', foreignValidator),
-			opacity: opacity,
+			highlight: highlight,
 		})
 	}
 
@@ -665,7 +665,7 @@ export default class OverviewController {
 		const helpingVerb = this.singularPluralSwitch(validatorCount, offlineCount, 'is', 'are')
 		dashboardStatus.description.push({
 			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' offline', 'This validator is offline', foreignValidator),
-			opacity: 1.0,
+			highlight: true,
 		})
 	}
 
@@ -686,7 +686,7 @@ export default class OverviewController {
 			const helpingVerb = this.singularPluralSwitch(validatorCount, activeCount, 'is', 'are')
 			dashboardStatus.description.push({
 				text: this.descriptionSwitch(pre + ' of your validators ' + helpingVerb + ' active', 'This validator is active', foreignValidator),
-				opacity: 1.0,
+				highlight: true,
 			})
 
 			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
