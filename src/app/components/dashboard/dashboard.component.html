@@ -31,9 +31,10 @@
 				</ion-label>
 
 				<div class="status-text">
-					<ion-label>
-						{{ data.dashboardState.description }}
-					</ion-label>
+					<span *ngFor="let last = last; let d; of: data.dashboardState.description">
+						<ion-label style="opacity: {{ d.opacity }}"> {{ d.text }} </ion-label>
+						<span *ngIf="!last"><br /></span>
+					</span>
 				</div>
 
 				<div class="status-text" *ngIf="data.dashboardState.extendedDescription">
