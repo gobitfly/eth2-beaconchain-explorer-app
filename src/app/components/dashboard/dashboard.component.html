@@ -732,34 +732,21 @@
 		</ion-item>
 
 		<span *ngIf="data.foreignValidator">
-			<div *ngIf="(data.foreignValidatorItem.data.withdrawalcredentials | slice : 0 : 4) == '0x01'; then creds0x01; else creds0x00"></div>
-			<ng-template #creds0x01>
-				<ion-item
-					lines="none"
-					tooltip="This validator has 0x01 credentials and is ready for withdrawals."
-					placement="right"
-					trigger="click"
-					hideDelayAfterClick="5000">
-					<ion-label class="stat-title"> Withdrawal Cred </ion-label>
-					<ion-label class="value" [class]="'ok - proposals'" (click)="switchCurrencyPipe()">
-						{{ data.foreignValidatorItem.data.withdrawalcredentials | slice : 0 : 4 }}
-					</ion-label>
-				</ion-item>
-			</ng-template>
-
-			<ng-template #creds0x00>
-				<ion-item
-					lines="none"
-					tooltip="0x00 credentials must be upgraded to 0x01 credentials at some point in time to be eligible for withdrawals."
-					placement="right"
-					trigger="click"
-					hideDelayAfterClick="5000">
-					<ion-label class="stat-title"> Withdrawal Cred </ion-label>
-					<ion-label class="value" [class]="'warn'" (click)="switchCurrencyPipe()">
-						{{ data.foreignValidatorItem.data.withdrawalcredentials | slice : 0 : 4 }}
-					</ion-label>
-				</ion-item>
-			</ng-template>
+			<ion-item
+				lines="none"
+				[tooltip]="
+					data.foreignValidatorWithdrawalCredsAre0x01
+						? 'This validator has 0x01 credentials and is ready for withdrawals.'
+						: '0x00 credentials must be upgraded to 0x01 credentials at some point in time to be eligible for withdrawals.'
+				"
+				placement="right"
+				trigger="click"
+				hideDelayAfterClick="5000">
+				<ion-label class="stat-title"> Withdrawal Cred </ion-label>
+				<ion-label class="value" [class]="data.foreignValidatorWithdrawalCredsAre0x01 ? 'ok-proposals' : 'warn'">
+					{{ data.foreignValidatorItem.data.withdrawalcredentials | slice : 0 : 4 }}
+				</ion-label>
+			</ion-item>
 		</span>
 
 		<ion-item lines="none" *ngIf="data.foreignValidator">

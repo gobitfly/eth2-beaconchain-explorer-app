@@ -46,6 +46,7 @@ export type OverviewData = {
 	lazyChartValidators: string
 	foreignValidator: boolean
 	foreignValidatorItem?: Validator
+	foreignValidatorWithdrawalCredsAre0x01: boolean
 	apr: number
 	effectiveBalance: BigNumber
 	currentEpoch: EpochResponse
@@ -169,6 +170,11 @@ export default class OverviewController {
 		const currentSync = validators.find((cur) => !!cur.currentSyncCommittee)
 		const nextSync = validators.find((cur) => !!cur.nextSyncCommittee)
 
+		let foreignWCAre0x01 = false
+		if (foreignValidator) {
+			foreignWCAre0x01 = validators[0].data.withdrawalcredentials.startsWith('0x01')
+		}
+
 		return {
 			overallBalance: overallBalance,
 			validatorCount: validatorCount,
@@ -183,6 +189,7 @@ export default class OverviewController {
 			lazyChartValidators: getValidatorQueryString(validators, 2000, this.userMaxValidators - 1),
 			foreignValidator: foreignValidator,
 			foreignValidatorItem: foreignValidator ? validators[0] : null,
+			foreignValidatorWithdrawalCredsAre0x01: foreignWCAre0x01,
 			effectiveBalance: effectiveBalance,
 			currentEpoch: currentEpoch,
 			apr: consensusPerf.apr,
