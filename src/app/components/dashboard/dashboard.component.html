@@ -216,7 +216,14 @@
 
 				<div class="grid-cell left">
 					<div>
-						<ion-label class="value left" [class]="data.attrEffectiveness | valuestyle : 80"> {{ data.attrEffectiveness }} % </ion-label>
+						<ng-container *ngIf="data.displayAttrEffectiveness">
+							<ion-label class="value left" [class]="data.attrEffectiveness | valuestyle : 80">
+								{{ data.attrEffectiveness !== -1 ? data.attrEffectiveness + ' %' : 'NaN' }}
+							</ion-label>
+						</ng-container>
+						<ng-container *ngIf="!data.displayAttrEffectiveness">
+							<ion-label class="value left"> - </ion-label>
+						</ng-container>
 					</div>
 					<div>
 						<ion-label class="income-title">

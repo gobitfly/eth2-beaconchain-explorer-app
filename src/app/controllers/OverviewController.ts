@@ -39,6 +39,7 @@ export type OverviewData = {
 	activationeligibilityCount: number
 	bestRank: number
 	worstRank: number
+	displayAttrEffectiveness: boolean
 	attrEffectiveness: number
 
 	dashboardState: DashboardStatus
@@ -148,11 +149,22 @@ export default class OverviewController {
 		}
 
 		let attrEffectiveness = 0
+		let displayAttrEffectiveness = false
 		if (activeValidators.length > 0) {
-			attrEffectiveness = sumBigInt(validators, (cur) => (cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()) : new BigNumber(0)))
+			displayAttrEffectiveness = true
+
+			attrEffectiveness = sumBigInt(activeValidators, (cur) =>
+				cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()) : new BigNumber(0)
+			)
 				.dividedBy(activeValidators.length)
 				.decimalPlaces(1)
 				.toNumber()
+
+			const attrChecked = Math.min(Math.max(attrEffectiveness, 0), 100)
+			if (attrEffectiveness != attrChecked) {
+				console.warn(`Effectiveness out of range: ${attrEffectiveness} (displaying "NaN")`)
+				attrEffectiveness = -1 // display "NaN" if something went wrong
+			}
 		}
 
 		const bestRank = findLowest(validators, (cur) => cur.data.rank7d)
@@ -175,6 +187,7 @@ export default class OverviewController {
 			bestRank: bestRank,
 			worstRank: worstRank,
 			attrEffectiveness: attrEffectiveness,
+			displayAttrEffectiveness: displayAttrEffectiveness,
 			consensusPerformance: consensusPerf,
 			executionPerformance: executionPerf,
 			combinedPerformance: combinedPerf,
