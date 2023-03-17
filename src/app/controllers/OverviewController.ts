@@ -81,10 +81,28 @@ export type Rocketpool = {
 	cheatingStatus: RocketpoolCheatingStatus
 }
 
+enum StateType {
+	online,
+	offline,
+	slashed,
+	exited,
+	activation,
+	eligibility,
+
+	none,
+	mixed,
+}
+
+type DashboardDescription = {
+	text: string
+	highlight: boolean
+}
+
 export type DashboardStatus = {
+	state: StateType
 	icon: string
 	title: string
-	description: string
+	description: DashboardDescription[]
 	extendedDescription: string
 	extendedDescriptionPre: string
 	iconCss: string
@@ -441,83 +459,68 @@ export default class OverviewController {
 	}
 
 	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
+		// collect data
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
 		const activeValidatorCount = activeValidators.length
-
-		const exitedValidators = this.getExitedValidators(validators)
-		const exitedValidatorsCount = exitedValidators.length
-		const requiredValidatorsForOKState = validatorCount - exitedValidatorsCount
-
 		const slashedValidators = this.getSlashedValidators(validators)
 		const slashedCount = slashedValidators.length
-
-		if (slashedCount > 0) {
-			return this.getSlashedState(
-				activeValidatorCount,
-				validatorCount,
-				foreignValidator,
-				slashedValidators[0].data,
-				currentEpoch,
-				slashedCount == validatorCount
-			)
-		}
-
-		if (activeValidatorCount == requiredValidatorsForOKState && activeValidatorCount != 0) {
-			return this.getOkState(activeValidatorCount, validatorCount, foreignValidator, activeValidators[0].data, currentEpoch)
-		} else if (activeValidatorCount == requiredValidatorsForOKState && activeValidatorCount == 0) {
-			return this.getExitedState(activeValidatorCount, validatorCount, foreignValidator)
-		}
-
+		const exitedValidators = this.getExitedValidators(validators)
+		const exitedValidatorsCount = exitedValidators.length
 		const awaitingActivation = this.getWaitingForActivationValidators(validators)
-		const activationeligibility = this.getEligableValidators(validators)
+		const awaitingCount = awaitingActivation.length
+		const activationEligibility = this.getEligableValidators(validators)
+		const eligibilityCount = activationEligibility.length
 
-		if (awaitingActivation.length > 0) {
-			return this.getAwaitingActivationState(
-				activeValidatorCount,
-				validatorCount,
-				awaitingActivation[0].data,
-				currentEpoch,
-				foreignValidator,
-				awaitingActivation.length == validatorCount
-			)
+		// create status object with some default values
+		const dashboardStatus: DashboardStatus = {
+			state: StateType.none,
+			title: `${activeValidatorCount} / ${validatorCount}`,
+			iconCss: 'ok',
+			icon: 'checkmark-circle-outline',
+			description: [],
+			extendedDescription: '',
+			extendedDescriptionPre: '',
 		}
 
-		if (activationeligibility.length > 0) {
-			return this.getEligbableActivationState(
-				activeValidatorCount,
-				validatorCount,
-				activationeligibility[0].data,
-				currentEpoch,
-				foreignValidator,
-				activationeligibility.length == validatorCount
-			)
+		////
+		// Attention: The order of all the updateStateX functions matters!
+		// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
+
+		// handle slashed validators
+		this.updateStateSlashed(dashboardStatus, slashedCount, validatorCount, foreignValidator, slashedValidators[0]?.data, currentEpoch)
+
+		// handle offline validators
+		const offlineCount = validatorCount - activeValidatorCount - exitedValidatorsCount - slashedCount - awaitingCount - eligibilityCount
+		this.updateStateOffline(dashboardStatus, validatorCount, offlineCount, foreignValidator)
+
+		// handle awaiting activation validators
+		if (awaitingCount > 0) {
+			this.updateStateAwaiting(dashboardStatus, awaitingCount, validatorCount, foreignValidator, awaitingActivation[0].data, currentEpoch)
 		}
 
-		return this.getOfflineState(activeValidatorCount, validatorCount, foreignValidator)
+		// handle eligable validators
+		if (eligibilityCount > 0) {
+			this.updateStateEligibility(dashboardStatus, eligibilityCount, validatorCount, foreignValidator, activationEligibility[0].data, currentEpoch)
+		}
+
+		// handle exited validators
+		this.updateExitedState(dashboardStatus, exitedValidatorsCount, validatorCount, foreignValidator)
+
+		// handle ok state, always call last
+		this.updateStateOk(dashboardStatus, activeValidatorCount, validatorCount, foreignValidator, activeValidators[0]?.data, currentEpoch)
+
+		if (dashboardStatus.state == StateType.mixed) {
+			// remove extended description if more than one state is shown
+			dashboardStatus.extendedDescription = ''
+			dashboardStatus.extendedDescriptionPre = ''
+		}
+
+		return dashboardStatus
 	}
 
 	private descriptionSwitch(myText, foreignText, foreignValidator) {
 		return foreignValidator ? foreignText : myText
-	}
-
-	private getOkState(
-		activeValidatorCount,
-		validatorCount,
-		foreignValidator,
-		validatorResp: ValidatorResponse,
-		currentEpoch: EpochResponse
-	): DashboardStatus {
-		const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
-
-		return {
-			icon: 'checkmark-circle-outline',
-			title: activeValidatorCount + ' / ' + validatorCount,
-			description: this.descriptionSwitch('All validators are active', 'This validator is active', foreignValidator),
-			extendedDescriptionPre: exitingDescription.extendedDescriptionPre,
-			extendedDescription: exitingDescription.extendedDescription,
-			iconCss: 'ok',
-		}
 	}
 
 	private getExitingDescription(validatorResp: ValidatorResponse, currentEpoch: EpochResponse): Description {
@@ -533,99 +536,187 @@ export default class OverviewController {
 		}
 	}
 
-	private getSlashedState(
-		activeValidatorCount,
-		validatorCount,
-		foreignValidator,
-		validatorResp: ValidatorResponse,
-		currentEpoch: EpochResponse,
-		allAffected: boolean
-	): DashboardStatus {
-		const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
-
-		const pre = allAffected ? 'All' : 'Some'
-		return {
-			icon: 'alert-circle-outline',
-			title: activeValidatorCount + ' / ' + validatorCount,
-			description: this.descriptionSwitch(pre + ' of your validators were slashed', 'This validator was slashed', foreignValidator),
-			extendedDescriptionPre: exitingDescription.extendedDescriptionPre,
-			extendedDescription: exitingDescription.extendedDescription,
-			iconCss: 'err',
+	private singularPluralSwitch(totalValidatorCount: number, validatorCount: number, verbSingular: string, verbPlural: string): string {
+		if (totalValidatorCount != validatorCount && validatorCount == 1) {
+			return ` ${verbSingular}`
+		} else {
+			return ` ${verbPlural}`
 		}
 	}
 
-	private getAwaitingActivationState(
-		activeValidatorCount,
-		validatorCount,
+	private updateStateSlashed(
+		dashboardStatus: DashboardStatus,
+		slashedCount: number,
+		validatorCount: number,
+		foreignValidator: boolean,
+		validatorResp: ValidatorResponse,
+		currentEpoch: EpochResponse
+	) {
+		if (slashedCount == 0) {
+			return
+		}
+
+		if (dashboardStatus.state == StateType.none) {
+			dashboardStatus.icon = 'alert-circle-outline'
+			dashboardStatus.iconCss = 'err'
+			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
+			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
+			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
+			dashboardStatus.state = StateType.slashed
+		} else {
+			dashboardStatus.state = StateType.mixed
+		}
+
+		const pre = validatorCount == slashedCount ? 'All' : `${slashedCount}`
+		const helpingVerb = this.singularPluralSwitch(validatorCount, slashedCount, 'was', 'were')
+		dashboardStatus.description.push({
+			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' slashed', 'This validator was slashed', foreignValidator),
+			highlight: true,
+		})
+	}
+
+	private updateStateAwaiting(
+		dashboardStatus: DashboardStatus,
+		awaitingCount: number,
+		validatorCount: number,
+		foreignValidator: boolean,
 		awaitingActivation: ValidatorResponse,
-		currentEpoch: EpochResponse,
-		foreignValidator,
-		allAffected: boolean
-	): DashboardStatus {
-		const pre = allAffected ? 'All' : 'Some'
-		const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, currentEpoch)
-		return {
-			icon: 'timer-outline',
-			title: activeValidatorCount + ' / ' + validatorCount,
-			description: this.descriptionSwitch(
-				pre + ' of your validators are waiting for activation',
+		currentEpoch: EpochResponse
+	) {
+		if (awaitingCount == 0) {
+			return
+		}
+
+		if (dashboardStatus.state == StateType.none) {
+			const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, currentEpoch)
+
+			dashboardStatus.icon = 'timer-outline'
+			dashboardStatus.iconCss = 'waiting'
+			dashboardStatus.state = StateType.activation
+			dashboardStatus.extendedDescriptionPre = estEta ? 'Estimated on ' : null
+			dashboardStatus.extendedDescription = estEta ? estEta : null
+		}
+
+		const pre = validatorCount == awaitingCount ? 'All' : `${awaitingCount}`
+		const helpingVerb = this.singularPluralSwitch(validatorCount, awaitingCount, 'is', 'are')
+		dashboardStatus.description.push({
+			text: this.descriptionSwitch(
+				pre + ' of your validators' + helpingVerb + ' waiting for activation',
 				'This validator is waiting for activation',
 				foreignValidator
 			),
-			extendedDescriptionPre: estEta ? 'Estimated on ' : null,
-			extendedDescription: estEta ? estEta : null,
-			iconCss: 'waiting',
-		}
+			highlight: true,
+		})
 	}
 
-	private getEligbableActivationState(
-		activeValidatorCount,
-		validatorCount,
+	private updateStateEligibility(
+		dashboardStatus: DashboardStatus,
+		eligibilityCount: number,
+		validatorCount: number,
+		foreignValidator: boolean,
 		eligbleState: ValidatorResponse,
-		currentEpoch: EpochResponse,
-		foreignValidator,
-		allAffected: boolean
-	): DashboardStatus {
-		const pre = allAffected ? 'All' : 'Some'
+		currentEpoch: EpochResponse
+	) {
+		if (eligibilityCount == 0) {
+			return
+		}
+
 		const estEta = this.getEpochDate(eligbleState.activationeligibilityepoch, currentEpoch)
-		return {
-			icon: 'timer-outline',
-			title: activeValidatorCount + ' / ' + validatorCount,
-			description: this.descriptionSwitch(
-				pre + " of your validators' deposits are being processed",
+
+		if (dashboardStatus.state == StateType.none) {
+			dashboardStatus.icon = 'timer-outline'
+			dashboardStatus.iconCss = 'waiting'
+			dashboardStatus.state = StateType.eligibility
+			dashboardStatus.extendedDescriptionPre = estEta ? 'Estimated on ' : null
+			dashboardStatus.extendedDescription = estEta ? estEta : null
+		}
+
+		const pre = validatorCount == eligibilityCount ? 'All' : `${eligibilityCount}`
+		const helpingVerb = this.singularPluralSwitch(validatorCount, eligibilityCount, 'is', 'are')
+		dashboardStatus.description.push({
+			text: this.descriptionSwitch(
+				pre + " of your validators' deposits" + helpingVerb + ' being processed',
 				"This validator's deposit is being processed",
 				foreignValidator
 			),
-			extendedDescriptionPre: estEta ? 'Estimated on ' : null,
-			extendedDescription: estEta ? estEta : null,
-			iconCss: 'waiting',
+			highlight: true,
+		})
+	}
+
+	private updateExitedState(dashboardStatus: DashboardStatus, exitedCount: number, validatorCount: number, foreignValidator: boolean) {
+		if (exitedCount == 0) {
+			return
+		}
+
+		const allValidatorsExited = validatorCount == exitedCount
+		if (dashboardStatus.state == StateType.none && allValidatorsExited) {
+			dashboardStatus.icon = this.descriptionSwitch('ribbon-outline', 'home-outline', foreignValidator)
+			dashboardStatus.iconCss = 'ok'
+			dashboardStatus.state = StateType.exited
+			dashboardStatus.extendedDescription = this.descriptionSwitch('Thank you for your service', null, foreignValidator)
+		} else {
+			dashboardStatus.state = StateType.mixed
+		}
+
+		const pre = allValidatorsExited ? 'All' : `${exitedCount}`
+		const helpingVerb = this.singularPluralSwitch(validatorCount, exitedCount, 'has', 'have')
+		// exit message is only highlighted if it is about foreign validators or if all validators are exited
+		const highlight = foreignValidator || allValidatorsExited
+		dashboardStatus.description.push({
+			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' exited', 'This validator has exited', foreignValidator),
+			highlight: highlight,
+		})
+	}
+
+	private updateStateOffline(dashboardStatus: DashboardStatus, validatorCount: number, offlineCount: number, foreignValidator: boolean) {
+		if (offlineCount == 0) {
+			return
+		}
+
+		if (dashboardStatus.state == StateType.none) {
+			dashboardStatus.icon = 'alert-circle-outline'
+			dashboardStatus.iconCss = 'warn'
+			dashboardStatus.state = StateType.offline
+		} else {
+			dashboardStatus.state = StateType.mixed
+		}
+
+		const pre = validatorCount == offlineCount ? 'All' : `${offlineCount}`
+		const helpingVerb = this.singularPluralSwitch(validatorCount, offlineCount, 'is', 'are')
+		dashboardStatus.description.push({
+			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' offline', 'This validator is offline', foreignValidator),
+			highlight: true,
+		})
+	}
+
+	private updateStateOk(
+		dashboardStatus: DashboardStatus,
+		activeCount: number,
+		validatorCount: number,
+		foreignValidator: boolean,
+		validatorResp: ValidatorResponse,
+		currentEpoch: EpochResponse
+	) {
+		if (dashboardStatus.state != StateType.mixed && dashboardStatus.state != StateType.none) {
+			return
+		}
+
+		if (dashboardStatus.state == StateType.none) {
+			const pre = validatorCount == activeCount ? 'All' : `${activeCount}`
+			const helpingVerb = this.singularPluralSwitch(validatorCount, activeCount, 'is', 'are')
+			dashboardStatus.description.push({
+				text: this.descriptionSwitch(pre + ' of your validators ' + helpingVerb + ' active', 'This validator is active', foreignValidator),
+				highlight: true,
+			})
+
+			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
+			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
+			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
+			dashboardStatus.state = StateType.online
 		}
 	}
 
-	private getExitedState(activeValidatorCount, validatorCount, foreignValidator): DashboardStatus {
-		return {
-			icon: this.descriptionSwitch('ribbon-outline', 'home-outline', foreignValidator),
-			title: activeValidatorCount + ' / ' + validatorCount,
-			description: this.descriptionSwitch('All of your validators have exited', 'This validator has exited', foreignValidator),
-			extendedDescriptionPre: null,
-			extendedDescription: this.descriptionSwitch('Thank you for your service', null, foreignValidator),
-			iconCss: 'ok',
-		}
-	}
-
-	private getOfflineState(activeValidatorCount, validatorCount, foreignValidator): DashboardStatus {
-		const pre = activeValidatorCount == 0 ? 'All' : 'Some'
-		return {
-			icon: 'alert-circle-outline',
-			title: activeValidatorCount + ' / ' + validatorCount,
-			description: this.descriptionSwitch(pre + ' of your validators are offline', 'This validator is offline', foreignValidator),
-			extendedDescriptionPre: null,
-			extendedDescription: null,
-			iconCss: 'warn',
-		}
-	}
-
-	private getEpochDate(activationEpoch, currentEpoch: EpochResponse) {
+	private getEpochDate(activationEpoch: number, currentEpoch: EpochResponse) {
 		try {
 			const diff = activationEpoch - currentEpoch.epoch
 			if (diff <= 0) {
