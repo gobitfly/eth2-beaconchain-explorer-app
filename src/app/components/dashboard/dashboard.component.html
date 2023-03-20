@@ -73,6 +73,21 @@
 			*ngIf="showMergeChecklist"
 			(onResult)="onDismissed()"></app-message>
 
+		<app-message title="Rocketpool Deposit Credit" 
+			icon="cash-outline" 
+			iconStyle="info" 
+			msgTitle="Rocketpool Deposit Credit"
+			[msgText]="depositCreditText"
+			*ngIf="depositCreditText"></app-message>
+
+		<app-message 
+			title="Rocketpool Vacant Minipool" 
+			icon="ellipse-outline" 
+			iconStyle="warn" 
+			msgTitle="Vacant Minipool"
+			[msgText]="vacantMinipoolText"
+			*ngIf="vacantMinipoolText"></app-message>
+
 		<app-message
 			title="Network is preparing for liftoff"
 			icon="time-outline"
@@ -134,7 +149,7 @@
 		<app-ad location="info"></app-ad>
 	</ion-list>
 
-	<!--<ion-list-header>
+	<ion-list-header>
     <ion-label>Staking & Transactions</ion-label>
   </ion-list-header>
   <ion-list class="performances" >
@@ -146,13 +161,13 @@
         <div class="grid-cell left" (click)="switchCurrencyPipe()">
 
           <div>
-            <ion-label class="value left" [class]="data.combinedPerformance.performance31d | valuestyle:0">
-              {{ data.combinedPerformance.performance31d | mcurrency: "GWEI":unit.pref }}
+            <ion-label class="value left" [class]="data.combinedPerformance.total | valuestyle:0">
+              {{ data.combinedPerformance.total | mcurrency: "GWEI":unit.pref }}
             </ion-label>
           </div>
           <div>
             <ion-label class="income-title">
-              Last Month
+              Total Earned
             </ion-label>
           </div>
 
@@ -179,7 +194,7 @@
 
     
 
-  </ion-list>-->
+  </ion-list>
 
 	<ion-list-header>
 		<ion-label>Staking</ion-label>
@@ -605,6 +620,14 @@
 				{{ data.rocketpool.depositType }}
 			</ion-label>
 		</ion-item>
+
+		<ion-item lines="none" *ngIf="data.foreignValidatorItem && data.foreignValidatorItem.rocketpool.node_deposit_balance && data.foreignValidator">
+			<ion-label class="stat-title"> Deposit</ion-label>
+			<ion-label class="value" (click)="switchCurrencyPipe()">
+				{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref }}
+			</ion-label>
+		</ion-item>
+		
 	</ion-list>
 
 	<ion-list class="performances" *ngIf="!chartError">

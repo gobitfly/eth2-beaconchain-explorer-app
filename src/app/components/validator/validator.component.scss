@@ -119,10 +119,18 @@ ion-icon {
 	--background: #e17959;
 }
 
+.vacant {
+	--background: #8a8a8a;
+}
+
 .sync {
 	--background: var(--ion-color-secondary);
 }
 
+ion-badge {
+	margin: 0 4px;
+}
+
 .onlinestate {
-	margin-right: 5px;
+	margin-right: 4px;
 }
