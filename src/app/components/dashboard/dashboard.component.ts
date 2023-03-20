@@ -188,13 +188,15 @@ export class DashboardComponent implements OnInit {
 				'ETHER',
 				true
 			)} in unused Rocketpool deposit credit.<br/><br/>You can use this credit to spin up more minipools. Be aware that you can not withdraw your deposit credit.`
-		} 
+		}
 	}
 
 	async updateVacantMinipoolText() {
-		console.log("vacant amount", this.data.rocketpool.vacantPools)
+		console.log('vacant amount', this.data.rocketpool.vacantPools)
 		if (this.data.rocketpool.vacantPools && this.data.rocketpool.vacantPools > 0) {
-			this.vacantMinipoolText = `${this.data.rocketpool.vacantPools} of your ${this.data.rocketpool.vacantPools == 1 ? 'minipool is' : 'minipools are'}
+			this.vacantMinipoolText = `${this.data.rocketpool.vacantPools} of your ${
+				this.data.rocketpool.vacantPools == 1 ? 'minipool is' : 'minipools are'
+			}
 			currently vacant. Head over to the validators tab to see which one has a vacant label.<br/><br/>
 			If you recently converted a validator to a minipool please make sure you did change the 0x0 withdrawal credentials to the new vacant minipool address (0x01) to fix this warning.<br/><br/>
 			If you already changed the withdrawal credentials this warning will disappear on it's own withing 24h.

@@ -73,17 +73,18 @@
 			*ngIf="showMergeChecklist"
 			(onResult)="onDismissed()"></app-message>
 
-		<app-message title="Rocketpool Deposit Credit" 
-			icon="cash-outline" 
-			iconStyle="info" 
+		<app-message
+			title="Rocketpool Deposit Credit"
+			icon="cash-outline"
+			iconStyle="info"
 			msgTitle="Rocketpool Deposit Credit"
 			[msgText]="depositCreditText"
 			*ngIf="depositCreditText"></app-message>
 
-		<app-message 
-			title="Rocketpool Vacant Minipool" 
-			icon="ellipse-outline" 
-			iconStyle="warn" 
+		<app-message
+			title="Rocketpool Vacant Minipool"
+			icon="ellipse-outline"
+			iconStyle="warn"
 			msgTitle="Vacant Minipool"
 			[msgText]="vacantMinipoolText"
 			*ngIf="vacantMinipoolText"></app-message>
@@ -150,51 +151,33 @@
 	</ion-list>
 
 	<ion-list-header>
-    <ion-label>Staking & Transactions</ion-label>
-  </ion-list-header>
-  <ion-list class="performances" >
+		<ion-label>Staking & Transactions</ion-label>
+	</ion-list-header>
+	<ion-list class="performances">
+		<ion-item lines="none">
+			<div class="grid">
+				<div class="grid-cell left" (click)="switchCurrencyPipe()">
+					<div>
+						<ion-label class="value left" [class]="data.combinedPerformance.total | valuestyle : 0">
+							{{ data.combinedPerformance.total | mcurrency : 'GWEI' : unit.pref }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title"> Total Earned </ion-label>
+					</div>
+				</div>
 
-    <ion-item lines="none">
-
-      <div class="grid">
-
-        <div class="grid-cell left" (click)="switchCurrencyPipe()">
-
-          <div>
-            <ion-label class="value left" [class]="data.combinedPerformance.total | valuestyle:0">
-              {{ data.combinedPerformance.total | mcurrency: "GWEI":unit.pref }}
-            </ion-label>
-          </div>
-          <div>
-            <ion-label class="income-title">
-              Total Earned
-            </ion-label>
-          </div>
-
-        </div>
-
-        <div class="grid-cell" (click)="switchCurrencyPipe()">
-
-          <div>
-            <ion-label class="value" [class]="data.combinedPerformance.apr | valuestyle:0">
-              {{ data.combinedPerformance.apr }} %
-            </ion-label>
-          </div>
-          <div>
-            <ion-label class="income-title right">
-              APR
-            </ion-label>
-          </div>
-
-        </div>
-
-
-      </div>
-    </ion-item>
-
-    
-
-  </ion-list>
+				<div class="grid-cell" (click)="switchCurrencyPipe()">
+					<div>
+						<ion-label class="value" [class]="data.combinedPerformance.apr | valuestyle : 0"> {{ data.combinedPerformance.apr }} % </ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right"> APR </ion-label>
+					</div>
+				</div>
+			</div>
+		</ion-item>
+	</ion-list>
 
 	<ion-list-header>
 		<ion-label>Staking</ion-label>
@@ -627,7 +610,6 @@
 				{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref }}
 			</ion-label>
 		</ion-item>
-		
 	</ion-list>
 
 	<ion-list class="performances" *ngIf="!chartError">

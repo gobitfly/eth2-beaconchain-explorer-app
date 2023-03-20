@@ -142,15 +142,9 @@ export default class OverviewController {
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
 
-		const consensusPerf = this.getConsensusPerformance(
-			validators,
-			aprPerformance31dConsensus,
-		)
+		const consensusPerf = this.getConsensusPerformance(validators, aprPerformance31dConsensus)
 
-		const executionPerf = this.getExecutionPerformance(
-			validators,
-			aprPerformance31dExecution
-		)
+		const executionPerf = this.getExecutionPerformance(validators, aprPerformance31dExecution)
 
 		const combinedPerf = {
 			performance1d: consensusPerf.performance1d.plus(executionPerf.performance1d),
@@ -281,10 +275,7 @@ export default class OverviewController {
 		} as OverviewData
 	}
 
-	private getExecutionPerformance(
-		validators: Validator[],
-		aprPerformance31dExecution: BigNumber,
-	) {
+	private getExecutionPerformance(validators: Validator[], aprPerformance31dExecution: BigNumber) {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance1d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
@@ -324,10 +315,7 @@ export default class OverviewController {
 		return new BigNumber(0)
 	}
 
-	private getConsensusPerformance(
-		validators: Validator[],
-		aprPerformance31dConsensus: BigNumber,
-	) {
+	private getConsensusPerformance(validators: Validator[], aprPerformance31dConsensus: BigNumber) {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
@@ -352,7 +340,7 @@ export default class OverviewController {
 			performance7d: performance7d,
 			performance365d: performance365d,
 			apr: aprConsensus,
-			total: total, 
+			total: total,
 		}
 	}
 
@@ -420,7 +408,7 @@ export default class OverviewController {
 			if (fieldResolved.s == null && fieldResolved.e == null) {
 				fieldResolved = new BigNumber(0)
 			}
-			
+
 			const nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
 			const rewards = new BigNumber(fieldResolved.toString())
 
