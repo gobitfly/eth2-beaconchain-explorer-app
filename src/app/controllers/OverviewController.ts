@@ -132,6 +132,9 @@ export default class OverviewController {
 		if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
 		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
+		const validatorDepositActive = sumBigInt(validators, (cur) => {
+			return cur.data.activationepoch <= currentEpoch.epoch ? VALIDATOR_32ETH : new BigNumber(0)
+		})
 
 		const aprPerformance31dConsensus = sumBigInt(validators, (cur) => cur.data.performance31d)
 		const aprPerformance31dExecution = sumBigInt(validators, (cur) =>
@@ -142,16 +145,16 @@ export default class OverviewController {
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
 
-		const consensusPerf = this.getConsensusPerformance(validators, aprPerformance31dConsensus)
+		const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive, aprPerformance31dConsensus)
 
-		const executionPerf = this.getExecutionPerformance(validators, aprPerformance31dExecution)
+		const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive, aprPerformance31dExecution)
 
 		const combinedPerf = {
 			performance1d: consensusPerf.performance1d.plus(executionPerf.performance1d),
 			performance31d: consensusPerf.performance31d.plus(executionPerf.performance31d),
 			performance7d: consensusPerf.performance7d.plus(executionPerf.performance7d),
 			performance365d: consensusPerf.performance365d.plus(executionPerf.performance365d),
-			apr: this.getAPRFromMonth(aprPerformance31dExecution.plus(aprPerformance31dConsensus)),
+			apr: this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution.plus(aprPerformance31dConsensus)),
 			total: consensusPerf.total.plus(executionPerf.total),
 		}
 
@@ -275,7 +278,7 @@ export default class OverviewController {
 		} as OverviewData
 	}
 
-	private getExecutionPerformance(validators: Validator[], aprPerformance31dExecution: BigNumber) {
+	private getExecutionPerformance(validators: Validator[], validatorDepositActive: BigNumber, aprPerformance31dExecution: BigNumber) {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance1d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
@@ -292,7 +295,7 @@ export default class OverviewController {
 			)
 		)
 
-		const aprExecution = this.getAPRFromMonth(aprPerformance31dExecution) // todo
+		const aprExecution = this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution) // todo
 		return {
 			performance1d: performance1d,
 			performance31d: performance31d,
@@ -311,7 +314,7 @@ export default class OverviewController {
 		return new BigNumber(0)
 	}
 
-	private getConsensusPerformance(validators: Validator[], aprPerformance31dConsensus: BigNumber) {
+	private getConsensusPerformance(validators: Validator[], validatorDepositActive: BigNumber, aprPerformance31dConsensus: BigNumber) {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
@@ -328,7 +331,7 @@ export default class OverviewController {
 			new BigNumber(cur.data.performanceTotal).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
 
-		const aprConsensus = this.getAPRFromMonth(aprPerformance31dConsensus)
+		const aprConsensus = this.getAPRFromMonth(validatorDepositActive, aprPerformance31dConsensus)
 
 		return {
 			performance1d: performance1d,
@@ -484,8 +487,8 @@ export default class OverviewController {
 		})
 	}
 
-	private getAPRFromMonth(performance: BigNumber): number {
-		return new BigNumber(performance.toString()).multipliedBy('1177').dividedBy(VALIDATOR_32ETH).decimalPlaces(1).toNumber()
+	private getAPRFromMonth(validatorDepositActive: BigNumber, performance: BigNumber): number {
+		return new BigNumber(performance.toString()).multipliedBy('1177').dividedBy(validatorDepositActive).decimalPlaces(1).toNumber()
 	}
 
 	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
