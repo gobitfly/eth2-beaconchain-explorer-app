@@ -328,7 +328,7 @@ export default class OverviewController {
 			new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
 		const total = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.performanceTotal).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+			new BigNumber(cur.data.performancetotal).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
 
 		const aprConsensus = this.getAPRFromMonth(validatorDepositActive, aprPerformance31dConsensus)
