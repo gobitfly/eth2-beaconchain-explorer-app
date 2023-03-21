@@ -113,6 +113,18 @@
 			slot="end"></ion-toggle>
 	</ion-item>
 
+	<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+		<ion-icon slot="start" name="caret-back-circle-outline"></ion-icon>
+		<ion-label> Validator Withdrawals <span class="active-count">({{ getCount('validator_withdrawal') }})</span> </ion-label>
+		<ion-toggle
+			checked
+			id="notifyToggle"
+			[ngModel]="notifyTogglesMap.get('validator_withdrawal')"
+			(ngModelChange)="setNotifyToggle('validator_withdrawal', $event)"
+			(ionChange)="notifyEventToggle('validator_withdrawal')"
+			slot="end"></ion-toggle>
+	</ion-item>
+
 	<ion-list-header>
 		<ion-label>ETH Client Updates</ion-label>
 	</ion-list-header>
