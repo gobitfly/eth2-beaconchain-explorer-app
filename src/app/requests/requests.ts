@@ -183,9 +183,7 @@ export interface ValidatorResponse {
 	performance365d: BigNumber
 	performance7d: BigNumber
 	rank7d: number
-	cl_performance_total: BigNumber
-	el_performance_total: BigNumber
-	mev_performance_total: BigNumber
+	performanceTotal: BigNumber
 }
 
 export interface AttestationPerformanceResponse {

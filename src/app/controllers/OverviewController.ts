@@ -292,10 +292,6 @@ export default class OverviewController {
 			)
 		)
 
-		const total = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.mev_performance_total).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		)
-
 		const aprExecution = this.getAPRFromMonth(aprPerformance31dExecution) // todo
 		return {
 			performance1d: performance1d,
@@ -303,7 +299,7 @@ export default class OverviewController {
 			performance7d: performance7d,
 			performance365d: new BigNumber(0), // not yet implemented
 			apr: aprExecution,
-			total: total,
+			total: new BigNumber(0), // not yet implemented
 		}
 	}
 
@@ -329,7 +325,7 @@ export default class OverviewController {
 			new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
 		const total = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.cl_performance_total).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+			new BigNumber(cur.data.performanceTotal).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
 
 		const aprConsensus = this.getAPRFromMonth(aprPerformance31dConsensus)
