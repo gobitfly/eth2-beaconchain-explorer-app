@@ -270,7 +270,7 @@ export default class OverviewController {
 				depositCredit: this.sumRocketpoolBigIntPerNodeAddress(
 					false,
 					validators,
-					(cur) => cur.rocketpool.node_deposit_credit.toString(),
+					(cur) => cur.rocketpool.node_deposit_credit ? cur.rocketpool.node_deposit_credit.toString() : "0",
 					() => 1
 				),
 				vacantPools: validators.filter((cur) => cur.rocketpool && cur.rocketpool.is_vacant).length,
@@ -327,9 +327,13 @@ export default class OverviewController {
 		const performance365d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
-		const total = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.performancetotal).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		)
+		const total = this.sumBigIntPerformanceRP(validators, (cur) => {
+			if (cur.data.performancetotal !== undefined) {
+				return new BigNumber(cur.data.performancetotal).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+			} else {
+				return new BigNumber(0)
+			}
+		})
 
 		const aprConsensus = this.getAPRFromMonth(validatorDepositActive, aprPerformance31dConsensus)
 
@@ -368,11 +372,17 @@ export default class OverviewController {
 		return sumBigInt(validators, (cur) => {
 			const fieldVal = field(cur)
 			if (!cur.rocketpool) return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-			if (!cur.rocketpool.node_address || !cur.rocketpool.node_deposit_balance) {
+			if (!cur.rocketpool.node_address) {
 				return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 			}
 
-			const nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+			let nodeDeposit
+			if (cur.rocketpool.node_deposit_balance) {
+				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+			} else {
+				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
+			}
+			
 			const rewards = new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
 
 			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
@@ -401,14 +411,20 @@ export default class OverviewController {
 	private sumBigIntPerformanceRP(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
 		return sumBigInt(validators, (cur) => {
 			if (!cur.rocketpool) return field(cur)
-			if (!cur.rocketpool.node_address || !cur.rocketpool.node_deposit_balance) return field(cur)
+			if (!cur.rocketpool.node_address) return field(cur)
 
 			let fieldResolved = field(cur)
 			if (fieldResolved.s == null && fieldResolved.e == null) {
 				fieldResolved = new BigNumber(0)
 			}
 
-			const nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+			let nodeDeposit
+			if (cur.rocketpool.node_deposit_balance) {
+				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+			} else {
+				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
+			}
+		
 			const rewards = new BigNumber(fieldResolved.toString())
 
 			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
