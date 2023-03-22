@@ -199,7 +199,7 @@ export class DashboardComponent implements OnInit {
 			}
 			currently vacant. Head over to the validators tab to see which one has a vacant label.<br/><br/>
 			If you recently converted a validator to a minipool please make sure you did change the 0x0 withdrawal credentials to the new vacant minipool address (0x01) to fix this warning.<br/><br/>
-			If you already changed the withdrawal credentials this warning will disappear on it's own withing 24h.
+			If you already changed the withdrawal credentials this warning will disappear on it's own within 24h.
 			`
 		}
 	}
