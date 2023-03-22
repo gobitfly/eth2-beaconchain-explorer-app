@@ -394,11 +394,11 @@
 		</ion-item>
 	</ion-list>
 
-	<ion-list-header *ngIf="rplProjectedClaim">
+	<ion-list-header *ngIf="rplCommission > 0">
 		<ion-label>Rocketpool</ion-label>
 	</ion-list-header>
 
-	<ion-list class="performances" *ngIf="rplProjectedClaim">
+	<ion-list class="performances" *ngIf="rplCommission > 0">
 		<ion-item lines="none">
 			<div class="grid">
 				<div class="grid-cell left" (click)="switchRplStake(true)">

@@ -192,7 +192,6 @@ export class DashboardComponent implements OnInit {
 	}
 
 	async updateVacantMinipoolText() {
-		console.log('vacant amount', this.data.rocketpool.vacantPools)
 		if (this.data.rocketpool.vacantPools && this.data.rocketpool.vacantPools > 0) {
 			this.vacantMinipoolText = `${this.data.rocketpool.vacantPools} of your ${
 				this.data.rocketpool.vacantPools == 1 ? 'minipool is' : 'minipools are'
