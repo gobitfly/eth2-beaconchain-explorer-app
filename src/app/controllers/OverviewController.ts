@@ -270,7 +270,7 @@ export default class OverviewController {
 				depositCredit: this.sumRocketpoolBigIntPerNodeAddress(
 					false,
 					validators,
-					(cur) => cur.rocketpool.node_deposit_credit ? cur.rocketpool.node_deposit_credit.toString() : "0",
+					(cur) => (cur.rocketpool.node_deposit_credit ? cur.rocketpool.node_deposit_credit.toString() : '0'),
 					() => 1
 				),
 				vacantPools: validators.filter((cur) => cur.rocketpool && cur.rocketpool.is_vacant).length,
@@ -382,7 +382,7 @@ export default class OverviewController {
 			} else {
 				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
 			}
-			
+
 			const rewards = new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
 
 			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
@@ -424,7 +424,7 @@ export default class OverviewController {
 			} else {
 				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
 			}
-		
+
 			const rewards = new BigNumber(fieldResolved.toString())
 
 			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
