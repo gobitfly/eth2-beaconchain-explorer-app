@@ -394,7 +394,7 @@ export default class OverviewController {
 			// if negative, rocketpool reimburses the rETH holder by taking it from the node operator
 			let wholeBalance
 			if (rewards.isNegative()) {
-				wholeBalance = nodeDeposit.minus(rewards)
+				wholeBalance = nodeDeposit.plus(rewards)
 				// if less than what the user deposited upfront, he lost everything and we put the balance to 0
 				// the validator can leak below that of course, but that's now at the expense of the rETH holders
 				if (wholeBalance.isNegative()) {

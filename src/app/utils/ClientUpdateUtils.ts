@@ -197,15 +197,11 @@ export default class ClientUpdateUtils {
 	}
 
 	private async checkUpdateFor(clientKey: string) {
-		console.log('checkUpdateFor', clientKey)
 		if (clientKey == null || clientKey == 'null') {
 			return null
 		}
-
-		console.log(': checkUpdateFor with', clientKey)
 		const client = this.getClientInfo(clientKey)
 		if (client != null) {
-			console.log('checkUpdateFor found', client)
 			const update = await this.getReleases(client)
 			const lastClosed = await this.getLastClosedVersion(clientKey)
 			if (update && update.data && lastClosed) {
