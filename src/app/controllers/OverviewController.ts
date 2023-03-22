@@ -381,7 +381,7 @@ export default class OverviewController {
 				.multipliedBy(new BigNumber(1 - nodeShare))
 				.multipliedBy(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))
 
-			// if negative, rocketpool reimburces the rETH holder by taking it from the node operator
+			// if negative, rocketpool reimburses the rETH holder by taking it from the node operator
 			let wholeBalance
 			if (rewards.isNegative()) {
 				wholeBalance = nodeDeposit.minus(rewards)
