@@ -594,21 +594,33 @@
 						</ion-label>
 					</div>
 				</div>
+
+				<div class="grid-cell left" *ngIf="data.rocketpool.depositType && data.foreignValidator">
+					<div>
+						<ion-label>
+							{{ data.rocketpool.depositType }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title"> Deposit Type </ion-label>
+					</div>
+				</div>
+
+				<div
+					class="grid-cell"
+					*ngIf="data.foreignValidatorItem && data.foreignValidatorItem.rocketpool.node_deposit_balance && data.foreignValidator">
+					<div>
+						<ion-label class="value" (click)="switchCurrencyPipe()">
+							{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right">
+							<span tooltip="Your deposited ETH amount." placement="right" trigger="click" hideDelayAfterClick="5000"> Deposit </span>
+						</ion-label>
+					</div>
+				</div>
 			</div>
-		</ion-item>
-
-		<ion-item lines="none" *ngIf="data.rocketpool.depositType && data.foreignValidator">
-			<ion-label class="stat-title"> Deposit Type </ion-label>
-			<ion-label class="value">
-				{{ data.rocketpool.depositType }}
-			</ion-label>
-		</ion-item>
-
-		<ion-item lines="none" *ngIf="data.foreignValidatorItem && data.foreignValidatorItem.rocketpool.node_deposit_balance && data.foreignValidator">
-			<ion-label class="stat-title"> Deposit</ion-label>
-			<ion-label class="value" (click)="switchCurrencyPipe()">
-				{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref }}
-			</ion-label>
 		</ion-item>
 	</ion-list>
 
