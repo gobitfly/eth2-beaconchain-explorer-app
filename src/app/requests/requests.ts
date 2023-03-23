@@ -183,6 +183,7 @@ export interface ValidatorResponse {
 	performance365d: BigNumber
 	performance7d: BigNumber
 	rank7d: number
+	performancetotal: BigNumber
 }
 
 export interface AttestationPerformanceResponse {
@@ -270,6 +271,12 @@ export interface RocketPoolResponse {
 	claimed_smoothing_pool: string
 	smoothing_pool_opted_in: boolean
 	penalty_count: number
+	user_deposit_balance: BigNumber
+	node_refund_balance: BigNumber
+	node_deposit_balance: BigNumber
+	node_deposit_credit: BigNumber
+	is_vacant: boolean
+	version: number
 }
 
 export interface ExecutionResponse {

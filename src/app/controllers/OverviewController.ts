@@ -79,6 +79,8 @@ export type Rocketpool = {
 	smoothingPool: boolean
 	hasNonSmoothingPoolAsWell: boolean
 	cheatingStatus: RocketpoolCheatingStatus
+	depositCredit: BigNumber
+	vacantPools: number
 }
 
 enum StateType {
@@ -113,6 +115,8 @@ export type Description = {
 	extendedDescriptionPre: string
 }
 
+const VALIDATOR_32ETH = new BigNumber(32000000000)
+
 export default class OverviewController {
 	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280) {}
 
@@ -128,11 +132,8 @@ export default class OverviewController {
 		if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
 		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
-		const effectiveBalanceActive = sumBigInt(validators, (cur) => {
-			return cur.data.activationepoch <= currentEpoch.epoch ? cur.data.effectivebalance : new BigNumber(0)
-		})
-		const investedBalance = this.sumBigIntBalanceRpl(validators, (cur) => {
-			return new BigNumber(cur.data.effectivebalance.toString())
+		const validatorDepositActive = sumBigInt(validators, (cur) => {
+			return cur.data.activationepoch <= currentEpoch.epoch ? VALIDATOR_32ETH : new BigNumber(0)
 		})
 
 		const aprPerformance31dConsensus = sumBigInt(validators, (cur) => cur.data.performance31d)
@@ -140,30 +141,20 @@ export default class OverviewController {
 			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance31d.toString())
 		)
 
-		const overallBalance = this.sumBigIntBalanceRpl(validators, (cur) => new BigNumber(cur.data.balance))
+		const overallBalance = this.sumBigIntBalanceRP(validators, (cur) => new BigNumber(cur.data.balance))
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
 
-		const consensusPerf = this.getConsensusPerformance(
-			validators,
-			effectiveBalanceActive,
-			aprPerformance31dConsensus,
-			overallBalance.minus(investedBalance)
-		)
+		const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive, aprPerformance31dConsensus)
 
-		const executionPerf = this.getExecutionPerformance(
-			validators,
-			effectiveBalance,
-			aprPerformance31dExecution,
-			new BigNumber(0) // not implemented yet
-		)
+		const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive, aprPerformance31dExecution)
 
 		const combinedPerf = {
 			performance1d: consensusPerf.performance1d.plus(executionPerf.performance1d),
 			performance31d: consensusPerf.performance31d.plus(executionPerf.performance31d),
 			performance7d: consensusPerf.performance7d.plus(executionPerf.performance7d),
 			performance365d: consensusPerf.performance365d.plus(executionPerf.performance365d),
-			apr: this.getAPRFromMonth(effectiveBalanceActive, aprPerformance31dExecution.plus(aprPerformance31dConsensus)),
+			apr: this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution.plus(aprPerformance31dConsensus)),
 			total: consensusPerf.total.plus(executionPerf.total),
 		}
 
@@ -276,40 +267,42 @@ export default class OverviewController {
 				hasNonSmoothingPoolAsWell:
 					validators.find((cur) => (cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == false : true)) != null ? true : false,
 				cheatingStatus: this.getRocketpoolCheatingStatus(validators),
+				depositCredit: this.sumRocketpoolBigIntPerNodeAddress(
+					false,
+					validators,
+					(cur) => (cur.rocketpool.node_deposit_credit ? cur.rocketpool.node_deposit_credit.toString() : '0'),
+					() => 1
+				),
+				vacantPools: validators.filter((cur) => cur.rocketpool && cur.rocketpool.is_vacant).length,
 			},
 		} as OverviewData
 	}
 
-	private getExecutionPerformance(
-		validators: Validator[],
-		effectiveBalanceActive: BigNumber,
-		aprPerformance31dExecution: BigNumber,
-		total: BigNumber
-	) {
-		const performance1d = this.sumBigIntPerformanceRpl(validators, (cur) =>
+	private getExecutionPerformance(validators: Validator[], validatorDepositActive: BigNumber, aprPerformance31dExecution: BigNumber) {
+		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance1d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
 			)
 		)
-		const performance31d = this.sumBigIntPerformanceRpl(validators, (cur) =>
+		const performance31d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance31d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
 			)
 		)
-		const performance7d = this.sumBigIntPerformanceRpl(validators, (cur) =>
+		const performance7d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance7d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
 			)
 		)
 
-		const aprExecution = this.getAPRFromMonth(effectiveBalanceActive, aprPerformance31dExecution) // todo
+		const aprExecution = this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution) // todo
 		return {
 			performance1d: performance1d,
 			performance31d: performance31d,
 			performance7d: performance7d,
 			performance365d: new BigNumber(0), // not yet implemented
 			apr: aprExecution,
-			total: total,
+			total: new BigNumber(0), // not yet implemented
 		}
 	}
 
@@ -321,26 +314,28 @@ export default class OverviewController {
 		return new BigNumber(0)
 	}
 
-	private getConsensusPerformance(
-		validators: Validator[],
-		effectiveBalanceActive: BigNumber,
-		aprPerformance31dConsensus: BigNumber,
-		total: BigNumber
-	) {
-		const performance1d = this.sumBigIntPerformanceRpl(validators, (cur) =>
+	private getConsensusPerformance(validators: Validator[], validatorDepositActive: BigNumber, aprPerformance31dConsensus: BigNumber) {
+		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
-		const performance31d = this.sumBigIntPerformanceRpl(validators, (cur) =>
+		const performance31d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
-		const performance7d = this.sumBigIntPerformanceRpl(validators, (cur) =>
+		const performance7d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			new BigNumber(cur.data.performance7d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
-		const performance365d = this.sumBigIntPerformanceRpl(validators, (cur) =>
+		const performance365d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
+		const total = this.sumBigIntPerformanceRP(validators, (cur) => {
+			if (cur.data.performancetotal !== undefined) {
+				return new BigNumber(cur.data.performancetotal).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+			} else {
+				return new BigNumber(0)
+			}
+		})
 
-		const aprConsensus = this.getAPRFromMonth(effectiveBalanceActive, aprPerformance31dConsensus)
+		const aprConsensus = this.getAPRFromMonth(validatorDepositActive, aprPerformance31dConsensus)
 
 		return {
 			performance1d: performance1d,
@@ -373,29 +368,85 @@ export default class OverviewController {
 		}
 	}
 
-	public sumBigIntBalanceRpl(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
+	public sumBigIntBalanceRP(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
 		return sumBigInt(validators, (cur) => {
 			const fieldVal = field(cur)
 			if (!cur.rocketpool) return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-			if (!cur.rocketpool.node_address) return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+			if (!cur.rocketpool.node_address) {
+				return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+			}
 
-			const rewards = new BigNumber(fieldVal.toString()).minus(cur.data.effectivebalance)
-			const nodeOperatorRewards = new BigNumber(rewards)
-				.multipliedBy(new BigNumber('1').plus(new BigNumber(cur.rocketpool.minipool_node_fee.toString())))
-				.dividedBy('2')
-			const wholeBalance = new BigNumber('16000000000').plus(nodeOperatorRewards)
+			let nodeDeposit
+			if (cur.rocketpool.node_deposit_balance) {
+				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+			} else {
+				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
+			}
+
+			const rewards = new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
+
+			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
+			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
+			const rewardNodeFromPool = new BigNumber(rewards)
+				.multipliedBy(new BigNumber(1 - nodeShare))
+				.multipliedBy(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))
+
+			// if negative, rocketpool reimburses the rETH holder by taking it from the node operator
+			let wholeBalance
+			if (rewards.isNegative()) {
+				wholeBalance = nodeDeposit.plus(rewards)
+				// if less than what the user deposited upfront, he lost everything and we put the balance to 0
+				// the validator can leak below that of course, but that's now at the expense of the rETH holders
+				if (wholeBalance.isNegative()) {
+					wholeBalance = new BigNumber(0)
+				}
+			} else {
+				wholeBalance = nodeDeposit.plus(rewardNode).plus(rewardNodeFromPool)
+			}
+
 			return wholeBalance.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		})
 	}
 
-	private sumBigIntPerformanceRpl(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
+	private sumBigIntPerformanceRP(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
 		return sumBigInt(validators, (cur) => {
 			if (!cur.rocketpool) return field(cur)
 			if (!cur.rocketpool.node_address) return field(cur)
 
-			return new BigNumber(field(cur).toString())
-				.multipliedBy(new BigNumber('1').plus(new BigNumber(cur.rocketpool.minipool_node_fee.toString())))
-				.dividedBy('2')
+			let fieldResolved = field(cur)
+			if (fieldResolved.s == null && fieldResolved.e == null) {
+				fieldResolved = new BigNumber(0)
+			}
+
+			let nodeDeposit
+			if (cur.rocketpool.node_deposit_balance) {
+				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+			} else {
+				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
+			}
+
+			const rewards = new BigNumber(fieldResolved.toString())
+
+			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
+
+			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
+			const rewardNodeFromPool = new BigNumber(rewards)
+				.multipliedBy(new BigNumber(1 - nodeShare))
+				.multipliedBy(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))
+
+			// if negative, rocketpool reimburses the rETH holder by taking it from the node operator
+			let resultReward
+			if (rewards.isNegative()) {
+				resultReward = rewards
+				const negativeDepositBalance = nodeDeposit.multipliedBy(-1)
+				if (resultReward.isLessThan(negativeDepositBalance)) {
+					resultReward = negativeDepositBalance
+				}
+			} else {
+				resultReward = rewardNode.plus(rewardNodeFromPool)
+			}
+
+			return resultReward
 		})
 	}
 
@@ -453,9 +504,8 @@ export default class OverviewController {
 		})
 	}
 
-	private getAPRFromMonth(effectiveBalance: BigNumber, performance: BigNumber): number {
-		if (effectiveBalance.toNumber() == 0) return 0
-		return new BigNumber(performance.toString()).multipliedBy('1177').dividedBy(effectiveBalance).decimalPlaces(1).toNumber()
+	private getAPRFromMonth(validatorDepositActive: BigNumber, performance: BigNumber): number {
+		return new BigNumber(performance.toString()).multipliedBy('1177').dividedBy(validatorDepositActive).decimalPlaces(1).toNumber()
 	}
 
 	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {

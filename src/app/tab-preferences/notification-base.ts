@@ -164,10 +164,8 @@ export class NotificationBase implements OnInit {
 		if (isNotifyClientUpdatesEnabled) {
 			Clients.forEach((client) => {
 				if (clientsToActivate.find((activate) => client.name.toLocaleLowerCase() == activate) != undefined) {
-					console.log('enabling', client.name, 'updates')
 					this.setClientToggleState(client.key, true)
 				} else {
-					console.log('disabling', client.name, 'updates')
 					this.setClientToggleState(client.key, false)
 				}
 			})

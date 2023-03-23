@@ -71,7 +71,7 @@ export class ValidatorComponent implements OnInit {
 	}
 
 	calculateBalanceShare(validator) {
-		return this.overviewController.sumBigIntBalanceRpl([validator], (cur) => new BigNumber(cur.data.balance))
+		return this.overviewController.sumBigIntBalanceRP([validator], (cur) => new BigNumber(cur.data.balance))
 	}
 
 	ngOnInit() {

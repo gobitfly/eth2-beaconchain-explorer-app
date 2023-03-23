@@ -98,6 +98,8 @@ export class DashboardComponent implements OnInit {
 	nextSyncCommitteeMessage: SyncCommitteeMessage = null
 
 	notificationPermissionPending = false
+	depositCreditText = null
+	vacantMinipoolText = null
 
 	constructor(
 		public unit: UnitconvService,
@@ -159,6 +161,8 @@ export class DashboardComponent implements OnInit {
 					this.updateSmoothingPool(),
 					this.updateActiveSyncCommitteeMessage(this.data.currentSyncCommittee),
 					this.updateNextSyncCommitteeMessage(this.data.nextSyncCommittee),
+					this.updateDepositCreditText(),
+					this.updateVacantMinipoolText(),
 				])
 
 				console.log('dashboard data', this.data)
@@ -173,6 +177,29 @@ export class DashboardComponent implements OnInit {
 					this.fadeIn = null
 				}, 1000)
 			}
+		}
+	}
+
+	async updateDepositCreditText() {
+		if (this.data.rocketpool.depositCredit && this.data.rocketpool.depositCredit.gt(0)) {
+			this.depositCreditText = `You have ${this.unit.convert(
+				this.data.rocketpool.depositCredit,
+				'WEI',
+				'ETHER',
+				true
+			)} in unused Rocketpool deposit credit.<br/><br/>You can use this credit to spin up more minipools. Be aware that you can not withdraw your deposit credit.`
+		}
+	}
+
+	async updateVacantMinipoolText() {
+		if (this.data.rocketpool.vacantPools && this.data.rocketpool.vacantPools > 0) {
+			this.vacantMinipoolText = `${this.data.rocketpool.vacantPools} of your ${
+				this.data.rocketpool.vacantPools == 1 ? 'minipool is' : 'minipools are'
+			}
+			currently vacant. Head over to the validators tab to see which one has a vacant label.<br/><br/>
+			If you recently converted a validator to a minipool please make sure you did change the 0x0 withdrawal credentials to the new vacant minipool address (0x01) to fix this warning.<br/><br/>
+			If you already changed the withdrawal credentials this warning will disappear on it's own within 24h.
+			`
 		}
 	}
 

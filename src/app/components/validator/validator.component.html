@@ -42,7 +42,10 @@
 				</ion-label>
 				<span>
 					<ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge>
-					<ion-badge class="rpl" *ngIf="validator.rocketpool">Rocketpool</ion-badge>
+					<ion-badge class="rpl" *ngIf="validator.rocketpool"
+						>Rocketpool {{ validator.rocketpool.node_deposit_balance | mcurrency : 'WEI' : 'ETHER' : false }}</ion-badge
+					>
+					<ion-badge class="vacant" *ngIf="validator.rocketpool && validator.rocketpool.is_vacant">Vacant</ion-badge>
 					<ion-badge class="sync" *ngIf="validator.currentSyncCommittee">Sync</ion-badge>
 				</span>
 
