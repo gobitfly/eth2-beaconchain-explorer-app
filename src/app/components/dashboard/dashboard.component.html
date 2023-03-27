@@ -618,7 +618,12 @@
 
 				<div
 					class="grid-cell"
-					*ngIf="data.foreignValidatorItem && data.foreignValidatorItem.rocketpool && data.foreignValidatorItem.rocketpool.node_deposit_balance && data.foreignValidator">
+					*ngIf="
+						data.foreignValidatorItem &&
+						data.foreignValidatorItem.rocketpool &&
+						data.foreignValidatorItem.rocketpool.node_deposit_balance &&
+						data.foreignValidator
+					">
 					<div>
 						<ion-label class="value" (click)="switchCurrencyPipe()">
 							{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref }}

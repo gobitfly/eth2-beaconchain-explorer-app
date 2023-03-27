@@ -218,7 +218,8 @@ export default class OverviewController {
 			apr: consensusPerf.apr,
 			currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
 			nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
-			withdrawalsEnabledForAll: validators.filter((cur) => (cur.data.withdrawalcredentials.startsWith('0x01') ? true : false)).length == validatorCount,
+			withdrawalsEnabledForAll:
+				validators.filter((cur) => (cur.data.withdrawalcredentials.startsWith('0x01') ? true : false)).length == validatorCount,
 			rocketpool: {
 				minRpl: this.sumRocketpoolBigIntPerNodeAddress(
 					true,
