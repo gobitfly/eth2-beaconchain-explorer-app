@@ -74,6 +74,16 @@
 			(onResult)="onDismissed()"></app-message>
 
 		<app-message
+			title="Enable Withdrawals Guide"
+			icon="bulb-outline"
+			dismissKey="withdrawal_info_dismissed"
+			iconStyle="info"
+			dismissAble="true"
+			msgTitle="Enable Withdrawals"
+			openUrl="https://launchpad.ethereum.org/en/withdrawals"
+			*ngIf="showWithdrawalInfo"></app-message>
+
+		<app-message
 			title="Rocketpool Deposit Credit"
 			icon="cash-outline"
 			iconStyle="info"
@@ -608,7 +618,12 @@
 
 				<div
 					class="grid-cell"
-					*ngIf="data.foreignValidatorItem && data.foreignValidatorItem.rocketpool.node_deposit_balance && data.foreignValidator">
+					*ngIf="
+						data.foreignValidatorItem &&
+						data.foreignValidatorItem.rocketpool &&
+						data.foreignValidatorItem.rocketpool.node_deposit_balance &&
+						data.foreignValidator
+					">
 					<div>
 						<ion-label class="value" (click)="switchCurrencyPipe()">
 							{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref }}
@@ -762,7 +777,7 @@
 				[tooltip]="
 					data.foreignValidatorWithdrawalCredsAre0x01
 						? 'This validator has 0x01 credentials and is ready for withdrawals.'
-						: '0x00 credentials must be upgraded to 0x01 credentials at some point in time to be eligible for withdrawals.'
+						: '0x00 credentials must be upgraded to 0x01 credentials to be eligible for withdrawals. Head over to Guides & FAQ to learn more.'
 				"
 				placement="right"
 				trigger="click"

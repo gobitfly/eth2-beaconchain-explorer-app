@@ -100,6 +100,7 @@ export class DashboardComponent implements OnInit {
 	notificationPermissionPending = false
 	depositCreditText = null
 	vacantMinipoolText = null
+	showWithdrawalInfo = false
 
 	constructor(
 		public unit: UnitconvService,
@@ -163,6 +164,7 @@ export class DashboardComponent implements OnInit {
 					this.updateNextSyncCommitteeMessage(this.data.nextSyncCommittee),
 					this.updateDepositCreditText(),
 					this.updateVacantMinipoolText(),
+					this.updateWithdrawalInfo(),
 				])
 
 				console.log('dashboard data', this.data)
@@ -178,6 +180,12 @@ export class DashboardComponent implements OnInit {
 				}, 1000)
 			}
 		}
+	}
+
+	async updateWithdrawalInfo() {
+		this.storage.getBooleanSetting('withdrawal_info_dismissed', false).then((result) => {
+			this.showWithdrawalInfo = !this.data.withdrawalsEnabledForAll && !result
+		})
 	}
 
 	async updateDepositCreditText() {
