@@ -8,7 +8,7 @@
 </ion-header>
 
 <ion-content>
-	<div class="nogoogleinfo" *ngIf="noGoogle" (click)="configureWebhooks()">
+	<div class="notificationnote" *ngIf="noGoogle" (click)="configureWebhooks()">
 		<strong>Note: </strong>You are using the No-Google version of this app. Push notifications will not work, but you can configure webhook
 		notifications on beaconcha.in directly or by clicking here.
 	</div>
@@ -110,6 +110,18 @@
 			[ngModel]="notifyTogglesMap.get('validator_is_offline')"
 			(ngModelChange)="setNotifyToggle('validator_is_offline', $event)"
 			(ionChange)="changeValidatorOffline()"
+			slot="end"></ion-toggle>
+	</ion-item>
+
+	<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+		<ion-icon slot="start" name="caret-back-circle-outline"></ion-icon>
+		<ion-label> Validator Withdrawals <span class="active-count">({{ getCount('validator_withdrawal') }})</span> </ion-label>
+		<ion-toggle
+			checked
+			id="notifyToggle"
+			[ngModel]="notifyTogglesMap.get('validator_withdrawal')"
+			(ngModelChange)="setNotifyToggle('validator_withdrawal', $event)"
+			(ionChange)="notifyEventToggle('validator_withdrawal')"
 			slot="end"></ion-toggle>
 	</ion-item>
 
@@ -321,7 +333,15 @@
 	</ion-list-header>
 
 	<ion-list>
-		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+		<div *ngIf="disableRocketpoolNode">
+			<ion-item>
+				<div class="notificationnote">
+					<strong>Note: </strong>You have not added any Rocketpool validators. Add at least one to enable these settings.
+				</div>
+			</ion-item>
+		</div>
+
+		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || disableRocketpoolNode">
 			<ion-icon slot="start" name="umbrella-outline"></ion-icon>
 
 			<ion-label> Max Collateral </ion-label>
@@ -335,7 +355,7 @@
 		</ion-item>
 
 		<ion-item
-			[class]="!authUser || !notify || !notifyInitialized || !notifyTogglesMap.get('rocketpool_colleteral_max') ? 'pseudo-disabled' : ''"
+			[class]="!authUser || !notify || !notifyInitialized || disableRocketpoolNode || !notifyTogglesMap.get('rocketpool_colleteral_max') ? 'pseudo-disabled' : ''"
 			(click)="handleLockedClick()">
 			<ion-icon slot="start" style="color: var(--ion-color-danger)" name="chevron-back-outline" *ngIf="maxCollateralThreshold < 0"></ion-icon>
 			<ion-icon slot="start" style="color: var(--ion-color-success)" name="chevron-forward-outline" *ngIf="maxCollateralThreshold >= 0"></ion-icon>
@@ -346,6 +366,7 @@
 				max="600"
 				step="10"
 				class="range"
+				[disabled]="disableRocketpoolNode"
 				[(ngModel)]="maxCollateralThreshold"
 				(mouseup)="changeRocketpoolMaxCollateral()"
 				(touchend)="changeRocketpoolMaxCollateral()">
@@ -359,7 +380,7 @@
 			>
 		</ion-item>
 
-		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
+		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || disableRocketpoolNode">
 			<ion-icon slot="start" name="thunderstorm-outline"></ion-icon>
 
 			<ion-label> Min Collateral </ion-label>
@@ -373,14 +394,15 @@
 		</ion-item>
 
 		<ion-item
-			[class]="!authUser || !notify || !notifyInitialized || !notifyTogglesMap.get('rocketpool_colleteral_min') ? 'pseudo-disabled' : ''"
+			[class]="!authUser || !notify || !notifyInitialized || disableRocketpoolNode || !notifyTogglesMap.get('rocketpool_colleteral_min') ? 'pseudo-disabled' : ''"
 			(click)="handleLockedClick()">
 			<ion-range
 				min="0"
 				max="300"
 				step="10"
-				[(ngModel)]="minCollateralThreshold"
 				class="range"
+				[disabled]="disableRocketpoolNode"
+				[(ngModel)]="minCollateralThreshold"
 				(mouseup)="changeRocketpoolMinCollateral()"
 				(touchend)="changeRocketpoolMinCollateral()">
 			</ion-range>

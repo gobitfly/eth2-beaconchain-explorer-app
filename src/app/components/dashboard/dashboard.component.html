@@ -31,9 +31,10 @@
 				</ion-label>
 
 				<div class="status-text">
-					<ion-label>
-						{{ data.dashboardState.description }}
-					</ion-label>
+					<span *ngFor="let last = last; let d; of: data.dashboardState.description">
+						<ion-label [style.opacity]="d.highlight ? 1 : 0.65"> {{ d.text }} </ion-label>
+						<span *ngIf="!last"><br /></span>
+					</span>
 				</div>
 
 				<div class="status-text" *ngIf="data.dashboardState.extendedDescription">
@@ -71,6 +72,32 @@
 			mergeChecklist="true"
 			*ngIf="showMergeChecklist"
 			(onResult)="onDismissed()"></app-message>
+
+		<app-message
+			title="Enable Withdrawals Guide"
+			icon="bulb-outline"
+			dismissKey="withdrawal_info_dismissed"
+			iconStyle="info"
+			dismissAble="true"
+			msgTitle="Enable Withdrawals"
+			openUrl="https://launchpad.ethereum.org/en/withdrawals"
+			*ngIf="showWithdrawalInfo"></app-message>
+
+		<app-message
+			title="Rocketpool Deposit Credit"
+			icon="cash-outline"
+			iconStyle="info"
+			msgTitle="Rocketpool Deposit Credit"
+			[msgText]="depositCreditText"
+			*ngIf="depositCreditText"></app-message>
+
+		<app-message
+			title="Rocketpool Vacant Minipool"
+			icon="ellipse-outline"
+			iconStyle="warn"
+			msgTitle="Vacant Minipool"
+			[msgText]="vacantMinipoolText"
+			*ngIf="vacantMinipoolText"></app-message>
 
 		<app-message
 			title="Network is preparing for liftoff"
@@ -134,51 +161,33 @@
 	</ion-list>
 
 	<!--<ion-list-header>
-    <ion-label>Staking & Transactions</ion-label>
-  </ion-list-header>
-  <ion-list class="performances" >
+		<ion-label>Staking & Transactions</ion-label>
+	</ion-list-header>
+	<ion-list class="performances">
+		<ion-item lines="none">
+			<div class="grid">
+				<div class="grid-cell left" (click)="switchCurrencyPipe()">
+					<div>
+						<ion-label class="value left" [class]="data.combinedPerformance.total | valuestyle : 0">
+							{{ data.combinedPerformance.total | mcurrency : 'GWEI' : unit.pref }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title"> Total Earned </ion-label>
+					</div>
+				</div>
 
-    <ion-item lines="none">
-
-      <div class="grid">
-
-        <div class="grid-cell left" (click)="switchCurrencyPipe()">
-
-          <div>
-            <ion-label class="value left" [class]="data.combinedPerformance.performance31d | valuestyle:0">
-              {{ data.combinedPerformance.performance31d | mcurrency: "GWEI":unit.pref }}
-            </ion-label>
-          </div>
-          <div>
-            <ion-label class="income-title">
-              Last Month
-            </ion-label>
-          </div>
-
-        </div>
-
-        <div class="grid-cell" (click)="switchCurrencyPipe()">
-
-          <div>
-            <ion-label class="value" [class]="data.combinedPerformance.apr | valuestyle:0">
-              {{ data.combinedPerformance.apr }} %
-            </ion-label>
-          </div>
-          <div>
-            <ion-label class="income-title right">
-              APR
-            </ion-label>
-          </div>
-
-        </div>
-
-
-      </div>
-    </ion-item>
-
-    
-
-  </ion-list>-->
+				<div class="grid-cell" (click)="switchCurrencyPipe()">
+					<div>
+						<ion-label class="value" [class]="data.combinedPerformance.apr | valuestyle : 0"> {{ data.combinedPerformance.apr }} % </ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right"> APR </ion-label>
+					</div>
+				</div>
+			</div>
+		</ion-item>
+	</ion-list>-->
 
 	<ion-list-header>
 		<ion-label>Staking</ion-label>
@@ -216,7 +225,14 @@
 
 				<div class="grid-cell left">
 					<div>
-						<ion-label class="value left" [class]="data.attrEffectiveness | valuestyle : 80"> {{ data.attrEffectiveness }} % </ion-label>
+						<ng-container *ngIf="data.displayAttrEffectiveness">
+							<ion-label class="value left" [class]="data.attrEffectiveness | valuestyle : 80">
+								{{ data.attrEffectiveness !== -1 ? data.attrEffectiveness + ' %' : 'NaN' }}
+							</ion-label>
+						</ng-container>
+						<ng-container *ngIf="!data.displayAttrEffectiveness">
+							<ion-label class="value left"> - </ion-label>
+						</ng-container>
 					</div>
 					<div>
 						<ion-label class="income-title">
@@ -388,11 +404,11 @@
 		</ion-item>
 	</ion-list>
 
-	<ion-list-header *ngIf="rplProjectedClaim">
+	<ion-list-header *ngIf="rplCommission > 0">
 		<ion-label>Rocketpool</ion-label>
 	</ion-list-header>
 
-	<ion-list class="performances" *ngIf="rplProjectedClaim">
+	<ion-list class="performances" *ngIf="rplCommission > 0">
 		<ion-item lines="none">
 			<div class="grid">
 				<div class="grid-cell left" (click)="switchRplStake(true)">
@@ -524,7 +540,7 @@
 					<div>
 						<ion-label class="income-title">
 							<span
-								tooltip="Your currently staked rocktpool token colleteral. It must be between max and min to earn interest."
+								tooltip="Your currently staked Rocketpool token collateral. It must be between max and min to earn interest."
 								trigger="click"
 								hideDelayAfterClick="5000">
 								Collateral
@@ -588,14 +604,38 @@
 						</ion-label>
 					</div>
 				</div>
-			</div>
-		</ion-item>
 
-		<ion-item lines="none" *ngIf="data.rocketpool.depositType && data.foreignValidator">
-			<ion-label class="stat-title"> Deposit Type </ion-label>
-			<ion-label class="value">
-				{{ data.rocketpool.depositType }}
-			</ion-label>
+				<div class="grid-cell left" *ngIf="data.rocketpool.depositType && data.foreignValidator">
+					<div>
+						<ion-label>
+							{{ data.rocketpool.depositType }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title"> Deposit Type </ion-label>
+					</div>
+				</div>
+
+				<div
+					class="grid-cell"
+					*ngIf="
+						data.foreignValidatorItem &&
+						data.foreignValidatorItem.rocketpool &&
+						data.foreignValidatorItem.rocketpool.node_deposit_balance &&
+						data.foreignValidator
+					">
+					<div>
+						<ion-label class="value" (click)="switchCurrencyPipe()">
+							{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right">
+							<span tooltip="Your deposited ETH amount." placement="right" trigger="click" hideDelayAfterClick="5000"> Deposit </span>
+						</ion-label>
+					</div>
+				</div>
+			</div>
 		</ion-item>
 	</ion-list>
 
@@ -769,21 +809,23 @@
 			</ion-label>
 		</ion-item>
 
-		<ion-item
-			lines="none"
-			*ngIf="data.foreignValidator"
-			tooltip="0x00 credentials must be upgraded to 0x01 credentials at some point in time to be eligible for withdrawals."
-			placement="right"
-			trigger="click"
-			hideDelayAfterClick="5000">
-			<ion-label class="stat-title"> Withdrawal Cred </ion-label>
-			<ion-label
-				class="value"
-				[class]="(data.foreignValidatorItem.data.withdrawalcredentials | slice : 0 : 4) == '0x01' ? 'ok-proposals' : 'warn'"
-				(click)="switchCurrencyPipe()">
-				{{ data.foreignValidatorItem.data.withdrawalcredentials | slice : 0 : 4 }}
-			</ion-label>
-		</ion-item>
+		<span *ngIf="data.foreignValidator">
+			<ion-item
+				lines="none"
+				[tooltip]="
+					data.foreignValidatorWithdrawalCredsAre0x01
+						? 'This validator has 0x01 credentials and is ready for withdrawals.'
+						: '0x00 credentials must be upgraded to 0x01 credentials to be eligible for withdrawals. Head over to Guides & FAQ to learn more.'
+				"
+				placement="right"
+				trigger="click"
+				hideDelayAfterClick="5000">
+				<ion-label class="stat-title"> Withdrawal Cred </ion-label>
+				<ion-label class="value" [class]="data.foreignValidatorWithdrawalCredsAre0x01 ? 'ok-proposals' : 'warn'">
+					{{ data.foreignValidatorItem.data.withdrawalcredentials | slice : 0 : 4 }}
+				</ion-label>
+			</ion-item>
+		</span>
 
 		<ion-item lines="none" *ngIf="data.foreignValidator">
 			<ion-label class="stat-title"> Effective Balance </ion-label>

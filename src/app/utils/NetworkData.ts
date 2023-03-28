@@ -55,6 +55,17 @@ export const MAP: ApiNetwork[] = [
 		genesisTs: 1655733600,
 	},
 	{
+		key: 'zhejiang',
+		protocol: 'https',
+		host: 'beaconcha.in',
+		net: 'zhejiang.',
+		endpoint: '/api/',
+		version: 'v1',
+		onlyDebug: false,
+		active: true,
+		genesisTs: 1675263600,
+	},
+	{
 		key: 'local dev',
 		protocol: 'http',
 		host: '192.168.103.224:3333',

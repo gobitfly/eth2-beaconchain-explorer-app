@@ -7,7 +7,7 @@ Beaconchain Dashboard is an open source ethereum validator performance tracker a
 
 
 [![Get it on Google Play](https://beaconcha.in/img/android.png)](https://play.google.com/store/apps/details?id=in.beaconcha.mobile)
-[![Get it App Store](https://beaconcha.in/img/ios.png)](https://apps.apple.com/at/app/beaconchain-dashboard/id1541822121)
+[![Get it App Store](https://beaconcha.in/img/ios.png)](https://apps.apple.com/app/beaconchain-dashboard/id1541822121)
 
 ## About
 
