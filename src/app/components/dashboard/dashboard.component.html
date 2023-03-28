@@ -669,6 +669,44 @@
 		</div>
 	</ion-list>
 
+	<div *ngIf="data.syncCommitteesStats">
+		<ion-list-header>
+			<ion-label>Sync Committees</ion-label>
+		</ion-list-header>
+
+		<ion-list class="performances">
+			<ion-item lines="none">
+				<span tooltip="Amount of sync committees all subcribed validators were part of" trigger="click" hideDelayAfterClick="5000">
+					<ion-label class="stat-title">Participated</ion-label>
+				</span>
+				<ion-label class="value">{{ data.syncCommitteesStats.committeesParticipated }}</ion-label>
+			</ion-item>
+			<ion-item lines="none">
+				<ion-label class="stat-title">Effectiveness</ion-label>
+				<span
+					tooltip="Slots participated: {{ data.syncCommitteesStats.slotsTotal }}<br>Slots missed: {{ data.syncCommitteesStats.slotsMissed }}"
+					trigger="click"
+					hideDelayAfterClick="5000">
+					<ion-label class="value">{{ data.syncCommitteesStats.efficiency }}%</ion-label>
+				</span>
+			</ion-item>
+			<ion-item lines="none">
+				<ion-label class="stat-title">Luck</ion-label>
+				<span
+					[class]="data.syncCommitteesStats.luck / 100 | valuestyle : 1"
+					tooltip="Sync committees expected: {{ data.syncCommitteesStats.committeesExpected }}"
+					trigger="click"
+					hideDelayAfterClick="5000">
+					<ion-label class="value">{{ data.syncCommitteesStats.luck | number : '1.0-2' }}%</ion-label>
+				</span>
+			</ion-item>
+		</ion-list>
+	</div>
+
+	<ion-list-header>
+		<ion-label>General</ion-label>
+	</ion-list-header>
+
 	<ion-list class="performance">
 		<ion-item lines="none" *ngIf="data.bestRank == data.worstRank">
 			<ion-label class="stat-title">

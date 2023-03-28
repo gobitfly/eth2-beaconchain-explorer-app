@@ -21,9 +21,9 @@
 import { EpochResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
 import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
 import BigNumber from 'bignumber.js'
-import { Validator } from '../utils/ValidatorUtils'
+import { getValidatorQueryString, ValidatorState, Validator } from '../utils/ValidatorUtils'
 import { formatDate } from '@angular/common'
-import { getValidatorQueryString, ValidatorState } from '../utils/ValidatorUtils'
+import { SyncCommitteesStatistics, SyncCommitteesStatisticsResponse } from '../requests/requests'
 
 export type OverviewData = {
 	overallBalance: BigNumber
@@ -54,6 +54,7 @@ export type OverviewData = {
 	rocketpool: Rocketpool
 	currentSyncCommittee: SyncCommitteeResponse
 	nextSyncCommittee: SyncCommitteeResponse
+	syncCommitteesStats: SyncCommitteesStatistics
 	withdrawalsEnabledForAll: boolean
 }
 
@@ -121,15 +122,15 @@ const VALIDATOR_32ETH = new BigNumber(32000000000)
 export default class OverviewController {
 	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280) {}
 
-	public processDashboard(validators: Validator[], currentEpoch: EpochResponse) {
-		return this.process(validators, currentEpoch, false)
+	public processDashboard(validators: Validator[], currentEpoch: EpochResponse, syncCommitteesStatsResponse = null) {
+		return this.process(validators, currentEpoch, false, syncCommitteesStatsResponse)
 	}
 
 	public processDetail(validators: Validator[], currentEpoch: EpochResponse) {
-		return this.process(validators, currentEpoch, true)
+		return this.process(validators, currentEpoch, true, null)
 	}
 
-	private process(validators: Validator[], currentEpoch: EpochResponse, foreignValidator = false): OverviewData {
+	private process(validators: Validator[], currentEpoch: EpochResponse, foreignValidator = false, syncCommitteesStatsResponse = null): OverviewData {
 		if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
 		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
@@ -218,6 +219,7 @@ export default class OverviewController {
 			apr: consensusPerf.apr,
 			currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
 			nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
+			syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse),
 			withdrawalsEnabledForAll:
 				validators.filter((cur) => (cur.data.withdrawalcredentials.startsWith('0x01') ? true : false)).length == validatorCount,
 			rocketpool: {
@@ -819,6 +821,28 @@ export default class OverviewController {
 		return validators.filter((item) => {
 			return item.state == ValidatorState.ELIGABLE
 		})
+	}
+
+	private calculateSyncCommitteeStats(stats: SyncCommitteesStatisticsResponse): SyncCommitteesStatistics {
+		if (stats) {
+			// if no slots where expected yet, don't show any statistic as either no validator is subscribed or they have not been active in the selected timeframe
+			if (stats.expectedSlots > 0) {
+				const slotsTotal = stats.participatedSlots + stats.missedSlots
+				const r: SyncCommitteesStatistics = {
+					committeesParticipated: Math.ceil(slotsTotal / 32 / 256),
+					committeesExpected: Math.round((stats.expectedSlots * 100) / 32 / 256) / 100,
+					slotsTotal: slotsTotal,
+					slotsMissed: stats.missedSlots,
+					efficiency: 0,
+					luck: (slotsTotal * 100) / stats.expectedSlots,
+				}
+				if (slotsTotal > 0) {
+					r.efficiency = Math.round(((stats.participatedSlots * 100) / slotsTotal) * 100) / 100
+				}
+				return r
+			}
+		}
+		return null
 	}
 }
 

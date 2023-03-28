@@ -36,6 +36,7 @@ import {
 	ExecutionResponse,
 	SyncCommitteeResponse,
 	ETH1ValidatorResponse,
+	SyncCommitteesStatisticsResponse,
 } from '../requests/requests'
 import { CacheModule } from './CacheModule'
 import { MerchantUtils } from './MerchantUtils'
@@ -95,6 +96,7 @@ export class ValidatorUtils extends CacheModule {
 	private currentEpoch: EpochResponse
 	private olderEpoch: EpochResponse
 	rocketpoolStats: RocketPoolNetworkStats
+	syncCommitteesStatsResponse: SyncCommitteesStatisticsResponse
 
 	constructor(
 		private api: ApiService,
@@ -361,17 +363,9 @@ export class ValidatorUtils extends CacheModule {
 		return result
 	}
 
-	private lastFreshTime = 0
 	async getDashboardDataValidators(storage: 0 | 1, ...validators): Promise<Validator[]> {
-		/*const cacheKey = await this.getCachedValidatorKey()
-        // if request is cached, return processed cached data
-        const cached = await this.getMultipleCached(cacheKey, validators)
-        console.log("request cached, return processed cached data", cached)
-        if (cached != null && cached.length > 0 && this.lastFreshTime + 6 * 60 * 1000 > Date.now()) return cached
-*/
 		const request = new DashboardRequest(...validators)
 		const response = await this.api.execute(request)
-
 		if (!request.wasSuccessful(response)) {
 			if (response && response.data && response.data.status && response.data.status.indexOf('only a maximum of') >= 0) {
 				throw new Error(response.data.status)
@@ -381,12 +375,13 @@ export class ValidatorUtils extends CacheModule {
 		}
 
 		const result = request.parse(response)[0]
-		this.lastFreshTime = Date.now()
 		this.currentEpoch = result.currentEpoch[0]
 		this.olderEpoch = result.olderEpoch[0]
 		this.rocketpoolStats = result.rocketpool_network_stats[0]
 		const validatorEffectivenessResponse = result.effectiveness
 		const validatorsResponse = result.validators
+
+		this.syncCommitteesStatsResponse = result.sync_committees_stats
 
 		this.updateRplAndRethPrice()
 
@@ -427,7 +422,6 @@ export class ValidatorUtils extends CacheModule {
 			}
 		}
 
-		// this.cacheMultiple(cacheKey, temp)
 		return temp
 	}
 

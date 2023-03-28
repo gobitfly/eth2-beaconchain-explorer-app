@@ -126,7 +126,7 @@ export class Tab1Page {
 			this.refresh()
 		}, await this.merchant.getCurrentPlanMaxValidator())
 
-		this.overallData = overviewController.processDashboard(validators, epoch)
+		this.overallData = overviewController.processDashboard(validators, epoch, this.validatorUtils.syncCommitteesStatsResponse)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}
 
