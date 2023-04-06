@@ -697,7 +697,7 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 		headers: {
 			'Content-Type': 'application/json',
 			Accept: 'application/json',
-			'User-Agent': 'Beaconcha.in Dashboard',
+			'User-Agent': 'beaconcha.in Dashboard',
 		},
 	}
 
