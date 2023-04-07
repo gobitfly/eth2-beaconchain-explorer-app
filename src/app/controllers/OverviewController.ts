@@ -828,17 +828,22 @@ export default class OverviewController {
 			// if no slots where expected yet, don't show any statistic as either no validator is subscribed or they have not been active in the selected timeframe
 			if (stats.expectedSlots > 0) {
 				const slotsTotal = stats.participatedSlots + stats.missedSlots
+				const slotsPerSyncPeriod = 32 * 256
 				const r: SyncCommitteesStatistics = {
 					committeesParticipated: Math.ceil(slotsTotal / 32 / 256),
 					committeesExpected: Math.round((stats.expectedSlots * 100) / 32 / 256) / 100,
-					slotsTotal: slotsTotal,
+					slotsPerSyncCommittee: slotsPerSyncPeriod,
+					slotsLeftInSyncCommittee: slotsPerSyncPeriod - stats.scheduledSlots,
+					slotsParticipated: stats.participatedSlots,
 					slotsMissed: stats.missedSlots,
+					slotsScheduled: stats.scheduledSlots,
 					efficiency: 0,
 					luck: (slotsTotal * 100) / stats.expectedSlots,
 				}
 				if (slotsTotal > 0) {
 					r.efficiency = Math.round(((stats.participatedSlots * 100) / slotsTotal) * 100) / 100
 				}
+
 				return r
 			}
 		}

@@ -202,8 +202,11 @@ export interface SyncCommitteeResponse {
 export interface SyncCommitteesStatistics {
 	committeesParticipated: number
 	committeesExpected: number
-	slotsTotal: number
+	slotsPerSyncCommittee: number
+	slotsLeftInSyncCommittee: number
+	slotsParticipated: number
 	slotsMissed: number
+	slotsScheduled: number
 	efficiency: number
 	luck: number
 }
@@ -212,6 +215,7 @@ export interface SyncCommitteesStatisticsResponse {
 	expectedSlots: number
 	participatedSlots: number
 	missedSlots: number
+	scheduledSlots: number
 }
 
 export interface EpochResponse {
