@@ -177,19 +177,19 @@ export class BlockUtils extends CacheModule {
 			return WEEK
 		} else if (diff < MONTH) {
 			return MONTH
-		} else if (diff > YEAR && blocksPer30d <= targetBlocks/12) {
+		} else if (diff > YEAR && blocksPer30d <= targetBlocks / 12) {
 			return YEAR
-		} else if (diff > SIXMONTH && blocksPer30d <= targetBlocks/6) {
+		} else if (diff > SIXMONTH && blocksPer30d <= targetBlocks / 6) {
 			return SIXMONTH
-		} else if (diff > FIVEMONTH && blocksPer30d <= targetBlocks/5) {
+		} else if (diff > FIVEMONTH && blocksPer30d <= targetBlocks / 5) {
 			return FIVEMONTH
-		} else if (diff > FOURMONTH && blocksPer30d <= targetBlocks/4) {
+		} else if (diff > FOURMONTH && blocksPer30d <= targetBlocks / 4) {
 			return FOURMONTH
-		} else if (diff > THREEMONTH && blocksPer30d <= targetBlocks/3) {
+		} else if (diff > THREEMONTH && blocksPer30d <= targetBlocks / 3) {
 			return THREEMONTH
-		} else if (diff > TWOEMONTH && blocksPer30d <= targetBlocks/2) {
+		} else if (diff > TWOEMONTH && blocksPer30d <= targetBlocks / 2) {
 			return TWOEMONTH
-		} else if (diff > SIXWEEKS && blocksPer30d <= targetBlocks/1.5) {
+		} else if (diff > SIXWEEKS && blocksPer30d <= targetBlocks / 1.5) {
 			return SIXWEEKS
 		}
 
