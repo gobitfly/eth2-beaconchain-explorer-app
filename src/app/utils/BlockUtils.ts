@@ -28,6 +28,8 @@ import { ValidatorUtils } from './ValidatorUtils'
 export const ROCKETPOOL_SMOOTHING_POOL = '0xd4e96ef8eee8678dbff4d535e033ed1a4f7605b7'
 export const ETHPOOL = '0xb364e75b1189dcbbf7f0c856456c1ba8e4d6481b'
 
+const YEAR = 1000 * 60 * 60 * 24 * 365
+const SIXMONTH = 1000 * 60 * 60 * 24 * 180
 const FIVEMONTH = 1000 * 60 * 60 * 24 * 150
 const FOURMONTH = 1000 * 60 * 60 * 24 * 120
 const THREEMONTH = 1000 * 60 * 60 * 24 * 90
@@ -140,6 +142,10 @@ export class BlockUtils extends CacheModule {
 				return 'week'
 			case FIVEDAYS:
 				return '5 days'
+			case SIXMONTH:
+				return '6 months'
+			case YEAR:
+				return '1 year'
 		}
 		return 'month'
 	}
@@ -163,6 +169,7 @@ export class BlockUtils extends CacheModule {
 	private findTimeFrameNew(earliestBlockTs: number, blocksPer30d: number) {
 		const curMilies = Date.now()
 		const diff = curMilies - earliestBlockTs
+		const targetBlocks = 8 // target blocks per month
 
 		if (diff < FIVEDAYS) {
 			return FIVEDAYS
@@ -170,15 +177,19 @@ export class BlockUtils extends CacheModule {
 			return WEEK
 		} else if (diff < MONTH) {
 			return MONTH
-		} else if (diff > FIVEMONTH && blocksPer30d <= 0.75) {
+		} else if (diff > YEAR && blocksPer30d <= targetBlocks / 12) {
+			return YEAR
+		} else if (diff > SIXMONTH && blocksPer30d <= targetBlocks / 6) {
+			return SIXMONTH
+		} else if (diff > FIVEMONTH && blocksPer30d <= targetBlocks / 5) {
 			return FIVEMONTH
-		} else if (diff > FOURMONTH && blocksPer30d <= 1) {
+		} else if (diff > FOURMONTH && blocksPer30d <= targetBlocks / 4) {
 			return FOURMONTH
-		} else if (diff > THREEMONTH && blocksPer30d <= 1.4) {
+		} else if (diff > THREEMONTH && blocksPer30d <= targetBlocks / 3) {
 			return THREEMONTH
-		} else if (diff > TWOEMONTH && blocksPer30d <= 2.1) {
+		} else if (diff > TWOEMONTH && blocksPer30d <= targetBlocks / 2) {
 			return TWOEMONTH
-		} else if (diff > SIXWEEKS && blocksPer30d <= 2.8) {
+		} else if (diff > SIXWEEKS && blocksPer30d <= targetBlocks / 1.5) {
 			return SIXWEEKS
 		}
 
