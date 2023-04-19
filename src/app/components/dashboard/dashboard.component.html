@@ -704,7 +704,8 @@
 					tooltip="Sync committees expected: {{ data.syncCommitteesStats.committeesExpected }}"
 					trigger="click"
 					hideDelayAfterClick="5000">
-					<ion-label class="value">{{ data.syncCommitteesStats.luck | number : '1.0-2' }}%</ion-label>
+					<ion-label class="value" *ngIf="data.syncCommitteesStats.luck > 0">{{ data.syncCommitteesStats.luck | number : '1.0-2' }}%</ion-label>
+					<ion-label class="value" style="color: var(--text-color)" *ngIf="data.syncCommitteesStats.luck <= 0">-</ion-label>
 				</span>
 			</ion-item>
 		</ion-list>
