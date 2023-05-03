@@ -36,7 +36,7 @@ export class ValuestylePipe implements PipeTransform {
 		if (args.length == 2) {
 			const secondDrop = args[1] instanceof BigNumber ? args[1] : new BigNumber(args[1])
 			if (value.isGreaterThanOrEqualTo(firstDrop)) return POSITIVE
-			else if (value.isLessThanOrEqualTo(secondDrop)) return WARNING
+			else if (value.isGreaterThanOrEqualTo(secondDrop)) return WARNING
 			else return NEGATIVE
 		} else if (args.length == 3) {
 			if (args[2] == -1) {
