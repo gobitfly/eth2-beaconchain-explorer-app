@@ -135,10 +135,21 @@ export default class OverviewController {
 
 		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
 		const validatorDepositActive = sumBigInt(validators, (cur) => {
-			return cur.data.activationepoch <= currentEpoch.epoch ? VALIDATOR_32ETH : new BigNumber(0)
+			if (cur.data.activationepoch <= currentEpoch.epoch) {
+				if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH
+				
+				let nodeDeposit
+				if (cur.rocketpool.node_deposit_balance) {
+					nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+				} else {
+					nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
+				}
+				return nodeDeposit
+			} else {
+				return new BigNumber(0)
+			}
 		})
 
-		const aprPerformance31dConsensus = sumBigInt(validators, (cur) => cur.data.performance31d)
 		const aprPerformance31dExecution = sumBigInt(validators, (cur) =>
 			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance31d.toString())
 		)
@@ -147,7 +158,7 @@ export default class OverviewController {
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
 
-		const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive, aprPerformance31dConsensus)
+		const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive)
 
 		const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive, aprPerformance31dExecution)
 
@@ -156,7 +167,7 @@ export default class OverviewController {
 			performance31d: consensusPerf.performance31d.plus(executionPerf.performance31d),
 			performance7d: consensusPerf.performance7d.plus(executionPerf.performance7d),
 			performance365d: consensusPerf.performance365d.plus(executionPerf.performance365d),
-			apr: this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution.plus(aprPerformance31dConsensus)),
+			apr: this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution.plus(consensusPerf.performance31d)),
 			total: consensusPerf.total.plus(executionPerf.total),
 		}
 
@@ -319,7 +330,7 @@ export default class OverviewController {
 		return new BigNumber(0)
 	}
 
-	private getConsensusPerformance(validators: Validator[], validatorDepositActive: BigNumber, aprPerformance31dConsensus: BigNumber) {
+	private getConsensusPerformance(validators: Validator[], validatorDepositActive: BigNumber) {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
@@ -340,7 +351,7 @@ export default class OverviewController {
 			}
 		})
 
-		const aprConsensus = this.getAPRFromMonth(validatorDepositActive, aprPerformance31dConsensus)
+		const aprConsensus = this.getAPRFromMonth(validatorDepositActive, performance31d)
 
 		return {
 			performance1d: performance1d,
