@@ -137,7 +137,7 @@ export default class OverviewController {
 		const validatorDepositActive = sumBigInt(validators, (cur) => {
 			if (cur.data.activationepoch <= currentEpoch.epoch) {
 				if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH
-				
+
 				let nodeDeposit
 				if (cur.rocketpool.node_deposit_balance) {
 					nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
