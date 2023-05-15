@@ -92,6 +92,7 @@ export class DashboardComponent implements OnInit {
 	smoothingClaimed: BigNumber
 	smoothingUnclaimed: BigNumber
 	unclaimedRpl: BigNumber
+	totalRplEarned: BigNumber
 	hasNonSmoothingPoolAsWell: boolean
 
 	currentSyncCommitteeMessage: SyncCommitteeMessage = null
@@ -261,6 +262,7 @@ export class DashboardComponent implements OnInit {
 			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber('1e9'))
 			this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber('1e9'))
 			this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
+			this.totalRplEarned = this.data.rocketpool.totalClaims.plus(this.data.rocketpool.rplUnclaimed)
 		} catch (e) {
 			console.warn('cannot update smoothing pool', e)
 		}
