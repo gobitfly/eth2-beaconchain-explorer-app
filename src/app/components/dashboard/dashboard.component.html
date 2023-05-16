@@ -436,11 +436,11 @@
 
 				<div class="grid-cell" (click)="switchRplStake(true)">
 					<div>
-						<ion-label class="value" *ngIf="rplState == 'rpl' || rplState == '%'" [class]="data.rocketpool.totalClaims | valuestyle : 0">
-							{{ data.rocketpool.totalClaims.plus(unclaimedRpl) | mcurrency : 'WEI' : 'RPL_NAKED' }}
+						<ion-label class="value" *ngIf="rplState == 'rpl' || rplState == '%'" [class]="totalRplEarned | valuestyle : 0">
+							{{ totalRplEarned | mcurrency : 'WEI' : 'RPL_NAKED' }}
 						</ion-label>
-						<ion-label class="value" *ngIf="rplState == 'conv'" [class]="data.rocketpool.totalClaims | valuestyle : 0">
-							{{ data.rocketpool.totalClaims.plus(unclaimedRpl) | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
+						<ion-label class="value" *ngIf="rplState == 'conv'" [class]="totalRplEarned | valuestyle : 0">
+							{{ totalRplEarned | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
 						</ion-label>
 					</div>
 					<div>
@@ -459,7 +459,7 @@
 							[class]="unclaimedRpl | valuestyle : 0"
 							class="value left"
 							(click)="switchRplStake()">
-							{{ unclaimedRpl | mcurrency : 'WEI' : 'NO_CURRENCY' }} RPL
+							{{ unclaimedRpl | mcurrency : 'WEI' : 'RPL_NAKED' }}
 						</ion-label>
 						<ion-label *ngIf="rplState == 'conv'" class="value left" [class]="unclaimedRpl | valuestyle : 0" (click)="switchRplStake()">
 							{{ unclaimedRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
