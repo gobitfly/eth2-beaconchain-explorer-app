@@ -542,7 +542,7 @@ export class NotificationGetRequest extends APIRequest<NotificationGetResponse> 
 	}
 
 	parse(response: Response): NotificationGetResponse[] {
-		if (!response || !response.data || !response.data.data) return null
+		if (!response || !response.data || !response.data.data) return []
 		return response.data.data as NotificationGetResponse[]
 	}
 }
