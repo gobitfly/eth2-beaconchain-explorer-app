@@ -320,6 +320,13 @@ export interface BitflyAdResponse {
 	height: string
 }
 
+export interface ProposalLuckResponse {
+	proposal_luck: number
+	average_proposal_interval: number
+	next_proposal_estimate_ts: number
+	time_frame_name: string
+}
+
 // ------------- Reqests -------------
 
 export class DashboardRequest extends APIRequest<DashboardResponse> {
@@ -380,6 +387,19 @@ export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 	constructor(offset: number, limit: number, ...validator: number[] | string[]) {
 		super()
 		this.resource += validator.join().replace(/\s/g, '') + '/produced?offset=' + offset + '&limit=' + limit
+	}
+}
+
+export class ProposalLuckRequest extends APIRequest<ProposalLuckResponse> {
+	resource = 'validators/proposalLuck'
+	method = Method.GET
+
+	/**
+	 * @param validator Index or PubKey
+	 */
+	constructor(...validator: number[] | string[]) {
+		super()
+		this.resource += "?validators=" + validator.join().replace(/\s/g, '')
 	}
 }
 
