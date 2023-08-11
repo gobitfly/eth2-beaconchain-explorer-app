@@ -10,7 +10,8 @@
 
 	<ion-item class="top-bar" [class]="fadeIn">
 		<ion-label
-			>Proposal Luck: <span *ngIf="luck && luck.luckPercentage" [class]="luck.luckPercentage | valuestyle: 1">{{ luck.luckPercentage*100 | number:'1.0-1' }}%</span>
+			>Proposal Luck:
+			<span *ngIf="luck && luck.luckPercentage" [class]="luck.luckPercentage | valuestyle: 1">{{ luck.luckPercentage*100 | number:'1.0-1' }}%</span>
 			<span *ngIf="!luck">-</span>
 		</ion-label>
 

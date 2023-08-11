@@ -399,7 +399,7 @@ export class ProposalLuckRequest extends APIRequest<ProposalLuckResponse> {
 	 */
 	constructor(...validator: number[] | string[]) {
 		super()
-		this.resource += "?validators=" + validator.join().replace(/\s/g, '')
+		this.resource += '?validators=' + validator.join().replace(/\s/g, '')
 	}
 }
 

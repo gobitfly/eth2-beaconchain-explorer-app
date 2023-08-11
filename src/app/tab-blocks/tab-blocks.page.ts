@@ -148,12 +148,8 @@ export class TabBlocksPage implements OnInit {
 				`Compares the number of your actual proposed blocks to the expected average blocks per validator during the last <strong>${
 					this.luck.timeFrameName ? this.luck.timeFrameName : 'month'
 				}</strong>. 
-        <br/><br/>Your ${
-					this.luck.userValidators == 1 ? `validator is` : `<strong>${this.luck.userValidators}</strong> validators are`
-				}
-				expected to produce <strong>${this.luck.expectedBlocksPerMonth.toFixed(
-					2
-				)}</strong> blocks per month on average with current network conditions.`
+        <br/><br/>Your ${this.luck.userValidators == 1 ? `validator is` : `<strong>${this.luck.userValidators}</strong> validators are`}
+				expected to produce <strong>${this.luck.expectedBlocksPerMonth.toFixed(2)}</strong> blocks per month on average with current network conditions.`
 			)
 		}
 	}
