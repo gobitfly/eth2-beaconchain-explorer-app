@@ -258,6 +258,7 @@ export interface DashboardResponse {
 	current_sync_committee: SyncCommitteeResponse[]
 	next_sync_committee: SyncCommitteeResponse[]
 	sync_committees_stats: SyncCommitteesStatisticsResponse
+	proposal_luck_stats: ProposalLuckResponse
 }
 
 export interface RocketPoolNetworkStats {
@@ -390,18 +391,6 @@ export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 	}
 }
 
-export class ProposalLuckRequest extends APIRequest<ProposalLuckResponse> {
-	resource = 'validators/proposalLuck'
-	method = Method.GET
-
-	/**
-	 * @param validator Index or PubKey
-	 */
-	constructor(...validator: number[] | string[]) {
-		super()
-		this.resource += '?validators=' + validator.join().replace(/\s/g, '')
-	}
-}
 
 export class DashboardDataRequest extends APIRequest<number[]> {
 	resource = 'dashboard/data/'

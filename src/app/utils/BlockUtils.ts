@@ -20,7 +20,7 @@
 
 import { ApiService } from '../services/api.service'
 import { Injectable } from '@angular/core'
-import { BlockProducedByRequest, BlockResponse, ProposalLuckRequest } from '../requests/requests'
+import { BlockProducedByRequest, BlockResponse, DashboardRequest } from '../requests/requests'
 import { CacheModule } from './CacheModule'
 import BigNumber from 'bignumber.js'
 import { ValidatorUtils } from './ValidatorUtils'
@@ -76,15 +76,16 @@ export class BlockUtils extends CacheModule {
 		const valis = await this.validatorUtils.getAllValidatorsLocal()
 		if (valis.length == 0) return null
 
-		const request = new ProposalLuckRequest(...valis.map((vali) => vali.index))
+		const request = new DashboardRequest(...valis.map((vali) => vali.index))
 		const response = await this.api.execute(request)
 		const result = request.parse(response)[0]
+		const proposalLuckStats = result.proposal_luck_stats
 		return {
-			luckPercentage: result.proposal_luck,
-			timeFrameName: result.time_frame_name,
+			luckPercentage: proposalLuckStats.proposal_luck,
+			timeFrameName: proposalLuckStats.time_frame_name,
 			userValidators: valis.length,
-			expectedBlocksPerMonth: MONTH / (result.average_proposal_interval * 12),
-			nextBlockEstimate: result.next_proposal_estimate_ts * 1000,
+			expectedBlocksPerMonth: MONTH / (proposalLuckStats.average_proposal_interval * 12),
+			nextBlockEstimate: proposalLuckStats.next_proposal_estimate_ts * 1000,
 		} as Luck
 	}
 }
