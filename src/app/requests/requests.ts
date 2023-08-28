@@ -391,7 +391,6 @@ export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 	}
 }
 
-
 export class DashboardDataRequest extends APIRequest<number[]> {
 	resource = 'dashboard/data/'
 	method = Method.GET
