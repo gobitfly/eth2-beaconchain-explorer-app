@@ -159,6 +159,7 @@ export default class OverviewController {
 		const overallBalance = this.sumBigIntBalanceRP(validators, (cur) => new BigNumber(cur.data.balance))
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
+		const offlineValidators = this.getOfflineValidators(validators)
 
 		const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive)
 
@@ -175,10 +176,6 @@ export default class OverviewController {
 
 		let attrEffectiveness = 0
 		let displayAttrEffectiveness = false
-		let bestRank = 0
-		let bestTopX = 0
-		let worstRank = 0
-		let worstTopX = 0
 		if (activeValidators.length > 0) {
 			displayAttrEffectiveness = true
 
@@ -194,11 +191,18 @@ export default class OverviewController {
 				console.warn(`Effectiveness out of range: ${attrEffectiveness} (displaying "NaN")`)
 				attrEffectiveness = -1 // display "NaN" if something went wrong
 			}
+		}
 
-			bestRank = findLowest(activeValidators, (cur) => cur.data.rank7d)
-			bestTopX = findLowest(activeValidators, (cur) => cur.data.rankPercentage)
-			worstRank = findHighest(activeValidators, (cur) => cur.data.rank7d)
-			worstTopX = findHighest(activeValidators, (cur) => cur.data.rankPercentage)
+		let bestRank = 0
+		let bestTopX = 0
+		let worstRank = 0
+		let worstTopX = 0
+		const rankRelevantValidators = activeValidators.concat(offlineValidators)
+		if (rankRelevantValidators.length > 0) {
+			bestRank = findLowest(rankRelevantValidators, (cur) => cur.data.rank7d)
+			bestTopX = findLowest(rankRelevantValidators, (cur) => cur.data.rankPercentage)
+			worstRank = findHighest(rankRelevantValidators, (cur) => cur.data.rank7d)
+			worstTopX = findHighest(rankRelevantValidators, (cur) => cur.data.rankPercentage)
 		}
 
 		const rocketpoolValiCount = sumBigInt(validators, (cur) => (cur.rocketpool ? new BigNumber(1) : new BigNumber(0)))
@@ -818,6 +822,12 @@ export default class OverviewController {
 	private getActiveValidators(validators: Validator[]) {
 		return validators.filter((item) => {
 			return item.state == ValidatorState.ACTIVE
+		})
+	}
+
+	private getOfflineValidators(validators: Validator[]) {
+		return validators.filter((item) => {
+			return item.state == ValidatorState.OFFLINE
 		})
 	}
 
