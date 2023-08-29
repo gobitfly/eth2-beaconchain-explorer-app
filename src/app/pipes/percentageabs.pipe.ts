@@ -25,17 +25,16 @@ import BigNumber from 'bignumber.js'
 	name: 'percentageabs',
 })
 export class PercentageabsPipe implements PipeTransform {
-	transform(value_: number | BigNumber, max_: number | BigNumber, percentMode: boolean, preablePrct = ''): string {
-		const value = value_ instanceof BigNumber ? value_ : new BigNumber(value_)
-		const max = max_ instanceof BigNumber ? max_ : new BigNumber(max_)
-
+	transform(value_: number | BigNumber, percentage_: number | BigNumber, percentMode: boolean, preablePrct = ''): string {
 		if (percentMode) {
-			let percentValue = value.dividedBy(max).multipliedBy(100).decimalPlaces(1)
-			if (percentValue.toNumber() <= 0.1) {
-				percentValue = value.dividedBy(max).multipliedBy(100).decimalPlaces(3)
+			const percentage = percentage_ instanceof BigNumber ? percentage_ : new BigNumber(percentage_)
+			if (percentage.toNumber() <= 0.1) {
+				return preablePrct + '0.1 %'
+			} else {
+				return preablePrct + percentage.decimalPlaces(1).toString() + ' %'
 			}
-			return preablePrct + percentValue.toString() + ' %'
 		} else {
+			const value = value_ instanceof BigNumber ? value_ : new BigNumber(value_)
 			return value.toFormat()
 		}
 	}

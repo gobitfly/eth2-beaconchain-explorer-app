@@ -39,6 +39,8 @@ export type OverviewData = {
 	activationeligibilityCount: number
 	bestRank: number
 	worstRank: number
+	bestTopX: number
+	worstTopX: number
 	displayAttrEffectiveness: boolean
 	attrEffectiveness: number
 
@@ -173,6 +175,10 @@ export default class OverviewController {
 
 		let attrEffectiveness = 0
 		let displayAttrEffectiveness = false
+		let bestRank = 0
+		let bestTopX = 0
+		let worstRank = 0
+		let worstTopX = 0
 		if (activeValidators.length > 0) {
 			displayAttrEffectiveness = true
 
@@ -188,10 +194,13 @@ export default class OverviewController {
 				console.warn(`Effectiveness out of range: ${attrEffectiveness} (displaying "NaN")`)
 				attrEffectiveness = -1 // display "NaN" if something went wrong
 			}
+
+			bestRank = findLowest(activeValidators, (cur) => cur.data.rank7d)
+			bestTopX = findLowest(activeValidators, (cur) => cur.data.rankPercentage)
+			worstRank = findHighest(activeValidators, (cur) => cur.data.rank7d)
+			worstTopX = findHighest(activeValidators, (cur) => cur.data.rankPercentage)
 		}
 
-		const bestRank = findLowest(validators, (cur) => cur.data.rank7d)
-		const worstRank = findHighest(validators, (cur) => cur.data.rank7d)
 		const rocketpoolValiCount = sumBigInt(validators, (cur) => (cur.rocketpool ? new BigNumber(1) : new BigNumber(0)))
 		const feeSum = sumBigInt(validators, (cur) =>
 			cur.rocketpool ? new BigNumber(cur.rocketpool.minipool_node_fee).multipliedBy('100') : new BigNumber('0')
@@ -213,7 +222,9 @@ export default class OverviewController {
 			overallBalance: overallBalance,
 			validatorCount: validatorCount,
 			bestRank: bestRank,
+			bestTopX: bestTopX,
 			worstRank: worstRank,
+			worstTopX: worstTopX,
 			attrEffectiveness: attrEffectiveness,
 			displayAttrEffectiveness: displayAttrEffectiveness,
 			consensusPerformance: consensusPerf,
