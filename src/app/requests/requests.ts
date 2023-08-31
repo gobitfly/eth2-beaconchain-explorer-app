@@ -184,7 +184,7 @@ export interface ValidatorResponse {
 	performance7d: BigNumber
 	performancetotal: BigNumber
 	rank7d: number
-	rankPercentage: number
+	rankpercentage: number
 }
 
 export interface AttestationPerformanceResponse {

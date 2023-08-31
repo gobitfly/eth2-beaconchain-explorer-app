@@ -200,9 +200,9 @@ export default class OverviewController {
 		const rankRelevantValidators = activeValidators.concat(offlineValidators)
 		if (rankRelevantValidators.length > 0) {
 			bestRank = findLowest(rankRelevantValidators, (cur) => cur.data.rank7d)
-			bestTopX = findLowest(rankRelevantValidators, (cur) => cur.data.rankPercentage)
+			bestTopX = findLowest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
 			worstRank = findHighest(rankRelevantValidators, (cur) => cur.data.rank7d)
-			worstTopX = findHighest(rankRelevantValidators, (cur) => cur.data.rankPercentage)
+			worstTopX = findHighest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
 		}
 
 		const rocketpoolValiCount = sumBigInt(validators, (cur) => (cur.rocketpool ? new BigNumber(1) : new BigNumber(0)))
