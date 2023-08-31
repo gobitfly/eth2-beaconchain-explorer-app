@@ -28,8 +28,13 @@ export class PercentageabsPipe implements PipeTransform {
 	transform(value_: number | BigNumber, percentage_: number | BigNumber, percentMode: boolean, preablePrct = ''): string {
 		if (percentMode) {
 			const percentage = percentage_ instanceof BigNumber ? percentage_ : new BigNumber(percentage_)
-			if (percentage.toNumber() <= 0.1) {
+			const percentageNumber = percentage.toNumber()
+			if (percentageNumber <= 0.1) {
 				return preablePrct + '0.1 %'
+			} else if (percentageNumber <= 1.0) {
+				return preablePrct + percentage.decimalPlaces(3).toString() + ' %'
+			} else if (percentageNumber <= 10.0) {
+				return preablePrct + percentage.decimalPlaces(2).toString() + ' %'
 			} else {
 				return preablePrct + percentage.decimalPlaces(1).toString() + ' %'
 			}
