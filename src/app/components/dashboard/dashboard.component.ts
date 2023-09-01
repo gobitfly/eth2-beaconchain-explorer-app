@@ -755,6 +755,9 @@ export class DashboardComponent implements OnInit {
 							],
 						},
 					},
+					series: {
+						turboThreshold: 10000,
+					},
 				},
 				yAxis: [
 					{
