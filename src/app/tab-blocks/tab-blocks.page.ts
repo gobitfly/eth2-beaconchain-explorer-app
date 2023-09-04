@@ -30,7 +30,7 @@ export class TabBlocksPage implements OnInit {
 
 	luck: Luck = null
 
-	nextBlockEstimate = null
+	valis = null
 
 	constructor(
 		public api: ApiService,
@@ -72,15 +72,15 @@ export class TabBlocksPage implements OnInit {
 		const blocks = await this.blockUtils.getMyBlocks(initial ? 0 : this.items.length)
 		if (initial) {
 			this.items = blocks
+			this.luck = await this.blockUtils.getProposalLuck()
+			this.valis = await this.validatorUtils.getAllValidatorsLocal()
 			this.initialized = true
 		} else {
 			this.items = this.items.concat(blocks)
 		}
-		this.luck = await this.blockUtils.getProposalLuck(this.items)
-		this.nextBlockEstimate = await this.blockUtils.getNextBlockEstimate(this.items)
 
 		TabBlocksPage.itemCount = this.items.length
-		if (blocks.length < 25) {
+		if (blocks.length < this.blockUtils.getLimit(this.valis.length)) {
 			this.reachedMax = true
 		}
 	}
@@ -146,13 +146,10 @@ export class TabBlocksPage implements OnInit {
 			this.alertService.showInfo(
 				'Proposal Luck',
 				`Compares the number of your actual proposed blocks to the expected average blocks per validator during the last <strong>${
-					this.luck.timeFrameName
+					this.luck.timeFrameName ? this.luck.timeFrameName : 'month'
 				}</strong>. 
-        <br/><br/>Your <strong>${
-					this.luck.userValidators
-				}</strong> validators are expected to produce <strong>${this.luck.expectedBlocksPerMonth.toFixed(
-					2
-				)}</strong> blocks per month on average with current network conditions.`
+        <br/><br/>Your ${this.luck.userValidators == 1 ? `validator is` : `<strong>${this.luck.userValidators}</strong> validators are`}
+				expected to produce <strong>${this.luck.expectedBlocksPerMonth.toFixed(2)}</strong> blocks per month on average with current network conditions.`
 			)
 		}
 	}

@@ -10,7 +10,8 @@
 
 	<ion-item class="top-bar" [class]="fadeIn">
 		<ion-label
-			>Proposal Luck: <span *ngIf="luck" [class]="luck.luckPercentage | valuestyle: 1">{{ luck.luckPercentage*100 | number:'1.0-1' }}%</span>
+			>Proposal Luck:
+			<span *ngIf="luck && luck.luckPercentage" [class]="luck.luckPercentage | valuestyle: 1">{{ luck.luckPercentage*100 | number:'1.0-1' }}%</span>
 			<span *ngIf="!luck">-</span>
 		</ion-label>
 
@@ -23,11 +24,11 @@
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher>
 
-	<p class="next-block-hint" *ngIf="nextBlockEstimate">
-		<span *ngIf="!(nextBlockEstimate | timeago).includes('ago')">On average next block expected in</span>
-		<span *ngIf="(nextBlockEstimate| timeago).includes('ago')">On average next block was expected</span>
+	<p class="next-block-hint" *ngIf="luck && luck.nextBlockEstimate">
+		<span *ngIf="!(luck.nextBlockEstimate | timeago).includes('ago')">On average next block expected in</span>
+		<span *ngIf="(luck.nextBlockEstimate| timeago).includes('ago')">On average next block was expected</span>
 		<br />
-		<span style="font-style: normal">~{{ nextBlockEstimate | timeago }} </span>
+		<span style="font-style: normal">~{{ luck.nextBlockEstimate | timeago }} </span>
 	</p>
 
 	<app-ad location="blocks" *ngIf="items && items.length > 0 && !loading"></app-ad>

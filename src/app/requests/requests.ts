@@ -258,6 +258,7 @@ export interface DashboardResponse {
 	current_sync_committee: SyncCommitteeResponse[]
 	next_sync_committee: SyncCommitteeResponse[]
 	sync_committees_stats: SyncCommitteesStatisticsResponse
+	proposal_luck_stats: ProposalLuckResponse
 }
 
 export interface RocketPoolNetworkStats {
@@ -318,6 +319,13 @@ export interface BitflyAdResponse {
 	html: string
 	width: string
 	height: string
+}
+
+export interface ProposalLuckResponse {
+	proposal_luck: number
+	average_proposal_interval: number
+	next_proposal_estimate_ts: number
+	time_frame_name: string
 }
 
 // ------------- Reqests -------------

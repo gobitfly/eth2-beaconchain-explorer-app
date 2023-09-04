@@ -249,13 +249,6 @@ export class ValidatorUtils extends CacheModule {
 		return null
 	}
 
-	async getLocalValidatorIndexes(): Promise<string> {
-		const storageKey = await this.getStorageKey()
-		const local = await this.getMapWithoutDeleted(storageKey)
-
-		return getValidatorQueryString([...local.values()], 2000, (await this.merchantUtils.getCurrentPlanMaxValidator()) - 1)
-	}
-
 	async getAllMyValidators(): Promise<Validator[]> {
 		const storageKey = await this.getStorageKey()
 		const local = await this.getMapWithoutDeleted(storageKey)
