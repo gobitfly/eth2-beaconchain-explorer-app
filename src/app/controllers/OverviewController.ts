@@ -39,8 +39,8 @@ export type OverviewData = {
 	activationeligibilityCount: number
 	bestRank: number
 	worstRank: number
-	bestTopX: number
-	worstTopX: number
+	bestTopPercentage: number
+	worstTopPercentage: number
 	displayAttrEffectiveness: boolean
 	attrEffectiveness: number
 
@@ -194,15 +194,15 @@ export default class OverviewController {
 		}
 
 		let bestRank = 0
-		let bestTopX = 0
+		let bestTopPercentage = 0
 		let worstRank = 0
-		let worstTopX = 0
+		let worstTopPercentage = 0
 		const rankRelevantValidators = activeValidators.concat(offlineValidators)
 		if (rankRelevantValidators.length > 0) {
 			bestRank = findLowest(rankRelevantValidators, (cur) => cur.data.rank7d)
-			bestTopX = findLowest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
+			bestTopPercentage = findLowest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
 			worstRank = findHighest(rankRelevantValidators, (cur) => cur.data.rank7d)
-			worstTopX = findHighest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
+			worstTopPercentage = findHighest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
 		}
 
 		const rocketpoolValiCount = sumBigInt(validators, (cur) => (cur.rocketpool ? new BigNumber(1) : new BigNumber(0)))
@@ -226,9 +226,9 @@ export default class OverviewController {
 			overallBalance: overallBalance,
 			validatorCount: validatorCount,
 			bestRank: bestRank,
-			bestTopX: bestTopX,
+			bestTopPercentage: bestTopPercentage,
 			worstRank: worstRank,
-			worstTopX: worstTopX,
+			worstTopPercentage: worstTopPercentage,
 			attrEffectiveness: attrEffectiveness,
 			displayAttrEffectiveness: displayAttrEffectiveness,
 			consensusPerformance: consensusPerf,

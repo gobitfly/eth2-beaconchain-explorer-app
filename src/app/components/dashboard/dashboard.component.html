@@ -734,7 +734,7 @@
 				<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
 
 				<span class="rank-text">
-					{{ data.bestRank | percentageabs : data.bestTopX : rankPercentMode : 'Top ' }}
+					{{ data.bestRank | percentageabs : data.bestTopPercentage : rankPercentMode : 'Top ' }}
 				</span>
 			</ion-label>
 		</ion-item>
@@ -746,7 +746,7 @@
 						<ion-label class="value left">
 							<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
 							<span class="rank-text">
-								{{ data.bestRank | percentageabs : data.bestTopX : rankPercentMode : 'Top ' }}
+								{{ data.bestRank | percentageabs : data.bestTopPercentage : rankPercentMode : 'Top ' }}
 							</span>
 						</ion-label>
 					</div>
@@ -768,7 +768,7 @@
 						<ion-label class="value">
 							<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
 							<span class="rank-text">
-								{{ data.worstRank | percentageabs : data.worstTopX : rankPercentMode : 'Top ' }}
+								{{ data.worstRank | percentageabs : data.worstTopPercentage : rankPercentMode : 'Top ' }}
 							</span>
 						</ion-label>
 					</div>
