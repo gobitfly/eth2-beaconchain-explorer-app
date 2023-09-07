@@ -113,7 +113,18 @@ export class SubscribePage implements OnInit {
 	}
 
 	trial() {
-		this.purchaseIntern()
+		this.alertService.confirmDialog(
+			'Free Trial Info',
+			'You can test ' +
+				this.selectedPackage.name +
+				" for free for 14 days. You'll be charged the regular subscription amount of " +
+				this.selectedPackage.price +
+				' per month if you do not cancel the subscription before the trial concludes. You can cancel the subscription at any time.',
+			'Start trial',
+			() => {
+				this.purchaseIntern()
+			}
+		)
 	}
 
 	async restore() {

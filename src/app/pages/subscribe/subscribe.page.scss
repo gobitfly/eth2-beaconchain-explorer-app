@@ -124,8 +124,8 @@ ion-list {
 .hint {
 	display: inline-block;
 	color: var(--ion-text-color-secondary);
-	max-width: 60%;
-	margin-left: 16px;
+	max-width: 80%;
+
 	font-size: 0.86em;
 	font-style: italic;
 	line-height: 1em !important;
@@ -143,4 +143,13 @@ ion-list {
 // and the bottom bounce in main themes color
 ion-content {
 	--background: linear-gradient(0deg, var(--ion-background-color) 65%, var(--ion-toolbar-background) 35%);
+}
+
+@media only screen and (max-width: 380px) {
+	.purchase-btn {
+		width: 85%;
+	}
+	.pkg-name {
+		font-size: 1.05em;
+	}
 }
