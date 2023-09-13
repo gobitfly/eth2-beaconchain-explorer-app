@@ -724,7 +724,7 @@
 		<ion-label>General</ion-label>
 	</ion-list-header>
 
-	<ion-list class="performance">
+	<ion-list class="performance" *ngIf="data.bestRank != 0">
 		<ion-item lines="none" *ngIf="data.bestRank == data.worstRank">
 			<ion-label class="stat-title">
 				<span tooltip="Global rank of this validator, based on last 7 days" placement="right" trigger="click" hideDelayAfterClick="5000"> Rank </span>
@@ -734,7 +734,7 @@
 				<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
 
 				<span class="rank-text">
-					{{ data.bestRank | percentageabs : data.currentEpoch.validatorscount : rankPercentMode : 'Top ' }}
+					{{ data.bestRank | percentageabs : data.bestTopPercentage : rankPercentMode : 'Top ' }}
 				</span>
 			</ion-label>
 		</ion-item>
@@ -746,7 +746,7 @@
 						<ion-label class="value left">
 							<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
 							<span class="rank-text">
-								{{ data.bestRank | percentageabs : data.currentEpoch.validatorscount : rankPercentMode : 'Top ' }}
+								{{ data.bestRank | percentageabs : data.bestTopPercentage : rankPercentMode : 'Top ' }}
 							</span>
 						</ion-label>
 					</div>
@@ -768,7 +768,7 @@
 						<ion-label class="value">
 							<ion-icon name="ribbon-outline" class="rank-ribbon"></ion-icon>
 							<span class="rank-text">
-								{{ data.worstRank | percentageabs : data.currentEpoch.validatorscount : rankPercentMode : 'Top ' }}
+								{{ data.worstRank | percentageabs : data.worstTopPercentage : rankPercentMode : 'Top ' }}
 							</span>
 						</ion-label>
 					</div>

@@ -39,6 +39,8 @@ export type OverviewData = {
 	activationeligibilityCount: number
 	bestRank: number
 	worstRank: number
+	bestTopPercentage: number
+	worstTopPercentage: number
 	displayAttrEffectiveness: boolean
 	attrEffectiveness: number
 
@@ -157,6 +159,7 @@ export default class OverviewController {
 		const overallBalance = this.sumBigIntBalanceRP(validators, (cur) => new BigNumber(cur.data.balance))
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
+		const offlineValidators = this.getOfflineValidators(validators)
 
 		const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive)
 
@@ -190,8 +193,18 @@ export default class OverviewController {
 			}
 		}
 
-		const bestRank = findLowest(validators, (cur) => cur.data.rank7d)
-		const worstRank = findHighest(validators, (cur) => cur.data.rank7d)
+		let bestRank = 0
+		let bestTopPercentage = 0
+		let worstRank = 0
+		let worstTopPercentage = 0
+		const rankRelevantValidators = activeValidators.concat(offlineValidators)
+		if (rankRelevantValidators.length > 0) {
+			bestRank = findLowest(rankRelevantValidators, (cur) => cur.data.rank7d)
+			bestTopPercentage = findLowest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
+			worstRank = findHighest(rankRelevantValidators, (cur) => cur.data.rank7d)
+			worstTopPercentage = findHighest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
+		}
+
 		const rocketpoolValiCount = sumBigInt(validators, (cur) => (cur.rocketpool ? new BigNumber(1) : new BigNumber(0)))
 		const feeSum = sumBigInt(validators, (cur) =>
 			cur.rocketpool ? new BigNumber(cur.rocketpool.minipool_node_fee).multipliedBy('100') : new BigNumber('0')
@@ -213,7 +226,9 @@ export default class OverviewController {
 			overallBalance: overallBalance,
 			validatorCount: validatorCount,
 			bestRank: bestRank,
+			bestTopPercentage: bestTopPercentage,
 			worstRank: worstRank,
+			worstTopPercentage: worstTopPercentage,
 			attrEffectiveness: attrEffectiveness,
 			displayAttrEffectiveness: displayAttrEffectiveness,
 			consensusPerformance: consensusPerf,
@@ -807,6 +822,12 @@ export default class OverviewController {
 	private getActiveValidators(validators: Validator[]) {
 		return validators.filter((item) => {
 			return item.state == ValidatorState.ACTIVE
+		})
+	}
+
+	private getOfflineValidators(validators: Validator[]) {
+		return validators.filter((item) => {
+			return item.state == ValidatorState.OFFLINE
 		})
 	}
 
