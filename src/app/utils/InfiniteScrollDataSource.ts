@@ -21,7 +21,7 @@ import { BehaviorSubject, Observable, Subscription } from 'rxjs'
 import { CollectionViewer, DataSource } from '@angular/cdk/collections'
 
 export class InfiniteScrollDataSource<T> extends DataSource<T> {
-    public static ALL_ITEMS_AT_ONCE = 0
+	public static ALL_ITEMS_AT_ONCE = 0
 
 	private pageSize = 100
 	private cachedData: T[] = []
@@ -45,8 +45,7 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 				const endPage = this.getPageForIndex(range.end + 1)
 				for (let i = startPage; i <= endPage; i++) {
 					this.fetchPage(i)
-                }
-               
+				}
 			})
 		)
 		return this.dataStream

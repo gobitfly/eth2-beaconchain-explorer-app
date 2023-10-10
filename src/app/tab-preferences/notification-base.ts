@@ -69,7 +69,6 @@ export class NotificationBase implements OnInit {
 		this.notifyTogglesMap.set(eventName, event)
 	}
 
-
 	public async getDefaultNotificationSetting() {
 		return (await this.firebaseUtils.hasNotificationConsent()) && (await this.firebaseUtils.hasNotificationToken())
 	}
@@ -87,7 +86,7 @@ export class NotificationBase implements OnInit {
 					SETTINGS_PAGE + 2
 				)
 				this.notify = false
-				
+
 				return false
 			}
 		}
@@ -167,7 +166,6 @@ export class NotificationBase implements OnInit {
 		// locking toggle so we dont execute onChange when setting initial values
 		const preferences = await this.storage.loadPreferencesToggles(net)
 
-
 		if (await this.api.isNotMainnet()) {
 			this.notify = preferences
 			this.notifyInitialized = true
@@ -199,7 +197,7 @@ export class NotificationBase implements OnInit {
 
 		if (this.platform.is('ios') && (await this.firebaseUtils.hasSeenConsentScreenAndNotConsented())) {
 			this.notify = false
-			
+
 			this.firebaseUtils.alertIOSManuallyEnableNotifications()
 			return
 		}

@@ -88,12 +88,7 @@ export class DevPage extends Tab3Page implements OnInit {
 
 	toggleTest = false
 	toggleTestChange() {
-		setTimeout(
-			() =>
-				this.toggleTest = false
-				,
-			500
-		)
+		setTimeout(() => (this.toggleTest = false), 500)
 		setTimeout(
 			() => this.alerts.showInfo('Success', 'Toggle test was successful if this alert only appears once and toggle returns to disabled'),
 			650
