@@ -36,8 +36,7 @@
 
 		<ion-item lines="none">
 			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
-			<ion-label> Override Premium </ion-label>
-			<ion-select value="" [(ngModel)]="packageOverride" (ionChange)="changePackage()" interface="popover">
+			<ion-select label="Override Premium" value="" [(ngModel)]="packageOverride" (ionChange)="changePackage()" interface="popover">
 				<ion-select-option value="default"> Use real package </ion-select-option>
 				<ion-select-option value="standard"> standard </ion-select-option>
 				<ion-select-option value="plankton"> plankton </ion-select-option>
@@ -81,8 +80,7 @@
 
 		<ion-item lines="none">
 			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
-			<ion-label>Toggle test</ion-label>
-			<ion-toggle [(ngModel)]="toggleTest" (ionChange)="toggleTestChange()" slot="end"></ion-toggle>
+			<ion-toggle [(ngModel)]="toggleTest" (ionChange)="toggleTestChange()" labelPlacement="start" justify="space-between">Toggle test</ion-toggle>
 		</ion-item>
 
 		<ion-item lines="none" (click)="confetti()">

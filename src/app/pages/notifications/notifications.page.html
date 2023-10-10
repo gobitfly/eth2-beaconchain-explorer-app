@@ -21,8 +21,9 @@
 	<ion-list>
 		<ion-item lines="none" [disabled]="!authUser || !notifyInitialized">
 			<ion-icon slot="start" name="notifications-outline"></ion-icon>
-			<ion-label> Notifications </ion-label>
-			<ion-toggle checked id="notifyToggle" [(ngModel)]="notify" (ionChange)="notifyToggle()" slot="end"></ion-toggle>
+			<ion-toggle checked id="notifyToggle" [(ngModel)]="notify" (ionChange)="notifyToggle()" labelPlacement="start" justify="space-between"
+				>Notifications</ion-toggle
+			>
 		</ion-item>
 	</ion-list>
 
@@ -42,87 +43,101 @@
 
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
 			<ion-icon slot="start" name="close-circle-outline"></ion-icon>
-			<ion-label> Validator Slashed <span class="active-count">({{ getCount('validator_got_slashed') }})</span> </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('validator_got_slashed')"
 				(ngModelChange)="setNotifyToggle('validator_got_slashed', $event)"
 				(ionChange)="notifyEventToggle('validator_got_slashed')"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Validator Slashed <span class="active-count">({{ getCount('validator_got_slashed') }})</span></ion-toggle
+			>
 		</ion-item>
 
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
 			<ion-icon slot="start" name="information-circle-outline"></ion-icon>
-			<ion-label> Submitted Proposals <span class="active-count">({{ getCount('validator_proposal_submitted') }})</span> </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('validator_proposal_submitted')"
 				(ngModelChange)="setNotifyToggle('validator_proposal_submitted', $event)"
 				(ionChange)="notifyEventToggle('validator_proposal_submitted')"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Submitted Proposals <span class="active-count">({{ getCount('validator_proposal_submitted') }})</span></ion-toggle
+			>
 		</ion-item>
 
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
 			<ion-icon slot="start" name="remove-circle-outline"></ion-icon>
-			<ion-label> Missed Proposals <span class="active-count">({{ getCount('validator_proposal_missed') }})</span> </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('validator_proposal_missed')"
 				(ngModelChange)="setNotifyToggle('validator_proposal_missed', $event)"
 				(ionChange)="notifyEventToggle('validator_proposal_missed')"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Missed Proposals <span class="active-count">({{ getCount('validator_proposal_missed') }})</span></ion-toggle
+			>
 		</ion-item>
 
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
 			<ion-icon slot="start" name="remove-circle-outline"></ion-icon>
-			<ion-label> Missed Attestations <span class="active-count">({{ getCount('validator_attestation_missed') }})</span> </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('validator_attestation_missed')"
 				(ngModelChange)="setNotifyToggle('validator_attestation_missed', $event)"
 				(ionChange)="notifyEventToggle('validator_attestation_missed')"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Missed Attestations <span class="active-count">({{ getCount('validator_attestation_missed') }})</span></ion-toggle
+			>
 		</ion-item>
 
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
 			<ion-icon slot="start" name="sync-outline"></ion-icon>
-			<ion-label> Sync Committee Duty <span class="active-count">({{ getCount('validator_synccommittee_soon') }})</span> </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('validator_synccommittee_soon')"
 				(ngModelChange)="setNotifyToggle('validator_synccommittee_soon', $event)"
 				(ionChange)="notifyEventToggle('validator_synccommittee_soon')"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Sync Committee Duty <span class="active-count">({{ getCount('validator_synccommittee_soon') }})</span></ion-toggle
+			>
 		</ion-item>
 	</ion-list>
 
 	<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
 		<ion-icon slot="start" name="heart-dislike-circle-outline"></ion-icon>
-		<ion-label> Validator Offline <span class="active-count">({{ getCount('validator_is_offline') }})</span> </ion-label>
 		<ion-toggle
 			checked
 			id="notifyToggle"
 			[ngModel]="notifyTogglesMap.get('validator_is_offline')"
 			(ngModelChange)="setNotifyToggle('validator_is_offline', $event)"
 			(ionChange)="changeValidatorOffline()"
-			slot="end"></ion-toggle>
+			labelPlacement="start"
+			justify="space-between"
+			>Validator Offline <span class="active-count">({{ getCount('validator_is_offline') }})</span></ion-toggle
+		>
 	</ion-item>
 
 	<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
 		<ion-icon slot="start" name="caret-back-circle-outline"></ion-icon>
-		<ion-label> Validator Withdrawals <span class="active-count">({{ getCount('validator_withdrawal') }})</span> </ion-label>
 		<ion-toggle
 			checked
 			id="notifyToggle"
 			[ngModel]="notifyTogglesMap.get('validator_withdrawal')"
 			(ngModelChange)="setNotifyToggle('validator_withdrawal', $event)"
 			(ionChange)="notifyEventToggle('validator_withdrawal')"
-			slot="end"></ion-toggle>
+			labelPlacement="start"
+			justify="space-between"
+			>Validator Withdrawals <span class="active-count">({{ getCount('validator_withdrawal') }})</span></ion-toggle
+		>
 	</ion-item>
 
 	<ion-list-header>
@@ -132,14 +147,16 @@
 	<ion-list>
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
 			<ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
-			<ion-label> Client Updates </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('eth_client_update')"
 				(ngModelChange)="setNotifyToggle('eth_client_update', $event)"
 				(ionChange)="notifyClientUpdates()"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Client Updates</ion-toggle
+			>
 		</ion-item>
 	</ion-list>
 
@@ -150,14 +167,16 @@
 	<ion-list>
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
 			<ion-icon slot="start" name="battery-dead-outline"></ion-icon>
-			<ion-label> Machine Offline </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('monitoring_machine_offline')"
 				(ngModelChange)="setNotifyToggle('monitoring_machine_offline', $event)"
 				(ionChange)="notifyEventToggleAllMachines('monitoring_machine_offline')"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Machine Offline</ion-toggle
+			>
 		</ion-item>
 
 		<div *ngIf="unsupportedPrysm">
@@ -172,14 +191,16 @@
 
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
 			<ion-icon slot="start" name="file-tray-full-outline"></ion-icon>
-			<ion-label> Storage Usage </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('monitoring_hdd_almostfull')"
 				(ngModelChange)="setNotifyToggle('monitoring_hdd_almostfull', $event)"
 				(ionChange)="changeDiskNotification()"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Storage Usage</ion-toggle
+			>
 		</ion-item>
 
 		<ion-item
@@ -218,14 +239,16 @@
 
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
 			<ion-icon slot="start" name="flash-outline"></ion-icon>
-			<ion-label> CPU Usage </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('monitoring_cpu_load')"
 				(ngModelChange)="setNotifyToggle('monitoring_cpu_load', $event)"
 				(ionChange)="changeCPUNotification()"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>CPU Usage</ion-toggle
+			>
 		</ion-item>
 
 		<ion-item
@@ -265,14 +288,16 @@
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || noMachines">
 			<ion-icon slot="start" name="server-outline"></ion-icon>
 
-			<ion-label> Memory Usage </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('monitoring_memory_usage')"
 				(ngModelChange)="setNotifyToggle('monitoring_memory_usage', $event)"
 				(ionChange)="changeMemoryNotification()"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Memory Usage</ion-toggle
+			>
 		</ion-item>
 
 		<ion-item
@@ -317,14 +342,16 @@
 	<ion-list>
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized">
 			<ion-icon slot="start" name="cash-outline"></ion-icon>
-			<ion-label> New Reward Round </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('rocketpool_new_claimround')"
 				(ngModelChange)="setNotifyToggle('rocketpool_new_claimround', $event)"
 				(ionChange)="notifyEventToggle('rocketpool_new_claimround')"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>New Reward Round</ion-toggle
+			>
 		</ion-item>
 	</ion-list>
 
@@ -344,14 +371,16 @@
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || disableRocketpoolNode">
 			<ion-icon slot="start" name="umbrella-outline"></ion-icon>
 
-			<ion-label> Max Collateral </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('rocketpool_colleteral_max')"
 				(ngModelChange)="setNotifyToggle('rocketpool_colleteral_max', $event)"
 				(ionChange)="changeRocketpoolMaxCollateral()"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Max Collateral</ion-toggle
+			>
 		</ion-item>
 
 		<ion-item
@@ -383,14 +412,16 @@
 		<ion-item lines="none" [disabled]="!authUser || !notify || !notifyInitialized || disableRocketpoolNode">
 			<ion-icon slot="start" name="thunderstorm-outline"></ion-icon>
 
-			<ion-label> Min Collateral </ion-label>
 			<ion-toggle
 				checked
 				id="notifyToggle"
 				[ngModel]="notifyTogglesMap.get('rocketpool_colleteral_min')"
 				(ngModelChange)="setNotifyToggle('rocketpool_colleteral_min', $event)"
 				(ionChange)="changeRocketpoolMinCollateral()"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Min Collateral</ion-toggle
+			>
 		</ion-item>
 
 		<ion-item

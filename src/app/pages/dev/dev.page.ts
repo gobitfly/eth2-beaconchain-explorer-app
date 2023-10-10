@@ -79,6 +79,7 @@ export class DevPage extends Tab3Page implements OnInit {
 
 	triggerToggleTest() {
 		this.toggleTest = true
+		this.alerts.showInfo('Success', 'Toggle test is successfull if this alert only appears once and DOES NOT return to disabled')
 	}
 
 	triggerNotificationConsent() {
@@ -87,15 +88,10 @@ export class DevPage extends Tab3Page implements OnInit {
 
 	toggleTest = false
 	toggleTestChange() {
-		if (this.notificationBase.lockedToggle) {
-			this.notificationBase.lockedToggle = false
-			return
-		}
 		setTimeout(
 			() =>
-				this.notificationBase.changeToggleSafely(() => {
-					this.toggleTest = false
-				}),
+				this.toggleTest = false
+				,
 			500
 		)
 		setTimeout(

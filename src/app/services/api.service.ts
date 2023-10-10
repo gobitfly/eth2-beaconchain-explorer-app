@@ -25,7 +25,7 @@ import { ApiNetwork } from '../models/StorageTypes'
 import { isDevMode } from '@angular/core'
 import { Mutex } from 'async-mutex'
 import { findConfigForKey, MAP } from '../utils/NetworkData'
-import { Http, HttpResponse } from '@capacitor-community/http'
+import { CapacitorHttp, HttpResponse } from '@capacitor/core'
 import { CacheModule } from '../utils/CacheModule'
 import axios, { AxiosResponse } from 'axios'
 import { HttpOptions } from '@capacitor/core'
@@ -189,7 +189,6 @@ export class ApiService extends CacheModule {
 
 	async isNotMainnet(): Promise<boolean> {
 		const test = (await this.networkConfig).net != ''
-		console.log('isNotMainnet', test)
 		return test
 	}
 
@@ -303,7 +302,7 @@ export class ApiService extends CacheModule {
 			method: 'get',
 			headers: options.headers,
 		}
-		return Http.get(getOptions)
+		return CapacitorHttp.get(getOptions)
 			.catch((err) => {
 				this.updateConnectionState(ignoreFails, false)
 				console.warn('Connection err', err)
@@ -322,7 +321,7 @@ export class ApiService extends CacheModule {
 			data: this.formatPostData(data),
 			method: 'post',
 		}
-		return Http.post(postOptions) //options)
+		return CapacitorHttp.post(postOptions) //options)
 			.catch((err) => {
 				this.updateConnectionState(ignoreFails, false)
 				console.warn('Connection err', err)

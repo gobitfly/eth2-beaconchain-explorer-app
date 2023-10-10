@@ -56,7 +56,8 @@ to start a local webserver with livereload enabled.
 ### Android
 
 **Prerequisites**
-* Install [Android Studio](https://developer.android.com/studio#downloads]) (recommended 4.1.1 or newer)
+* NodeJS 16
+* Install [Android Studio](https://developer.android.com/studio#downloads]) (2022.2.1 or newer)
 * Use Android Studio to install the Android SDK: https://capacitorjs.com/docs/android
 
 For Linux Users: Open capacitor.config.json (in the root of the project) and adapt the paths for the _linuxAndroidStudioPath_ variable to reflect your local setup.
@@ -75,7 +76,7 @@ Adapt the --host param to match your computers IP.
 
 #### Build for production
 
-`ionic capacitor run android --prod --release`
+`npm run-script build-android-for-production`
 
 #### Install via Android Studio
 To install the app on a real device, follow this guide: https://developer.android.com/studio/run/device
@@ -85,8 +86,9 @@ Or to run it in an emulator, follow up here: https://developer.android.com/studi
 
 ### iOS
 **Prerequisites**
-* macOS with Catalina or newer
-* Xcode 12.2 or newer
+* NodeJS 16
+* macOS with macOS Monterey 12.5 newer
+* Xcode 14.1 or newer
 
 Build the the app at least once before proceeding:
 
@@ -102,7 +104,7 @@ Adapt the --host param to match your macs IP.
 
 #### Build for production
 
-`ionic capacitor run ios --prod --release`
+`npm run-script build-ios-for-production`
 
 ### Best Practices
 

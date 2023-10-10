@@ -20,6 +20,14 @@
 		<script>
 			try {
 				if (window) {
+					// So these .time functions are needed for Capacitor http to work properly
+					console.time = (label) => {
+						console.log('Timer ' + label + ' started')
+					}
+					console.timeEnd = (label) => {
+						console.log('Timer ' + label + ' ended')
+					}
+
 					var logSession = []
 					localStorage = window.localStorage
 
@@ -30,6 +38,12 @@
 
 					var console = (function (oldCons, storage, debug) {
 						return {
+							time: (label) => {
+								//nop
+							},
+							timeEnd: (label) => {
+								//nop
+							},
 							log: (text, ...extra) => {
 								if (debug) oldCons.log(text, ...extra)
 								try {

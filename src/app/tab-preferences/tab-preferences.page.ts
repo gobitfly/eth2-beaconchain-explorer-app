@@ -265,10 +265,6 @@ export class Tab3Page {
 	}
 
 	changeUpdateChannel() {
-		if (this.notificationBase.lockedToggle) {
-			return
-		}
-
 		this.updateUtils.setUpdateChannel(this.updateChannel)
 		this.updateUtils.checkAllUpdates()
 	}

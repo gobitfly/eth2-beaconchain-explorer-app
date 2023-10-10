@@ -186,6 +186,9 @@ export default class ThemeUtils {
 		const isDarkThemed = await this.isDarkThemed()
 		this.changeStatusBarColor(color, isDarkThemed)
 		this.changeNavigationBarColor(isDarkThemed)
+		setTimeout(() => {
+			this.changeNavigationBarColor(isDarkThemed)
+		}, 250)
 	}
 
 	private async changeNavigationBarColor(isDarkThemed) {
@@ -203,7 +206,7 @@ export default class ThemeUtils {
 				else NavigationBar.setBackgroundColor({ color: '#f7f7f7' })
 			}
 		} catch (e) {
-			console.warn('error in changeNavigationBarColor', e)
+			console.warn('')
 		}
 	}
 
@@ -218,25 +221,32 @@ export default class ThemeUtils {
 				darker = isDarkThemed ? '#262327' : '#fd9967'
 			}
 
-			console.log('statusbar color', darker)
-			StatusBar.setStyle({
-				style: Style.Dark,
-			})
-			StatusBar.setBackgroundColor({
-				color: darker,
-			})
+			try {
+				StatusBar.setStyle({
+					style: Style.Dark,
+				})
+				StatusBar.setBackgroundColor({
+					color: darker,
+				})
+			} catch (e) {
+				console.warn('Statusbar is not available on this platform')
+			}
 			this.currentStatusBarColor = darker
 		}
 	}
 
 	setStatusBarColor(color) {
-		if (this.platform.is('android')) {
-			StatusBar.setStyle({
-				style: Style.Dark,
-			})
-			StatusBar.setBackgroundColor({
-				color: color,
-			})
+		try {
+			if (this.platform.is('android')) {
+				StatusBar.setStyle({
+					style: Style.Dark,
+				})
+				StatusBar.setBackgroundColor({
+					color: color,
+				})
+			}
+		} catch (e) {
+			console.info('Statusbar is not available on this platform')
 		}
 	}
 

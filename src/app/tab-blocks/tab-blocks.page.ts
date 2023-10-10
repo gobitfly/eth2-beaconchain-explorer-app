@@ -7,6 +7,7 @@ import { ApiService } from '../services/api.service'
 import { UnitconvService } from '../services/unitconv.service'
 import { BlockUtils, Luck } from '../utils/BlockUtils'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
+import { InfiniteScrollDataSource } from '../utils/InfiniteScrollDataSource'
 
 @Component({
 	selector: 'app-tab-blocks',
@@ -16,17 +17,15 @@ import { ValidatorUtils } from '../utils/ValidatorUtils'
 export class TabBlocksPage implements OnInit {
 	public classReference = UnitconvService
 
+	dataSource: InfiniteScrollDataSource<BlockResponse>
+
 	fadeIn = 'invisible'
 
 	static itemCount = 0
 
-	items: BlockResponse[] = []
-
 	loading = false
 
 	initialized = false
-
-	reachedMax = false
 
 	luck: Luck = null
 
@@ -43,52 +42,27 @@ export class TabBlocksPage implements OnInit {
 		this.validatorUtils.registerListener(() => {
 			this.refresh()
 		})
+		this.validatorUtils.getAllValidatorsLocal().then((validators) => {
+			this.dataSource = new InfiniteScrollDataSource<BlockResponse>(this.blockUtils.getLimit(validators.length), (offset: number) => {
+				return this.blockUtils.getMyBlocks(offset)
+			})
+		})
 	}
 
 	ngOnInit() {
 		this.refresh()
 	}
 
-	loadData(event) {
-		if (this.reachedMax) {
-			event.target.disabled = true
-		}
-		setTimeout(async () => {
-			await this.loadMore(false)
-
-			event.target.complete()
-
-			if (this.reachedMax) {
-				event.target.disabled = true
-			}
-		}, 1500)
-	}
-
-	private async loadMore(initial: boolean) {
-		if (this.reachedMax) {
-			return
-		}
-
-		const blocks = await this.blockUtils.getMyBlocks(initial ? 0 : this.items.length)
-		if (initial) {
-			this.items = blocks
-			this.luck = await this.blockUtils.getProposalLuck()
-			this.valis = await this.validatorUtils.getAllValidatorsLocal()
-			this.initialized = true
-		} else {
-			this.items = this.items.concat(blocks)
-		}
-
-		TabBlocksPage.itemCount = this.items.length
-		if (blocks.length < this.blockUtils.getLimit(this.valis.length)) {
-			this.reachedMax = true
-		}
+	private async init() {
+		this.luck = await this.blockUtils.getProposalLuck()
+		this.valis = await this.validatorUtils.getAllValidatorsLocal()
+		await this.dataSource.reset()
+		this.initialized = true
 	}
 
 	private async refresh() {
-		this.reachedMax = false
 		this.setLoading(true)
-		await this.loadMore(true)
+		await this.init()
 		this.setLoading(false)
 		if (this.fadeIn == 'invisible') {
 			this.fadeIn = 'fade-in'
@@ -115,14 +89,9 @@ export class TabBlocksPage implements OnInit {
 
 	async doRefresh(event) {
 		setTimeout(async () => {
-			await this.loadMore(true)
+			await this.dataSource.reset()
 			event.target.complete()
 		}, 1500)
-	}
-
-	itemHeightFn(item, index) {
-		if (index == TabBlocksPage.itemCount - 1) return 210
-		return 125
 	}
 
 	switchCurrencyPipe() {

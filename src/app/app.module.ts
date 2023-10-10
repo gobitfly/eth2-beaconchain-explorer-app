@@ -27,7 +27,6 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { PipesModule } from './pipes/pipes.module'
-import { InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx'
 import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser'
 import 'hammerjs'
 
@@ -44,11 +43,9 @@ export class MyHammerConfig extends HammerGestureConfig {
 
 @NgModule({
 	declarations: [AppComponent],
-	entryComponents: [],
-	imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, PipesModule, HammerModule],
+	imports: [BrowserModule, IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }), AppRoutingModule, PipesModule, HammerModule],
 	providers: [
 		{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-		InAppPurchase2,
 		{
 			// hammer instantion with custom config
 			provide: HAMMER_GESTURE_CONFIG,

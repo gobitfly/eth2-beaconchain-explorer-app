@@ -19,30 +19,32 @@
 	</ion-item>
 </ion-header>
 
-<ion-content [fullscreen]="true" role="feed">
+<ion-content [fullscreen]="true" role="feed" [scrollY]="false">
 	<ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher>
 
-	<p class="next-block-hint" *ngIf="luck && luck.nextBlockEstimate">
+	<p class="next-block-hint" *ngIf="luck && luck.nextBlockEstimate && !loading">
 		<span *ngIf="!(luck.nextBlockEstimate | timeago).includes('ago')">On average next block expected in</span>
 		<span *ngIf="(luck.nextBlockEstimate| timeago).includes('ago')">On average next block was expected</span>
 		<br />
 		<span style="font-style: normal">~{{ luck.nextBlockEstimate | timeago }} </span>
 	</p>
 
-	<app-ad location="blocks" *ngIf="items && items.length > 0 && !loading"></app-ad>
+	<app-ad location="blocks" *ngIf="dataSource && dataSource.hasItems() && !loading"></app-ad>
 
-	<ion-virtual-scroll [items]="items" approxItemHeight="125px" [itemHeight]="itemHeightFn" *ngIf="items && items.length > 0 && !loading">
-		<div *virtualItem="let item; let idx = index;" style="background-color: var(--ion-card-background)">
+	<cdk-virtual-scroll-viewport
+		itemSize="120"
+		minBufferPx="900"
+		maxBufferPx="1350"
+		class="ion-content-scroll-host"
+		*ngIf="dataSource && dataSource.hasItems() && !loading">
+		<div *cdkVirtualFor="let item of dataSource; " style="background-color: var(--ion-card-background)">
 			<app-block [block]="item" (click)="clickBlock(item)" role="article"></app-block>
 		</div>
-	</ion-virtual-scroll>
-	<ion-infinite-scroll (ionInfinite)="loadData($event)">
-		<ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more blocks..."></ion-infinite-scroll-content>
-	</ion-infinite-scroll>
+	</cdk-virtual-scroll-viewport>
 
-	<div class="nothingfound" *ngIf="items && items.length <= 0 && !loading && initialized">
+	<div class="nothingfound" *ngIf="dataSource && !dataSource.hasItems() && !loading && initialized">
 		<ion-icon name="telescope-outline"></ion-icon>
 		<h2>No Blocks so far</h2>
 		<ion-label>Your proposed blocks will show up here.</ion-label>

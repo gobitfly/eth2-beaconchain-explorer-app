@@ -8,6 +8,9 @@
 		"SplashScreen": {
 			"launchAutoHide": false,
 			"androidScaleType": "CENTER_CROP"
+		},
+		"CapacitorHttp": {
+			"enabled": true
 		}
 	}
 }

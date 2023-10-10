@@ -41,20 +41,20 @@
 	<ion-list>
 		<ion-item lines="none" *ngIf="theme.isWinterSeason()">
 			<ion-icon slot="start" name="snow-outline" class="opacity-icon"></ion-icon>
-			<ion-label>Let it snow</ion-label>
-			<ion-toggle checked [(ngModel)]="snowing" (ionChange)="toggleSnow()" slot="end"></ion-toggle>
+			<ion-toggle checked [(ngModel)]="snowing" (ionChange)="toggleSnow()" labelPlacement="start" justify="space-between">Let it snow</ion-toggle>
 		</ion-item>
 
 		<ion-item lines="none">
 			<ion-icon slot="start" name="moon-outline" class="opacity-icon"></ion-icon>
-			<ion-label> Toggle Dark Theme </ion-label>
-			<ion-toggle id="themeToggle" [(ngModel)]="darkMode" (ionChange)="darkModeToggle()" slot="end"></ion-toggle>
+			<ion-toggle id="themeToggle" [(ngModel)]="darkMode" (ionChange)="darkModeToggle()" labelPlacement="start" justify="space-between"
+				>Toggle Dark Theme</ion-toggle
+			>
 		</ion-item>
 
 		<ion-item lines="none">
 			<ion-icon slot="start" name="wallet-outline" class="opacity-icon"></ion-icon>
-			<ion-label>Display Currency</ion-label>
 			<ion-select
+				label="Display Currency"
 				value="ETHER"
 				[(ngModel)]="this.unit.pref"
 				(ionChange)="changeCurrency()"
@@ -73,8 +73,9 @@
 	<ion-list>
 		<ion-item lines="none">
 			<ion-icon slot="start" name="color-palette-outline" class="opacity-icon"></ion-icon>
-			<ion-label> Theme Color </ion-label>
+			<ion-label *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'"> Theme Color </ion-label>
 			<ion-select
+				label="Theme Color"
 				value=""
 				[(ngModel)]="themeColor"
 				(ionChange)="changeThemeColor()"
@@ -162,31 +163,34 @@
 
 		<ion-item lines="none">
 			<ion-icon class="opacity-icon" slot="start" name="hammer-outline"></ion-icon>
-			<ion-label>Rocketpool Smartnode</ion-label>
 			<ion-toggle
 				checked
 				id="clientToggle"
 				[ngModel]="notificationBase.clientUpdatesTogglesMap.get('ROCKETPOOL')"
 				(ngModelChange)="notificationBase.setClientToggleState('ROCKETPOOL', $event)"
 				(ionChange)="notificationBase.clientUpdateOnToggle('ROCKETPOOL')"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>Rocketpool Smartnode</ion-toggle
+			>
 		</ion-item>
 
 		<ion-item lines="none">
 			<ion-icon class="opacity-icon" slot="start" name="magnet-outline"></ion-icon>
-			<ion-label>MEV-Boost</ion-label>
 			<ion-toggle
 				checked
 				id="clientToggle"
 				[ngModel]="notificationBase.clientUpdatesTogglesMap.get('MEV-BOOST')"
 				(ngModelChange)="notificationBase.setClientToggleState('MEV-BOOST', $event)"
 				(ionChange)="notificationBase.clientUpdateOnToggle('MEV-BOOST')"
-				slot="end"></ion-toggle>
+				labelPlacement="start"
+				justify="space-between"
+				>MEV-Boost</ion-toggle
+			>
 		</ion-item>
 		<ion-item lines="none">
 			<ion-icon class="opacity-icon" slot="start" name="git-branch"></ion-icon>
-			<ion-label>Update Channel</ion-label>
-			<ion-select value="STABLE" [(ngModel)]="updateChannel" (ionChange)="changeUpdateChannel()" interface="popover">
+			<ion-select label="Update Channel" value="STABLE" [(ngModel)]="updateChannel" (ionChange)="changeUpdateChannel()" interface="popover">
 				<ion-select-option value="STABLE">Stable</ion-select-option>
 				<ion-select-option value="PRERELEASE">Pre-release</ion-select-option>
 			</ion-select>
@@ -205,8 +209,7 @@
 
 		<ion-item lines="none">
 			<ion-icon class="opacity-icon" slot="start" name="planet-outline"></ion-icon>
-			<ion-label>Network</ion-label>
-			<ion-select value="main" [(ngModel)]="network" (ionChange)="changeNetwork()" interface="popover">
+			<ion-select label="Network" value="main" [(ngModel)]="network" (ionChange)="changeNetwork()" interface="popover">
 				<ion-select-option value="main">Mainnet</ion-select-option>
 				<ion-select-option *ngFor="let item of allTestNetworks;" value="{{item[1]}}"> {{ item[0] }} </ion-select-option>
 			</ion-select>

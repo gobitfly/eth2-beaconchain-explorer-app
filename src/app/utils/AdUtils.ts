@@ -58,7 +58,7 @@ export default class AdUtils {
 	async get(location: AdLocation): Promise<BitflyAdResponse> {
 		const adFree = await this.merchantUtils.hasAdFree()
 		if (adFree) {
-			console.warn(LOGTAG + 'user is premium member, disabling ads')
+			console.info(LOGTAG + 'user is premium member, disabling ads')
 			return null
 		}
 

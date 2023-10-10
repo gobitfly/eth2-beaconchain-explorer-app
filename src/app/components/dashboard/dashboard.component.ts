@@ -550,6 +550,9 @@ export class DashboardComponent implements OnInit {
 		Highstock.chart(
 			'highchartsBlocks' + this.randomChartId,
 			{
+				accessibility: {
+					enabled: false,
+				},
 				chart: {
 					type: 'column',
 					marginLeft: 0,
@@ -618,6 +621,7 @@ export class DashboardComponent implements OnInit {
 						},
 					},
 					column: {
+						borderWidth: 0,
 						centerInCategory: true,
 					},
 				},
@@ -675,6 +679,9 @@ export class DashboardComponent implements OnInit {
 		Highstock.chart(
 			'highcharts' + this.randomChartId,
 			{
+				accessibility: {
+					enabled: false,
+				},
 				exporting: {
 					scale: 1,
 				},
@@ -740,7 +747,8 @@ export class DashboardComponent implements OnInit {
 				},
 				plotOptions: {
 					column: {
-						stacking: 'stacked',
+						borderWidth: 0,
+						stacking: 'normal',
 						dataLabels: {
 							enabled: false,
 						},

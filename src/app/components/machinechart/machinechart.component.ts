@@ -71,6 +71,9 @@ export class MachinechartComponent implements OnInit {
 		}
 
 		const baseConfig = {
+			accessibility: {
+				enabled: false,
+			},
 			chart: {
 				type: 'area',
 				marginLeft: 0,
@@ -109,7 +112,9 @@ export class MachinechartComponent implements OnInit {
 				},
 			},
 			plotOptions: {
-				series: {},
+				series: {
+					borderWidth: 0,
+				},
 			},
 			series: data.Data || [],
 			rangeSelector: {

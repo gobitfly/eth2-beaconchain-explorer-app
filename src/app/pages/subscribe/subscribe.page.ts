@@ -21,7 +21,7 @@ export class SubscribePage implements OnInit {
 	currentY = 0
 
 	private backbuttonSubscription: Subscription
-	selectedPackage: Package = this.merchant.PACKAGES[2]
+	selectedPackage: Package
 	activeUserPackageName = 'standard'
 	isiOS = false
 
@@ -33,7 +33,9 @@ export class SubscribePage implements OnInit {
 		private alertService: AlertService,
 		private platform: Platform,
 		private flavor: FlavorUtils
-	) {}
+	) {
+		this.selectedPackage = this.merchant.PACKAGES[2]
+	}
 
 	ngOnInit() {
 		const event = fromEvent(document, 'backbutton')

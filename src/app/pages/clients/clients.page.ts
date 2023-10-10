@@ -20,8 +20,6 @@ export class ClientsPage implements OnInit {
 	) {}
 
 	ngOnInit() {
-		this.notificationBase.lockedToggle = true
-
 		this.updateUtils.getClient('LIGHTHOUSE').then((result) => {
 			this.notificationBase.setClientToggleState('LIGHTHOUSE', result && result != 'null')
 		})

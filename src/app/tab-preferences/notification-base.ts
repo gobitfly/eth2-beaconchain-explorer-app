@@ -69,12 +69,6 @@ export class NotificationBase implements OnInit {
 		this.notifyTogglesMap.set(eventName, event)
 	}
 
-	// changes a toggle without triggering onChange
-	lockedToggle = true
-	changeToggleSafely(func: () => void) {
-		this.lockedToggle = true
-		func()
-	}
 
 	public async getDefaultNotificationSetting() {
 		return (await this.firebaseUtils.hasNotificationConsent()) && (await this.firebaseUtils.hasNotificationToken())
@@ -92,9 +86,8 @@ export class NotificationBase implements OnInit {
 					'We could not enable notifications for your device which might be due to missing Google Play Services. Please note that notifications do not work without Google Play Services.',
 					SETTINGS_PAGE + 2
 				)
-				this.changeToggleSafely(() => {
-					this.notify = false
-				})
+				this.notify = false
+				
 				return false
 			}
 		}
@@ -174,10 +167,8 @@ export class NotificationBase implements OnInit {
 		// locking toggle so we dont execute onChange when setting initial values
 		const preferences = await this.storage.loadPreferencesToggles(net)
 
-		this.lockedToggle = true
 
 		if (await this.api.isNotMainnet()) {
-			this.lockedToggle = true
 			this.notify = preferences
 			this.notifyInitialized = true
 			this.disableToggleLock()
@@ -185,7 +176,6 @@ export class NotificationBase implements OnInit {
 		}
 
 		await this.getNotificationSetting(preferences).then((result) => {
-			this.lockedToggle = true
 			this.notify = result
 			this.disableToggleLock()
 		})
@@ -197,7 +187,6 @@ export class NotificationBase implements OnInit {
 		if (!this.remoteNotifyLoadedOnce) {
 			const remoteNofiy = await this.getRemoteNotificationSetting(preferences)
 			if (remoteNofiy != this.notify) {
-				this.lockedToggle = true
 				this.notify = remoteNofiy
 				this.disableToggleLock()
 			}
@@ -206,16 +195,11 @@ export class NotificationBase implements OnInit {
 	}
 
 	async notifyToggle() {
-		if (this.lockedToggle) {
-			return
-		}
-
 		if (!(await this.isSupportedOnAndroid())) return
 
 		if (this.platform.is('ios') && (await this.firebaseUtils.hasSeenConsentScreenAndNotConsented())) {
-			this.changeToggleSafely(() => {
-				this.notify = false
-			})
+			this.notify = false
+			
 			this.firebaseUtils.alertIOSManuallyEnableNotifications()
 			return
 		}
@@ -265,9 +249,6 @@ export class NotificationBase implements OnInit {
 	}
 
 	notifyClientUpdates() {
-		if (this.lockedToggle) {
-			return
-		}
 		this.settingsChanged = true
 		this.sync.changeNotifyClientUpdate('eth_client_update', this.notifyTogglesMap.get('eth_client_update'))
 		this.api.clearSpecificCache(new NotificationGetRequest())
@@ -311,19 +292,12 @@ export class NotificationBase implements OnInit {
 	}
 
 	async notifyEventToggle(eventName, filter = null, threshold = null) {
-		console.log('notifyEventToggle', this.lockedToggle)
-		if (this.lockedToggle) {
-			return
-		}
 		this.settingsChanged = true
 		this.sync.changeNotifyEvent(eventName, eventName, this.getNotifyToggleFromEvent(eventName), filter, threshold)
 		this.api.clearSpecificCache(new NotificationGetRequest())
 	}
 
 	clientUpdateOnToggle(clientKey: string) {
-		if (this.lockedToggle) {
-			return
-		}
 		this.settingsChanged = true
 		if (this.getClientToggleState(clientKey)) {
 			this.sync.changeClient(clientKey, clientKey)
@@ -334,10 +308,6 @@ export class NotificationBase implements OnInit {
 
 	// include filter in key (fe used by machine toggles)
 	async notifyEventFilterToggle(eventName, filter = null, threshold = null) {
-		console.log('notifyEventFilterToggle', this.lockedToggle)
-		if (this.lockedToggle) {
-			return
-		}
 		const key = eventName + filter
 		const value = this.getNotifyToggleFromEvent(eventName)
 		this.settingsChanged = true
@@ -349,7 +319,6 @@ export class NotificationBase implements OnInit {
 
 	disableToggleLock() {
 		setTimeout(() => {
-			this.lockedToggle = false
 			this.settingsChanged = false
 		}, 300)
 	}

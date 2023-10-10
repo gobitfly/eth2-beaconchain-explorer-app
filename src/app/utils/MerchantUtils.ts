@@ -19,7 +19,7 @@
  */
 
 import { Injectable } from '@angular/core'
-import { IAPProduct, IAPProducts, InAppPurchase2 } from '@awesome-cordova-plugins/in-app-purchase-2/ngx'
+import 'cordova-plugin-purchase/www/store.d'
 import { Platform } from '@ionic/angular'
 import { PostMobileSubscription, SubscriptionData } from '../requests/requests'
 import { AlertService, PURCHASEUTILS } from '../services/alert.service'
@@ -94,16 +94,9 @@ export class MerchantUtils {
 		},
 	]
 
-	products: IAPProducts[] = []
 	currentPlan = PRODUCT_STANDARD // use getCurrentPlanConfirmed instead
 
-	constructor(
-		private store: InAppPurchase2,
-		private alertService: AlertService,
-		private api: ApiService,
-		private platform: Platform,
-		private storage: StorageService
-	) {
+	constructor(private alertService: AlertService, private api: ApiService, private platform: Platform, private storage: StorageService) {
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
 			console.log('merchant is not supported on this platform')
 			return
@@ -119,12 +112,25 @@ export class MerchantUtils {
 	}
 
 	private initCustomValidator() {
-		this.store.validator = async (product: IAPProduct, callback) => {
+		CdvPurchase.store.validator = async (
+			product: CdvPurchase.Validator.Request.Body,
+			callback: CdvPurchase.Callback<CdvPurchase.Validator.Response.Payload>
+		) => {
 			if (this.restorePurchase && product.id != 'in.beaconcha.mobile') {
 				this.restorePurchase = false
 				await this.confirmPurchaseOnRemote(product)
 			}
-			callback(true)
+			callback({
+				ok: true,
+				data: {
+					collection: [product] as CdvPurchase.VerifiedPurchase[],
+					ineligible_for_intro_price: null,
+					id: product.id,
+					latest_receipt: true,
+					transaction: product.transaction,
+					warning: null,
+				},
+			} as CdvPurchase.Validator.Response.SuccessPayload)
 		}
 	}
 
@@ -165,16 +171,21 @@ export class MerchantUtils {
 	}
 
 	private initProducts() {
+		let platform = CdvPurchase.Platform.GOOGLE_PLAY
+		if (this.platform.is('ios')) {
+			platform = CdvPurchase.Platform.APPLE_APPSTORE
+		}
 		for (let i = 0; i < this.PACKAGES.length; i++) {
 			if (this.PACKAGES[i].purchaseKey) {
-				this.store.register({
+				CdvPurchase.store.register({
 					id: this.PACKAGES[i].purchaseKey,
-					type: this.store.PAID_SUBSCRIPTION,
-				})
+					platform: platform,
+					type: CdvPurchase.ProductType.PAID_SUBSCRIPTION,
+				} as CdvPurchase.IRegisterProduct)
 			}
 		}
 
-		this.store.refresh()
+		CdvPurchase.store.initialize()
 	}
 
 	private updatePrice(id, price) {
@@ -187,22 +198,22 @@ export class MerchantUtils {
 
 	private setupListeners() {
 		// General query to all products
-		this.store
-			.when('product')
-			.loaded((p: IAPProduct) => {
-				this.updatePrice(p.id, p.price)
+		CdvPurchase.store
+			.when()
+			.productUpdated((p: CdvPurchase.Product) => {
+				this.updatePrice(p.id, p.pricing.price)
 			})
-			.approved((p: IAPProduct) => {
+			.approved((p: CdvPurchase.Transaction) => {
 				// Handle the product deliverable
-				this.currentPlan = p.id
+				this.currentPlan = p.products[0].id
 
 				//this.ref.detectChanges();
 				return p.verify()
 			})
-			.verified((p: IAPProduct) => p.finish())
-			.owned((p) => {
-				console.log(`you now own ${p.alias}`)
-			})
+			.verified((p: CdvPurchase.VerifiedReceipt) => p.finish())
+		// .receiptUpdated((p: CdvPurchase.Receipt) => {
+		// 	console.log(`you now own ${p.hasTransaction }`)
+		// })
 	}
 
 	sleep(ms) {
@@ -210,18 +221,19 @@ export class MerchantUtils {
 	}
 
 	manageSubscriptions() {
-		this.store.manageSubscriptions()
+		CdvPurchase.store.manageSubscriptions()
 	}
 
 	async restore() {
 		this.restorePurchase = true
-		this.store.refresh()
+		CdvPurchase.store.restorePurchases()
 	}
 
 	async purchase(product: string) {
+		const offer = CdvPurchase.store.get(product).getOffer()
 		const loading = await this.alertService.presentLoading('')
 		loading.present()
-		this.store.order(product).then(
+		CdvPurchase.store.order(offer).then(
 			async () => {
 				this.restorePurchase = true
 
