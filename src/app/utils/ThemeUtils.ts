@@ -71,7 +71,7 @@ export default class ThemeUtils {
 	// milliseconds apart so the color change won't blob in too late and annoy the user nor won't it change at all
 	// and annoy the user either ¯\_(ツ)_/¯
 	private applyColorInitially(count = 0) {
-		if (count >= 11) return
+		if (count >= 17) return
 		setTimeout(
 			() => {
 				this.colorHandler()
@@ -185,9 +185,6 @@ export default class ThemeUtils {
 		const isDarkThemed = await this.isDarkThemed()
 		this.changeStatusBarColor(color, isDarkThemed)
 		this.changeNavigationBarColor(isDarkThemed)
-		setTimeout(() => {
-			this.changeNavigationBarColor(isDarkThemed)
-		}, 250)
 	}
 
 	/**

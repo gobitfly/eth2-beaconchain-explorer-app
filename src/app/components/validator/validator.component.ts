@@ -82,7 +82,6 @@ export class ValidatorComponent implements OnInit {
 	}
 
 	tag(event) {
-		console.log('tagging validator')
 		event.stopPropagation()
 		this.validatorUtils.convertToValidatorModelAndSaveValidatorLocal(false, this.data)
 		this.tagged = true
