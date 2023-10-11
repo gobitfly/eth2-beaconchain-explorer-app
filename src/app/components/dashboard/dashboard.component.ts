@@ -257,6 +257,7 @@ export class DashboardComponent implements OnInit {
 
 	updateSmoothingPool() {
 		try {
+			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
 			this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
 			this.displaySmoothingPool = this.data.rocketpool.smoothingPool
 			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber('1e9'))
@@ -270,6 +271,7 @@ export class DashboardComponent implements OnInit {
 
 	updateRplProjectedClaim() {
 		try {
+			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
 			if (this.data.rocketpool.currentRpl.isLessThanOrEqualTo(this.data.rocketpool.minRpl)) {
 				this.rplProjectedClaim = 0
 				return
@@ -296,6 +298,7 @@ export class DashboardComponent implements OnInit {
 
 	updateRplApr() {
 		try {
+			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.claim_interval_time) return
 			const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(':')[0]
 			const hoursNumber = parseInt(hoursToAdd)
 			this.rplApr = new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards)
@@ -311,6 +314,7 @@ export class DashboardComponent implements OnInit {
 
 	updateRplCommission() {
 		try {
+			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.current_node_fee) return
 			this.rplCommission = Math.round(this.validatorUtils.rocketpoolStats.current_node_fee * 10000) / 100
 		} catch (e) {
 			console.warn('cannot updateRplCommission', e)
@@ -319,6 +323,7 @@ export class DashboardComponent implements OnInit {
 
 	updateNextRewardRound() {
 		try {
+			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.claim_interval_time) return
 			const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(':')[0]
 			this.nextRewardRound = this.validatorUtils.rocketpoolStats.claim_interval_time_start * 1000 + parseInt(hoursToAdd) * 60 * 60 * 1000
 		} catch (e) {

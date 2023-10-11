@@ -48,6 +48,7 @@ import { Toast } from '@capacitor/toast'
 import { MergeChecklistPage } from '../pages/merge-checklist/merge-checklist.page'
 import { ClientsPage } from '../pages/clients/clients.page'
 import FlavorUtils from '../utils/FlavorUtils'
+import { Capacitor } from '@capacitor/core'
 
 @Component({
 	selector: 'app-tab3',
@@ -122,9 +123,13 @@ export class Tab3Page {
 			this.allTestNetworks = result
 		})
 
-		App.getInfo().then((result) => {
-			this.appVersion = result.version
-		})
+		if (Capacitor.isNativePlatform()) {
+			App.getInfo().then((result) => {
+				this.appVersion = result.version
+			})
+		} else {
+			this.appVersion = "dev"
+		}
 
 		this.flavor.isBetaFlavor().then((result) => {
 			if (result) {

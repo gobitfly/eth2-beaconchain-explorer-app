@@ -107,7 +107,11 @@ export class MerchantUtils {
 			this.initCustomValidator()
 			this.setupListeners()
 		} catch (e) {
-			console.warn('MerchantUtils cannot be initialized', e)
+			if (e.toString().includes('CdvPurchase is not defined')) {
+				console.info('Store purchases are not available on this platform')
+			} else {
+				console.warn('MerchantUtils cannot be initialized', e)
+			}
 		}
 	}
 

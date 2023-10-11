@@ -28,6 +28,7 @@ import { PushNotifications, PushNotificationSchema } from '@capacitor/push-notif
 
 import { LocalNotifications } from '@capacitor/local-notifications'
 import FlavorUtils from './FlavorUtils'
+import { Capacitor } from '@capacitor/core'
 
 const LOGTAG = '[FirebaseUtils]'
 
@@ -66,6 +67,9 @@ export default class FirebaseUtils {
 
 	async registerPush(iosTriggerConsent = false, onPermissionGranted: () => void = null) {
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
+			return
+		}
+		if (!Capacitor.isNativePlatform()) {
 			return
 		}
 		const isNoGoogle = await this.flavor.isNoGoogleFlavor()

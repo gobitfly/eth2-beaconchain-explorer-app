@@ -5,7 +5,7 @@
 	"homepage": "https://beaconcha.in",
 	"scripts": {
 		"test": "ng test",
-		"serve": "ionic serve --live-reload --no-open",
+		"serve": "ionic serve --live-reload --no-open --configuration=development",
 		"build-android-for-release": "ionic cap build android --prod --release --source-map=true",
 		"build-ios-for-release": "ionic cap build ios --prod --release --source-map=true",
 		"prettier-format": "prettier --config .prettierrc.yml 'src/**/*.{ts,html,scss}' --write",

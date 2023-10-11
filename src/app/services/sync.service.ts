@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core'
+import { Injectable, Injector } from '@angular/core'
 import { ApiService } from './api.service'
 import { SETTING_NOTIFY, StorageService } from './storage.service'
 import { Mutex } from 'async-mutex'
@@ -76,16 +76,17 @@ export class SyncService {
 	private syncLock = new Mutex()
 	private lastNotifySync = 0
 	private bundleList: BundleSubContainer[] = []
+	private notificationBase: NotificationBase
 
 	constructor(
 		private api: ApiService,
 		private storage: StorageService,
 		private validatorSyncUtils: ValidatorSyncUtils,
 		private updateUtils: ClientUpdateUtils,
-		protected notificationBase: NotificationBase
+		protected injector: Injector
 	) {
-		// HACK, see comment for notificationBase.sync in notification-base.ts (BIDS-1117)
-		notificationBase.sync = this
+		// HACK to avoid dependency cycle
+		setTimeout(() => (this.notificationBase = injector.get(NotificationBase)), 0)
 	}
 
 	public async mightSyncUpAndSyncDelete() {

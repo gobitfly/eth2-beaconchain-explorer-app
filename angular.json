@@ -50,8 +50,8 @@
 								}
 							],
 							"optimization": true,
-							"outputHashing": "all",
-							"sourceMap": false,
+							"outputHashing": "none",
+							"sourceMap": true,
 							"namedChunks": false,
 							"aot": true,
 							"extractLicenses": true,
@@ -67,6 +67,14 @@
 						},
 						"ci": {
 							"progress": false
+						},
+						"development": {
+							"buildOptimizer": true,
+							"optimization": false,
+							"vendorChunk": true,
+							"extractLicenses": false,
+							"sourceMap": true,
+							"namedChunks": true
 						}
 					}
 				},
@@ -81,6 +89,9 @@
 						},
 						"ci": {
 							"progress": false
+						},
+						"development": {
+							"browserTarget": "app:build:development"
 						}
 					},
           "defaultConfiguration": "production"
