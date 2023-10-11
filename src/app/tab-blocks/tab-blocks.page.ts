@@ -27,6 +27,7 @@ export class TabBlocksPage implements OnInit {
 	static itemCount = 0
 
 	loading = false
+	loadMore = false
 
 	initialized = false
 
@@ -48,13 +49,16 @@ export class TabBlocksPage implements OnInit {
 		this.validatorUtils.getAllValidatorsLocal().then((validators) => {
 			this.dataSource = new InfiniteScrollDataSource<BlockResponse>(this.blockUtils.getLimit(validators.length), async (offset: number) => {
 				let sleepTime = 1000
-				if (offset > 50) {
-					sleepTime = 3000
-				} else if (offset > 120) {
-					sleepTime = 5000
+				if (offset >= 50) {
+					sleepTime = 3500 // 20 req per minute => wait at least 3 seconds. Buffer for dashboard and sync stuff
+				} else if (offset >= 120) {
+					sleepTime = 4500
 				}
+				if(offset > 0) this.loadMore = true
 				await sleep(sleepTime) // handling rate limit of some sorts
-				return this.blockUtils.getMyBlocks(offset)
+				const result = await this.blockUtils.getMyBlocks(offset)
+				this.loadMore = false
+				return result
 			})
 		})
 	}

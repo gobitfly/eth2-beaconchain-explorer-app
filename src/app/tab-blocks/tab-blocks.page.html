@@ -42,6 +42,9 @@
 		<div *cdkVirtualFor="let item of dataSource; " style="background-color: var(--ion-card-background)">
 			<app-block [block]="item" (click)="clickBlock(item)" role="article"></app-block>
 		</div>
+		<div style="text-align: center;padding-top: 10px;" *ngIf="loadMore">
+			<i style="letter-spacing: 0.9px; opacity: 0.8;">Loading...</i>
+		</div>
 	</cdk-virtual-scroll-viewport>
 
 	<div class="nothingfound" *ngIf="dataSource && !dataSource.hasItems() && !loading && initialized">

@@ -21,7 +21,7 @@
 import { Component, OnInit, Input } from '@angular/core'
 import { ValidatorResponse } from 'src/app/requests/requests'
 import * as blockies from 'ethereum-blockies'
-import { ValidatorUtils, SAVED, getDisplayName, Validator, ValidatorState } from 'src/app/utils/ValidatorUtils'
+import { ValidatorUtils, SAVED, getDisplayName, Validator, ValidatorState, MEMORY } from 'src/app/utils/ValidatorUtils'
 import { UnitconvService } from '../../services/unitconv.service'
 import { AlertService } from 'src/app/services/alert.service'
 import BigNumber from 'bignumber.js'
@@ -42,6 +42,7 @@ export class ValidatorComponent implements OnInit {
 	imgData: string
 
 	tagged: boolean
+	useInternalTagState: boolean // used to indicate that instead of loading the tag state from validator data, rely on views internal tagged state
 
 	state: string
 
@@ -59,7 +60,7 @@ export class ValidatorComponent implements OnInit {
 
 		this.name = getDisplayName(this.validator)
 		this.imgData = this.getBlockies()
-		this.tagged = this.validator.storage == SAVED
+		this.tagged = this.useInternalTagState ? this.tagged : this.validator.storage == SAVED
 		this.state = this.interpretState(this.validator)
 		this.stateCss = this.interpretStateCss(this.validator)
 	}
@@ -81,9 +82,11 @@ export class ValidatorComponent implements OnInit {
 	}
 
 	tag(event) {
+		console.log('tagging validator')
 		event.stopPropagation()
 		this.validatorUtils.convertToValidatorModelAndSaveValidatorLocal(false, this.data)
 		this.tagged = true
+		this.useInternalTagState = true
 	}
 
 	untag(event) {
@@ -97,6 +100,7 @@ export class ValidatorComponent implements OnInit {
 	private confirmUntag() {
 		this.validatorUtils.deleteValidatorLocal(this.data)
 		this.tagged = false
+		this.useInternalTagState = true
 	}
 
 	private getBlockies() {
