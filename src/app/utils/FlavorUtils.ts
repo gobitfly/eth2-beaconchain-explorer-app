@@ -8,7 +8,7 @@ import { Capacitor } from '@capacitor/core'
 })
 export default class FlavorUtils {
 	async isBetaFlavor(): Promise<boolean> {
-		if(!Capacitor.isNativePlatform()) return false
+		if (!Capacitor.isNativePlatform()) return false
 		const info = await App.getInfo()
 		return info.id.indexOf('beta') > 0
 	}

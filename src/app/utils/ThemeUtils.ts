@@ -191,9 +191,9 @@ export default class ThemeUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param isDarkThemed Android bottom button bar
-	 * @returns 
+	 * @returns
 	 */
 	private async changeNavigationBarColor(isDarkThemed) {
 		if (!Capacitor.isPluginAvailable('StatusBar')) return
@@ -243,7 +243,7 @@ export default class ThemeUtils {
 				console.info('Statusbar is not available on this platform')
 			}
 		} catch (e) {
-			console.warn("error setting status bar color", e)
+			console.warn('error setting status bar color', e)
 		}
 	}
 

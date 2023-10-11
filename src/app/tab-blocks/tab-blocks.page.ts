@@ -10,7 +10,6 @@ import { ValidatorUtils } from '../utils/ValidatorUtils'
 import { InfiniteScrollDataSource, sleep } from '../utils/InfiniteScrollDataSource'
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling'
 
-
 @Component({
 	selector: 'app-tab-blocks',
 	templateUrl: './tab-blocks.page.html',
@@ -54,7 +53,7 @@ export class TabBlocksPage implements OnInit {
 				} else if (offset >= 120) {
 					sleepTime = 4500
 				}
-				if(offset > 0) this.loadMore = true
+				if (offset > 0) this.loadMore = true
 				await sleep(sleepTime) // handling rate limit of some sorts
 				const result = await this.blockUtils.getMyBlocks(offset)
 				this.loadMore = false

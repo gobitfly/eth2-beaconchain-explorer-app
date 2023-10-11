@@ -128,7 +128,7 @@ export class Tab3Page {
 				this.appVersion = result.version
 			})
 		} else {
-			this.appVersion = "dev"
+			this.appVersion = 'dev'
 		}
 
 		this.flavor.isBetaFlavor().then((result) => {

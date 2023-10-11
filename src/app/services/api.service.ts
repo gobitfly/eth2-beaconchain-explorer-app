@@ -60,10 +60,10 @@ export class ApiService extends CacheModule {
 
 	constructor(private storage: StorageService) {
 		super('api', 6 * 60 * 1000, storage)
-		this.storage.getBooleanSetting("migrated_4_3_0", false).then((migrated) => {
+		this.storage.getBooleanSetting('migrated_4_3_0', false).then((migrated) => {
 			if (!migrated) {
 				this.clearHardCache()
-				console.info("Cleared hard cache storage as part of 4.3.0 migration")
+				console.info('Cleared hard cache storage as part of 4.3.0 migration')
 				this.storage.setBooleanSetting('migrated_4_3_0', true)
 			}
 		})
