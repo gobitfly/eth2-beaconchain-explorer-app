@@ -9,21 +9,23 @@ import { BlockUtils, Luck } from '../utils/BlockUtils'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
 import { InfiniteScrollDataSource, sleep } from '../utils/InfiniteScrollDataSource'
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling'
-
+import { trigger, style, animate, transition } from '@angular/animations'
 @Component({
 	selector: 'app-tab-blocks',
 	templateUrl: './tab-blocks.page.html',
 	styleUrls: ['./tab-blocks.page.scss'],
+	animations: [
+		trigger('fadeIn', [
+			transition(':enter', [style({ opacity: 0 }), animate('300ms', style({ opacity: 1 }))]),
+			transition(':leave', [animate('300ms', style({ opacity: 0 }))]),
+		]),
+	],
 })
 export class TabBlocksPage implements OnInit {
 	public classReference = UnitconvService
 
 	dataSource: InfiniteScrollDataSource<BlockResponse>
 	@ViewChild(CdkVirtualScrollViewport) virtualScroll: CdkVirtualScrollViewport
-
-	fadeIn = 'invisible'
-
-	static itemCount = 0
 
 	loading = false
 	loadMore = false
@@ -78,12 +80,6 @@ export class TabBlocksPage implements OnInit {
 		this.setLoading(true)
 		await this.init()
 		this.setLoading(false)
-		if (this.fadeIn == 'invisible') {
-			this.fadeIn = 'fade-in'
-			setTimeout(() => {
-				this.fadeIn = null
-			}, 1500)
-		}
 	}
 
 	private setLoading(loading: boolean) {

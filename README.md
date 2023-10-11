@@ -49,7 +49,7 @@ NOTE: You need to provide your own google-services.json for Android and GoogleSe
 ### Browser
 To run the app in your browser, simply use
 
-`ionic serve`
+`npm run-script serve`
 
 to start a local webserver with livereload enabled.
 

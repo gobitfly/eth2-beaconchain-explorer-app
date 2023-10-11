@@ -49,15 +49,19 @@ import { MergeChecklistPage } from '../pages/merge-checklist/merge-checklist.pag
 import { ClientsPage } from '../pages/clients/clients.page'
 import FlavorUtils from '../utils/FlavorUtils'
 import { Capacitor } from '@capacitor/core'
-
+import { trigger, style, animate, transition } from '@angular/animations'
 @Component({
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
 	styleUrls: ['tab-preferences.page.scss'],
+	animations: [
+		trigger('fadeIn', [
+			transition(':enter', [style({ opacity: 0 }), animate('300ms', style({ opacity: 1 }))]),
+			transition(':leave', [animate('300ms', style({ opacity: 0 }))]),
+		]),
+	],
 })
 export class Tab3Page {
-	fadeIn = 'invisible'
-
 	darkMode: boolean
 
 	network = 'main'
@@ -152,11 +156,6 @@ export class Tab3Page {
 		this.notificationBase.disableToggleLock()
 
 		this.updateUtils.convertOldToNewClientSettings()
-
-		this.fadeIn = 'fade-in'
-		setTimeout(() => {
-			this.fadeIn = null
-		}, 1500)
 	}
 
 	async goToNotificationPage() {

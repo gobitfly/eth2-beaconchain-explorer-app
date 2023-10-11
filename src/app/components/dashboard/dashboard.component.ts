@@ -37,11 +37,17 @@ import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import FirebaseUtils from 'src/app/utils/FirebaseUtils'
-
+import { trigger, style, animate, transition } from '@angular/animations'
 @Component({
 	selector: 'app-validator-dashboard',
 	templateUrl: './dashboard.component.html',
 	styleUrls: ['./dashboard.component.scss'],
+	animations: [
+		trigger('fadeIn', [
+			transition(':enter', [style({ opacity: 0 }), animate('600ms', style({ opacity: 1 }))]),
+			transition(':leave', [animate('600ms', style({ opacity: 0 }))]),
+		]),
+	],
 })
 export class DashboardComponent implements OnInit {
 	public classReference = UnitconvService
@@ -50,8 +56,6 @@ export class DashboardComponent implements OnInit {
 	@Input() updates?: Release[]
 	@Input() currentY: number
 	@Input() scrolling: boolean
-
-	fadeIn = 'invisible'
 
 	beaconChainUrl: string = null
 	finalizationIssue = false
@@ -175,10 +179,6 @@ export class DashboardComponent implements OnInit {
 				}
 
 				this.doneLoading = true
-				this.fadeIn = 'fade-in'
-				setTimeout(() => {
-					this.fadeIn = null
-				}, 1000)
 			}
 		}
 	}

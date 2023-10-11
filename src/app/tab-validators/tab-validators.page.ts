@@ -40,18 +40,22 @@ import ThemeUtils from '../utils/ThemeUtils'
 import { Haptics } from '@capacitor/haptics'
 import { UnitconvService } from '../services/unitconv.service'
 import { InfiniteScrollDataSource } from '../utils/InfiniteScrollDataSource'
-
+import { trigger, style, animate, transition } from '@angular/animations'
 @Component({
 	selector: 'app-tab2',
 	templateUrl: 'tab-validators.page.html',
 	styleUrls: ['tab-validators.page.scss'],
+	animations: [
+		trigger('fadeIn', [
+			transition(':enter', [style({ opacity: 0 }), animate('300ms', style({ opacity: 1 }))]),
+			transition(':leave', [animate('300ms', style({ opacity: 0 }))]),
+		]),
+	],
 })
 export class Tab2Page {
 	dataSource: InfiniteScrollDataSource<Validator>
 
 	public classReference = UnitconvService
-
-	fadeIn = 'invisible'
 
 	searchResultMode = false
 	loading = false
@@ -103,13 +107,6 @@ export class Tab2Page {
 			this.dataSource.setLoadFrom(this.getDefaultDataRetriever())
 		}
 		this.dataSource.reset()
-
-		if (this.fadeIn == 'invisible') {
-			this.fadeIn = 'fade-in'
-			setTimeout(() => {
-				this.fadeIn = null
-			}, 1500)
-		}
 	}
 
 	async syncRemote() {

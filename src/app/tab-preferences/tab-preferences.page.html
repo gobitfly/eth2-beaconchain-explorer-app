@@ -24,7 +24,7 @@
 	</ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" [class]="fadeIn">
+<ion-content [fullscreen]="true" @fadeIn>
 	<ion-list (click)="openUpgrades()" *ngIf="currentPlan == 'standard'">
 		<ion-item lines="none" class="premium">
 			<ion-icon slot="start" name="rocket-outline" class="opacity-icon"></ion-icon>

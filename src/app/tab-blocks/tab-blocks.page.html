@@ -8,7 +8,7 @@
 		<ion-title>Blocks</ion-title>
 	</ion-toolbar>
 
-	<ion-item class="top-bar" [class]="fadeIn">
+	<ion-item class="top-bar" @fadeIn *ngIf="!loading">
 		<ion-label
 			>Proposal Luck:
 			<span *ngIf="luck && luck.luckPercentage" [class]="luck.luckPercentage | valuestyle: 1">{{ luck.luckPercentage*100 | number:'1.0-1' }}%</span>
@@ -31,21 +31,7 @@
 		<span style="font-style: normal">~{{ luck.nextBlockEstimate | timeago }} </span>
 	</p>
 
-	<app-ad location="blocks" *ngIf="dataSource && dataSource.hasItems() && !loading"></app-ad>
-
-	<cdk-virtual-scroll-viewport
-		itemSize="120"
-		minBufferPx="1100"
-		maxBufferPx="1450"
-		class="ion-content-scroll-host"
-		[hidden]="!dataSource || !dataSource.hasItems() || loading">
-		<div *cdkVirtualFor="let item of dataSource; " style="background-color: var(--ion-card-background)">
-			<app-block [block]="item" (click)="clickBlock(item)" role="article"></app-block>
-		</div>
-		<div style="text-align: center; padding-top: 10px" *ngIf="loadMore">
-			<i style="letter-spacing: 0.9px; opacity: 0.8">Loading...</i>
-		</div>
-	</cdk-virtual-scroll-viewport>
+	<app-ad @fadeIn location="blocks" *ngIf="dataSource && dataSource.hasItems() && !loading"></app-ad>
 
 	<div class="nothingfound" *ngIf="dataSource && !dataSource.hasItems() && !loading && initialized">
 		<ion-icon name="telescope-outline"></ion-icon>
@@ -58,4 +44,19 @@
 			<ion-spinner class="status-icon loading-spinner"></ion-spinner>
 		</div>
 	</div>
+
+	<cdk-virtual-scroll-viewport
+		@fadeIn
+		itemSize="120"
+		minBufferPx="1100"
+		maxBufferPx="1450"
+		class="ion-content-scroll-host"
+		[hidden]="!dataSource || !dataSource.hasItems() || loading">
+		<div *cdkVirtualFor="let item of dataSource; " style="background-color: var(--ion-card-background)">
+			<app-block [block]="item" (click)="clickBlock(item)" role="article"></app-block>
+		</div>
+		<div style="text-align: center; padding-top: 10px" *ngIf="loadMore">
+			<i style="letter-spacing: 0.9px; opacity: 0.8">Loading...</i>
+		</div>
+	</cdk-virtual-scroll-viewport>
 </ion-content>

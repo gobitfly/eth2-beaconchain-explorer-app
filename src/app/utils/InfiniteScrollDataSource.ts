@@ -91,7 +91,7 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 	}
 
 	public hasItems(): boolean {
-		return this.cachedData.length > 0
+		return this.length() > 0
 	}
 
 	public length(): number {
