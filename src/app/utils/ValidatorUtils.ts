@@ -185,7 +185,9 @@ export class ValidatorUtils extends CacheModule {
 		this.notifyListeners()
 	}
 
-	async deleteValidatorLocal(validator: ValidatorResponse) {
+	private deletedWithoutNotifying: boolean = false
+
+	async deleteValidatorLocal(validator: ValidatorResponse, notifyListeners: boolean = true) {
 		const storageKey = await this.getStorageKey()
 		const current = await this.getMap(storageKey)
 		current.delete(validator.pubkey)
@@ -197,7 +199,15 @@ export class ValidatorUtils extends CacheModule {
 		console.log('delete set', deletedList)
 
 		this.storage.setObject(LAST_TIME_REMOVED_KEY, { timestamp: Date.now() })
-		this.notifyListeners()
+		if (notifyListeners) this.notifyListeners()
+		else this.deletedWithoutNotifying = true
+	}
+
+	notifyListenersIfDeletedWithoutNotifying() {
+		if (this.deletedWithoutNotifying) {
+			this.notifyListeners()
+			this.deletedWithoutNotifying = false
+		}
 	}
 
 	async saveValidatorsLocal(validators: Validator[]) {

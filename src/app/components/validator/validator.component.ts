@@ -97,7 +97,7 @@ export class ValidatorComponent implements OnInit {
 	}
 
 	private confirmUntag() {
-		this.validatorUtils.deleteValidatorLocal(this.data)
+		this.validatorUtils.deleteValidatorLocal(this.data, false)
 		this.tagged = false
 		this.useInternalTagState = true
 	}

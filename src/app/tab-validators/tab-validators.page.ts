@@ -327,6 +327,7 @@ export class Tab2Page {
 	}
 
 	ionViewDidLeave() {
+		this.validatorUtils.notifyListenersIfDeletedWithoutNotifying()
 		this.sync.mightSyncUpAndSyncDelete()
 	}
 

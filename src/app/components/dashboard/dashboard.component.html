@@ -882,3 +882,9 @@
 	</ion-list>
 	<div class="bottomFiller"></div>
 </div>
+
+<div class="container loading-container" *ngIf="(!data || !doneLoading) && api.connectionStateOK">
+	<div class="center">
+		<ion-spinner class="status-icon loading-spinner"></ion-spinner>
+	</div>
+</div>
