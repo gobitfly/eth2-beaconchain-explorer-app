@@ -35,10 +35,10 @@
 
 	<cdk-virtual-scroll-viewport
 		itemSize="120"
-		minBufferPx="900"
-		maxBufferPx="1350"
+		minBufferPx="1100"
+		maxBufferPx="1450"
 		class="ion-content-scroll-host"
-		*ngIf="dataSource && dataSource.hasItems() && !loading">
+		[hidden]="!dataSource || !dataSource.hasItems() || loading">
 		<div *cdkVirtualFor="let item of dataSource; " style="background-color: var(--ion-card-background)">
 			<app-block [block]="item" (click)="clickBlock(item)" role="article"></app-block>
 		</div>

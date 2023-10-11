@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, ViewChild } from '@angular/core'
 import { ModalController } from '@ionic/angular'
 import { BlockDetailPage } from '../pages/block-detail/block-detail.page'
 import { BlockResponse } from '../requests/requests'
@@ -7,7 +7,9 @@ import { ApiService } from '../services/api.service'
 import { UnitconvService } from '../services/unitconv.service'
 import { BlockUtils, Luck } from '../utils/BlockUtils'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
-import { InfiniteScrollDataSource } from '../utils/InfiniteScrollDataSource'
+import { InfiniteScrollDataSource, sleep } from '../utils/InfiniteScrollDataSource'
+import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling'
+
 
 @Component({
 	selector: 'app-tab-blocks',
@@ -18,6 +20,7 @@ export class TabBlocksPage implements OnInit {
 	public classReference = UnitconvService
 
 	dataSource: InfiniteScrollDataSource<BlockResponse>
+	@ViewChild(CdkVirtualScrollViewport) virtualScroll: CdkVirtualScrollViewport
 
 	fadeIn = 'invisible'
 
@@ -43,7 +46,14 @@ export class TabBlocksPage implements OnInit {
 			this.refresh()
 		})
 		this.validatorUtils.getAllValidatorsLocal().then((validators) => {
-			this.dataSource = new InfiniteScrollDataSource<BlockResponse>(this.blockUtils.getLimit(validators.length), (offset: number) => {
+			this.dataSource = new InfiniteScrollDataSource<BlockResponse>(this.blockUtils.getLimit(validators.length), async (offset: number) => {
+				let sleepTime = 1000
+				if (offset > 50) {
+					sleepTime = 3000
+				} else if (offset > 120) {
+					sleepTime = 5000
+				}
+				await sleep(sleepTime) // handling rate limit of some sorts
 				return this.blockUtils.getMyBlocks(offset)
 			})
 		})
@@ -56,6 +66,7 @@ export class TabBlocksPage implements OnInit {
 	private async init() {
 		this.luck = await this.blockUtils.getProposalLuck()
 		this.valis = await this.validatorUtils.getAllValidatorsLocal()
+		this.virtualScroll.scrollToIndex(0)
 		await this.dataSource.reset()
 		this.initialized = true
 	}
@@ -89,6 +100,7 @@ export class TabBlocksPage implements OnInit {
 
 	async doRefresh(event) {
 		setTimeout(async () => {
+			this.virtualScroll.scrollToIndex(0)
 			await this.dataSource.reset()
 			event.target.complete()
 		}, 1500)
