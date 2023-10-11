@@ -21,7 +21,7 @@
 import { StorageService } from '../services/storage.service'
 import { Injectable } from '@angular/core'
 import { NavigationBarPlugin } from 'capacitor-navigationbarnx'
-import { Plugins } from '@capacitor/core'
+import { Capacitor, Plugins } from '@capacitor/core'
 import { Platform } from '@ionic/angular'
 import * as Snowflakes from 'magic-snowflakes'
 import confetti from 'canvas-confetti'
@@ -196,7 +196,7 @@ export default class ThemeUtils {
 	 * @returns 
 	 */
 	private async changeNavigationBarColor(isDarkThemed) {
-		if (!this.platform.is('android') && !this.platform.is('ios')) return
+		if (!Capacitor.isPluginAvailable('StatusBar')) return
 		try {
 			const themeColor = await this.getThemeColor()
 			if (themeColor == 'ethpool') {
@@ -210,7 +210,7 @@ export default class ThemeUtils {
 				else NavigationBar.setBackgroundColor({ color: '#f7f7f7' })
 			}
 		} catch (e) {
-			console.warn('')
+			console.warn('error setting navigation bar color', e)
 		}
 	}
 
@@ -225,32 +225,25 @@ export default class ThemeUtils {
 				darker = isDarkThemed ? '#262327' : '#fd9967'
 			}
 
-			try {
-				StatusBar.setStyle({
-					style: Style.Dark,
-				})
-				StatusBar.setBackgroundColor({
-					color: darker,
-				})
-			} catch (e) {
-				console.warn('Statusbar is not available on this platform')
-			}
+			this.setStatusBarColor(darker)
 			this.currentStatusBarColor = darker
 		}
 	}
 
 	setStatusBarColor(color) {
 		try {
-			if (this.platform.is('android')) {
+			if (Capacitor.isPluginAvailable('StatusBar')) {
 				StatusBar.setStyle({
 					style: Style.Dark,
 				})
 				StatusBar.setBackgroundColor({
 					color: color,
 				})
+			} else {
+				console.info('Statusbar is not available on this platform')
 			}
 		} catch (e) {
-			console.info('Statusbar is not available on this platform')
+			console.warn("error setting status bar color", e)
 		}
 	}
 
