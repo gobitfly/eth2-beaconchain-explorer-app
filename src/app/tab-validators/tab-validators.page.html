@@ -96,21 +96,6 @@
 
 	<app-ad @fadeIn location="validator" *ngIf="dataSource && dataSource.hasItems() && !loading"></app-ad>
 
-	<cdk-virtual-scroll-viewport
-		@fadeIn
-		itemSize="140"
-		minBufferPx="900"
-		maxBufferPx="1350"
-		*ngIf="dataSource && dataSource.hasItems() && !loading"
-		class="ion-content-scroll-host">
-		<div
-			*cdkVirtualFor="let item of dataSource; index as idx;"
-			style="background-color: var(--ion-card-background)"
-			[ngStyle]="{'border-left': selected.get(item.index) ? '6px solid var(--ion-color-primary)' : 'none'}">
-			<app-validator [validator]="item" (click)="clickValidator(item)" (press)="selectValidator(item)"></app-validator>
-		</div>
-	</cdk-virtual-scroll-viewport>
-
 	<div class="nothingfound" *ngIf="dataSource && !dataSource.hasItems() && searchResultMode && !loading">
 		<ion-icon name="telescope-outline"></ion-icon>
 		<h2>Nothing found</h2>
@@ -128,4 +113,19 @@
 			<ion-spinner class="status-icon loading-spinner"></ion-spinner>
 		</div>
 	</div>
+
+	<cdk-virtual-scroll-viewport
+		@fadeIn
+		itemSize="140"
+		minBufferPx="900"
+		maxBufferPx="1350"
+		[hidden]="!dataSource || !dataSource.hasItems() && !loading"
+		class="ion-content-scroll-host">
+		<div
+			*cdkVirtualFor="let item of dataSource; index as idx;"
+			style="background-color: var(--ion-card-background)"
+			[ngStyle]="{'border-left': selected.get(item.index) ? '6px solid var(--ion-color-primary)' : 'none'}">
+			<app-validator [validator]="item" (click)="clickValidator(item)" (press)="selectValidator(item)"></app-validator>
+		</div>
+	</cdk-virtual-scroll-viewport>
 </ion-content>
