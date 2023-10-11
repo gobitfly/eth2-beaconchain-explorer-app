@@ -55,15 +55,15 @@ export const MAP: ApiNetwork[] = [
 		genesisTs: 1655733600,
 	},
 	{
-		key: 'zhejiang',
+		key: 'holesky',
 		protocol: 'https',
 		host: 'beaconcha.in',
-		net: 'zhejiang.',
+		net: 'holesky.',
 		endpoint: '/api/',
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		genesisTs: 1675263600,
+		genesisTs: 1695902400,
 	},
 	{
 		key: 'local dev',
