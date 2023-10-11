@@ -111,7 +111,6 @@ export default class ThemeUtils {
 		this.storage.setObject(STORAGE_KEY, { theme: themeString, themeColor: themeColor } as StoredTheme)
 		this.userPreference = themeString
 		this.currentThemeColor = themeColor
-
 		this.toggleWinter(await this.isWinterEnabled(), false)
 	}
 
@@ -191,6 +190,11 @@ export default class ThemeUtils {
 		}, 250)
 	}
 
+	/**
+	 * 
+	 * @param isDarkThemed Android bottom button bar
+	 * @returns 
+	 */
 	private async changeNavigationBarColor(isDarkThemed) {
 		if (!this.platform.is('android') && !this.platform.is('ios')) return
 		try {
@@ -210,10 +214,10 @@ export default class ThemeUtils {
 		}
 	}
 
-	private async changeStatusBarColor(color, isDarkThemed) {
+	private async changeStatusBarColor(color: string, isDarkThemed) {
+		let darker = isDarkThemed ? '#000000' : color.trim() //this.shadeColor(color, -12)
 		if (this.platform.is('android')) {
 			const themeColor = await this.getThemeColor()
-			let darker = isDarkThemed ? '#000000' : color //this.shadeColor(color, -12)
 			if (themeColor == 'ethpool') {
 				darker = isDarkThemed ? '#262327' : '#e1d8d8'
 			}
