@@ -16,11 +16,7 @@ import { trigger, style, animate, transition } from '@angular/animations'
 	selector: 'app-machines',
 	templateUrl: './machines.page.html',
 	styleUrls: ['./machines.page.scss'],
-	animations: [
-		trigger('fadeIn', [
-			transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))]),
-		]),
-	],
+	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))])])],
 })
 export class MachinesPage extends MachineController implements OnInit {
 	data: ProcessedStats[] = null

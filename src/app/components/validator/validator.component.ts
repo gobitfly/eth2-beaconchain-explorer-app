@@ -59,7 +59,7 @@ export class ValidatorComponent implements OnInit {
 
 		this.name = getDisplayName(this.validator)
 		this.imgData = this.getBlockies()
-		this.tagged = !!await this.validatorUtils.getValidatorLocal(this.validator.pubkey)
+		this.tagged = !!(await this.validatorUtils.getValidatorLocal(this.validator.pubkey))
 		this.state = this.interpretState(this.validator)
 		this.stateCss = this.interpretStateCss(this.validator)
 	}

@@ -136,7 +136,7 @@ export default class ClientUpdateUtils {
 	}
 
 	async checkAllUpdates() {
-		if(this.lastTry + 10 * 60 * 1000 > Date.now()) return
+		if (this.lastTry + 10 * 60 * 1000 > Date.now()) return
 		this.updates = null
 		for (let i = 0; i < Clients.length; i++) {
 			this.append(this.checkUpdateFor(await this.storage.getItem(Clients[i].storageKey)))

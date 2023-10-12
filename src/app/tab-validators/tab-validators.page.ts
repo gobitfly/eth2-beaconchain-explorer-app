@@ -45,11 +45,7 @@ import { trigger, style, animate, transition } from '@angular/animations'
 	selector: 'app-tab2',
 	templateUrl: 'tab-validators.page.html',
 	styleUrls: ['tab-validators.page.scss'],
-	animations: [
-		trigger('fadeIn', [
-			transition(':enter', [style({ opacity: 0 }),animate('300ms 100ms', style({ opacity: 1 }))]),
-		]),
-	],
+	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))])])],
 })
 export class Tab2Page {
 	dataSource: InfiniteScrollDataSource<Validator>
