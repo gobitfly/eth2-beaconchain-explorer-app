@@ -77,7 +77,7 @@ export default class ThemeUtils {
 				this.colorHandler()
 				this.applyColorInitially(++count)
 			},
-			count == 0 ? 210 : 15
+			count == 0 ? 210 : 25
 		) // fade out duration = 200ms
 	}
 
