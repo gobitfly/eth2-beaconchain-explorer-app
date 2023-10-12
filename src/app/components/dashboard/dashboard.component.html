@@ -661,12 +661,12 @@
 		<div class="chartcontainer">
 			<div
 				class="stat-charts"
-				id="highcharts{{ randomChartId }}"
+				[attr.id]="'highcharts'+randomChartId"
 				style="width: 100%; height: 380px"
 				[hidden]="!chartData || selectedChart != 'chartIncome'"></div>
 			<div
 				class="stat-charts"
-				id="highchartsBlocks{{ randomChartId }}"
+				[attr.id]="'highchartsBlocks'+randomChartId"
 				style="width: 100%; height: 380px"
 				[hidden]="!chartDataProposals || selectedChart != 'chartBlocks'"></div>
 

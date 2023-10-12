@@ -12,5 +12,8 @@
 		"CapacitorHttp": {
 			"enabled": true
 		}
+	},
+	"android": {
+		"flavor": "prod"
 	}
 }

@@ -42,12 +42,7 @@ import { trigger, style, animate, transition } from '@angular/animations'
 	selector: 'app-validator-dashboard',
 	templateUrl: './dashboard.component.html',
 	styleUrls: ['./dashboard.component.scss'],
-	animations: [
-		trigger('fadeIn', [
-			transition(':enter', [style({ opacity: 0 }), animate('600ms', style({ opacity: 1 }))]),
-			transition(':leave', [animate('600ms', style({ opacity: 0 }))]),
-		]),
-	],
+	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 300ms', style({ opacity: 1 }))])])],
 })
 export class DashboardComponent implements OnInit {
 	public classReference = UnitconvService
@@ -67,7 +62,7 @@ export class DashboardComponent implements OnInit {
 	chartDataProposals
 	chartError = false
 
-	readonly randomChartId
+	randomChartId
 
 	rankPercentMode = false
 
@@ -154,8 +149,18 @@ export class DashboardComponent implements OnInit {
 						this.notificationPermissionPending = !result
 					})
 				}
-				this.drawBalanceChart()
-				this.drawProposalChart()
+
+				if (this.balanceChart && this.proposalChart) {
+					this.balanceChart.destroy()
+					this.proposalChart.destroy()
+					this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
+				}
+
+				setTimeout(() => {
+					this.drawBalanceChart()
+					this.drawProposalChart()
+				}, 500)
+
 				this.beaconChainUrl = await this.getBaseBrowserUrl()
 
 				await Promise.all([
@@ -549,10 +554,11 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
+	private proposalChart = null
 	async createProposedChart(proposed, missed, orphaned) {
 		const network = await this.api.getNetwork()
 
-		Highstock.chart(
+		this.proposalChart = Highstock.chart(
 			'highchartsBlocks' + this.randomChartId,
 			{
 				accessibility: {
@@ -667,6 +673,7 @@ export class DashboardComponent implements OnInit {
 		)
 	}
 
+	private balanceChart = null
 	async createBalanceChart(consensusIncome, executionIncome) {
 		executionIncome = executionIncome || []
 
@@ -681,7 +688,7 @@ export class DashboardComponent implements OnInit {
 			return text
 		}
 
-		Highstock.chart(
+		this.balanceChart = Highstock.chart(
 			'highcharts' + this.randomChartId,
 			{
 				accessibility: {

@@ -13,4 +13,5 @@ ext {
     androidxJunitVersion = '1.1.5'
     androidxEspressoCoreVersion = '3.5.1'
     cordovaAndroidVersion = '10.1.1'
+    //firebaseMessagingVersion = '23.2.1'
 }
