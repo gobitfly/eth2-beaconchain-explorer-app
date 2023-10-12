@@ -21,7 +21,7 @@
 import { Component, OnInit, Input } from '@angular/core'
 import { ValidatorResponse } from 'src/app/requests/requests'
 import * as blockies from 'ethereum-blockies'
-import { ValidatorUtils, SAVED, getDisplayName, Validator, ValidatorState } from 'src/app/utils/ValidatorUtils'
+import { ValidatorUtils, getDisplayName, Validator, ValidatorState } from 'src/app/utils/ValidatorUtils'
 import { UnitconvService } from '../../services/unitconv.service'
 import { AlertService } from 'src/app/services/alert.service'
 import BigNumber from 'bignumber.js'
