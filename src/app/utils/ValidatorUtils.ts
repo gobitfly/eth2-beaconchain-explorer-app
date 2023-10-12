@@ -239,7 +239,7 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	async getValidatorLocal(pubkey: string): Promise<Validator> {
-		const current = await this.getMap(await this.getStorageKey())
+		const current = await this.getMapWithoutDeleted(await this.getStorageKey())
 		return current.get(pubkey)
 	}
 

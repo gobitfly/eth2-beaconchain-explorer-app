@@ -42,7 +42,6 @@ export class ValidatorComponent implements OnInit {
 	imgData: string
 
 	tagged: boolean
-	useInternalTagState: boolean // used to indicate that instead of loading the tag state from validator data, rely on views internal tagged state
 
 	state: string
 
@@ -54,13 +53,13 @@ export class ValidatorComponent implements OnInit {
 
 	constructor(private validatorUtils: ValidatorUtils, public unit: UnitconvService, private alerts: AlertService) {}
 
-	ngOnChanges() {
+	async ngOnChanges() {
 		this.data = this.validator.data
 		this.balance = this.calculateBalanceShare(this.validator)
 
 		this.name = getDisplayName(this.validator)
 		this.imgData = this.getBlockies()
-		this.tagged = this.useInternalTagState ? this.tagged : this.validator.storage == SAVED
+		this.tagged = !!await this.validatorUtils.getValidatorLocal(this.validator.pubkey)
 		this.state = this.interpretState(this.validator)
 		this.stateCss = this.interpretStateCss(this.validator)
 	}
@@ -85,7 +84,6 @@ export class ValidatorComponent implements OnInit {
 		event.stopPropagation()
 		this.validatorUtils.convertToValidatorModelAndSaveValidatorLocal(false, this.data)
 		this.tagged = true
-		this.useInternalTagState = true
 	}
 
 	untag(event) {
@@ -99,7 +97,6 @@ export class ValidatorComponent implements OnInit {
 	private confirmUntag() {
 		this.validatorUtils.deleteValidatorLocal(this.data, false)
 		this.tagged = false
-		this.useInternalTagState = true
 	}
 
 	private getBlockies() {
