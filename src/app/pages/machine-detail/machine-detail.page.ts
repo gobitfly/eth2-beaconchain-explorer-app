@@ -387,6 +387,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: mergedConfig,
+			Error: undefined,
 		} as MachineChartData
 	}
 

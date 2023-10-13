@@ -63,8 +63,8 @@ export class CacheModule {
 
 	private getStoreForCacheKey(cacheKey: string): Map<string, CachedData> {
 		// rationale: don't store big data objects in hardStorage due to severe performance impacts
-		const storeHotOnly = cacheKey.indexOf('user/stats/') >= 0
-		return storeHotOnly ? this.hotOnly : this.cache
+		const storeHard = cacheKey.indexOf('app/dashboard') >= 0
+		return storeHard ? this.cache : this.hotOnly
 	}
 
 	protected putCache(key: string, data: unknown, staleTime = this.staleTime) {
@@ -77,17 +77,27 @@ export class CacheModule {
 			data: data,
 		})
 
-		if (this.hardStorage) {
-			this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, this.cache)
+		try {
+			if (this.hardStorage) {
+				this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, this.cache)
+			}
+		} catch (e) {
+			if (isQuotaExceededError(e)) {
+				this.clearHardCache()
+			}
 		}
 	}
 
 	clearCache() {
+		this.clearHardCache()
+		this.cache.clear()
+		this.hotOnly.clear()
+	}
+
+	clearHardCache() {
 		if (this.hardStorage) {
 			this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, null)
 		}
-		this.cache.clear()
-		this.hotOnly.clear()
 	}
 
 	protected async getCache(key: string) {
@@ -152,4 +162,19 @@ export class CacheModule {
 	private getKey(key: string) {
 		return this.keyPrefix + key
 	}
+}
+
+function isQuotaExceededError(err: unknown): boolean {
+	return (
+		err instanceof DOMException &&
+		// everything except Firefox
+		(err.code === 22 ||
+			// Firefox
+			err.code === 1014 ||
+			// test name field too, because code might not be present
+			// everything except Firefox
+			err.name === 'QuotaExceededError' ||
+			// Firefox
+			err.name === 'NS_ERROR_DOM_QUOTA_REACHED')
+	)
 }

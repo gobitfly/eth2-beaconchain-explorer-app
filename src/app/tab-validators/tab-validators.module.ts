@@ -28,9 +28,11 @@ import { OfflineComponentModule } from '../components/offline/offline.module'
 import { Tab2PageRoutingModule } from './tab-validators-routing.module'
 import { MessageComponentModule } from '../components/message/message.module'
 import { AdComponentModule } from '../components/ad/ad.module'
+import { ScrollingModule } from '@angular/cdk/scrolling'
 
 @NgModule({
 	imports: [
+		ScrollingModule,
 		IonicModule,
 		CommonModule,
 		FormsModule,

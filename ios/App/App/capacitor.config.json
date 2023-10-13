@@ -6,8 +6,11 @@
 	"webDir": "www",
 	"plugins": {
 		"SplashScreen": {
-			"launchShowDuration": 3000,
+			"launchAutoHide": false,
 			"androidScaleType": "CENTER_CROP"
+		},
+		"CapacitorHttp": {
+			"enabled": true
 		}
 	}
 }

@@ -37,11 +37,12 @@ import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import FirebaseUtils from 'src/app/utils/FirebaseUtils'
-
+import { trigger, style, animate, transition } from '@angular/animations'
 @Component({
 	selector: 'app-validator-dashboard',
 	templateUrl: './dashboard.component.html',
 	styleUrls: ['./dashboard.component.scss'],
+	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 300ms', style({ opacity: 1 }))])])],
 })
 export class DashboardComponent implements OnInit {
 	public classReference = UnitconvService
@@ -50,8 +51,6 @@ export class DashboardComponent implements OnInit {
 	@Input() updates?: Release[]
 	@Input() currentY: number
 	@Input() scrolling: boolean
-
-	fadeIn = 'invisible'
 
 	beaconChainUrl: string = null
 	finalizationIssue = false
@@ -63,7 +62,7 @@ export class DashboardComponent implements OnInit {
 	chartDataProposals
 	chartError = false
 
-	readonly randomChartId
+	randomChartId
 
 	rankPercentMode = false
 
@@ -150,8 +149,18 @@ export class DashboardComponent implements OnInit {
 						this.notificationPermissionPending = !result
 					})
 				}
-				this.drawBalanceChart()
-				this.drawProposalChart()
+
+				if (this.balanceChart && this.proposalChart) {
+					this.balanceChart.destroy()
+					this.proposalChart.destroy()
+					this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
+				}
+
+				setTimeout(() => {
+					this.drawBalanceChart()
+					this.drawProposalChart()
+				}, 500)
+
 				this.beaconChainUrl = await this.getBaseBrowserUrl()
 
 				await Promise.all([
@@ -175,10 +184,6 @@ export class DashboardComponent implements OnInit {
 				}
 
 				this.doneLoading = true
-				this.fadeIn = 'fade-in'
-				setTimeout(() => {
-					this.fadeIn = null
-				}, 1000)
 			}
 		}
 	}
@@ -257,6 +262,7 @@ export class DashboardComponent implements OnInit {
 
 	updateSmoothingPool() {
 		try {
+			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
 			this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
 			this.displaySmoothingPool = this.data.rocketpool.smoothingPool
 			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber('1e9'))
@@ -270,6 +276,7 @@ export class DashboardComponent implements OnInit {
 
 	updateRplProjectedClaim() {
 		try {
+			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
 			if (this.data.rocketpool.currentRpl.isLessThanOrEqualTo(this.data.rocketpool.minRpl)) {
 				this.rplProjectedClaim = 0
 				return
@@ -296,6 +303,7 @@ export class DashboardComponent implements OnInit {
 
 	updateRplApr() {
 		try {
+			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.claim_interval_time) return
 			const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(':')[0]
 			const hoursNumber = parseInt(hoursToAdd)
 			this.rplApr = new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards)
@@ -311,6 +319,7 @@ export class DashboardComponent implements OnInit {
 
 	updateRplCommission() {
 		try {
+			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.current_node_fee) return
 			this.rplCommission = Math.round(this.validatorUtils.rocketpoolStats.current_node_fee * 10000) / 100
 		} catch (e) {
 			console.warn('cannot updateRplCommission', e)
@@ -319,6 +328,7 @@ export class DashboardComponent implements OnInit {
 
 	updateNextRewardRound() {
 		try {
+			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.claim_interval_time) return
 			const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(':')[0]
 			this.nextRewardRound = this.validatorUtils.rocketpoolStats.claim_interval_time_start * 1000 + parseInt(hoursToAdd) * 60 * 60 * 1000
 		} catch (e) {
@@ -544,12 +554,16 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
+	private proposalChart = null
 	async createProposedChart(proposed, missed, orphaned) {
 		const network = await this.api.getNetwork()
 
-		Highstock.chart(
+		this.proposalChart = Highstock.chart(
 			'highchartsBlocks' + this.randomChartId,
 			{
+				accessibility: {
+					enabled: false,
+				},
 				chart: {
 					type: 'column',
 					marginLeft: 0,
@@ -618,6 +632,7 @@ export class DashboardComponent implements OnInit {
 						},
 					},
 					column: {
+						borderWidth: 0,
 						centerInCategory: true,
 					},
 				},
@@ -658,6 +673,7 @@ export class DashboardComponent implements OnInit {
 		)
 	}
 
+	private balanceChart = null
 	async createBalanceChart(consensusIncome, executionIncome) {
 		executionIncome = executionIncome || []
 
@@ -672,9 +688,12 @@ export class DashboardComponent implements OnInit {
 			return text
 		}
 
-		Highstock.chart(
+		this.balanceChart = Highstock.chart(
 			'highcharts' + this.randomChartId,
 			{
+				accessibility: {
+					enabled: false,
+				},
 				exporting: {
 					scale: 1,
 				},
@@ -740,7 +759,8 @@ export class DashboardComponent implements OnInit {
 				},
 				plotOptions: {
 					column: {
-						stacking: 'stacked',
+						borderWidth: 0,
+						stacking: 'normal',
 						dataLabels: {
 							enabled: false,
 						},

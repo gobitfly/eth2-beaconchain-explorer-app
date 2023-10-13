@@ -118,6 +118,7 @@ const SETTINGS_UPDATECHANNEL = 'setting_client_updatechannel'
 export default class ClientUpdateUtils {
 	private oldClientInfoConverted = false
 	updates: Release[] = null
+	lastTry = 0
 
 	constructor(private api: ApiService, private storage: StorageService) {}
 
@@ -135,6 +136,7 @@ export default class ClientUpdateUtils {
 	}
 
 	async checkAllUpdates() {
+		if (this.lastTry + 10 * 60 * 1000 > Date.now()) return
 		this.updates = null
 		for (let i = 0; i < Clients.length; i++) {
 			this.append(this.checkUpdateFor(await this.storage.getItem(Clients[i].storageKey)))
@@ -202,6 +204,7 @@ export default class ClientUpdateUtils {
 		}
 		const client = this.getClientInfo(clientKey)
 		if (client != null) {
+			this.lastTry = Date.now()
 			const update = await this.getReleases(client)
 			const lastClosed = await this.getLastClosedVersion(clientKey)
 			if (update && update.data && lastClosed) {

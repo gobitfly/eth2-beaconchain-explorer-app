@@ -10,9 +10,19 @@ import { TabBlocksPage } from './tab-blocks.page'
 import { BlockComponentModule } from '../components/block/block.module'
 import { AdComponentModule } from '../components/ad/ad.module'
 import { PipesModule } from '../pipes/pipes.module'
+import { ScrollingModule } from '@angular/cdk/scrolling'
 
 @NgModule({
-	imports: [CommonModule, FormsModule, IonicModule, TabBlocksPageRoutingModule, BlockComponentModule, AdComponentModule, PipesModule],
+	imports: [
+		CommonModule,
+		ScrollingModule,
+		FormsModule,
+		IonicModule,
+		TabBlocksPageRoutingModule,
+		BlockComponentModule,
+		AdComponentModule,
+		PipesModule,
+	],
 	declarations: [TabBlocksPage],
 })
 export class TabBlocksPageModule {}

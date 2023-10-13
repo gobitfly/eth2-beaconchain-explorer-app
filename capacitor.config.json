@@ -5,9 +5,15 @@
   "npmClient": "npm",
   "webDir": "www",
   "plugins": {
-    "SplashScreen": {
-      "launchAutoHide": false,
-      "androidScaleType": "CENTER_CROP"
-    }
-  }
+		"SplashScreen": {
+			"launchAutoHide": false,
+			"androidScaleType": "CENTER_CROP"
+		},
+		"CapacitorHttp": {
+			"enabled": true
+		}
+	},
+	"android": {
+		"flavor": "prod"
+	}
 }

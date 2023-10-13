@@ -79,14 +79,17 @@ export class BlockUtils extends CacheModule {
 		const request = new DashboardRequest(...valis.map((vali) => vali.index))
 		const response = await this.api.execute(request)
 		const result = request.parse(response)[0]
-		const proposalLuckStats = result.proposal_luck_stats
-		return {
-			luckPercentage: proposalLuckStats.proposal_luck,
-			timeFrameName: proposalLuckStats.time_frame_name,
-			userValidators: valis.length,
-			expectedBlocksPerMonth: MONTH / (proposalLuckStats.average_proposal_interval * 12),
-			nextBlockEstimate: proposalLuckStats.next_proposal_estimate_ts * 1000,
-		} as Luck
+		if (result) {
+			const proposalLuckStats = result.proposal_luck_stats
+			return {
+				luckPercentage: proposalLuckStats.proposal_luck,
+				timeFrameName: proposalLuckStats.time_frame_name,
+				userValidators: valis.length,
+				expectedBlocksPerMonth: MONTH / (proposalLuckStats.average_proposal_interval * 12),
+				nextBlockEstimate: proposalLuckStats.next_proposal_estimate_ts * 1000,
+			} as Luck
+		}
+		return null
 	}
 }
 

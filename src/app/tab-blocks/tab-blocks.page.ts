@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, ViewChild } from '@angular/core'
 import { ModalController } from '@ionic/angular'
 import { BlockDetailPage } from '../pages/block-detail/block-detail.page'
 import { BlockResponse } from '../requests/requests'
@@ -7,26 +7,25 @@ import { ApiService } from '../services/api.service'
 import { UnitconvService } from '../services/unitconv.service'
 import { BlockUtils, Luck } from '../utils/BlockUtils'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
-
+import { InfiniteScrollDataSource, sleep } from '../utils/InfiniteScrollDataSource'
+import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling'
+import { trigger, style, animate, transition } from '@angular/animations'
 @Component({
 	selector: 'app-tab-blocks',
 	templateUrl: './tab-blocks.page.html',
 	styleUrls: ['./tab-blocks.page.scss'],
+	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))])])],
 })
 export class TabBlocksPage implements OnInit {
 	public classReference = UnitconvService
 
-	fadeIn = 'invisible'
-
-	static itemCount = 0
-
-	items: BlockResponse[] = []
+	dataSource: InfiniteScrollDataSource<BlockResponse>
+	@ViewChild(CdkVirtualScrollViewport) virtualScroll: CdkVirtualScrollViewport
 
 	loading = false
+	loadMore = false
 
 	initialized = false
-
-	reachedMax = false
 
 	luck: Luck = null
 
@@ -43,59 +42,39 @@ export class TabBlocksPage implements OnInit {
 		this.validatorUtils.registerListener(() => {
 			this.refresh()
 		})
+		this.validatorUtils.getAllValidatorsLocal().then((validators) => {
+			this.dataSource = new InfiniteScrollDataSource<BlockResponse>(this.blockUtils.getLimit(validators.length), async (offset: number) => {
+				let sleepTime = 1000
+				if (offset >= 50) {
+					sleepTime = 3500 // 20 req per minute => wait at least 3 seconds. Buffer for dashboard and sync stuff
+				} else if (offset >= 120) {
+					sleepTime = 4500
+				}
+				if (offset > 0) this.loadMore = true
+				await sleep(sleepTime) // handling rate limit of some sorts
+				const result = await this.blockUtils.getMyBlocks(offset)
+				this.loadMore = false
+				return result
+			})
+		})
 	}
 
 	ngOnInit() {
 		this.refresh()
 	}
 
-	loadData(event) {
-		if (this.reachedMax) {
-			event.target.disabled = true
-		}
-		setTimeout(async () => {
-			await this.loadMore(false)
-
-			event.target.complete()
-
-			if (this.reachedMax) {
-				event.target.disabled = true
-			}
-		}, 1500)
-	}
-
-	private async loadMore(initial: boolean) {
-		if (this.reachedMax) {
-			return
-		}
-
-		const blocks = await this.blockUtils.getMyBlocks(initial ? 0 : this.items.length)
-		if (initial) {
-			this.items = blocks
-			this.luck = await this.blockUtils.getProposalLuck()
-			this.valis = await this.validatorUtils.getAllValidatorsLocal()
-			this.initialized = true
-		} else {
-			this.items = this.items.concat(blocks)
-		}
-
-		TabBlocksPage.itemCount = this.items.length
-		if (blocks.length < this.blockUtils.getLimit(this.valis.length)) {
-			this.reachedMax = true
-		}
+	private async init() {
+		this.luck = await this.blockUtils.getProposalLuck()
+		this.valis = await this.validatorUtils.getAllValidatorsLocal()
+		this.virtualScroll.scrollToIndex(0)
+		await this.dataSource.reset()
+		this.initialized = true
 	}
 
 	private async refresh() {
-		this.reachedMax = false
 		this.setLoading(true)
-		await this.loadMore(true)
+		await this.init()
 		this.setLoading(false)
-		if (this.fadeIn == 'invisible') {
-			this.fadeIn = 'fade-in'
-			setTimeout(() => {
-				this.fadeIn = null
-			}, 1500)
-		}
 	}
 
 	private setLoading(loading: boolean) {
@@ -115,14 +94,10 @@ export class TabBlocksPage implements OnInit {
 
 	async doRefresh(event) {
 		setTimeout(async () => {
-			await this.loadMore(true)
+			this.virtualScroll.scrollToIndex(0)
+			await this.dataSource.reset()
 			event.target.complete()
 		}, 1500)
-	}
-
-	itemHeightFn(item, index) {
-		if (index == TabBlocksPage.itemCount - 1) return 210
-		return 125
 	}
 
 	switchCurrencyPipe() {

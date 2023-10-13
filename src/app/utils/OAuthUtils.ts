@@ -125,9 +125,9 @@ export class OAuthUtils {
 		const endpointUrl = await api.getResourceUrl('user/token')
 
 		const info = await Device.getId().catch(() => {
-			return { uuid: 'iduno' }
+			return { identifier: 'iduno' }
 		})
-		let clientID = this.hashCode(info.uuid)
+		let clientID = this.hashCode(info.identifier)
 		while (clientID.length <= 5) {
 			clientID += '0'
 		}

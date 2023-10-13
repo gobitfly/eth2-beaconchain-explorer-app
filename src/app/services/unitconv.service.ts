@@ -123,7 +123,6 @@ export class UnitconvService {
 	}
 
 	async updatePriceData() {
-		console.log('updatePriceData currency')
 		const unit: Unit = this.getCurrentPrefAsUnit()
 		if (unit.coinbaseSpot) {
 			const exchangeRate = await this.getExchangeRate(unit.coinbaseSpot)

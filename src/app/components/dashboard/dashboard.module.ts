@@ -28,7 +28,7 @@ import { DashboardComponent } from './dashboard.component'
 import { PipesModule } from '../../pipes/pipes.module'
 import { ClientupdateComponentModule } from '../../components/clientupdate/clientupdate.module'
 import { MessageComponentModule } from '../../components/message/message.module'
-import { TooltipModule } from 'ng2-tooltip-directive'
+import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
 import { AdComponentModule } from '../ad/ad.module'
 
 @NgModule({

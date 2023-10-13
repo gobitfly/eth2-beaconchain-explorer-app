@@ -257,7 +257,7 @@ export default class MachineController {
 							x: -5,
 							step: 1,
 							formatter: function () {
-								return this.value >= 1 ? 'True' : 'False'
+								return parseFloat(this.value.toString()) >= 1 ? 'True' : 'False'
 							},
 						},
 					},

@@ -39,20 +39,18 @@ import ThemeUtils from '../utils/ThemeUtils'
 
 import { Haptics } from '@capacitor/haptics'
 import { UnitconvService } from '../services/unitconv.service'
-
+import { InfiniteScrollDataSource } from '../utils/InfiniteScrollDataSource'
+import { trigger, style, animate, transition } from '@angular/animations'
 @Component({
 	selector: 'app-tab2',
 	templateUrl: 'tab-validators.page.html',
 	styleUrls: ['tab-validators.page.scss'],
+	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))])])],
 })
 export class Tab2Page {
+	dataSource: InfiniteScrollDataSource<Validator>
+
 	public classReference = UnitconvService
-
-	fadeIn = 'invisible'
-
-	static itemCount = 0
-
-	items: Validator[] = []
 
 	searchResultMode = false
 	loading = false
@@ -88,6 +86,8 @@ export class Tab2Page {
 		this.merchant.getCurrentPlanMaxValidator().then((result) => {
 			this.currentPackageMaxValidators = result
 		})
+
+		this.dataSource = new InfiniteScrollDataSource<Validator>(InfiniteScrollDataSource.ALL_ITEMS_AT_ONCE, this.getDefaultDataRetriever())
 	}
 
 	ngOnInit() {
@@ -97,14 +97,11 @@ export class Tab2Page {
 	private async refresh() {
 		this.reachedMaxValidators = false
 		this.storage.isLoggedIn().then((result) => (this.isLoggedIn = result))
-		if (!this.searchResultMode) this.refreshMyValidators()
 
-		if (this.fadeIn == 'invisible') {
-			this.fadeIn = 'fade-in'
-			setTimeout(() => {
-				this.fadeIn = null
-			}, 1500)
+		if (!this.searchResultMode) {
+			this.dataSource.setLoadFrom(this.getDefaultDataRetriever())
 		}
+		this.dataSource.reset()
 	}
 
 	async syncRemote() {
@@ -116,14 +113,18 @@ export class Tab2Page {
 		}, 2000)
 	}
 
-	private async refreshMyValidators() {
+	private getDefaultDataRetriever() {
+		return () => {
+			return this.getValidatorData()
+		}
+	}
+
+	private async getValidatorData() {
 		this.searchResultMode = false
 
 		if (!(await this.validatorUtils.hasLocalValdiators())) {
-			this.items = new Array<Validator>()
-			Tab2Page.itemCount = this.items.length
 			this.initialized = true
-			return
+			return []
 		}
 
 		this.setLoading(true)
@@ -163,17 +164,15 @@ export class Tab2Page {
 				return -1
 			}
 		})
-		this.items = temp
 		this.setLoading(false)
-		Tab2Page.itemCount = this.items.length
+		return temp
 	}
 
 	private setLoading(loading: boolean) {
-		console.log('set loading', loading)
 		if (loading) {
 			// Reasoning: Don't show loading indicator if it takes less than 400ms (already cached locally but storage is slow-ish so we adjust for that)
 			setTimeout(() => {
-				if (!this.items || this.items.length <= 0) {
+				if (!this.dataSource || !this.dataSource.hasItems()) {
 					this.loading = true
 				}
 			}, 200)
@@ -203,7 +202,7 @@ export class Tab2Page {
 	}
 
 	private async showDialog(title, text, action: () => void) {
-		const size = this.items.length
+		const size = this.dataSource.length()
 		const alert = await this.alertController.create({
 			header: title,
 			message: text.replace('{AMOUNT}', size + ''),
@@ -225,17 +224,17 @@ export class Tab2Page {
 
 	async confirmRemoveAll() {
 		this.validatorUtils.deleteAll()
-		this.refreshMyValidators()
+		this.dataSource.reset()
 	}
 
 	async confirmAddAll() {
 		const responses: ValidatorResponse[] = []
-		this.items.forEach(async (item) => {
+		this.dataSource.getItems().forEach(async (item) => {
 			responses.push(item.data)
 		})
 
 		this.validatorUtils.convertToValidatorModelsAndSaveLocal(false, responses)
-		this.refreshMyValidators()
+		this.dataSource.reset()
 	}
 
 	searchEvent(event) {
@@ -250,34 +249,50 @@ export class Tab2Page {
 
 		this.searchResultMode = true
 		this.loading = true
-
 		const isETH1Address = searchString.startsWith('0x') && searchString.length == 42
 
-		if (isETH1Address) this.searchETH1(searchString).then(() => (this.loading = false))
-		else this.searchByPubKeyOrIndex(searchString).then(() => (this.loading = false))
+		if (isETH1Address) await this.searchETH1(searchString)
+		else await this.searchByPubKeyOrIndex(searchString)
+
+		// this.loading = false would be preferable here but somehow the first time it is called the promises resolve instantly without waiting
+		// but it works for any subsequent calls ¯\_(ツ)_/¯
+		// workaround for now is to set it in searchETH1 and searchByPubKeyOrIndex
 	}
 
-	async searchByPubKeyOrIndex(target) {
-		const temp = await this.validatorUtils.searchValidators(target).catch((error) => {
-			console.warn('search error', error)
-			return []
+	private async searchByPubKeyOrIndex(target) {
+		this.dataSource.setLoadFrom(() => {
+			return this.validatorUtils
+				.searchValidators(target)
+				.catch((error) => {
+					console.warn('search error', error)
+					return []
+				})
+				.then((result) => {
+					this.loading = false
+					return result
+				})
 		})
-		this.items = temp
-		Tab2Page.itemCount = this.items.length
+		return await this.dataSource.reset()
 	}
 
-	async searchETH1(target) {
-		const temp = await this.validatorUtils.searchValidatorsViaETH1(target).catch(async (error) => {
-			if (error && error.message && error.message.indexOf('only a maximum of') > 0) {
-				console.log('SET reachedMaxValidators to true')
-				this.reachedMaxValidators = true
-				return await this.validatorUtils.searchValidatorsViaETH1(target, this.currentPackageMaxValidators - 1)
-			}
-			return []
+	private async searchETH1(target) {
+		this.dataSource.setLoadFrom(() => {
+			return this.validatorUtils
+				.searchValidatorsViaETH1(target)
+				.catch(async (error) => {
+					if (error && error.message && error.message.indexOf('only a maximum of') > 0) {
+						console.log('SET reachedMaxValidators to true')
+						this.reachedMaxValidators = true
+						return this.validatorUtils.searchValidatorsViaETH1(target, this.currentPackageMaxValidators - 1)
+					}
+					return []
+				})
+				.then((result) => {
+					this.loading = false
+					return result
+				})
 		})
-
-		this.items = temp // await this.applyAttestationEffectiveness(temp, target)
-		Tab2Page.itemCount = this.items.length
+		return await this.dataSource.reset()
 	}
 
 	cancelSearch() {
@@ -307,12 +322,8 @@ export class Tab2Page {
 	}
 
 	ionViewDidLeave() {
+		this.validatorUtils.notifyListenersIfDeletedWithoutNotifying()
 		this.sync.mightSyncUpAndSyncDelete()
-	}
-
-	itemHeightFn(item, index) {
-		if (index == Tab2Page.itemCount - 1) return 210
-		return 144
 	}
 
 	async upgrade() {
@@ -375,7 +386,7 @@ export class Tab2Page {
 	getValidatorsByIndex(indexMap): Validator[] {
 		const result = []
 		indexMap.forEach((value, key) => {
-			const temp = this.items.find((item) => {
+			const temp = this.dataSource.getItems().find((item) => {
 				return item.index == key
 			})
 			if (temp) {

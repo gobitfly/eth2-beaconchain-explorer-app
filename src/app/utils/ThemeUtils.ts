@@ -21,7 +21,7 @@
 import { StorageService } from '../services/storage.service'
 import { Injectable } from '@angular/core'
 import { NavigationBarPlugin } from 'capacitor-navigationbarnx'
-import { Plugins } from '@capacitor/core'
+import { Capacitor, Plugins } from '@capacitor/core'
 import { Platform } from '@ionic/angular'
 import * as Snowflakes from 'magic-snowflakes'
 import confetti from 'canvas-confetti'
@@ -71,13 +71,13 @@ export default class ThemeUtils {
 	// milliseconds apart so the color change won't blob in too late and annoy the user nor won't it change at all
 	// and annoy the user either ¯\_(ツ)_/¯
 	private applyColorInitially(count = 0) {
-		if (count >= 11) return
+		if (count >= 17) return
 		setTimeout(
 			() => {
 				this.colorHandler()
 				this.applyColorInitially(++count)
 			},
-			count == 0 ? 210 : 15
+			count == 0 ? 210 : 25
 		) // fade out duration = 200ms
 	}
 
@@ -111,7 +111,6 @@ export default class ThemeUtils {
 		this.storage.setObject(STORAGE_KEY, { theme: themeString, themeColor: themeColor } as StoredTheme)
 		this.userPreference = themeString
 		this.currentThemeColor = themeColor
-
 		this.toggleWinter(await this.isWinterEnabled(), false)
 	}
 
@@ -188,8 +187,13 @@ export default class ThemeUtils {
 		this.changeNavigationBarColor(isDarkThemed)
 	}
 
+	/**
+	 *
+	 * @param isDarkThemed Android bottom button bar
+	 * @returns
+	 */
 	private async changeNavigationBarColor(isDarkThemed) {
-		if (!this.platform.is('android') && !this.platform.is('ios')) return
+		if (!Capacitor.isPluginAvailable('StatusBar')) return
 		try {
 			const themeColor = await this.getThemeColor()
 			if (themeColor == 'ethpool') {
@@ -203,14 +207,14 @@ export default class ThemeUtils {
 				else NavigationBar.setBackgroundColor({ color: '#f7f7f7' })
 			}
 		} catch (e) {
-			console.warn('error in changeNavigationBarColor', e)
+			console.warn('error setting navigation bar color', e)
 		}
 	}
 
-	private async changeStatusBarColor(color, isDarkThemed) {
+	private async changeStatusBarColor(color: string, isDarkThemed) {
+		let darker = isDarkThemed ? '#000000' : color.trim() //this.shadeColor(color, -12)
 		if (this.platform.is('android')) {
 			const themeColor = await this.getThemeColor()
-			let darker = isDarkThemed ? '#000000' : color //this.shadeColor(color, -12)
 			if (themeColor == 'ethpool') {
 				darker = isDarkThemed ? '#262327' : '#e1d8d8'
 			}
@@ -218,25 +222,25 @@ export default class ThemeUtils {
 				darker = isDarkThemed ? '#262327' : '#fd9967'
 			}
 
-			console.log('statusbar color', darker)
-			StatusBar.setStyle({
-				style: Style.Dark,
-			})
-			StatusBar.setBackgroundColor({
-				color: darker,
-			})
+			this.setStatusBarColor(darker)
 			this.currentStatusBarColor = darker
 		}
 	}
 
 	setStatusBarColor(color) {
-		if (this.platform.is('android')) {
-			StatusBar.setStyle({
-				style: Style.Dark,
-			})
-			StatusBar.setBackgroundColor({
-				color: color,
-			})
+		try {
+			if (Capacitor.isPluginAvailable('StatusBar')) {
+				StatusBar.setStyle({
+					style: Style.Dark,
+				})
+				StatusBar.setBackgroundColor({
+					color: color,
+				})
+			} else {
+				console.info('Statusbar is not available on this platform')
+			}
+		} catch (e) {
+			console.warn('error setting status bar color', e)
 		}
 	}
 

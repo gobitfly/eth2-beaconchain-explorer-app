@@ -21,7 +21,7 @@
 import { Component, OnInit, Input } from '@angular/core'
 import { ValidatorResponse } from 'src/app/requests/requests'
 import * as blockies from 'ethereum-blockies'
-import { ValidatorUtils, SAVED, getDisplayName, Validator, ValidatorState } from 'src/app/utils/ValidatorUtils'
+import { ValidatorUtils, getDisplayName, Validator, ValidatorState } from 'src/app/utils/ValidatorUtils'
 import { UnitconvService } from '../../services/unitconv.service'
 import { AlertService } from 'src/app/services/alert.service'
 import BigNumber from 'bignumber.js'
@@ -53,13 +53,13 @@ export class ValidatorComponent implements OnInit {
 
 	constructor(private validatorUtils: ValidatorUtils, public unit: UnitconvService, private alerts: AlertService) {}
 
-	ngOnChanges() {
+	async ngOnChanges() {
 		this.data = this.validator.data
 		this.balance = this.calculateBalanceShare(this.validator)
 
 		this.name = getDisplayName(this.validator)
 		this.imgData = this.getBlockies()
-		this.tagged = this.validator.storage == SAVED
+		this.tagged = !!(await this.validatorUtils.getValidatorLocal(this.validator.pubkey))
 		this.state = this.interpretState(this.validator)
 		this.stateCss = this.interpretStateCss(this.validator)
 	}
@@ -95,7 +95,7 @@ export class ValidatorComponent implements OnInit {
 	}
 
 	private confirmUntag() {
-		this.validatorUtils.deleteValidatorLocal(this.data)
+		this.validatorUtils.deleteValidatorLocal(this.data, false)
 		this.tagged = false
 	}
 

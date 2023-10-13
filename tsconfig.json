@@ -13,7 +13,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2017",
+    "target": "ES2022",
     "lib": [
       "es2018",
       "dom"

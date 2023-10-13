@@ -142,6 +142,7 @@ export function highChartOptions(where) {
 				},
 			},
 			line: {
+				borderWidth: 0,
 				animation: false,
 				lineWidth: 2.5,
 				dashStyle: 'Solid',

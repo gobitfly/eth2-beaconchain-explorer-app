@@ -25,47 +25,55 @@
 			<ion-list>
 				<ion-item lines="none">
 					<ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
-					<ion-label>Besu</ion-label>
 					<ion-toggle
 						checked
 						id="clientToggle"
 						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('BESU')"
 						(ngModelChange)="notificationBase.setClientToggleState('BESU', $event)"
 						(ionChange)="notificationBase.clientUpdateOnToggle('BESU')"
-						slot="end"></ion-toggle>
+						labelPlacement="start"
+						justify="space-between"
+						>Besu</ion-toggle
+					>
 				</ion-item>
 				<ion-item lines="none">
 					<ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
-					<ion-label>Erigon</ion-label>
 					<ion-toggle
 						checked
 						id="clientToggle"
 						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('ERIGON')"
 						(ngModelChange)="notificationBase.setClientToggleState('ERIGON', $event)"
 						(ionChange)="notificationBase.clientUpdateOnToggle('ERIGON')"
-						slot="end"></ion-toggle>
+						labelPlacement="start"
+						justify="space-between"
+						>Erigon</ion-toggle
+					>
 				</ion-item>
 				<ion-item lines="none">
 					<ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
-					<ion-label>Geth</ion-label>
 					<ion-toggle
 						checked
 						id="clientToggle"
 						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('GETH')"
 						(ngModelChange)="notificationBase.setClientToggleState('GETH', $event)"
 						(ionChange)="notificationBase.clientUpdateOnToggle('GETH')"
-						slot="end"></ion-toggle>
+						labelPlacement="start"
+						justify="space-between"
+						>Geth</ion-toggle
+					>
 				</ion-item>
 				<ion-item lines="none">
 					<ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
-					<ion-label>Nethermind</ion-label>
 					<ion-toggle
 						checked
 						id="clientToggle"
 						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('NETHERMIND')"
 						(ngModelChange)="notificationBase.setClientToggleState('NETHERMIND', $event)"
 						(ionChange)="notificationBase.clientUpdateOnToggle('NETHERMIND')"
-						slot="end"></ion-toggle>
+						labelPlacement="start"
+						justify="space-between"
+						>Nethermind</ion-toggle
+					>
 				</ion-item>
 			</ion-list>
 		</span>
@@ -73,58 +81,69 @@
 			<ion-list>
 				<ion-item lines="none">
 					<ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
-					<ion-label>Lighthouse</ion-label>
 					<ion-toggle
 						checked
 						id="clientToggle"
 						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('LIGHTHOUSE')"
 						(ngModelChange)="notificationBase.setClientToggleState('LIGHTHOUSE', $event)"
 						(ionChange)="notificationBase.clientUpdateOnToggle('LIGHTHOUSE')"
-						slot="end"></ion-toggle>
+						labelPlacement="start"
+						justify="space-between"
+						>Lighthouse</ion-toggle
+					>
 				</ion-item>
 				<ion-item lines="none">
 					<ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
-					<ion-label>Lodestar</ion-label>
 					<ion-toggle
 						checked
 						id="clientToggle"
 						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('LODESTAR')"
 						(ngModelChange)="notificationBase.setClientToggleState('LODESTAR', $event)"
 						(ionChange)="notificationBase.clientUpdateOnToggle('LODESTAR')"
-						slot="end"></ion-toggle>
+						labelPlacement="start"
+						justify="space-between"
+						>Lodestar</ion-toggle
+					>
 				</ion-item>
 				<ion-item lines="none">
 					<ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
-					<ion-label>Nimbus</ion-label>
+					<ion-label></ion-label>
 					<ion-toggle
 						checked
 						id="clientToggle"
 						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('NIMBUS')"
 						(ngModelChange)="notificationBase.setClientToggleState('NIMBUS', $event)"
 						(ionChange)="notificationBase.clientUpdateOnToggle('NIMBUS')"
-						slot="end"></ion-toggle>
+						labelPlacement="start"
+						justify="space-between"
+						>Nimbus</ion-toggle
+					>
 				</ion-item>
 				<ion-item lines="none">
 					<ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
-					<ion-label>Prysm</ion-label>
 					<ion-toggle
 						checked
 						id="clientToggle"
 						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('PRYSM')"
 						(ngModelChange)="notificationBase.setClientToggleState('PRYSM', $event)"
 						(ionChange)="notificationBase.clientUpdateOnToggle('PRYSM')"
-						slot="end"></ion-toggle>
+						labelPlacement="start"
+						justify="space-between"
+						>Prysm</ion-toggle
+					>
 				</ion-item>
 				<ion-item lines="none">
 					<ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
-					<ion-label>Teku</ion-label>
 					<ion-toggle
 						checked
 						id="clientToggle"
 						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('TEKU')"
 						(ngModelChange)="notificationBase.setClientToggleState('TEKU', $event)"
 						(ionChange)="notificationBase.clientUpdateOnToggle('TEKU')"
-						slot="end"></ion-toggle>
+						labelPlacement="start"
+						justify="space-between"
+						>Teku</ion-toggle
+					>
 				</ion-item>
 			</ion-list>
 		</span>

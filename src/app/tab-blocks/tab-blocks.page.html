@@ -8,7 +8,7 @@
 		<ion-title>Blocks</ion-title>
 	</ion-toolbar>
 
-	<ion-item class="top-bar" [class]="fadeIn">
+	<ion-item class="top-bar" @fadeIn *ngIf="!loading">
 		<ion-label
 			>Proposal Luck:
 			<span *ngIf="luck && luck.luckPercentage" [class]="luck.luckPercentage | valuestyle: 1">{{ luck.luckPercentage*100 | number:'1.0-1' }}%</span>
@@ -19,30 +19,21 @@
 	</ion-item>
 </ion-header>
 
-<ion-content [fullscreen]="true" role="feed">
+<ion-content [fullscreen]="true" role="feed" [scrollY]="false">
 	<ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher>
 
-	<p class="next-block-hint" *ngIf="luck && luck.nextBlockEstimate">
+	<p class="next-block-hint" *ngIf="luck && luck.nextBlockEstimate && !loading">
 		<span *ngIf="!(luck.nextBlockEstimate | timeago).includes('ago')">On average next block expected in</span>
 		<span *ngIf="(luck.nextBlockEstimate| timeago).includes('ago')">On average next block was expected</span>
 		<br />
 		<span style="font-style: normal">~{{ luck.nextBlockEstimate | timeago }} </span>
 	</p>
 
-	<app-ad location="blocks" *ngIf="items && items.length > 0 && !loading"></app-ad>
+	<app-ad @fadeIn location="blocks" *ngIf="dataSource && dataSource.hasItems() && !loading"></app-ad>
 
-	<ion-virtual-scroll [items]="items" approxItemHeight="125px" [itemHeight]="itemHeightFn" *ngIf="items && items.length > 0 && !loading">
-		<div *virtualItem="let item; let idx = index;" style="background-color: var(--ion-card-background)">
-			<app-block [block]="item" (click)="clickBlock(item)" role="article"></app-block>
-		</div>
-	</ion-virtual-scroll>
-	<ion-infinite-scroll (ionInfinite)="loadData($event)">
-		<ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more blocks..."></ion-infinite-scroll-content>
-	</ion-infinite-scroll>
-
-	<div class="nothingfound" *ngIf="items && items.length <= 0 && !loading && initialized">
+	<div class="nothingfound" *ngIf="dataSource && !dataSource.hasItems() && !loading && initialized">
 		<ion-icon name="telescope-outline"></ion-icon>
 		<h2>No Blocks so far</h2>
 		<ion-label>Your proposed blocks will show up here.</ion-label>
@@ -53,4 +44,19 @@
 			<ion-spinner class="status-icon loading-spinner"></ion-spinner>
 		</div>
 	</div>
+
+	<cdk-virtual-scroll-viewport
+		@fadeIn
+		itemSize="120"
+		minBufferPx="1100"
+		maxBufferPx="1450"
+		class="ion-content-scroll-host"
+		[hidden]="!dataSource || !dataSource.hasItems() || loading">
+		<div *cdkVirtualFor="let item of dataSource; " style="background-color: var(--ion-card-background)">
+			<app-block [block]="item" (click)="clickBlock(item)" role="article"></app-block>
+		</div>
+		<div style="text-align: center; padding-top: 10px" *ngIf="loadMore">
+			<i style="letter-spacing: 0.9px; opacity: 0.8">Loading...</i>
+		</div>
+	</cdk-virtual-scroll-viewport>
 </ion-content>

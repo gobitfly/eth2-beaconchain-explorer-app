@@ -55,15 +55,15 @@ export const MAP: ApiNetwork[] = [
 		genesisTs: 1655733600,
 	},
 	{
-		key: 'zhejiang',
+		key: 'holesky',
 		protocol: 'https',
 		host: 'beaconcha.in',
-		net: 'zhejiang.',
+		net: 'holesky.',
 		endpoint: '/api/',
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		genesisTs: 1675263600,
+		genesisTs: 1695902400,
 	},
 	{
 		key: 'local dev',
@@ -90,9 +90,12 @@ export const MAP: ApiNetwork[] = [
 ]
 
 export function findConfigForKey(key: string): ApiNetwork {
-	console.log('looking for config', key, MAP)
 	for (const entry of MAP) {
-		if (entry.key == key) return entry
+		if (entry.key == key) {
+			console.log('found config', key, entry)
+			return entry
+		}
 	}
+	console.debug('config for ' + key + ' not found, using mainnet instead', key)
 	return MAP[0]
 }

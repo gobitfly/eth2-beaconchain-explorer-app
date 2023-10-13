@@ -48,15 +48,15 @@ import { Toast } from '@capacitor/toast'
 import { MergeChecklistPage } from '../pages/merge-checklist/merge-checklist.page'
 import { ClientsPage } from '../pages/clients/clients.page'
 import FlavorUtils from '../utils/FlavorUtils'
-
+import { Capacitor } from '@capacitor/core'
+import { trigger, style, animate, transition } from '@angular/animations'
 @Component({
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
 	styleUrls: ['tab-preferences.page.scss'],
+	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))])])],
 })
 export class Tab3Page {
-	fadeIn = 'invisible'
-
 	darkMode: boolean
 
 	network = 'main'
@@ -122,9 +122,13 @@ export class Tab3Page {
 			this.allTestNetworks = result
 		})
 
-		App.getInfo().then((result) => {
-			this.appVersion = result.version
-		})
+		if (Capacitor.isNativePlatform()) {
+			App.getInfo().then((result) => {
+				this.appVersion = result.version
+			})
+		} else {
+			this.appVersion = 'dev'
+		}
 
 		this.flavor.isBetaFlavor().then((result) => {
 			if (result) {
@@ -147,11 +151,6 @@ export class Tab3Page {
 		this.notificationBase.disableToggleLock()
 
 		this.updateUtils.convertOldToNewClientSettings()
-
-		this.fadeIn = 'fade-in'
-		setTimeout(() => {
-			this.fadeIn = null
-		}, 1500)
 	}
 
 	async goToNotificationPage() {
@@ -265,10 +264,6 @@ export class Tab3Page {
 	}
 
 	changeUpdateChannel() {
-		if (this.notificationBase.lockedToggle) {
-			return
-		}
-
 		this.updateUtils.setUpdateChannel(this.updateChannel)
 		this.updateUtils.checkAllUpdates()
 	}

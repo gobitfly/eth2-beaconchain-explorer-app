@@ -120,13 +120,18 @@ body.dark .loading-wrapper {
 
 ion-list,
 ion-list-header,
-ion-virtual-scroll {
+cdk-virtual-scroll-viewport {
 	--background: var(--ion-background-color);
 	background: var(--ion-background-color);
 }
 
 .header-md::after {
 	display: none;
+}
+
+.header-md {
+	-webkit-box-shadow: none !important;
+	box-shadow: none !important;
 }
 
 h1,
@@ -262,7 +267,9 @@ ion-tab-button {
 	}
 }
 
-ion-label {
+ion-label,
+ion-toggle,
+ion-select::part(label) {
 	font-weight: bold;
 }
 
