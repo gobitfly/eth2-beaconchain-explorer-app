@@ -1,6 +1,6 @@
 ![[beaconchain Dashboard](https://beaconcha.in/mobile)](.github/banner.png)  
 [![Build](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml/badge.svg)](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml)  
-
+https://github.com/puppeteer/replay/releases/tag/v2.13.4
 # Beaconchain Dashboard App
 
 Beaconchain Dashboard is an open source ethereum validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
