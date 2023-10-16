@@ -127,7 +127,7 @@ export default class ClientUpdateUtils {
 			return null
 		}
 
-		const client = Clients.find((client) => client.key == clientKey)
+		const client = Clients.find((c) => c.key == clientKey)
 		if (client == undefined) {
 			console.log('ClientInfo for', clientKey, 'not found')
 			return null
@@ -255,7 +255,7 @@ export default class ClientUpdateUtils {
 	}
 
 	async dismissRelease(clientKey: string, id: string) {
-		this.storage.setObject(LOCAL_UPDATED_KEY + clientKey, { clientKey: clientKey, version: id })
+		await this.storage.setObject(LOCAL_UPDATED_KEY + clientKey, { clientKey: clientKey, version: id })
 	}
 
 	private async getLastClosedVersion(clientKey: string): Promise<LocalReleaseMark> {

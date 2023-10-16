@@ -92,14 +92,14 @@ export class Tab1Page {
 		this.scrolling = false
 	}
 
-	private async removeTooltips() {
+	private removeTooltips() {
 		const inputs = Array.from(document.getElementsByTagName('tooltip') as HTMLCollectionOf<HTMLElement>)
 		for (let i = 0; i < inputs.length; i++) {
 			inputs[i].style.display = 'none'
 		}
 	}
 
-	async ionViewWillEnter() {
+	ionViewWillEnter() {
 		if (this.lastRefreshTs + 6 * 60 > this.getUnixSeconds()) return
 
 		this.refresh()

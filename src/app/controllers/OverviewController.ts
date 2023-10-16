@@ -151,7 +151,7 @@ export default class OverviewController {
 		})
 
 		const aprPerformance31dExecution = sumBigInt(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance31d.toString())
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance31d.toString())
 		)
 
 		const overallBalance = this.sumBigIntBalanceRP(validators, (cur) => new BigNumber(cur.data.balance))
@@ -296,17 +296,17 @@ export default class OverviewController {
 
 	private getExecutionPerformance(validators: Validator[], validatorDepositActive: BigNumber, aprPerformance31dExecution: BigNumber) {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance1d.toString()).multipliedBy(
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance1d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
 			)
 		)
 		const performance31d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance31d.toString()).multipliedBy(
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance31d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
 			)
 		)
 		const performance7d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance7d.toString()).multipliedBy(
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance7d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
 			)
 		)

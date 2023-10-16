@@ -211,9 +211,7 @@ export class Tab3Page {
 	ionViewWillEnter() {
 		this.storage.getAuthUser().then((result) => (this.authUser = result))
 		this.debug = this.api.debug
-		this.api.getNetworkName().then((result) => {
-			this.network = result
-		})
+		this.network = this.api.getNetworkName()
 	}
 
 	private getAllCurrencies() {
@@ -276,7 +274,7 @@ export class Tab3Page {
 		}
 	}
 
-	async logout() {
+	logout() {
 		this.alerts.confirmDialog('Confirm logout', 'Notifications will stop working if you sign out. Continue?', 'Logout', () => {
 			this.confirmLogout()
 		})

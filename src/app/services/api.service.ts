@@ -105,13 +105,13 @@ export class ApiService extends CacheModule {
 	}
 
 	networkName = null
-	async getNetworkName(): Promise<string> {
+	getNetworkName(): string {
 		const temp = this.networkConfig.key
 		this.networkName = temp
 		return temp
 	}
 
-	async getNetwork(): Promise<ApiNetwork> {
+	getNetwork(): ApiNetwork {
 		const temp = this.networkConfig
 		return temp
 	}
@@ -190,7 +190,7 @@ export class ApiService extends CacheModule {
 		await this.awaitingResponses[resource].acquire()
 	}
 
-	private async unlock(resource) {
+	private unlock(resource) {
 		console.log('Unlocking  ', resource)
 
 		this.awaitingResponses[resource].release()
@@ -296,7 +296,7 @@ export class ApiService extends CacheModule {
 	}
 
 	async clearSpecificCache(request: APIRequest<unknown>) {
-		this.putCache(this.getCacheKey(request), null, request.maxCacheAge)
+		await this.putCache(this.getCacheKey(request), null, request.maxCacheAge)
 	}
 
 	private updateLastRefreshed(response: Response) {

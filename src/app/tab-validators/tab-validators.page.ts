@@ -101,7 +101,7 @@ export class Tab2Page {
 		if (!this.searchResultMode) {
 			this.dataSource.setLoadFrom(this.getDefaultDataRetriever())
 		}
-		this.dataSource.reset()
+		await this.dataSource.reset()
 	}
 
 	async syncRemote() {
@@ -189,13 +189,13 @@ export class Tab2Page {
 		}
 	}
 
-	async removeAllDialog() {
+	removeAllDialog() {
 		this.showDialog('Remove all', 'Do you want to remove {AMOUNT} validators from your dashboard?', () => {
 			this.confirmRemoveAll()
 		})
 	}
 
-	async addAllDialog() {
+	addAllDialog() {
 		this.showDialog('Add all', 'Do you want to add {AMOUNT} validators to your dashboard?', () => {
 			this.confirmAddAll()
 		})
@@ -223,18 +223,18 @@ export class Tab2Page {
 	}
 
 	async confirmRemoveAll() {
-		this.validatorUtils.deleteAll()
-		this.dataSource.reset()
+		await this.validatorUtils.deleteAll()
+		await this.dataSource.reset()
 	}
 
 	async confirmAddAll() {
 		const responses: ValidatorResponse[] = []
-		this.dataSource.getItems().forEach(async (item) => {
+		this.dataSource.getItems().forEach((item) => {
 			responses.push(item.data)
 		})
 
-		this.validatorUtils.convertToValidatorModelsAndSaveLocal(false, responses)
-		this.dataSource.reset()
+		await this.validatorUtils.convertToValidatorModelsAndSaveLocal(false, responses)
+		await this.dataSource.reset()
 	}
 
 	searchEvent(event) {
@@ -478,7 +478,7 @@ export class Tab2Page {
 			buttons: [
 				{
 					text: 'Remove',
-					handler: async () => {
+					handler: () => {
 						this.validatorUtils.saveRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address, null)
 						this.cancelSelect()
 						this.validatorUtils.notifyListeners()
@@ -486,7 +486,7 @@ export class Tab2Page {
 				},
 				{
 					text: 'Save',
-					handler: async (alertData) => {
+					handler: (alertData) => {
 						const shares = alertData.share
 						if (shares < minShareStake) {
 							Toast.show({
@@ -564,7 +564,7 @@ export class Tab2Page {
 			buttons: [
 				{
 					text: 'Remove',
-					handler: async () => {
+					handler: () => {
 						for (let i = 0; i < validatorSubArray.length; i++) {
 							validatorSubArray[i].share = null
 							validatorSubArray[i].execshare = null
@@ -576,7 +576,7 @@ export class Tab2Page {
 				},
 				{
 					text: 'Save',
-					handler: async (alertData) => {
+					handler: (alertData) => {
 						const shares = alertData.share
 						const sharesEL = alertData.execshare
 						if ((shares && shares < minShareStake) || (sharesEL && sharesEL < minShareStake)) {

@@ -75,7 +75,7 @@ export class OAuthUtils {
 					expiresIn: expiresIn,
 				})
 
-				await this.validatorUtils.clearDeletedSet()
+				this.validatorUtils.clearDeletedSet()
 				await this.firebaseUtils.pushLastTokenUpstream(true)
 				await this.sync.fullSync()
 

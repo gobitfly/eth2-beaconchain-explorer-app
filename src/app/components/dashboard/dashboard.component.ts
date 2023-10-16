@@ -188,13 +188,13 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	async updateWithdrawalInfo() {
+	updateWithdrawalInfo() {
 		this.storage.getBooleanSetting('withdrawal_info_dismissed', false).then((result) => {
 			this.showWithdrawalInfo = !this.data.withdrawalsEnabledForAll && !result
 		})
 	}
 
-	async updateDepositCreditText() {
+	updateDepositCreditText() {
 		if (this.data.rocketpool.depositCredit && this.data.rocketpool.depositCredit.gt(0)) {
 			this.depositCreditText = `You have ${this.unit.convert(
 				this.data.rocketpool.depositCredit,
@@ -205,7 +205,7 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	async updateVacantMinipoolText() {
+	updateVacantMinipoolText() {
 		if (this.data.rocketpool.vacantPools && this.data.rocketpool.vacantPools > 0) {
 			this.vacantMinipoolText = `${this.data.rocketpool.vacantPools} of your ${
 				this.data.rocketpool.vacantPools == 1 ? 'minipool is' : 'minipools are'
@@ -217,15 +217,15 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	async epochToTimestamp(epoch: number) {
-		const network = await this.api.getNetwork()
+	epochToTimestamp(epoch: number) {
+		const network = this.api.getNetwork()
 		return (network.genesisTs + epoch * 32 * 12) * 1000
 	}
 
-	async updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
+	updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			const endTs = await this.epochToTimestamp(committee.end_epoch)
-			const startTs = await this.epochToTimestamp(committee.start_epoch)
+			const endTs = this.epochToTimestamp(committee.end_epoch)
+			const startTs = this.epochToTimestamp(committee.start_epoch)
 			this.currentSyncCommitteeMessage = {
 				title: 'Sync Committee',
 				text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${
@@ -241,10 +241,10 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	async updateNextSyncCommitteeMessage(committee: SyncCommitteeResponse) {
+	updateNextSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			const endTs = await this.epochToTimestamp(committee.end_epoch)
-			const startTs = await this.epochToTimestamp(committee.start_epoch)
+			const endTs = this.epochToTimestamp(committee.end_epoch)
+			const startTs = this.epochToTimestamp(committee.start_epoch)
 			this.nextSyncCommitteeMessage = {
 				title: 'Sync Committee Soon',
 				text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${
@@ -347,7 +347,7 @@ export class DashboardComponent implements OnInit {
 		})
 	}
 
-	private async checkForGenesisOccurred() {
+	private checkForGenesisOccurred() {
 		if (!this.data || !this.data.currentEpoch) return
 		const currentEpoch = this.data.currentEpoch as EpochResponse
 		this.awaitGenesis = currentEpoch.epoch == 0 && currentEpoch.proposedblocks <= 1
@@ -364,7 +364,7 @@ export class DashboardComponent implements OnInit {
 			}
 		}
 
-		const olderResult = await this.validatorUtils.getOlderEpoch()
+		const olderResult = this.validatorUtils.getOlderEpoch()
 		if (!this.data || !this.data.currentEpoch || !olderResult) return
 		console.log('checkForFinalization', olderResult)
 		this.finalizationIssue = new BigNumber(olderResult.globalparticipationrate).isLessThan('0.664') && olderResult.epoch > 7
@@ -559,8 +559,8 @@ export class DashboardComponent implements OnInit {
 	}
 
 	private proposalChart = null
-	async createProposedChart(proposed, missed, orphaned) {
-		const network = await this.api.getNetwork()
+	createProposedChart(proposed, missed, orphaned) {
+		const network = this.api.getNetwork()
 
 		this.proposalChart = Highstock.chart(
 			'highchartsBlocks' + this.randomChartId,
@@ -678,11 +678,11 @@ export class DashboardComponent implements OnInit {
 	}
 
 	private balanceChart = null
-	async createBalanceChart(consensusIncome, executionIncome) {
+	createBalanceChart(consensusIncome, executionIncome) {
 		executionIncome = executionIncome || []
 
 		const ticksDecimalPlaces = 3
-		const network = await this.api.getNetwork()
+		const network = this.api.getNetwork()
 
 		const getValueString = (value: BigNumber): string => {
 			let text = `${value.toFixed(5)} ETH`
@@ -865,10 +865,10 @@ export class DashboardComponent implements OnInit {
 	}
 
 	async openBrowser() {
-		await Browser.open({ url: await this.getBrowserURL(), toolbarColor: '#2f2e42' })
+		await Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
 	}
 
-	async getBrowserURL(): Promise<string> {
+	getBrowserURL(): string {
 		if (this.data.foreignValidator) {
 			return this.api.getBaseUrl() + '/validator/' + this.data.foreignValidatorItem.pubkey
 		} else {

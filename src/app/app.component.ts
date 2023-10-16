@@ -51,7 +51,7 @@ export class AppComponent {
 		this.platform.ready().then(() => {
 			this.storage.migrateToCapacitor3().then(async () => {
 				BigNumber.config({ DECIMAL_PLACES: 25 })
-				const networkName = await this.api.getNetworkName()
+				const networkName = this.api.getNetworkName()
 				// migrate to 3.2+
 				const result = await this.storage.getBooleanSetting(networkName + 'migrated_to_3.2', false)
 				if (!result) {

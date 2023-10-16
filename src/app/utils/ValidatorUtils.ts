@@ -116,15 +116,15 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	async hasLocalValdiators() {
-		return (await this.getMap(await this.getStorageKey())).size > 0
+		return (await this.getMap(this.getStorageKey())).size > 0
 	}
 
 	async localValidatorCount() {
-		return (await this.getMap(await this.getStorageKey())).size
+		return (await this.getMap(this.getStorageKey())).size
 	}
 
-	public async getStorageKey(): Promise<string> {
-		return KEYPREFIX + (await this.api.getNetworkName())
+	public getStorageKey(): string {
+		return KEYPREFIX + this.api.getNetworkName()
 	}
 
 	async migrateTo3Dot2() {
@@ -164,13 +164,13 @@ export class ValidatorUtils extends CacheModule {
 		this.storage.setObject(storageKey + '_deleted', [...list])
 	}
 
-	async clearDeletedSet() {
-		const storageKey = await this.getStorageKey()
+	clearDeletedSet() {
+		const storageKey = this.getStorageKey()
 		this.setDeleteSet(storageKey, new Set<string>())
 	}
 
 	async deleteAll() {
-		const storageKey = await this.getStorageKey()
+		const storageKey = this.getStorageKey()
 		const current = await this.getMap(storageKey)
 		this.storage.setObject(storageKey, new Map<string, Validator>())
 
@@ -188,7 +188,7 @@ export class ValidatorUtils extends CacheModule {
 	private deletedWithoutNotifying: boolean = false
 
 	async deleteValidatorLocal(validator: ValidatorResponse, notifyListeners: boolean = true) {
-		const storageKey = await this.getStorageKey()
+		const storageKey = this.getStorageKey()
 		const current = await this.getMap(storageKey)
 		current.delete(validator.pubkey)
 		this.storage.setObject(storageKey, current)
@@ -211,7 +211,7 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	async saveValidatorsLocal(validators: Validator[]) {
-		const storageKey = await this.getStorageKey()
+		const storageKey = this.getStorageKey()
 
 		const current = await this.getMap(storageKey)
 		const newMap = new Map<string, Validator>()
@@ -229,7 +229,7 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	async saveRocketpoolCollateralShare(nodeAddress: string, sharePercent: number) {
-		this.storage.setObject('rpl_share_' + nodeAddress, { share: sharePercent } as StoredShare)
+		await this.storage.setObject('rpl_share_' + nodeAddress, { share: sharePercent } as StoredShare)
 	}
 
 	async getRocketpoolCollateralShare(nodeAddress: string): Promise<number> {
@@ -239,12 +239,12 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	async getValidatorLocal(pubkey: string): Promise<Validator> {
-		const current = await this.getMapWithoutDeleted(await this.getStorageKey())
+		const current = await this.getMapWithoutDeleted(this.getStorageKey())
 		return current.get(pubkey)
 	}
 
 	async getAllValidatorsLocal(): Promise<Validator[]> {
-		const current = await this.getMap(await this.getStorageKey())
+		const current = await this.getMap(this.getStorageKey())
 		const erg: Validator[] = [...current.values()]
 		return erg
 	}
@@ -260,7 +260,7 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	async getAllMyValidators(): Promise<Validator[]> {
-		const storageKey = await this.getStorageKey()
+		const storageKey = this.getStorageKey()
 		const local = await this.getMapWithoutDeleted(storageKey)
 
 		const validatorString = getValidatorQueryString([...local.values()], 2000, (await this.merchantUtils.getCurrentPlanMaxValidator()) - 1)
@@ -305,7 +305,7 @@ export class ValidatorUtils extends CacheModule {
 		return false
 	}
 
-	async updateValidatorStates(validators: Validator[]) {
+	updateValidatorStates(validators: Validator[]) {
 		validators.forEach((item) => {
 			item.state = this.getValidatorState(item)
 		})
@@ -314,7 +314,7 @@ export class ValidatorUtils extends CacheModule {
 	// checks if remote validators are already known locally.
 	// If not, return all indizes of non locally known validators
 	public async getAllNewIndicesOnly(myRemotes: MyValidatorResponse[]): Promise<number[]> {
-		const storageKey = await this.getStorageKey()
+		const storageKey = this.getStorageKey()
 		const current = await this.getMap(storageKey)
 
 		const result: number[] = []
@@ -389,11 +389,11 @@ export class ValidatorUtils extends CacheModule {
 
 		let local = null
 		if (storage == SAVED) {
-			local = await this.getMapWithoutDeleted(await this.getStorageKey())
+			local = await this.getMapWithoutDeleted(this.getStorageKey())
 		}
 
 		const temp = this.convertToValidatorModel({ synced: false, storage: storage, validatorResponse: validatorsResponse })
-		await this.updateValidatorStates(temp)
+		this.updateValidatorStates(temp)
 		for (const vali of temp) {
 			vali.attrEffectiveness = this.findAttributionEffectiveness(validatorEffectivenessResponse, vali.index)
 			vali.rocketpool = this.findRocketpoolResponse(result.rocketpool_validators, vali.index)
@@ -463,7 +463,7 @@ export class ValidatorUtils extends CacheModule {
 		return -1
 	}
 
-	async getOlderEpoch(): Promise<EpochResponse> {
+	getOlderEpoch(): EpochResponse {
 		return this.olderEpoch
 	}
 
@@ -509,33 +509,33 @@ export class ValidatorUtils extends CacheModule {
 		return Promise.reject(new Error('Response is invalid'))
 	}
 
-	async getCachedAttestationKey() {
-		return cacheAttestationKeyBare + (await this.api.getNetworkName())
+	getCachedAttestationKey() {
+		return cacheAttestationKeyBare + this.api.getNetworkName()
 	}
 
-	async getCachedPerformanceKey() {
-		return cachePerformanceKeyBare + (await this.api.getNetworkName())
+	getCachedPerformanceKey() {
+		return cachePerformanceKeyBare + this.api.getNetworkName()
 	}
 
-	async getCachedValidatorKey() {
-		return cacheValidatorsKeyBare + (await this.api.getNetworkName())
+	getCachedValidatorKey() {
+		return cacheValidatorsKeyBare + this.api.getNetworkName()
 	}
 
-	async getCachedEpochKey() {
-		return epochCachedKeyBare + (await this.api.getNetworkName())
+	getCachedEpochKey() {
+		return epochCachedKeyBare + this.api.getNetworkName()
 	}
 
 	// single
 	async convertToValidatorModelAndSaveValidatorLocal(synced: boolean, validator: ValidatorResponse) {
-		this.convertToValidatorModelsAndSaveLocal(synced, [validator])
+		await this.convertToValidatorModelsAndSaveLocal(synced, [validator])
 	}
 
 	// multiple
 	async convertToValidatorModelsAndSaveLocal(synced: boolean, validator: ValidatorResponse[]) {
-		this.saveValidatorsLocal(this.convertToValidatorModel({ synced, storage: SAVED, validatorResponse: validator }))
+		await this.saveValidatorsLocal(this.convertToValidatorModel({ synced, storage: SAVED, validatorResponse: validator }))
 		if (!synced) {
-			this.storage.setObject(LAST_TIME_ADDED_KEY, { timestamp: Date.now() } as StoredTimestamp)
-			this.clearCache()
+			await this.storage.setObject(LAST_TIME_ADDED_KEY, { timestamp: Date.now() } as StoredTimestamp)
+			await this.clearCache()
 		}
 	}
 

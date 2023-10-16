@@ -92,7 +92,7 @@ export class TabBlocksPage implements OnInit {
 		return await modal.present()
 	}
 
-	async doRefresh(event) {
+	doRefresh(event) {
 		setTimeout(async () => {
 			this.virtualScroll.scrollToIndex(0)
 			await this.dataSource.reset()

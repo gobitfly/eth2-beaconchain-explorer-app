@@ -105,7 +105,7 @@ export class NotificationBase implements OnInit {
 
 		const isNotifyClientUpdatesEnabled = await this.storage.isNotifyClientUpdatesEnabled()
 
-		let network = await this.api.getNetworkName()
+		let network = this.api.getNetworkName()
 		if (network == 'main') {
 			network = 'mainnet'
 		} else if (network == 'local dev') {
@@ -289,7 +289,7 @@ export class NotificationBase implements OnInit {
 		return count ? count : 0
 	}
 
-	async notifyEventToggle(eventName, filter = null, threshold = null) {
+	notifyEventToggle(eventName, filter = null, threshold = null) {
 		this.settingsChanged = true
 		this.sync.changeNotifyEvent(eventName, eventName, this.getNotifyToggleFromEvent(eventName), filter, threshold)
 		this.api.clearSpecificCache(new NotificationGetRequest())
@@ -305,7 +305,7 @@ export class NotificationBase implements OnInit {
 	}
 
 	// include filter in key (fe used by machine toggles)
-	async notifyEventFilterToggle(eventName, filter = null, threshold = null) {
+	notifyEventFilterToggle(eventName, filter = null, threshold = null) {
 		const key = eventName + filter
 		const value = this.getNotifyToggleFromEvent(eventName)
 		this.settingsChanged = true

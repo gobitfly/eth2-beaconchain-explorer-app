@@ -52,7 +52,7 @@ export class ValidatordetailPage implements OnInit {
 
 	ngOnInit() {
 		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(async () => {
+		this.backbuttonSubscription = event.subscribe(() => {
 			this.modalCtrl.dismiss()
 		})
 		this.updateDetails(this.item)

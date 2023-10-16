@@ -67,7 +67,7 @@ export class CacheModule {
 		return storeHard ? this.cache : this.hotOnly
 	}
 
-	protected putCache(key: string, data: unknown, staleTime = this.staleTime) {
+	protected async putCache(key: string, data: unknown, staleTime = this.staleTime) {
 		const cacheKey = this.getKey(key)
 		const store = this.getStoreForCacheKey(cacheKey)
 
@@ -79,11 +79,11 @@ export class CacheModule {
 
 		try {
 			if (this.hardStorage) {
-				this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, this.cache)
+				await this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, this.cache)
 			}
 		} catch (e) {
 			if (isQuotaExceededError(e)) {
-				this.clearHardCache()
+				await this.clearHardCache()
 			}
 		}
 	}

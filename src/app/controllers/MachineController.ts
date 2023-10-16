@@ -598,18 +598,19 @@ export const bytes = (function () {
 		tempLabel = []
 	let count
 
-	return function (bytes, label, isFirst, precision = 3) {
+	return function (byteData, label, isFirst, precision = 3) {
 		let e, value
 
-		if (bytes == 0) return 0
+		if (byteData == 0) return 0
 
 		if (isFirst) count = 0
 
-		e = Math.floor(Math.log(bytes) / Math.log(1024))
-		value = (bytes / Math.pow(1024, Math.floor(e))).toFixed(precision)
+		e = Math.floor(Math.log(byteData) / Math.log(1024))
+		value = (byteData / Math.pow(1024, Math.floor(e))).toFixed(precision)
 
 		tempLabel[count] = value
-		if (count > 0 && Math.abs(tempLabel[count - 1] - tempLabel[count]) < 0.0001) value = (bytes / Math.pow(1024, Math.floor(--e))).toFixed(precision)
+		if (count > 0 && Math.abs(tempLabel[count - 1] - tempLabel[count]) < 0.0001)
+			value = (byteData / Math.pow(1024, Math.floor(--e))).toFixed(precision)
 
 		e = e < 0 ? -e : e
 		if (label) value += ' ' + s[e]

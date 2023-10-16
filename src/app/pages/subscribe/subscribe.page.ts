@@ -41,7 +41,7 @@ export class SubscribePage implements OnInit {
 
 	ngOnInit() {
 		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(async () => {
+		this.backbuttonSubscription = event.subscribe(() => {
 			this.modalCtrl.dismiss()
 		})
 
@@ -99,11 +99,11 @@ export class SubscribePage implements OnInit {
 	}
 
 	async purchaseIntern() {
-		const loggedIn = await this.storage.isLoggedIn()
+		let loggedIn = await this.storage.isLoggedIn()
 		if (!loggedIn) {
 			this.alertService.confirmDialog('Login', 'You need to login to your beaconcha.in account first. Continue?', 'Login', () => {
 				this.oauth.login().then(async () => {
-					const loggedIn = await this.storage.isLoggedIn()
+					loggedIn = await this.storage.isLoggedIn()
 					if (loggedIn) this.continuePurchaseIntern()
 				})
 			})

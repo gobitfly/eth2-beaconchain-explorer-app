@@ -220,7 +220,7 @@ export class SyncService {
 				event_threshold: syncChange.eventThreshold,
 				onComplete: superOnComplete,
 			})
-			return true
+			return Promise.resolve(true)
 		}
 	}
 
@@ -368,18 +368,18 @@ export class SyncService {
 
 	async changeGeneralNotify(value: boolean, filter: string = null) {
 		this.storage.setBooleanSetting(SETTING_NOTIFY, value)
-		this.setLastChanged(SETTING_NOTIFY, SETTING_NOTIFY, filter, null, value ? 'subscribe' : 'unsubscribe')
+		await this.setLastChanged(SETTING_NOTIFY, SETTING_NOTIFY, filter, null, value ? 'subscribe' : 'unsubscribe')
 	}
 
 	async changeNotifyEvent(key: string, event: string, value: boolean, filter: string = null, threshold: number = null) {
 		const net = this.api.networkConfig.net
 		this.storage.setBooleanSetting(net + key, value)
-		this.setLastChanged(net + key, event, filter, threshold, value ? 'subscribe' : 'unsubscribe')
+		await this.setLastChanged(net + key, event, filter, threshold, value ? 'subscribe' : 'unsubscribe')
 	}
 
 	async changeNotifyEventUser(key: string, event: string, value: boolean, filter: string = null, threshold: number = null) {
 		this.storage.setBooleanSetting(key, value)
-		this.setLastChanged(key, event, filter, threshold, value ? 'subscribe' : 'unsubscribe')
+		await this.setLastChanged(key, event, filter, threshold, value ? 'subscribe' : 'unsubscribe')
 	}
 
 	async reapplyNotifyEvent(event: string, filter: string = null): Promise<boolean> {
@@ -404,7 +404,7 @@ export class SyncService {
 		return true
 	}
 
-	async changeNotifyClientUpdate(key: string, value: boolean) {
+	changeNotifyClientUpdate(key: string, value: boolean) {
 		this.storage.setBooleanSetting(key, value)
 
 		Clients.forEach(async (client) => {

@@ -167,7 +167,7 @@ export class UnitconvService {
 		}, 450)
 	}
 
-	private getPref(unitPref, defaultva = 'ETHER') {
+	private getPref(unitPref, defaultva = 'ETHER'): string {
 		if (unitPref) {
 			return unitPref.prefered
 		}

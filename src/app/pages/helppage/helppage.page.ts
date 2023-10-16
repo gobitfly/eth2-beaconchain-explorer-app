@@ -34,7 +34,7 @@ export class HelppagePage implements OnInit {
 
 	ngOnInit() {
 		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(async () => {
+		this.backbuttonSubscription = event.subscribe(() => {
 			this.modalCtrl.dismiss()
 		})
 	}

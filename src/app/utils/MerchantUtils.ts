@@ -144,13 +144,13 @@ export class MerchantUtils {
 	}
 
 	async refreshToken() {
-		const refreshSuccess = (await this.api.refreshToken()) != null
+		let refreshSuccess = (await this.api.refreshToken()) != null
 		if (!refreshSuccess) {
 			console.log('refreshing token after purchase failed, scheduling retry')
 			const loading = await this.alertService.presentLoading('This can take a minute')
 			loading.present()
 			await this.sleep(35000)
-			const refreshSuccess = (await this.api.refreshToken()) != null
+			refreshSuccess = (await this.api.refreshToken()) != null
 			if (!refreshSuccess) {
 				this.alertService.showError(
 					'Purchase Error',
@@ -230,7 +230,7 @@ export class MerchantUtils {
 
 	async restore() {
 		this.restorePurchase = true
-		CdvPurchase.store.restorePurchases()
+		await CdvPurchase.store.restorePurchases()
 	}
 
 	async purchase(product: string) {
@@ -238,7 +238,7 @@ export class MerchantUtils {
 		const loading = await this.alertService.presentLoading('')
 		loading.present()
 		CdvPurchase.store.order(offer).then(
-			async () => {
+			() => {
 				this.restorePurchase = true
 
 				setTimeout(() => {
@@ -276,12 +276,12 @@ export class MerchantUtils {
 		const loading = await this.alertService.presentLoading('Confirming, this might take a couple seconds')
 		loading.present()
 
-		const result = await this.registerPurchaseOnRemote(purchaseData)
+		let result = await this.registerPurchaseOnRemote(purchaseData)
 		if (!result) {
 			console.log('registering receipt at remote failed, scheduling retry')
 
 			await this.sleep(35000)
-			const result = await this.registerPurchaseOnRemote(purchaseData)
+			result = await this.registerPurchaseOnRemote(purchaseData)
 			if (!result) {
 				this.alertService.showError(
 					'Purchase Error',
@@ -391,7 +391,7 @@ export class MerchantUtils {
 		return currentProduct.maxValidators
 	}
 
-	async getHighestPackageValidator(): Promise<number> {
+	getHighestPackageValidator(): number {
 		const currentProduct = this.findProduct(MAX_PRODUCT)
 		if (currentProduct == null) return 100
 
