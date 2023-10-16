@@ -25,6 +25,7 @@ import { OAuthUtils } from 'src/app/utils/OAuthUtils'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 
 import { Browser } from '@capacitor/browser'
+import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-help',
@@ -35,7 +36,13 @@ export class HelpComponent implements OnInit {
 	@Input() onlyGuides: boolean
 	isAlreadyLoggedIn = false
 
-	constructor(private oauthUtils: OAuthUtils, private validator: ValidatorUtils, private storage: StorageService, private router: Router) {}
+	constructor(
+		private oauthUtils: OAuthUtils,
+		private validator: ValidatorUtils,
+		private storage: StorageService,
+		private router: Router,
+		public api: ApiService
+	) {}
 
 	ngOnInit() {
 		this.storage.isLoggedIn().then((result) => {

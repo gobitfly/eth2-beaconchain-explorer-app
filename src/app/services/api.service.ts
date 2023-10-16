@@ -38,7 +38,9 @@ const SERVER_TIMEOUT = 25000
 	providedIn: 'root',
 })
 export class ApiService extends CacheModule {
-	networkConfig: Promise<ApiNetwork>
+	private isInitialized = false
+
+	networkConfig: ApiNetwork
 
 	public connectionStateOK = true
 
@@ -74,7 +76,7 @@ export class ApiService extends CacheModule {
 		})
 		this.lastCacheInvalidate = Date.now()
 		//this.registerLogMiddleware()
-		this.updateNetworkConfig()
+		this.initialize()
 		//this.isIOS15().then((result) => { this.forceNativeAll = result })
 	}
 
@@ -91,27 +93,26 @@ export class ApiService extends CacheModule {
 		}
 	}
 
-	async updateNetworkConfig() {
-		this.networkConfig = this.storage.getNetworkPreferences().then((config) => {
+	async initialize() {
+		this.networkConfig = await this.storage.getNetworkPreferences().then((config) => {
 			const temp = findConfigForKey(config.key)
 			if (temp) {
 				return temp
 			}
 			return config
 		})
-
-		await this.networkConfig
+		this.isInitialized = true
 	}
 
 	networkName = null
 	async getNetworkName(): Promise<string> {
-		const temp = (await this.networkConfig).key
+		const temp = this.networkConfig.key
 		this.networkName = temp
 		return temp
 	}
 
 	async getNetwork(): Promise<ApiNetwork> {
-		const temp = await this.networkConfig
+		const temp = this.networkConfig
 		return temp
 	}
 
@@ -158,7 +159,7 @@ export class ApiService extends CacheModule {
 		const formBody = new FormData()
 		formBody.set('grant_type', 'refresh_token')
 		formBody.set('refresh_token', user.refreshToken)
-		const url = await this.getResourceUrl(req.resource, req.endPoint)
+		const url = this.getResourceUrl(req.resource, req.endPoint)
 
 		// use js here for the request since the native http plugin performs inconsistent across platforms with non json requests
 		const resp = await fetch(url, {
@@ -195,16 +196,16 @@ export class ApiService extends CacheModule {
 		this.awaitingResponses[resource].release()
 	}
 
-	async isNotMainnet(): Promise<boolean> {
-		const test = (await this.networkConfig).net != ''
+	isNotMainnet(): boolean {
+		const test = this.networkConfig.net != ''
 		return test
 	}
 
-	private async getCacheKey(request: APIRequest<unknown>): Promise<string> {
+	private getCacheKey(request: APIRequest<unknown>): string {
 		if (request.method == Method.GET) {
-			return request.method + (await this.getResourceUrl(request.resource, request.endPoint))
+			return request.method + this.getResourceUrl(request.resource, request.endPoint)
 		} else if (request.cacheablePOST) {
-			return request.method + (await this.getResourceUrl(request.resource, request.endPoint)) + JSON.stringify(request.postData)
+			return request.method + this.getResourceUrl(request.resource, request.endPoint) + JSON.stringify(request.postData)
 		}
 		return null
 	}
@@ -217,7 +218,7 @@ export class ApiService extends CacheModule {
 		}
 
 		// If cached and not stale, return cache
-		const cached = (await this.getCache(await this.getCacheKey(request))) as Response
+		const cached = (await this.getCache(this.getCacheKey(request))) as Response
 		if (cached) {
 			if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
 			cached.cached = true
@@ -281,7 +282,7 @@ export class ApiService extends CacheModule {
 		}
 
 		if ((request.method == Method.GET || request.cacheablePOST) && result && result.status == 200 && result.data) {
-			this.putCache(await this.getCacheKey(request), result, request.maxCacheAge)
+			this.putCache(this.getCacheKey(request), result, request.maxCacheAge)
 		}
 
 		if (request.updatesLastRefreshState) this.updateLastRefreshed(result)
@@ -295,7 +296,7 @@ export class ApiService extends CacheModule {
 	}
 
 	async clearSpecificCache(request: APIRequest<unknown>) {
-		this.putCache(await this.getCacheKey(request), null, request.maxCacheAge)
+		this.putCache(this.getCacheKey(request), null, request.maxCacheAge)
 	}
 
 	private updateLastRefreshed(response: Response) {
@@ -306,7 +307,7 @@ export class ApiService extends CacheModule {
 
 	private async get(resource: string, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
 		const getOptions = {
-			url: await this.getResourceUrl(resource, endpoint),
+			url: this.getResourceUrl(resource, endpoint),
 			method: 'get',
 			headers: options.headers,
 		}
@@ -324,7 +325,7 @@ export class ApiService extends CacheModule {
 		}
 
 		const postOptions = {
-			url: await this.getResourceUrl(resource, endpoint),
+			url: this.getResourceUrl(resource, endpoint),
 			headers: options.headers,
 			data: this.formatPostData(data),
 			method: 'post',
@@ -339,7 +340,7 @@ export class ApiService extends CacheModule {
 
 	private async legacyGet(resource: string, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
 		return this.httpLegacy
-			.get(await this.getResourceUrl(resource, endpoint), options)
+			.get(this.getResourceUrl(resource, endpoint), options)
 			.catch((err) => {
 				this.updateConnectionState(ignoreFails, false)
 				console.warn('Connection err', err)
@@ -366,7 +367,7 @@ export class ApiService extends CacheModule {
     })
     .then((response: AxiosResponse<any>) => this.validateResponseLegacy(ignoreFails, response));
     */
-		const resp = await fetch(await this.getResourceUrl(resource, endpoint), {
+		const resp = await fetch(this.getResourceUrl(resource, endpoint), {
 			method: 'POST',
 			body: JSON.stringify(this.formatPostData(data)),
 			headers: options.headers,
@@ -427,23 +428,23 @@ export class ApiService extends CacheModule {
 		return response
 	}
 
-	async getResourceUrl(resource: string, endpoint = 'default'): Promise<string> {
-		const base = await this.getBaseUrl()
+	getResourceUrl(resource: string, endpoint = 'default'): string {
+		const base = this.getBaseUrl()
 		if (endpoint == 'default') {
-			return (await this.getApiBaseUrl()) + '/' + resource
+			return this.getApiBaseUrl() + '/' + resource
 		} else {
 			const substitute = endpoint.replace('{$BASE}', base)
 			return substitute + '/' + resource
 		}
 	}
 
-	async getApiBaseUrl() {
-		const cfg = await this.networkConfig
-		return (await this.getBaseUrl()) + cfg.endpoint + cfg.version
+	getApiBaseUrl() {
+		const cfg = this.networkConfig
+		return this.getBaseUrl() + cfg.endpoint + cfg.version
 	}
 
-	async getBaseUrl(): Promise<string> {
-		const cfg = await this.networkConfig
+	getBaseUrl(): string {
+		const cfg = this.networkConfig
 		return cfg.protocol + '://' + cfg.net + cfg.host
 	}
 
@@ -460,6 +461,7 @@ export class ApiService extends CacheModule {
 
 		for (const entry of MAP) {
 			if (entry.key == 'main') continue
+			if (entry.key == 'gnosis') continue
 			if (!entry.active) continue
 			if (entry.onlyDebug && !debug) continue
 			re.push([this.capitalize(entry.key) + ' (Testnet)', entry.key])
@@ -470,6 +472,15 @@ export class ApiService extends CacheModule {
 	capitalize(text) {
 		return text.charAt(0).toUpperCase() + text.slice(1)
 	}
+
+	getHostName() {
+		const network = this.networkConfig
+		return network.host
+	}
+
+	isGnosis() {
+		return this.networkConfig.key == 'gnosis'
+	}
 }
 
 export interface Response extends HttpResponse {
@@ -478,4 +489,8 @@ export interface Response extends HttpResponse {
 
 export interface DevModeEnabled {
 	enabled: boolean
+}
+
+export function initializeApiService(service: ApiService): () => Promise<void> {
+	return () => service.initialize()
 }

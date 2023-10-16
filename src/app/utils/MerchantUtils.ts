@@ -386,7 +386,7 @@ export class MerchantUtils {
 		const currentProduct = this.findProduct(currentPlan)
 		if (currentProduct == null) return 100
 
-		const notMainnet = await this.api.isNotMainnet()
+		const notMainnet = this.api.isNotMainnet()
 		if (notMainnet) return currentProduct.maxTestnetValidators
 		return currentProduct.maxValidators
 	}
@@ -395,7 +395,7 @@ export class MerchantUtils {
 		const currentProduct = this.findProduct(MAX_PRODUCT)
 		if (currentProduct == null) return 100
 
-		const notMainnet = await this.api.isNotMainnet()
+		const notMainnet = this.api.isNotMainnet()
 		if (notMainnet) return currentProduct.maxTestnetValidators
 		return currentProduct.maxValidators
 	}

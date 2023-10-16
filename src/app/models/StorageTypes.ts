@@ -34,6 +34,14 @@ export interface ApiNetwork {
 	onlyDebug: boolean
 	active: boolean
 	genesisTs: number
+	elCurrency: Currency
+	clCurrency: Currency
+}
+
+export enum Currency {
+	ETH = 'ETH',
+	GNO = 'GNO',
+	xDAI = 'xDAI',
 }
 
 export interface NetworkPreferences {

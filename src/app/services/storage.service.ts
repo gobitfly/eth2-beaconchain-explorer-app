@@ -139,7 +139,7 @@ export class StorageService extends CacheModule {
 	}
 
 	async openLogSession(modalCtr, offset: number) {
-		let lastLogSession = parseInt(await window.localStorage.getItem('last_log_session'))
+		let lastLogSession = parseInt(window.localStorage.getItem('last_log_session'))
 		if (isNaN(lastLogSession)) lastLogSession = 0
 
 		const modal = await modalCtr.create({

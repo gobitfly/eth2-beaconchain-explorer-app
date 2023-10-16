@@ -97,7 +97,7 @@ export class NotificationBase implements OnInit {
 	async loadAllToggles() {
 		if (!(await this.storage.isLoggedIn())) return
 
-		const net = (await this.api.networkConfig).net
+		const net = this.api.networkConfig.net
 
 		const request = new NotificationGetRequest()
 		const response = await this.api.execute(request)
@@ -166,7 +166,7 @@ export class NotificationBase implements OnInit {
 		// locking toggle so we dont execute onChange when setting initial values
 		const preferences = await this.storage.loadPreferencesToggles(net)
 
-		if (await this.api.isNotMainnet()) {
+		if (this.api.isNotMainnet()) {
 			this.notify = preferences
 			this.notifyInitialized = true
 			this.disableToggleLock()
@@ -208,10 +208,10 @@ export class NotificationBase implements OnInit {
 			}
 		}
 
-		const net = (await this.api.networkConfig).net
+		const net = this.api.networkConfig.net
 		this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
 		this.settingsChanged = true
-		if (!(await this.api.isNotMainnet())) {
+		if (!this.api.isNotMainnet()) {
 			this.sync.changeGeneralNotify(this.notify)
 		}
 

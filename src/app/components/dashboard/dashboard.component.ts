@@ -161,7 +161,7 @@ export class DashboardComponent implements OnInit {
 					this.drawProposalChart()
 				}, 500)
 
-				this.beaconChainUrl = await this.getBaseBrowserUrl()
+				this.beaconChainUrl = this.api.getBaseUrl()
 
 				await Promise.all([
 					this.updateRplDisplay(),
@@ -438,7 +438,11 @@ export class DashboardComponent implements OnInit {
 
 	updateRplDisplay() {
 		if (this.rplState == '%') {
-			this.rplDisplay = this.data.rocketpool.currentRpl.dividedBy(this.data.rocketpool.maxRpl).multipliedBy(new BigNumber(150)).decimalPlaces(1)
+			const rplPrice = this.unit.getRPLPrice()
+			const currentETH = this.data.rocketpool.currentRpl.multipliedBy(rplPrice)
+			const minETH = this.data.rocketpool.minRpl.multipliedBy(rplPrice).multipliedBy(10) // since collateral is 10% of borrowed eth, multiply by 10 to get to the borrowed eth amount
+
+			this.rplDisplay = currentETH.dividedBy(minETH).multipliedBy(100).decimalPlaces(1).toNumber()
 		} else {
 			this.rplDisplay = this.data.rocketpool.currentRpl
 		}
@@ -866,15 +870,10 @@ export class DashboardComponent implements OnInit {
 
 	async getBrowserURL(): Promise<string> {
 		if (this.data.foreignValidator) {
-			return (await this.getBaseBrowserUrl()) + '/validator/' + this.data.foreignValidatorItem.pubkey
+			return this.api.getBaseUrl() + '/validator/' + this.data.foreignValidatorItem.pubkey
 		} else {
-			return (await this.getBaseBrowserUrl()) + '/dashboard?validators=' + this.data.lazyChartValidators
+			return this.api.getBaseUrl() + '/dashboard?validators=' + this.data.lazyChartValidators
 		}
-	}
-
-	async getBaseBrowserUrl() {
-		const net = (await this.api.networkConfig).net
-		return 'https://' + net + 'beaconcha.in'
 	}
 }
 

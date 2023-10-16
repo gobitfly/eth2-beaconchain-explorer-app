@@ -293,7 +293,7 @@ export class SyncService {
 				if (success) this.lastNotifySync = Date.now()
 
 				for (let j = 0; j < splice.length; j++) {
-					await splice[j].onComplete(success)
+					splice[j].onComplete(success)
 				}
 			}
 		}
@@ -372,7 +372,7 @@ export class SyncService {
 	}
 
 	async changeNotifyEvent(key: string, event: string, value: boolean, filter: string = null, threshold: number = null) {
-		const net = (await this.api.networkConfig).net
+		const net = this.api.networkConfig.net
 		this.storage.setBooleanSetting(net + key, value)
 		this.setLastChanged(net + key, event, filter, threshold, value ? 'subscribe' : 'unsubscribe')
 	}
@@ -421,7 +421,7 @@ export class SyncService {
 			lastChanged: current.lastChanged,
 			lastSynced: value,
 			eventName: event,
-			network: await this.api.getApiBaseUrl(),
+			network: this.api.getApiBaseUrl(),
 			eventFilter: current.eventFilter,
 			eventThreshold: current.eventThreshold,
 			subscribeAction: subscribeAction,
@@ -441,7 +441,7 @@ export class SyncService {
 			lastChanged: value,
 			lastSynced: current.lastSynced,
 			eventName: event,
-			network: await this.api.getApiBaseUrl(),
+			network: this.api.getApiBaseUrl(),
 			eventFilter: filter,
 			eventThreshold: threshold,
 			subscribeAction: subscribeAction,
@@ -463,7 +463,7 @@ export class SyncService {
 			lastChanged: 0,
 			lastSynced: 0,
 			eventName: '',
-			network: await this.api.getApiBaseUrl(),
+			network: this.api.getApiBaseUrl(),
 			eventFilter: null,
 			eventThreshold: null,
 			subscribeAction: 'subscribe',

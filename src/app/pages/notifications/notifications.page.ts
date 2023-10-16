@@ -73,7 +73,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 	}
 
 	async configureWebhooks() {
-		await Browser.open({ url: 'https://beaconcha.in/user/webhooks', toolbarColor: '#2f2e42' })
+		await Browser.open({ url: this.api.getBaseUrl() + '/user/webhooks', toolbarColor: '#2f2e42' })
 	}
 
 	async ionViewWillEnter() {

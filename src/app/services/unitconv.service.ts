@@ -116,6 +116,12 @@ export class UnitconvService {
 		unitStored.value = convertEthUnits(price, MAPPING.get('WEI'), Unit.ETHER)
 	}
 
+	getRPLPrice() {
+		const unitStored: Unit = MAPPING.get('RPL')
+		if (!unitStored) return
+		return unitStored.value
+	}
+
 	setRETHPrice(price: BigNumber) {
 		const unitStored: Unit = MAPPING.get('RETH')
 		if (!unitStored) return

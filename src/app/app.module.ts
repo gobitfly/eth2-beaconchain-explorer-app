@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { NgModule } from '@angular/core'
+import { APP_INITIALIZER, NgModule } from '@angular/core'
 import { BrowserModule, HammerModule } from '@angular/platform-browser'
 import { RouteReuseStrategy } from '@angular/router'
 
@@ -30,6 +30,7 @@ import { PipesModule } from './pipes/pipes.module'
 import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import 'hammerjs'
+import { ApiService, initializeApiService } from './services/api.service'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let Hammer: any
@@ -58,6 +59,12 @@ export class MyHammerConfig extends HammerGestureConfig {
 			// hammer instantion with custom config
 			provide: HAMMER_GESTURE_CONFIG,
 			useClass: MyHammerConfig,
+		},
+		{
+			provide: APP_INITIALIZER,
+			useFactory: initializeApiService,
+			deps: [ApiService],
+			multi: true,
 		},
 	],
 	bootstrap: [AppComponent],

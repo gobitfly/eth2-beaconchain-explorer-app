@@ -26,7 +26,7 @@
 
 	<ion-item lines="none" (click)="login()" *ngIf="!isAlreadyLoggedIn">
 		<ion-icon slot="start" name="log-in-outline"></ion-icon>
-		<ion-label>Or login with beaconcha.in</ion-label>
+		<ion-label>Or login with {{ api.getHostName() }} </ion-label>
 	</ion-item>
 </ion-list>
 
@@ -34,7 +34,7 @@
 	<ion-label>Guides & Help</ion-label>
 </ion-list-header>
 
-<ion-list>
+<ion-list *ngIf="!api.isGnosis; else gnosisFAQ">
 	<ion-item lines="none" (click)="openBrowser('https://launchpad.ethereum.org/faq')">
 		<ion-icon slot="start" name="bulb-outline"></ion-icon>
 		<ion-label>Staking Guide & FAQ</ion-label>
@@ -61,11 +61,23 @@
 	</ion-item>
 </ion-list>
 
+<ion-list #gnosisFAQ>
+	<ion-item lines="none" (click)="openBrowser('https://docs.gnosischain.com/node/')">
+		<ion-icon slot="start" name="bulb-outline"></ion-icon>
+		<ion-label>Node Guide & FAQ</ion-label>
+	</ion-item>
+
+	<ion-item lines="none" (click)="openBrowser('https://docs.gnosischain.com/node/management/withdrawals')">
+		<ion-icon slot="start" name="bulb-outline"></ion-icon>
+		<ion-label>Enable Withdrawals Guide</ion-label>
+	</ion-item>
+</ion-list>
+
 <ion-list-header>
 	<ion-label>How to set up a Validator</ion-label>
 </ion-list-header>
 
-<ion-list>
+<ion-list *ngIf="!api.isGnosis; else gnosisSetupGuides">
 	<ion-item lines="none" (click)="openBrowser('https://someresat.medium.com/guide-to-staking-on-ethereum-ubuntu-lighthouse-773f5d982e03')">
 		<ion-icon slot="start" name="bulb-outline"></ion-icon>
 		<ion-label>Setup Guide for Lighthouse</ion-label>
@@ -92,13 +104,20 @@
 	</ion-item>
 </ion-list>
 
+<ion-list #gnosisSetupGuides>
+	<ion-item lines="none" (click)="openBrowser('https://docs.gnosischain.com/node/manual/')">
+		<ion-icon slot="start" name="bulb-outline"></ion-icon>
+		<ion-label>Interactive Setup Guide</ion-label>
+	</ion-item>
+</ion-list>
+
 <ion-list-header>
 	<ion-label>Useful Links</ion-label>
 </ion-list-header>
 <ion-list>
-	<ion-item lines="none" (click)="openBrowser('https://beaconcha.in')">
+	<ion-item lines="none" (click)="openBrowser('https://' + api.getHostName())">
 		<ion-icon slot="start" name="cube-outline"></ion-icon>
-		<ion-label>beaconcha.in Block Explorer</ion-label>
+		<ion-label>{{ api.getHostName() }} Block Explorer</ion-label>
 	</ion-item>
 
 	<ion-item lines="none" (click)="openBrowser('https://reddit.com/r/ethstaker')">

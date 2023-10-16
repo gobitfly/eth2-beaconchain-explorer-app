@@ -877,7 +877,7 @@
 	<ion-list class="performances">
 		<ion-item lines="none" (click)="openBrowser()">
 			<ion-icon slot="end" name="open-outline"></ion-icon>
-			<ion-label class="stat-title"> View on beaconcha.in </ion-label>
+			<ion-label class="stat-title"> View on {{ api.getHostName() }} </ion-label>
 		</ion-item>
 	</ion-list>
 	<div class="bottomFiller"></div>

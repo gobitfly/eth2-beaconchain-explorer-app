@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiNetwork } from '../models/StorageTypes'
+import { ApiNetwork, Currency } from '../models/StorageTypes'
 
 export const MAP: ApiNetwork[] = [
 	{
@@ -31,6 +31,21 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1606824023,
+		clCurrency: Currency.ETH,
+		elCurrency: Currency.ETH,
+	},
+	{
+		key: 'gnosis',
+		protocol: 'https',
+		host: 'gnosischa.in',
+		net: '',
+		endpoint: '/api/',
+		version: 'v1',
+		onlyDebug: false,
+		active: true,
+		genesisTs: 1638993340,
+		clCurrency: Currency.GNO,
+		elCurrency: Currency.xDAI,
 	},
 	{
 		key: 'prater',
@@ -42,6 +57,8 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1616508000,
+		clCurrency: Currency.ETH,
+		elCurrency: Currency.ETH,
 	},
 	{
 		key: 'sepolia',
@@ -53,6 +70,8 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1655733600,
+		clCurrency: Currency.ETH,
+		elCurrency: Currency.ETH,
 	},
 	{
 		key: 'holesky',
@@ -64,6 +83,8 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1695902400,
+		clCurrency: Currency.ETH,
+		elCurrency: Currency.ETH,
 	},
 	{
 		key: 'local dev',
@@ -75,6 +96,8 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: true,
 		active: true,
 		genesisTs: 1606824023,
+		clCurrency: Currency.ETH,
+		elCurrency: Currency.ETH,
 	},
 	{
 		key: 'invalid (no connection)',
@@ -86,6 +109,8 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: true,
 		active: true,
 		genesisTs: 1606824023,
+		clCurrency: Currency.ETH,
+		elCurrency: Currency.ETH,
 	},
 ]
 

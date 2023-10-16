@@ -122,7 +122,7 @@ export class OAuthUtils {
 
 	private async getOAuthOptions() {
 		const api = this.api
-		const endpointUrl = await api.getResourceUrl('user/token')
+		const endpointUrl = api.getResourceUrl('user/token')
 
 		const info = await Device.getId().catch(() => {
 			return { identifier: 'iduno' }
@@ -142,7 +142,7 @@ export class OAuthUtils {
 		}
 
 		return {
-			authorizationBaseUrl: (await api.getBaseUrl()) + '/user/authorize',
+			authorizationBaseUrl: api.getBaseUrl() + '/user/authorize',
 			accessTokenEndpoint: endpointUrl,
 			web: {
 				appId: clientID,

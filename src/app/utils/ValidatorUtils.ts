@@ -306,9 +306,8 @@ export class ValidatorUtils extends CacheModule {
 	}
 
 	async updateValidatorStates(validators: Validator[]) {
-		const epoch = await this.getRemoteCurrentEpoch()
 		validators.forEach((item) => {
-			item.state = this.getValidatorState(item, epoch)
+			item.state = this.getValidatorState(item)
 		})
 	}
 
@@ -328,21 +327,14 @@ export class ValidatorUtils extends CacheModule {
 		return result
 	}
 
-	getValidatorState(item: Validator, currentEpoch: EpochResponse): ValidatorState {
-		if (
-			item.data.slashed == false &&
-			item.data.lastattestationslot >= (currentEpoch.epoch - 2) * 32 && // online since last two epochs
-			item.data.exitepoch >= currentEpoch.epoch &&
-			item.data.activationepoch <= currentEpoch.epoch
-		) {
+	getValidatorState(item: Validator): ValidatorState {
+		if (item.data.slashed) return ValidatorState.SLASHED
+		if (item.data.status == 'exited') return ValidatorState.EXITED
+		if (item.data.status == 'deposited') return ValidatorState.ELIGABLE
+		if (item.data.status == 'pending') return ValidatorState.WAITING
+		if (item.data.slashed == false && item.data.status.indexOf('online') > 0) {
 			return ValidatorState.ACTIVE
 		}
-
-		if (item.data.slashed) return ValidatorState.SLASHED
-		if (item.data.exitepoch < currentEpoch.epoch) return ValidatorState.EXITED
-		if (item.data.activationeligibilityepoch > currentEpoch.epoch) return ValidatorState.ELIGABLE
-		if (item.data.activationepoch > currentEpoch.epoch) return ValidatorState.WAITING
-		if (item.data.lastattestationslot < (currentEpoch.epoch - 2) * 32) return ValidatorState.OFFLINE
 
 		// default case
 		return ValidatorState.OFFLINE

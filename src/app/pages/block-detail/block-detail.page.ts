@@ -90,20 +90,15 @@ export class BlockDetailPage implements OnInit {
 
 	async openBlock() {
 		await Browser.open({
-			url: (await this.getBaseBrowserUrl()) + '/block/' + this.block.blockNumber,
+			url: this.api.getBaseUrl() + '/block/' + this.block.blockNumber,
 			toolbarColor: '#2f2e42',
 		})
 	}
 
 	async openFeeRecipient() {
 		await Browser.open({
-			url: (await this.getBaseBrowserUrl()) + '/address/' + this.feeRecipient,
+			url: this.api.getBaseUrl() + '/address/' + this.feeRecipient,
 			toolbarColor: '#2f2e42',
 		})
-	}
-
-	async getBaseBrowserUrl() {
-		const net = (await this.api.networkConfig).net
-		return 'https://' + net + 'beaconcha.in'
 	}
 }

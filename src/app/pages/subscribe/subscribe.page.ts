@@ -9,6 +9,7 @@ import { Toast } from '@capacitor/toast'
 import FlavorUtils from 'src/app/utils/FlavorUtils'
 
 import { Browser } from '@capacitor/browser'
+import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-subscribe',
@@ -32,7 +33,8 @@ export class SubscribePage implements OnInit {
 		private oauth: OAuthUtils,
 		private alertService: AlertService,
 		private platform: Platform,
-		private flavor: FlavorUtils
+		private flavor: FlavorUtils,
+		private api: ApiService
 	) {
 		this.selectedPackage = this.merchant.PACKAGES[2]
 	}
@@ -80,7 +82,7 @@ export class SubscribePage implements OnInit {
 				'Yes',
 				async () => {
 					if (isNoGoogle) {
-						await Browser.open({ url: 'https://beaconcha.in/premium', toolbarColor: '#2f2e42' })
+						await Browser.open({ url: this.api.getBaseUrl() + '/premium', toolbarColor: '#2f2e42' })
 					} else {
 						this.merchant.purchase(this.selectedPackage.purchaseKey)
 					}
@@ -90,7 +92,7 @@ export class SubscribePage implements OnInit {
 		}
 
 		if (isNoGoogle) {
-			await Browser.open({ url: 'https://beaconcha.in/premium', toolbarColor: '#2f2e42' })
+			await Browser.open({ url: this.api.getBaseUrl() + '/premium', toolbarColor: '#2f2e42' })
 		} else {
 			this.merchant.purchase(this.selectedPackage.purchaseKey)
 		}

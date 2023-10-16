@@ -88,15 +88,15 @@ export class CacheModule {
 		}
 	}
 
-	clearCache() {
-		this.clearHardCache()
+	async clearCache() {
+		await this.clearHardCache()
 		this.cache.clear()
 		this.hotOnly.clear()
 	}
 
-	clearHardCache() {
+	async clearHardCache() {
 		if (this.hardStorage) {
-			this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, null)
+			await this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, null)
 		}
 	}
 
