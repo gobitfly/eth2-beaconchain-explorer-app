@@ -607,7 +607,7 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 	ignoreFails = true
 	maxCacheAge = 1000
 	options = {
-		url: null, 
+		url: null,
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded',
 			Accept: 'application/json',

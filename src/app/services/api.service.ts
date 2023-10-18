@@ -156,7 +156,7 @@ export class ApiService extends CacheModule {
 		const req = new RefreshTokenRequest(user.refreshToken)
 		const resp = await this.execute(req)
 		const response = req.parse(resp)
-		const result = response[0] 
+		const result = response[0]
 
 		console.log('Refresh token', result, resp)
 		if (!result || !result.access_token) {
