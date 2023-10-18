@@ -162,7 +162,7 @@ export class ApiService extends CacheModule {
 			formBody.set('grant_type', 'refresh_token')
 			formBody.set('refresh_token', user.refreshToken)
 			const url = await this.getResourceUrl(req.resource, req.endPoint)
-			
+
 			resp = await fetch(url, {
 				method: 'POST',
 				body: formBody,
@@ -170,7 +170,6 @@ export class ApiService extends CacheModule {
 			})
 			result = await resp.json()
 		} else {
-			
 			resp = await this.execute(req)
 			const response = req.parse(resp)
 			result = response[0]
