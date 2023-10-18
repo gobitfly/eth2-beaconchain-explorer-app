@@ -39,8 +39,6 @@ export interface ApiNetwork {
 	name: string
 }
 
-
-
 export class NetworkMainCurrency {
 	static readonly ETH = new NetworkMainCurrency('ETHER', 'Ether', 'ETH')
 	static readonly GNO = new NetworkMainCurrency('GNO', 'mGNO', 'GNO')

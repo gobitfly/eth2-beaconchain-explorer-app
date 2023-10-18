@@ -675,7 +675,7 @@ export class DashboardComponent implements OnInit {
 					text += ` (${this.unit.convertToPref(value, 'ETHER', type)})`
 				}
 			}
-			
+
 			return text
 		}
 

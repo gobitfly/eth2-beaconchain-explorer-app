@@ -451,7 +451,6 @@ export class ApiService extends CacheModule {
 		return cfg.protocol + '://' + cfg.net + cfg.host
 	}
 
-
 	async getAllTestNetNames() {
 		const debug = await this.storage.isDebugMode()
 		const re: string[][] = []
@@ -501,7 +500,6 @@ export class ApiService extends CacheModule {
 export interface Response extends HttpResponse {
 	cached: boolean
 }
-
 
 export function initializeApiService(service: ApiService): () => Promise<void> {
 	return () => service.initialize()

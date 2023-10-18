@@ -35,7 +35,6 @@ export type RewardType = 'cons' | 'exec' | 'rpl'
 	providedIn: 'root',
 })
 export class UnitconvService {
-	
 	public pref: PreferredCurrency = {
 		Cons: { value: 'ETHER', type: 'cons', unit: Unit.ETHER } as Currency,
 		Exec: { value: 'ETHER', type: 'exec', unit: Unit.ETHER } as Currency,
@@ -394,7 +393,7 @@ interface CurrencyPipe {
 }
 
 interface StoredPref {
-	prefered: string | null,
+	prefered: string | null
 	coinbaseSpot: string
 	symbol: string
 	rounding: number

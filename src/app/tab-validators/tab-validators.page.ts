@@ -546,7 +546,9 @@ export class Tab2Page {
 			cssClass: 'my-custom-class',
 			header: 'Define stake share',
 			message:
-				'If you own partial amounts of these validators, specify the amount of ' + this.api.getCurrenciesFormatted()+ ' for a custom dashboard. First value defines your consensus share, second value your execution share.',
+				'If you own partial amounts of these validators, specify the amount of ' +
+				this.api.getCurrenciesFormatted() +
+				' for a custom dashboard. First value defines your consensus share, second value your execution share.',
 			inputs: [
 				{
 					name: 'share',
@@ -616,5 +618,4 @@ export class Tab2Page {
 
 		await alert.present()
 	}
-
 }

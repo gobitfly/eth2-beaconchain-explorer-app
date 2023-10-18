@@ -1,7 +1,9 @@
 <ion-header>
 	<ion-toolbar>
 		<ion-buttons slot="end">
-			<ion-button (click)="unit.switchCurrencyPipe()" *ngIf="(unit.pref.Exec.value != 'ETHER' && unit.pref.Exec.value != 'FINNEY') || classReference.currencyPipe.Exec != null ">
+			<ion-button
+				(click)="unit.switchCurrencyPipe()"
+				*ngIf="(unit.pref.Exec.value != 'ETHER' && unit.pref.Exec.value != 'FINNEY') || classReference.currencyPipe.Exec != null ">
 				<ion-icon size="small" name="swap-vertical-outline"></ion-icon>
 			</ion-button>
 		</ion-buttons>

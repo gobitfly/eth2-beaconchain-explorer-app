@@ -55,7 +55,7 @@ export default class Unit {
 	public static CNYETH = new Unit('元', new BigNumber('1'), 2, 'XXX-CNY', 'Renminbi')
 	public static HKDETH = new Unit('HK$', new BigNumber('1'), 2, 'XXX-HKD', 'Hong Kong Dollar')
 	public static NZDETH = new Unit('NZ$', new BigNumber('1'), 2, 'XXX-NZD', 'New Zealand Dollar')
-	public static BTCETH = new Unit('₿', new BigNumber('1'), 6, 'XXX-BTC', 'Bitcoin') 
+	public static BTCETH = new Unit('₿', new BigNumber('1'), 6, 'XXX-BTC', 'Bitcoin')
 
 	private constructor(symbol: string, value: BigNumber, rounding = 2, coinbaseSpot = null, settingsName = null) {
 		this.display = symbol
@@ -66,7 +66,18 @@ export default class Unit {
 	}
 
 	public toString(): string {
-		return this.value.toString() + " " + this.display + " (rounding: " + this.rounding + ", coinbaseSpot: " + this.coinbaseSpot + ", settingName: " + this.settingName + ")"
+		return (
+			this.value.toString() +
+			' ' +
+			this.display +
+			' (rounding: ' +
+			this.rounding +
+			', coinbaseSpot: ' +
+			this.coinbaseSpot +
+			', settingName: ' +
+			this.settingName +
+			')'
+		)
 	}
 
 	readonly display: string
