@@ -154,19 +154,9 @@ export class ApiService extends CacheModule {
 
 		const now = Date.now()
 		const req = new RefreshTokenRequest(user.refreshToken)
-
-		const formBody = new FormData()
-		formBody.set('grant_type', 'refresh_token')
-		formBody.set('refresh_token', user.refreshToken)
-		const url = await this.getResourceUrl(req.resource, req.endPoint)
-
-		// use js here for the request since the native http plugin performs inconsistent across platforms with non json requests
-		const resp = await fetch(url, {
-			method: 'POST',
-			body: formBody,
-			headers: await this.getAuthHeader(true),
-		})
-		const result = await resp.json()
+		const resp = await this.execute(req)
+		const response = req.parse(resp)
+		const result = response[0] 
 
 		console.log('Refresh token', result, resp)
 		if (!result || !result.access_token) {

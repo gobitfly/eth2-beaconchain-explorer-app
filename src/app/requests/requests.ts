@@ -606,6 +606,13 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 	requiresAuth = true
 	ignoreFails = true
 	maxCacheAge = 1000
+	options = {
+		url: null, 
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+			Accept: 'application/json',
+		},
+	}
 
 	parse(response: Response): ApiTokenResponse[] {
 		if (response && response.data) return [response.data] as ApiTokenResponse[]
