@@ -98,7 +98,7 @@ export class MerchantUtils {
 
 	constructor(private alertService: AlertService, private api: ApiService, private platform: Platform, private storage: StorageService) {
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
-			console.log('merchant is not supported on this platform')
+			console.info('merchant is not supported on this platform')
 			return
 		}
 

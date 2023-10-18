@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core'
+import { Injectable, isDevMode } from '@angular/core'
 import { Plugins } from '@capacitor/core'
 import * as StorageTypes from '../models/StorageTypes'
 import { findConfigForKey } from '../utils/NetworkData'
@@ -74,6 +74,13 @@ export class StorageService extends CacheModule {
 
 	async removeAuthUser() {
 		return this.remove(AUTH_USER)
+	}
+
+	public async isDebugMode() {
+		const devMode = isDevMode()
+		if (devMode) return true
+		const permanentDevMode = (await this.getObject('dev_mode')) as DevModeEnabled
+		return permanentDevMode && permanentDevMode.enabled
 	}
 
 	async getNetworkPreferences(): Promise<StorageTypes.ApiNetwork> {
@@ -235,7 +242,7 @@ export class StorageService extends CacheModule {
 	}
 }
 
-function replacer(key, value) {
+export function replacer(key, value) {
 	const originalObject = this[key]
 	if (originalObject instanceof Map) {
 		return {
@@ -270,4 +277,8 @@ export interface StoredTimestamp {
 
 export interface StoredShare {
 	share: number
+}
+
+export interface DevModeEnabled {
+	enabled: boolean
 }

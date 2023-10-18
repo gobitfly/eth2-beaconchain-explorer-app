@@ -100,16 +100,6 @@ export class TabBlocksPage implements OnInit {
 		}, 1500)
 	}
 
-	switchCurrencyPipe() {
-		if (this.unit.pref == 'ETHER') {
-			if (UnitconvService.currencyPipe == null) return
-			this.unit.pref = UnitconvService.currencyPipe
-		} else {
-			UnitconvService.currencyPipe = this.unit.pref
-			this.unit.pref = 'ETHER'
-		}
-	}
-
 	luckHelp() {
 		if (!this.luck) {
 			this.alertService.showInfo(

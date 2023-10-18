@@ -78,16 +78,6 @@ export class BlockDetailPage implements OnInit {
 		this.showGasUsedPercent = !this.showGasUsedPercent
 	}
 
-	switchCurrencyPipe() {
-		if (this.unit.pref == 'ETHER') {
-			if (UnitconvService.currencyPipe == null) return
-			this.unit.pref = UnitconvService.currencyPipe
-		} else {
-			UnitconvService.currencyPipe = this.unit.pref
-			this.unit.pref = 'ETHER'
-		}
-	}
-
 	async openBlock() {
 		await Browser.open({
 			url: this.api.getBaseUrl() + '/block/' + this.block.blockNumber,

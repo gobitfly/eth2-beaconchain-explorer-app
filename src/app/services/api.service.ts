@@ -22,7 +22,6 @@ import { Injectable } from '@angular/core'
 import { APIRequest, FormDataContainer, Method, RefreshTokenRequest } from '../requests/requests'
 import { StorageService } from './storage.service'
 import { ApiNetwork } from '../models/StorageTypes'
-import { isDevMode } from '@angular/core'
 import { Mutex } from 'async-mutex'
 import { findConfigForKey, MAP } from '../utils/NetworkData'
 import { CapacitorHttp, HttpResponse } from '@capacitor/core'
@@ -70,7 +69,7 @@ export class ApiService extends CacheModule {
 			}
 		})
 
-		this.isDebugMode().then((result) => {
+		this.storage.isDebugMode().then((result) => {
 			this.debug = result
 			window.localStorage.setItem('debug', this.debug ? 'true' : 'false')
 		})
@@ -201,6 +200,10 @@ export class ApiService extends CacheModule {
 		return test
 	}
 
+	isMainnet(): boolean {
+		return !this.isNotMainnet()
+	}
+
 	private getCacheKey(request: APIRequest<unknown>): string {
 		if (request.method == Method.GET) {
 			return request.method + this.getResourceUrl(request.resource, request.endPoint)
@@ -243,7 +246,7 @@ export class ApiService extends CacheModule {
 
 		await this.lockOrWait(request.resource)
 
-		console.log(LOGTAG + ' Send request: ' + request.resource, request)
+		console.log(LOGTAG + ' Send request: ' + request.resource, request.method, request)
 		const startTs = Date.now()
 
 		if (this.forceNativeAll) {
@@ -448,15 +451,9 @@ export class ApiService extends CacheModule {
 		return cfg.protocol + '://' + cfg.net + cfg.host
 	}
 
-	private async isDebugMode() {
-		const devMode = isDevMode()
-		if (devMode) return true
-		const permanentDevMode = (await this.storage.getObject('dev_mode')) as DevModeEnabled
-		return permanentDevMode && permanentDevMode.enabled
-	}
 
 	async getAllTestNetNames() {
-		const debug = await this.isDebugMode()
+		const debug = await this.storage.isDebugMode()
 		const re: string[][] = []
 
 		for (const entry of MAP) {
@@ -478,8 +475,26 @@ export class ApiService extends CacheModule {
 		return network.host
 	}
 
+	/**
+	 * Avoid whenever possible. Most of the time you can archive your goal by using the
+	 * api.getNetwork().clCurrency or api.getNetwork().elCurrency for currencies.
+	 * And api.getNetwork().name for the network name and api.getCurrenciesFormatted()
+	 * for a formatted output of one/both currencies.
+	 * @returns true if the current network is the mainnet
+	 */
 	isGnosis() {
 		return this.networkConfig.key == 'gnosis'
+	}
+
+	/**
+	 * Returns the formatted currencies for the network
+	 */
+	public getCurrenciesFormatted(): string {
+		const network = this.networkConfig
+		if (network.elCurrency.internalName == network.clCurrency.internalName) {
+			return network.clCurrency.formattedName
+		}
+		return network.clCurrency.formattedName + ' / ' + network.elCurrency.formattedName
 	}
 }
 
@@ -487,9 +502,6 @@ export interface Response extends HttpResponse {
 	cached: boolean
 }
 
-export interface DevModeEnabled {
-	enabled: boolean
-}
 
 export function initializeApiService(service: ApiService): () => Promise<void> {
 	return () => service.initialize()

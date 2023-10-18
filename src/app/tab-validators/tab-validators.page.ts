@@ -546,7 +546,7 @@ export class Tab2Page {
 			cssClass: 'my-custom-class',
 			header: 'Define stake share',
 			message:
-				'If you own partial amounts of these validators, specify the amount of ether for a custom dashboard. First value defines your consensus share, second value your execution share.',
+				'If you own partial amounts of these validators, specify the amount of ' + this.api.getCurrenciesFormatted()+ ' for a custom dashboard. First value defines your consensus share, second value your execution share.',
 			inputs: [
 				{
 					name: 'share',
@@ -617,13 +617,4 @@ export class Tab2Page {
 		await alert.present()
 	}
 
-	switchCurrencyPipe() {
-		if (this.unit.pref == 'ETHER') {
-			if (UnitconvService.currencyPipe == null) return
-			this.unit.pref = UnitconvService.currencyPipe
-		} else {
-			UnitconvService.currencyPipe = this.unit.pref
-			this.unit.pref = 'ETHER'
-		}
-	}
 }

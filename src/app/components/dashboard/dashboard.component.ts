@@ -19,7 +19,7 @@
  */
 
 import { Component, OnInit, Input, SimpleChange } from '@angular/core'
-import { UnitconvService } from '../../services/unitconv.service'
+import { RewardType, UnitconvService } from '../../services/unitconv.service'
 import { ApiService } from '../../services/api.service'
 import { DashboardDataRequest, EpochResponse, SyncCommitteeResponse } from '../../requests/requests'
 import * as HighCharts from 'highcharts'
@@ -196,7 +196,7 @@ export class DashboardComponent implements OnInit {
 
 	updateDepositCreditText() {
 		if (this.data.rocketpool.depositCredit && this.data.rocketpool.depositCredit.gt(0)) {
-			this.depositCreditText = `You have ${this.unit.convert(
+			this.depositCreditText = `You have ${this.unit.convertNonFiat(
 				this.data.rocketpool.depositCredit,
 				'WEI',
 				'ETHER',
@@ -393,26 +393,6 @@ export class DashboardComponent implements OnInit {
 			},
 		})
 		return await modal.present()
-	}
-
-	switchCurrencyPipe() {
-		if (this.unit.pref == 'ETHER') {
-			if (UnitconvService.currencyPipe == null) return
-			this.unit.pref = UnitconvService.currencyPipe
-		} else {
-			UnitconvService.currencyPipe = this.unit.pref
-			this.unit.pref = 'ETHER'
-		}
-	}
-
-	switchCurrencyPipeRocketpool() {
-		if (this.unit.prefRpl == 'RPL') {
-			if (UnitconvService.currencyPipe == null) return
-			this.unit.prefRpl = UnitconvService.currencyPipe
-		} else {
-			UnitconvService.currencyPipe = this.unit.pref
-			this.unit.prefRpl = 'RPL'
-		}
 	}
 
 	switchRplStake(canPercent = false) {
@@ -684,11 +664,18 @@ export class DashboardComponent implements OnInit {
 		const ticksDecimalPlaces = 3
 		const network = this.api.getNetwork()
 
-		const getValueString = (value: BigNumber): string => {
+		const getValueString = (value: BigNumber, type: RewardType): string => {
 			let text = `${value.toFixed(5)} ETH`
-			if (this.unit.pref != 'ETHER' && network.key == 'main') {
-				text += ` (${this.unit.convertToPref(value, 'ETHER')})`
+			if (type == 'cons') {
+				if (this.unit.isDefaultCurrency(this.unit.pref.Cons) && network.key == 'main') {
+					text += ` (${this.unit.convertToPref(value, 'ETHER', type)})`
+				}
+			} else if (type == 'exec') {
+				if (this.unit.isDefaultCurrency(this.unit.pref.Exec) && network.key == 'main') {
+					text += ` (${this.unit.convertToPref(value, 'ETHER', type)})`
+				}
 			}
+			
 			return text
 		}
 
@@ -737,18 +724,23 @@ export class DashboardComponent implements OnInit {
 						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
 
 						// income
+						let consAndExecSameCurrency = 0
 						let total = new BigNumber(0)
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
+							const type = tooltip.chart.hoverPoints[i].series.name == 'Execution' ? 'exec' : 'cons'
+							consAndExecSameCurrency += type == 'exec' ? 1 : -1
+
 							const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
 							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${
 								tooltip.chart.hoverPoints[i].series.name
-							}: ${getValueString(value)}</b><br/>`
+							}: ${getValueString(value, type)}</b><br/>`
 							total = total.plus(value)
 						}
 
 						// add total if hovered point contains rewards for both EL and CL
-						if (tooltip.chart.hoverPoints.length > 1) {
-							text += `<b>Total: ${getValueString(total)}</b>`
+						// only if both exec and cons currencies are the same
+						if (tooltip.chart.hoverPoints.length > 1 && Math.abs(consAndExecSameCurrency) == 2) {
+							text += `<b>Total: ${getValueString(total, 'cons')}</b>`
 						}
 
 						return text

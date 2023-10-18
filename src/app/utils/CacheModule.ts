@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { StorageService } from '../services/storage.service'
+import { StorageService, replacer } from '../services/storage.service'
 import { Validator } from './ValidatorUtils'
 
 interface CachedData {
@@ -49,7 +49,21 @@ export class CacheModule {
 			if (result) {
 				this.cache = result
 			}
-			console.log('[CacheModule] initialized with ', this.cache)
+			try {
+				let kiloBytes = null;
+				if (this.hardStorage) {
+					const size = new TextEncoder().encode(JSON.stringify(this.cache, replacer)).length
+					kiloBytes = Math.round(size *100 / 1024) / 100;
+				} 
+				console.log('[CacheModule] initialized with ', kiloBytes == null ? '(unknown size)' : '(' + kiloBytes + ' KiB)', this.cache)
+				if (kiloBytes && kiloBytes > 1000) {
+					console.warn('[CacheModule] storage cap exceeded (1 MB), clearing cache')
+					await this.clearHardCache()
+				}
+			} catch (e) {
+				console.warn("could not calculate cache size")
+			}
+			
 		} else {
 			this.initialized = new Promise<Map<string, CachedData>>((resolve) => {
 				resolve(new Map<string, CachedData>())
@@ -63,7 +77,7 @@ export class CacheModule {
 
 	private getStoreForCacheKey(cacheKey: string): Map<string, CachedData> {
 		// rationale: don't store big data objects in hardStorage due to severe performance impacts
-		const storeHard = cacheKey.indexOf('app/dashboard') >= 0
+		const storeHard = cacheKey.indexOf('app/dashboard') >= 0 || cacheKey.indexOf("beaconcha.in") < 0 // or store all non beaconchain requests
 		return storeHard ? this.cache : this.hotOnly
 	}
 

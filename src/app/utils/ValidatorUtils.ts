@@ -432,7 +432,7 @@ export class ValidatorUtils extends CacheModule {
 	private updateRplAndRethPrice() {
 		if (!this.rocketpoolStats) return
 		this.unitConversion.setRPLPrice(new BigNumber(this.rocketpoolStats.rpl_price.toString()))
-		this.unitConversion.setRETHPrice(new BigNumber(this.rocketpoolStats.reth_exchange_rate.toString()))
+		//this.unitConversion.setRETHPrice(new BigNumber(this.rocketpoolStats.reth_exchange_rate.toString()))
 	}
 
 	private findExecutionResponse(list: ExecutionResponse[], index: number): ExecutionResponse {

@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiNetwork, Currency } from '../models/StorageTypes'
+import { ApiNetwork, NetworkMainCurrency } from '../models/StorageTypes'
 
 export const MAP: ApiNetwork[] = [
 	{
@@ -31,8 +31,9 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1606824023,
-		clCurrency: Currency.ETH,
-		elCurrency: Currency.ETH,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		name: 'Ethereum',
 	},
 	{
 		key: 'gnosis',
@@ -44,8 +45,9 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1638993340,
-		clCurrency: Currency.GNO,
-		elCurrency: Currency.xDAI,
+		clCurrency: NetworkMainCurrency.GNO,
+		elCurrency: NetworkMainCurrency.xDAI,
+		name: 'Gnosis',
 	},
 	{
 		key: 'prater',
@@ -57,8 +59,9 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1616508000,
-		clCurrency: Currency.ETH,
-		elCurrency: Currency.ETH,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		name: 'Ethereum',
 	},
 	{
 		key: 'sepolia',
@@ -70,8 +73,9 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1655733600,
-		clCurrency: Currency.ETH,
-		elCurrency: Currency.ETH,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		name: 'Ethereum',
 	},
 	{
 		key: 'holesky',
@@ -83,8 +87,9 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1695902400,
-		clCurrency: Currency.ETH,
-		elCurrency: Currency.ETH,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		name: 'Ethereum',
 	},
 	{
 		key: 'local dev',
@@ -96,8 +101,9 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: true,
 		active: true,
 		genesisTs: 1606824023,
-		clCurrency: Currency.ETH,
-		elCurrency: Currency.ETH,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		name: 'Ethereum',
 	},
 	{
 		key: 'invalid (no connection)',
@@ -109,15 +115,15 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: true,
 		active: true,
 		genesisTs: 1606824023,
-		clCurrency: Currency.ETH,
-		elCurrency: Currency.ETH,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		name: 'Ethereum',
 	},
 ]
 
 export function findConfigForKey(key: string): ApiNetwork {
 	for (const entry of MAP) {
 		if (entry.key == key) {
-			console.log('found config', key, entry)
 			return entry
 		}
 	}

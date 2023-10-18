@@ -316,6 +316,7 @@ export class Tab3Page {
 		await this.storage.setNetworkPreferences(newConfig)
 		await this.api.initialize()
 		await this.notificationBase.loadAllToggles()
+		await this.unit.networkSwitchReload()
 		this.validatorUtils.notifyListeners()
 	}
 

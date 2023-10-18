@@ -34,14 +34,26 @@ export interface ApiNetwork {
 	onlyDebug: boolean
 	active: boolean
 	genesisTs: number
-	elCurrency: Currency
-	clCurrency: Currency
+	elCurrency: NetworkMainCurrency
+	clCurrency: NetworkMainCurrency
+	name: string
 }
 
-export enum Currency {
-	ETH = 'ETH',
-	GNO = 'GNO',
-	xDAI = 'xDAI',
+
+
+export class NetworkMainCurrency {
+	static readonly ETH = new NetworkMainCurrency('ETHER', 'Ether', 'ETH')
+	static readonly GNO = new NetworkMainCurrency('GNO', 'mGNO', 'GNO')
+	static readonly xDAI = new NetworkMainCurrency('xDAI', 'xDAI', 'DAI')
+
+	public internalName: string
+	public formattedName: string
+	public coinbaseSpot: string
+	private constructor(internName: string, formattedName: string, coinbaseSpot: string) {
+		this.internalName = internName
+		this.coinbaseSpot = coinbaseSpot
+		this.formattedName = formattedName
+	}
 }
 
 export interface NetworkPreferences {

@@ -166,10 +166,10 @@
 	<ion-list class="performances">
 		<ion-item lines="none">
 			<div class="grid">
-				<div class="grid-cell left" (click)="switchCurrencyPipe()">
+				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
 					<div>
 						<ion-label class="value left" [class]="data.combinedPerformance.total | valuestyle : 0">
-							{{ data.combinedPerformance.total | mcurrency : 'GWEI' : unit.pref }}
+							{{ data.combinedPerformance.total | mcurrency : 'GWEI' : unit.pref.Cons }} TODO
 						</ion-label>
 					</div>
 					<div>
@@ -177,7 +177,7 @@
 					</div>
 				</div>
 
-				<div class="grid-cell" (click)="switchCurrencyPipe()">
+				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
 					<div>
 						<ion-label class="value" [class]="data.combinedPerformance.apr | valuestyle : 0"> {{ data.combinedPerformance.apr }} % </ion-label>
 					</div>
@@ -195,10 +195,10 @@
 	<ion-list class="performances">
 		<ion-item lines="none">
 			<div class="grid">
-				<div class="grid-cell left" (click)="switchCurrencyPipe()">
+				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
 					<div class="grid">
 						<ion-label class="value left">
-							{{ data.overallBalance | mcurrency : 'GWEI' : unit.pref }}
+							{{ data.overallBalance | mcurrency : 'GWEI' : unit.pref.Cons }}
 						</ion-label>
 					</div>
 					<div class="grid">
@@ -267,10 +267,10 @@
 					</div>
 				</div>
 
-				<div class="grid-cell left" (click)="switchCurrencyPipe()">
+				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
 					<div class="grid">
 						<ion-label class="value left" [class]="data.consensusPerformance.performance1d | valuestyle : 0">
-							{{ data.consensusPerformance.performance1d | mcurrency : 'GWEI' : unit.pref }}
+							{{ data.consensusPerformance.performance1d | mcurrency : 'GWEI' : unit.pref.Cons }}
 						</ion-label>
 					</div>
 					<div class="grid">
@@ -285,10 +285,10 @@
 					</div>
 				</div>
 
-				<div class="grid-cell" (click)="switchCurrencyPipe()">
+				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
 					<div>
 						<ion-label class="value" [class]="data.consensusPerformance.performance7d | valuestyle : 0">
-							{{ data.consensusPerformance.performance7d | mcurrency : 'GWEI' : unit.pref }}
+							{{ data.consensusPerformance.performance7d | mcurrency : 'GWEI' : unit.pref.Cons }}
 						</ion-label>
 					</div>
 					<div>
@@ -296,10 +296,10 @@
 					</div>
 				</div>
 
-				<div class="grid-cell left" (click)="switchCurrencyPipe()">
+				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
 					<div>
 						<ion-label class="value left" [class]="data.consensusPerformance.performance31d | valuestyle : 0">
-							{{ data.consensusPerformance.performance31d | mcurrency : 'GWEI' : unit.pref }}
+							{{ data.consensusPerformance.performance31d | mcurrency : 'GWEI' : unit.pref.Cons }}
 						</ion-label>
 					</div>
 					<div>
@@ -307,10 +307,10 @@
 					</div>
 				</div>
 
-				<div class="grid-cell" (click)="switchCurrencyPipe()">
+				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
 					<div>
 						<ion-label class="value" [class]="data.consensusPerformance.total | valuestyle : 0">
-							{{ data.consensusPerformance.total | mcurrency : 'GWEI' : unit.pref }}
+							{{ data.consensusPerformance.total | mcurrency : 'GWEI' : unit.pref.Cons }}
 						</ion-label>
 					</div>
 					<div>
@@ -329,10 +329,10 @@
 		<ion-list class="performances" *ngIf="hasNonSmoothingPoolAsWell">
 			<ion-item lines="none">
 				<div class="grid">
-					<div class="grid-cell left" (click)="switchCurrencyPipe()">
+					<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
 						<div>
 							<ion-label class="value left" [class]="data.executionPerformance.performance31d | valuestyle : 0">
-								{{ data.executionPerformance.performance31d | mcurrency : 'GWEI' : unit.pref }}
+								{{ data.executionPerformance.performance31d | mcurrency : 'GWEI' : unit.pref.Exec }}
 							</ion-label>
 						</div>
 						<div>
@@ -347,7 +347,7 @@
 						</div>
 					</div>
 
-					<div class="grid-cell" (click)="switchCurrencyPipe()">
+					<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
 						<div>
 							<ion-label class="value" [class]="data.executionPerformance.apr | valuestyle : 0"> {{ data.executionPerformance.apr }} % </ion-label>
 						</div>
@@ -376,8 +376,8 @@
 			<div class="grid">
 				<div class="grid-cell left">
 					<div>
-						<ion-label [class]="smoothingClaimed.plus(smoothingUnclaimed) | valuestyle : 0" class="value left" (click)="switchCurrencyPipe()">
-							{{ smoothingClaimed.plus(smoothingUnclaimed) | mcurrency : 'GWEI' : unit.pref }}
+						<ion-label [class]="smoothingClaimed.plus(smoothingUnclaimed) | valuestyle : 0" class="value left" (click)="unit.switchCurrencyPipe()">
+							{{ smoothingClaimed.plus(smoothingUnclaimed) | mcurrency : 'GWEI' : unit.pref.Exec }}
 						</ion-label>
 					</div>
 					<div>
@@ -393,8 +393,8 @@
 
 				<div class="grid-cell" *ngIf="displaySmoothingPool">
 					<div>
-						<ion-label [class]="smoothingUnclaimed | valuestyle : 0" class="value" (click)="switchCurrencyPipe()">
-							{{ smoothingUnclaimed | mcurrency : 'GWEI' : unit.pref }}
+						<ion-label [class]="smoothingUnclaimed | valuestyle : 0" class="value" (click)="unit.switchCurrencyPipe()">
+							{{ smoothingUnclaimed | mcurrency : 'GWEI' : unit.pref.Exec }}
 						</ion-label>
 					</div>
 					<div>
@@ -424,7 +424,7 @@
 							{{ rplProjectedClaim | mcurrency : 'WEI' : 'RPL_NAKED' }}
 						</ion-label>
 						<ion-label class="value left" *ngIf="rplState == 'conv'" [class]="rplProjectedClaim | valuestyle : 0">
-							{{ rplProjectedClaim | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
+							{{ rplProjectedClaim | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
 						</ion-label>
 					</div>
 					<div class="grid">
@@ -440,7 +440,7 @@
 							{{ totalRplEarned | mcurrency : 'WEI' : 'RPL_NAKED' }}
 						</ion-label>
 						<ion-label class="value" *ngIf="rplState == 'conv'" [class]="totalRplEarned | valuestyle : 0">
-							{{ totalRplEarned | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
+							{{ totalRplEarned | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
 						</ion-label>
 					</div>
 					<div>
@@ -462,7 +462,7 @@
 							{{ unclaimedRpl | mcurrency : 'WEI' : 'RPL_NAKED' }}
 						</ion-label>
 						<ion-label *ngIf="rplState == 'conv'" class="value left" [class]="unclaimedRpl | valuestyle : 0" (click)="switchRplStake()">
-							{{ unclaimedRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
+							{{ unclaimedRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
 						</ion-label>
 					</div>
 					<div>
@@ -501,10 +501,10 @@
 					</div>
 				</div>
 
-				<div class="grid-cell left" (click)="switchCurrencyPipe()">
+				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
 					<div class="grid">
 						<ion-label class="value left">
-							{{ 1 | mcurrency : 'ETHER' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
+							{{ 1 | mcurrency : 'ETHER' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
 						</ion-label>
 					</div>
 					<div class="grid">
@@ -535,7 +535,7 @@
 							class="value left"
 							*ngIf="rplState == 'conv'"
 							[class]="data.rocketpool.currentRpl | valuestyle : data.rocketpool.minRpl : data.rocketpool.maxRpl : -1">
-							{{ data.rocketpool.currentRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
+							{{ data.rocketpool.currentRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
 						</ion-label>
 						<ion-label
 							class="value left"
@@ -578,8 +578,8 @@
 							{{ data.rocketpool.minRpl | mcurrency : 'WEI' : 'NO_CURRENCY' }} - {{ data.rocketpool.maxRpl | mcurrency : 'WEI' : 'NO_CURRENCY' }} RPL
 						</ion-label>
 						<ion-label *ngIf="rplState == 'conv'" class="value left" (click)="switchRplStake()">
-							{{ data.rocketpool.minRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }} -
-							{{ data.rocketpool.maxRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref }}
+							{{ data.rocketpool.minRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }} -
+							{{ data.rocketpool.maxRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
 						</ion-label>
 					</div>
 					<div>
@@ -632,8 +632,8 @@
 						data.foreignValidator
 					">
 					<div>
-						<ion-label class="value" (click)="switchCurrencyPipe()">
-							{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref }}
+						<ion-label class="value" (click)="unit.switchCurrencyPipe()">
+							{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref.Cons }}
 						</ion-label>
 					</div>
 					<div>
@@ -812,7 +812,7 @@
 					Effective Balance
 				</span>
 			</ion-label>
-			<ion-label class="value" (click)="switchCurrencyPipe()">
+			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
 				{{ data.effectiveBalance | mcurrency : 'GWEI' : 'ETHER' }}
 			</ion-label>
 		</ion-item>
@@ -846,15 +846,15 @@
 
 		<ion-item lines="none" *ngIf="data.foreignValidator">
 			<ion-label class="stat-title"> Effective Balance </ion-label>
-			<ion-label class="value" (click)="switchCurrencyPipe()">
+			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
 				{{ data.effectiveBalance | mcurrency : 'GWEI' : 'ETHER' }}
 			</ion-label>
 		</ion-item>
 
-		<ion-item lines="none" *ngIf="(unit.pref != 'ETHER' && unit.pref != 'FINNEY') || classReference.currencyPipe != null">
-			<ion-label class="stat-title"> Ether Price </ion-label>
-			<ion-label class="value" (click)="switchCurrencyPipe()">
-				{{ 1 | mcurrency : 'ETHER' : unit.pref }}
+		<ion-item lines="none" *ngIf="(unit.pref.Cons.value != 'ETHER' && unit.pref.Cons.value != 'FINNEY') || classReference.currencyPipe.Cons != null">
+			<ion-label class="stat-title"> {{ unit.pref.Cons.getCurrencyName() }} Price </ion-label>
+			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
+				{{ 1 | mcurrency : 'ETHER' : unit.pref.Cons }}
 			</ion-label>
 		</ion-item>
 

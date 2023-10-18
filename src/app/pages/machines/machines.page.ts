@@ -11,6 +11,7 @@ import MachineUtils from 'src/app/utils/MachineUtils'
 
 import { Browser } from '@capacitor/browser'
 import { trigger, style, animate, transition } from '@angular/animations'
+import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-machines',
@@ -60,7 +61,8 @@ export class MachinesPage extends MachineController implements OnInit {
 		private storage: StorageService,
 		private oauthUtils: OAuthUtils,
 		private machineUtils: MachineUtils,
-		private ref: ChangeDetectorRef
+		private ref: ChangeDetectorRef,
+		protected api: ApiService
 	) {
 		super(storage)
 	}

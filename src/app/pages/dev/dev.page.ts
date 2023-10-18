@@ -4,7 +4,7 @@ import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils'
 import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page'
 import { Toast } from '@capacitor/toast'
 import { Clients } from '../../utils/ClientUpdateUtils'
-import { DevModeEnabled } from 'src/app/services/api.service'
+import { DevModeEnabled } from 'src/app/services/storage.service'
 
 @Component({
 	selector: 'app-dev',
