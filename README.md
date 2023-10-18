@@ -1,6 +1,4 @@
-[Uploading eth2-beaconchain-explorer-app-0.6.11.zip…]()
-![[beaconchain Dashboard](https://beaconcha.in/mobile)](.github/banner.png)  https://github.com/gobitfly/eth2-beaconchain-explorer-app/blob/main/.github/banner.png
-[![Build](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml/badge.svg)](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml)  
+
 
 # Beaconchain Dashboard App
 
