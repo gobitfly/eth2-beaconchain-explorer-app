@@ -620,6 +620,7 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 			formBody.set('grant_type', 'refresh_token')
 			formBody.set('refresh_token', refreshToken)
 			this.postData = formBody
+			this.options.headers = undefined
 		}
 	}
 }

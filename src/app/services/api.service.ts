@@ -285,7 +285,9 @@ export class ApiService extends CacheModule {
 
 	private async post(resource: string, data, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
 		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
-			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentTypeBasedOnData(data) } }
+			if (!(data instanceof FormData)) {
+				options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentTypeBasedOnData(data) } }
+			}
 		}
 
 		const result = await fetch(this.getResourceUrl(resource, endpoint), {
