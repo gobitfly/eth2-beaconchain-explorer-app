@@ -96,8 +96,8 @@
 
 			<ion-label>Monitor your {{ api.getNetwork().name }} staking machines on the go.</ion-label>
 			<br /><br />
-			<ion-button (click)="login()" [hidden]="loggedIn">Login</ion-button>
-			<ion-button [disabled]="!loggedIn" (click)="openBrowser('https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node')"
+			<ion-button (click)="login()" *ngIf="!loggedIn">Login</ion-button>
+			<ion-button *ngIf="loggedIn" (click)="openBrowser('https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node')"
 				>Setup Monitoring</ion-button
 			>
 		</div>

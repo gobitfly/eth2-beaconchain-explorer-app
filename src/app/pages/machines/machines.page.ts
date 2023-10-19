@@ -86,11 +86,12 @@ export class MachinesPage extends MachineController implements OnInit {
 	}
 
 	lastEnter = 0
-	ionViewWillEnter() {
+	async ionViewWillEnter() {
 		if (this.lastEnter == 0 || this.lastEnter + 5 * 60 * 1000 < Date.now()) {
 			this.lastEnter = Date.now()
 			this.getAndProcessData()
 		}
+		this.loggedIn = await this.storage.isLoggedIn()
 	}
 
 	delegater(func) {

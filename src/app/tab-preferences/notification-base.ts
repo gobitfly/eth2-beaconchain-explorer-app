@@ -3,7 +3,7 @@ import { Platform } from '@ionic/angular'
 import { ApiService } from 'src/app/services/api.service'
 import { CPU_THRESHOLD, HDD_THRESHOLD, RAM_THRESHOLD, SETTING_NOTIFY, StorageService } from 'src/app/services/storage.service'
 import { GetMobileSettingsRequest, MobileSettingsResponse, NotificationGetRequest } from '../requests/requests'
-import { AlertService, SETTINGS_PAGE } from '../services/alert.service'
+import { AlertService } from '../services/alert.service'
 import { SyncService } from '../services/sync.service'
 import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils'
 import FirebaseUtils from '../utils/FirebaseUtils'
@@ -80,13 +80,6 @@ export class NotificationBase implements OnInit {
 		if (this.platform.is('android')) {
 			const hasToken = await this.firebaseUtils.hasNotificationToken()
 			if (!hasToken) {
-				this.alerts.showError(
-					'Play Service',
-					'We could not enable notifications for your device which might be due to missing Google Play Services. Please note that notifications do not work without Google Play Services.',
-					SETTINGS_PAGE + 2
-				)
-				this.notify = false
-
 				return false
 			}
 		}
@@ -193,7 +186,12 @@ export class NotificationBase implements OnInit {
 	}
 
 	async notifyToggle() {
-		if (!(await this.isSupportedOnAndroid())) return
+		if (!(await this.isSupportedOnAndroid())) {
+			this.alerts.showInfo(
+				'Play Service',
+				'Your device can not receive push notifications. Please note that notifications do not work without Google Play Services. As an alternative you can configure webhook notifications on the beaconcha.in website, otherwise changing these settings will have no effect.'
+			)
+		}
 
 		if (this.platform.is('ios') && (await this.firebaseUtils.hasSeenConsentScreenAndNotConsented())) {
 			this.notify = false

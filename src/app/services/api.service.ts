@@ -19,12 +19,12 @@
  */
 
 import { Injectable } from '@angular/core'
-import { APIRequest, FormDataContainer, Method, RefreshTokenRequest } from '../requests/requests'
+import { APIRequest, ApiTokenResponse, FormDataContainer, Method, RefreshTokenRequest } from '../requests/requests'
 import { StorageService } from './storage.service'
 import { ApiNetwork } from '../models/StorageTypes'
 import { Mutex } from 'async-mutex'
 import { findConfigForKey, MAP } from '../utils/NetworkData'
-import { CapacitorHttp, HttpResponse } from '@capacitor/core'
+import { Capacitor, CapacitorHttp, HttpResponse } from '@capacitor/core'
 import { CacheModule } from '../utils/CacheModule'
 import axios, { AxiosResponse } from 'axios'
 import { HttpOptions } from '@capacitor/core'
@@ -76,6 +76,10 @@ export class ApiService extends CacheModule {
 		this.lastCacheInvalidate = Date.now()
 		//this.registerLogMiddleware()
 		this.initialize()
+		this.storage.getBooleanSetting('force_native_requests', false).then((result) => {
+			this.forceNativeAll = result
+			console.log('forcing native requests')
+		})
 		//this.isIOS15().then((result) => { this.forceNativeAll = result })
 	}
 
@@ -155,18 +159,25 @@ export class ApiService extends CacheModule {
 		const now = Date.now()
 		const req = new RefreshTokenRequest(user.refreshToken)
 
-		const formBody = new FormData()
-		formBody.set('grant_type', 'refresh_token')
-		formBody.set('refresh_token', user.refreshToken)
-		const url = this.getResourceUrl(req.resource, req.endPoint)
+		let result: ApiTokenResponse
+		let resp
+		if (Capacitor.isNativePlatform() && Capacitor.getPlatform() == 'android') {
+			const formBody = new FormData()
+			formBody.set('grant_type', 'refresh_token')
+			formBody.set('refresh_token', user.refreshToken)
+			const url = this.getResourceUrl(req.resource, req.endPoint)
 
-		// use js here for the request since the native http plugin performs inconsistent across platforms with non json requests
-		const resp = await fetch(url, {
-			method: 'POST',
-			body: formBody,
-			headers: await this.getAuthHeader(true),
-		})
-		const result = await resp.json()
+			resp = await fetch(url, {
+				method: 'POST',
+				body: formBody,
+				headers: await this.getAuthHeader(true),
+			})
+			result = await resp.json()
+		} else {
+			resp = await this.execute(req)
+			const response = req.parse(resp)
+			result = response[0]
+		}
 
 		console.log('Refresh token', result, resp)
 		if (!result || !result.access_token) {

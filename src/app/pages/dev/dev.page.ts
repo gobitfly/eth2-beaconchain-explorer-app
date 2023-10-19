@@ -15,6 +15,7 @@ export class DevPage extends Tab3Page implements OnInit {
 	packageOverride = 'default'
 	firebaseToken = ''
 	notificationConsent = false
+	forceNativeRequests = false
 
 	ngOnInit() {
 		this.notificationBase.disableToggleLock()
@@ -27,6 +28,7 @@ export class DevPage extends Tab3Page implements OnInit {
 		})
 
 		this.firebaseUtils.hasNotificationConsent().then((result) => (this.notificationConsent = result))
+		this.storage.getBooleanSetting('force_native_requests', false).then((result) => (this.forceNativeRequests = result))
 	}
 
 	// --- Development methods ---
@@ -102,6 +104,14 @@ export class DevPage extends Tab3Page implements OnInit {
 	resetLastFirebaseToken() {
 		this.storage.setItem('last_firebase_token', null)
 		this.alerts.confirmDialog('Restart', 'API requests cache cleared, restart?', 'OK', () => {
+			this.restartApp()
+		})
+	}
+
+	changeForceNativeRequests() {
+		this.storage.setBooleanSetting('force_native_requests', this.forceNativeRequests)
+		console.log('forceNative changed to ' + this.forceNativeRequests)
+		this.alerts.confirmDialog('Restart', 'Requires restart to take affect, restart?', 'OK', () => {
 			this.restartApp()
 		})
 	}

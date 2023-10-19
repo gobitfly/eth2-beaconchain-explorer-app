@@ -370,9 +370,19 @@ export class ValidatorUtils extends CacheModule {
 		}
 
 		const result = request.parse(response)[0]
-		this.currentEpoch = result.currentEpoch[0]
-		this.olderEpoch = result.olderEpoch[0]
-		this.rocketpoolStats = result.rocketpool_network_stats[0]
+		if (!result) {
+			console.warn('error getDashboardDataValidators', response)
+			return []
+		}
+		if (result.currentEpoch && result.currentEpoch.length > 1) {
+			this.currentEpoch = result.currentEpoch[0]
+		}
+		if (result.olderEpoch && result.olderEpoch.length > 1) {
+			this.olderEpoch = result.olderEpoch[0]
+		}
+		if (result.rocketpool_network_stats && result.rocketpool_network_stats.length > 1) {
+			this.rocketpoolStats = result.rocketpool_network_stats[0]
+		}
 		const validatorEffectivenessResponse = result.effectiveness
 		const validatorsResponse = result.validators
 

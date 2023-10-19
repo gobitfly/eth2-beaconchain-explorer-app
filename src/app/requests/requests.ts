@@ -182,8 +182,9 @@ export interface ValidatorResponse {
 	performance31d: BigNumber
 	performance365d: BigNumber
 	performance7d: BigNumber
-	rank7d: number
 	performancetotal: BigNumber
+	rank7d: number
+	rankpercentage: number
 }
 
 export interface AttestationPerformanceResponse {
@@ -605,6 +606,13 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 	requiresAuth = true
 	ignoreFails = true
 	maxCacheAge = 1000
+	options = {
+		url: null,
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+			Accept: 'application/json',
+		},
+	}
 
 	parse(response: Response): ApiTokenResponse[] {
 		if (response && response.data) return [response.data] as ApiTokenResponse[]

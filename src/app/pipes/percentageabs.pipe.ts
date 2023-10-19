@@ -25,17 +25,31 @@ import BigNumber from 'bignumber.js'
 	name: 'percentageabs',
 })
 export class PercentageabsPipe implements PipeTransform {
-	transform(value_: number | BigNumber, max_: number | BigNumber, percentMode: boolean, preablePrct = ''): string {
-		const value = value_ instanceof BigNumber ? value_ : new BigNumber(value_)
-		const max = max_ instanceof BigNumber ? max_ : new BigNumber(max_)
-
+	/**
+	 * Takes an absolute value (`value_`) and a relative percentage representation of it (`percentage_`  ) and returns a formatted string of one of those (based on `percentMode`).
+	 *
+	 * @param {number | BigNumber} value_ - The absolute value to be shown (used when `percentMode` is false).
+	 * @param {number | BigNumber} percentage_ - The relative percentage representation for the value (used when `percentMode` is true)
+	 * @param {boolean} percentMode - A flag indicating whether to use `value_` (false) or `percentage_` (true).
+	 * @param {string} [prefix=''] - An optional prefix to prepend to the resulting string if the absolute value is shown.
+	 * @returns {string} The formatted string.
+	 */
+	transform(value_: number | BigNumber, percentage_: number | BigNumber, percentMode: boolean, prefix = ''): string {
 		if (percentMode) {
-			let percentValue = value.dividedBy(max).multipliedBy(100).decimalPlaces(1)
-			if (percentValue.toNumber() <= 0.1) {
-				percentValue = value.dividedBy(max).multipliedBy(100).decimalPlaces(3)
+			const percentage = percentage_ instanceof BigNumber ? percentage_ : new BigNumber(percentage_)
+			const percentageNumber = percentage.toNumber()
+			if (percentageNumber <= 0.1) {
+				return prefix + '0.1 %'
 			}
-			return preablePrct + percentValue.toString() + ' %'
+			let decimalPlaces = 1
+			if (percentageNumber < 1.0) {
+				decimalPlaces = 3
+			} else if (percentageNumber < 10.0) {
+				decimalPlaces = 2
+			}
+			return prefix + percentage.decimalPlaces(decimalPlaces).toString() + ' %'
 		} else {
+			const value = value_ instanceof BigNumber ? value_ : new BigNumber(value_)
 			return value.toFormat()
 		}
 	}
