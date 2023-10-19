@@ -75,6 +75,10 @@ export class ApiService extends CacheModule {
 		this.lastCacheInvalidate = Date.now()
 		//this.registerLogMiddleware()
 		this.updateNetworkConfig()
+		this.storage.getBooleanSetting('force_native_requests', false).then((result) => {
+			this.forceNativeAll = result
+			console.log('forcing native requests')
+		})
 		//this.isIOS15().then((result) => { this.forceNativeAll = result })
 	}
 

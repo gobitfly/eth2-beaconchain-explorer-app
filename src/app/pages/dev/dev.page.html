@@ -35,6 +35,18 @@
 		</ion-item>
 
 		<ion-item lines="none">
+			<ion-icon slot="start" name="bug-outline"></ion-icon>
+			<ion-toggle
+				id="nativeRequests"
+				[(ngModel)]="forceNativeRequests"
+				(ionChange)="changeForceNativeRequests()"
+				labelPlacement="start"
+				justify="space-between"
+				>Force All Native POST</ion-toggle
+			>
+		</ion-item>
+
+		<ion-item lines="none">
 			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
 			<ion-select label="Override Premium" value="" [(ngModel)]="packageOverride" (ionChange)="changePackage()" interface="popover">
 				<ion-select-option value="default"> Use real package </ion-select-option>
