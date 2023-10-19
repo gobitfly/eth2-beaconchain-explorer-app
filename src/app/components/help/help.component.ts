@@ -66,7 +66,7 @@ export class HelpComponent implements OnInit {
 		})
 		this.isGnosis = this.api.isGnosis()
 		this.ethereumNetworkKey = this.api.getNetwork().key
-		if(this.ethereumNetworkKey == 'gnosis'){
+		if (this.ethereumNetworkKey == 'gnosis') {
 			this.ethereumNetworkKey = 'main'
 		}
 	}
