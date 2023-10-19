@@ -44,6 +44,8 @@ export class HelpComponent implements OnInit {
 
 	isGnosis: boolean
 
+	private ethereumNetworkKey: string
+
 	constructor(
 		private oauthUtils: OAuthUtils,
 		private validator: ValidatorUtils,
@@ -63,6 +65,10 @@ export class HelpComponent implements OnInit {
 			this.isAlreadyLoggedIn = result
 		})
 		this.isGnosis = this.api.isGnosis()
+		this.ethereumNetworkKey = this.api.getNetwork().key
+		if(this.ethereumNetworkKey == 'gnosis'){
+			this.ethereumNetworkKey = 'main'
+		}
 	}
 
 	async openBrowser(link) {
@@ -82,7 +88,7 @@ export class HelpComponent implements OnInit {
 
 	async switchNetwork() {
 		await changeNetwork(
-			this.api.isGnosis() ? 'main' : 'gnosis',
+			this.api.isGnosis() ? this.ethereumNetworkKey : 'gnosis',
 			this.storage,
 			this.api,
 			this.validatorUtils,
