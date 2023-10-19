@@ -201,9 +201,10 @@ export class StorageService extends CacheModule {
 					'CapacitorStorage.prefered_unit',
 					'CapacitorStorage.network_preferences',
 					'CapacitorStorage.validators_main',
-					'CapacitorStorage.validators_pyrmont',
+					'CapacitorStorage.validators_holesky',
 					'CapacitorStorage.validators_prater',
-					'CapacitorStorage.validators_staging',
+					'CapacitorStorage.validators_sepolia',
+					'CapacitorStorage.validators_gnosis',
 					'CapacitorStorage.auth_user',
 				],
 			})
