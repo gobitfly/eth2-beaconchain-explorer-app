@@ -78,7 +78,15 @@ export class UnitconvService {
 	}
 
 	public async changeCurrency(value: string) {
+		UnitconvService.currencyPipe = { Cons: null, Exec: null, RPL: null }
+
 		this.pref.Cons = this.createCurrency(value, 'cons')
+		if (this.isDefaultCurrency(this.pref.Cons)) {
+			this.pref.Exec = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Exec), 'exec')
+		} else {
+			this.pref.Exec = this.createCurrency(value, 'exec')
+		}
+
 		await this.updatePriceData()
 	}
 

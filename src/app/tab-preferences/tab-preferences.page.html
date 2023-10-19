@@ -55,7 +55,6 @@
 			<ion-icon slot="start" name="wallet-outline" class="opacity-icon"></ion-icon>
 			<ion-select
 				label="Display Currency"
-				[value]="unit.getNetworkDefaultCurrency(unit.pref.Cons)"
 				[(ngModel)]="currentFiatCurrency"
 				(ionChange)="changeCurrency()"
 				interface="popover"

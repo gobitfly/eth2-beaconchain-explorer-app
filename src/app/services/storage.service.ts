@@ -92,7 +92,7 @@ export class StorageService extends CacheModule {
 	}
 
 	async setNetworkPreferences(value: StorageTypes.ApiNetwork) {
-		return this.setObject(PREFERENCES, value)
+		return await this.setObject(PREFERENCES, value)
 	}
 
 	async loadPreferencesToggles(network: string): Promise<boolean> {

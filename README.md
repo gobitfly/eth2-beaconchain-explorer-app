@@ -70,7 +70,7 @@ Build the the app at least once before proceeding:
 
 Make sure port 8100 is accessable on your computer and use the following command to run a livereload server
 
-`ionic capacitor run android --livereload --external --host=192.168.0.124 --disableHostCheck`
+`ionic cap run android --livereload --external --host=192.168.1.64 --disableHostCheck --configuration=development`
 
 Adapt the --host param to match your computers IP. 
 
@@ -98,7 +98,7 @@ Build the the app at least once before proceeding:
 
 Make sure port 8100 is accessable on your mac and use the following command to run a livereload server
 
-`ionic capacitor run ios --livereload --external --host=192.168.0.124 --disableHostCheck`
+`ionic cap run ios --livereload --external --host=192.168.1.64 --disableHostCheck --configuration=development`
 
 Adapt the --host param to match your macs IP. 
 

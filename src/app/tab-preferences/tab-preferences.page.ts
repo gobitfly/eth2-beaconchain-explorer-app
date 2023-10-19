@@ -321,6 +321,7 @@ export class Tab3Page {
 		await this.api.initialize()
 		await this.notificationBase.loadAllToggles()
 		await this.unit.networkSwitchReload()
+		//await this.unit.changeCurrency(this.currentFiatCurrency)
 		this.validatorUtils.notifyListeners()
 	}
 
