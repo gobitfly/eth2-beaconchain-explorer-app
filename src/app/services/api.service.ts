@@ -19,14 +19,12 @@
  */
 
 import { Injectable } from '@angular/core'
-import { APIRequest, ApiTokenResponse, FormDataContainer, Method, RefreshTokenRequest } from '../requests/requests'
+import { APIRequest, Method, RefreshTokenRequest } from '../requests/requests'
 import { StorageService } from './storage.service'
 import { ApiNetwork } from '../models/StorageTypes'
 import { Mutex } from 'async-mutex'
 import { findConfigForKey, MAP } from '../utils/NetworkData'
-import { Capacitor, CapacitorHttp, HttpResponse } from '@capacitor/core'
 import { CacheModule } from '../utils/CacheModule'
-import axios, { AxiosResponse } from 'axios'
 import { HttpOptions } from '@capacitor/core'
 
 const LOGTAG = '[ApiService]'
@@ -37,27 +35,17 @@ const SERVER_TIMEOUT = 25000
 	providedIn: 'root',
 })
 export class ApiService extends CacheModule {
-	private isInitialized = false
-
 	networkConfig: ApiNetwork
 
 	public connectionStateOK = true
 
-	public isAuthorized = false
-
-	awaitingResponses: Map<string, Mutex> = new Map()
+	private awaitingResponses: Map<string, Mutex> = new Map()
 
 	debug = false
 
 	public lastRefreshed = 0 // only updated by calls that have the updatesLastRefreshState flag enabled
 
-	lastCacheInvalidate = 0
-
-	private httpLegacy = axios.create({
-		timeout: SERVER_TIMEOUT,
-	})
-
-	forceNativeAll = false
+	private lastCacheInvalidate = 0
 
 	constructor(private storage: StorageService) {
 		super('api', 6 * 60 * 1000, storage)
@@ -74,13 +62,8 @@ export class ApiService extends CacheModule {
 			window.localStorage.setItem('debug', this.debug ? 'true' : 'false')
 		})
 		this.lastCacheInvalidate = Date.now()
-		//this.registerLogMiddleware()
+
 		this.initialize()
-		this.storage.getBooleanSetting('force_native_requests', false).then((result) => {
-			this.forceNativeAll = result
-			console.log('forcing native requests')
-		})
-		//this.isIOS15().then((result) => { this.forceNativeAll = result })
 	}
 
 	mayInvalidateOnFaultyConnectionState() {
@@ -104,7 +87,6 @@ export class ApiService extends CacheModule {
 			}
 			return config
 		})
-		this.isInitialized = true
 	}
 
 	networkName = null
@@ -159,25 +141,25 @@ export class ApiService extends CacheModule {
 		const now = Date.now()
 		const req = new RefreshTokenRequest(user.refreshToken)
 
-		let result: ApiTokenResponse
-		let resp
-		if (Capacitor.isNativePlatform() && Capacitor.getPlatform() == 'android') {
-			const formBody = new FormData()
-			formBody.set('grant_type', 'refresh_token')
-			formBody.set('refresh_token', user.refreshToken)
-			const url = this.getResourceUrl(req.resource, req.endPoint)
+		// let result: ApiTokenResponse
+		// let resp
+		// if (Capacitor.isNativePlatform() && Capacitor.getPlatform() == 'ios') {
+		// 	resp = await this.execute(req)
+		// 	const response = req.parse(resp)
+		// 	result = response[0]
+		// } else {
+		const formBody = new FormData()
+		formBody.set('grant_type', 'refresh_token')
+		formBody.set('refresh_token', user.refreshToken)
+		const url = this.getResourceUrl(req.resource, req.endPoint)
 
-			resp = await fetch(url, {
-				method: 'POST',
-				body: formBody,
-				headers: await this.getAuthHeader(true),
-			})
-			result = await resp.json()
-		} else {
-			resp = await this.execute(req)
-			const response = req.parse(resp)
-			result = response[0]
-		}
+		const resp = await fetch(url, {
+			method: 'POST',
+			body: formBody,
+			headers: await this.getAuthHeader(true),
+		})
+		const result = await resp.json()
+		// }
 
 		console.log('Refresh token', result, resp)
 		if (!result || !result.access_token) {
@@ -260,27 +242,13 @@ export class ApiService extends CacheModule {
 		console.log(LOGTAG + ' Send request: ' + request.resource, request.method, request)
 		const startTs = Date.now()
 
-		if (this.forceNativeAll) {
-			// android appears to have issues with native POST right now
-			console.log('force native all')
-			request.nativeHttp = false
-		}
-
 		let response: Promise<Response>
 		switch (request.method) {
 			case Method.GET:
-				if (request.nativeHttp) {
-					response = this.get(request.resource, request.endPoint, request.ignoreFails, options)
-				} else {
-					response = this.legacyGet(request.resource, request.endPoint, request.ignoreFails, options)
-				}
+				response = this.get(request.resource, request.endPoint, request.ignoreFails, options)
 				break
 			case Method.POST:
-				if (request.nativeHttp) {
-					response = this.post(request.resource, request.postData, request.endPoint, request.ignoreFails, options)
-				} else {
-					response = this.legacyPost(request.resource, request.postData, request.endPoint, request.ignoreFails, options)
-				}
+				response = this.post(request.resource, request.postData, request.endPoint, request.ignoreFails, options)
 				break
 			default:
 				throw 'Unsupported method: ' + request.method
@@ -320,87 +288,43 @@ export class ApiService extends CacheModule {
 	}
 
 	private async get(resource: string, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
-		const getOptions = {
-			url: this.getResourceUrl(resource, endpoint),
-			method: 'get',
+		const result = await fetch(this.getResourceUrl(resource, endpoint), {
+			method: 'GET',
 			headers: options.headers,
-		}
-		return CapacitorHttp.get(getOptions)
-			.catch((err) => {
-				this.updateConnectionState(ignoreFails, false)
-				console.warn('Connection err', err)
-			})
-			.then((response: Response) => this.validateResponse(ignoreFails, response))
-	}
-
-	private async post(resource: string, data: unknown, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
-		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
-			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentType(data) } }
-		}
-
-		const postOptions = {
-			url: this.getResourceUrl(resource, endpoint),
-			headers: options.headers,
-			data: this.formatPostData(data),
-			method: 'post',
-		}
-		return CapacitorHttp.post(postOptions) //options)
-			.catch((err) => {
-				this.updateConnectionState(ignoreFails, false)
-				console.warn('Connection err', err)
-			})
-			.then((response: Response) => this.validateResponse(ignoreFails, response))
-	}
-
-	private async legacyGet(resource: string, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
-		return this.httpLegacy
-			.get(this.getResourceUrl(resource, endpoint), options)
-			.catch((err) => {
-				this.updateConnectionState(ignoreFails, false)
-				console.warn('Connection err', err)
-			})
-			.then((response: AxiosResponse<unknown>) => this.validateResponseLegacy(ignoreFails, response))
-	}
-
-	private async legacyPost(
-		resource: string,
-		data: unknown,
-		endpoint = 'default',
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		ignoreFails = false,
-		options: HttpOptions = { url: null, headers: {} }
-	) {
-		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
-			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentType(data) } }
-		}
-		/* return this.httpLegacy
-      .post(await this.getResourceUrl(resource, endpoint),JSON.stringify(this.formatPostData(data)), options)
-    .catch((err) => {
-      this.updateConnectionState(ignoreFails, false);
-      console.warn("Connection err", err)
-    })
-    .then((response: AxiosResponse<any>) => this.validateResponseLegacy(ignoreFails, response));
-    */
-		const resp = await fetch(this.getResourceUrl(resource, endpoint), {
-			method: 'POST',
-			body: JSON.stringify(this.formatPostData(data)),
-			headers: options.headers,
+		}).catch((err) => {
+			this.updateConnectionState(ignoreFails, false)
+			console.warn('Connection err', err)
 		})
-		if (resp) {
-			return resp.json()
-		} else {
-			return null
+		if (!result) return null
+		return await this.validateResponse(ignoreFails, result)
+	}
+
+	private async post(resource: string, data, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
+		const contentType = this.getContentType(data)
+		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
+			options.headers = { ...options.headers, ...{ 'Content-Type': contentType } }
 		}
+
+		const result = await fetch(this.getResourceUrl(resource, endpoint), {
+			method: 'POST',
+			headers: options.headers,
+			body: this.formatPostData(data),
+		}).catch((err) => {
+			this.updateConnectionState(ignoreFails, false)
+			console.warn('Connection err', err)
+		})
+		if (!result) return null
+		return await this.validateResponse(ignoreFails, result)
 	}
 
 	private getContentType(data: unknown): string {
-		if (data instanceof FormDataContainer) return 'application/x-www-form-urlencoded'
+		if (data instanceof FormData) return 'application/x-www-form-urlencoded'
 		return 'application/json'
 	}
 
-	private formatPostData(data: unknown) {
-		if (data instanceof FormDataContainer) return data.getBody()
-		return data
+	private formatPostData(data): BodyInit {
+		if (data instanceof FormData) return data
+		return JSON.stringify(data)
 	}
 
 	private updateConnectionState(ignoreFails: boolean, working: boolean) {
@@ -409,37 +333,26 @@ export class ApiService extends CacheModule {
 		console.log(LOGTAG + ' setting status', working)
 	}
 
-	private validateResponseLegacy(ignoreFails, response: AxiosResponse<unknown>): Response {
-		if (!response || !response.data) {
-			// || !response.data.data
+	private async validateResponse(ignoreFails, response: globalThis.Response): Promise<Response> {
+		if (!response) {
+			console.warn('can not get response', response)
 			this.updateConnectionState(ignoreFails, false)
-
-			return {
-				cached: false,
-				data: null,
-				status: response.status,
-				headers: response.headers,
-				url: null,
-			}
+			return
 		}
-		this.updateConnectionState(ignoreFails, true)
-		return {
-			cached: false,
-			data: response.data,
-			status: response.status,
-			headers: response.headers,
-			url: response.config.url,
-		}
-	}
-
-	private validateResponse(ignoreFails, response: Response): Response {
-		if (!response || !response.data) {
-			// || !response.data.data
+		const jsonData = await response.json()
+		if (!jsonData) {
+			console.warn('not json response', response, jsonData)
 			this.updateConnectionState(ignoreFails, false)
 			return
 		}
 		this.updateConnectionState(ignoreFails, true)
-		return response
+		return {
+			data: jsonData,
+			status: response.status,
+			headers: response.headers,
+			url: response.url,
+			cached: false,
+		} as Response
 	}
 
 	getResourceUrl(resource: string, endpoint = 'default'): string {
@@ -508,8 +421,12 @@ export class ApiService extends CacheModule {
 	}
 }
 
-export interface Response extends HttpResponse {
+export interface Response {
 	cached: boolean
+	data
+	headers: Headers
+	status: number
+	url: string
 }
 
 export function initializeApiService(service: ApiService): () => Promise<void> {
