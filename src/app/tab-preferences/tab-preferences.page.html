@@ -56,7 +56,7 @@
 			<ion-select
 				label="Display Currency"
 				[value]="unit.getNetworkDefaultCurrency(unit.pref.Cons)"
-				[(ngModel)]="unit.pref.Cons.value"
+				[(ngModel)]="currentFiatCurrency"
 				(ionChange)="changeCurrency()"
 				interface="popover"
 				*ngIf="overrideDisplayCurrency == null">

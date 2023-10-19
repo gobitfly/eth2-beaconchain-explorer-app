@@ -81,6 +81,7 @@ export class Tab3Page {
 	premiumLabel = ''
 
 	protected package = ''
+	protected currentFiatCurrency
 
 	constructor(
 		protected api: ApiService,
@@ -103,6 +104,9 @@ export class Tab3Page {
 	) {}
 
 	ngOnInit() {
+		this.unit.getCurrentConsFiat().then((result) => {
+			this.currentFiatCurrency = result
+		})
 		this.theme.isDarkThemed().then((result) => (this.darkMode = result))
 
 		this.theme.getThemeColor().then((result) => (this.themeColor = result))
@@ -230,13 +234,13 @@ export class Tab3Page {
 
 	overrideDisplayCurrency = null
 	private changeCurrencyLocked = false
-	changeCurrency() {
+	async changeCurrency() {
 		if (this.changeCurrencyLocked) return
 		this.changeCurrencyLocked = true
 
 		this.overrideDisplayCurrency = this.unit.pref
 
-		this.unit.updatePriceData()
+		await this.unit.changeCurrency(this.currentFiatCurrency)
 		this.unit.save()
 
 		setTimeout(() => {

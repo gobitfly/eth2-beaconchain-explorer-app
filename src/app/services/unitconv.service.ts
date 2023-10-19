@@ -77,6 +77,15 @@ export class UnitconvService {
 		await this.init()
 	}
 
+	public async changeCurrency(value: string) {
+		this.pref.Cons = this.createCurrency(value, 'cons')
+		await this.updatePriceData()
+	}
+
+	public async getCurrentConsFiat() {
+		return this.createCurrency(this.getPref(await this.loadStored(STORAGE_KEY_CONS), this.getNetworkDefaultCurrency('cons')), 'cons').value
+	}
+
 	private async loadStored(key: string): Promise<StoredPref> {
 		const result = await this.storage.getObject(key)
 		if (!result) return null
