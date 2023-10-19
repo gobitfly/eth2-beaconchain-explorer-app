@@ -607,12 +607,20 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 		else return []
 	}
 
-	constructor(refreshToken: string) {
+	constructor(refreshToken: string, isIOS: boolean) {
 		super()
-		const formBody = new FormData()
-		formBody.set('grant_type', 'refresh_token')
-		formBody.set('refresh_token', refreshToken)
-		this.postData = formBody
+		// ¯\_(ツ)_/¯
+		if (isIOS) {
+			this.postData = {
+				grant_type: 'refresh_token',
+				refresh_token: refreshToken,
+			}
+		} else {
+			const formBody = new FormData()
+			formBody.set('grant_type', 'refresh_token')
+			formBody.set('refresh_token', refreshToken)
+			this.postData = formBody
+		}
 	}
 }
 

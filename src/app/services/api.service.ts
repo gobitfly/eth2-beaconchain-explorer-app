@@ -25,7 +25,7 @@ import { ApiNetwork } from '../models/StorageTypes'
 import { Mutex } from 'async-mutex'
 import { findConfigForKey, MAP } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
-import { HttpOptions } from '@capacitor/core'
+import { Capacitor, HttpOptions } from '@capacitor/core'
 
 const LOGTAG = '[ApiService]'
 
@@ -139,27 +139,11 @@ export class ApiService extends CacheModule {
 		}
 
 		const now = Date.now()
-		const req = new RefreshTokenRequest(user.refreshToken)
+		const req = new RefreshTokenRequest(user.refreshToken, Capacitor.getPlatform() == 'ios')
 
-		// let result: ApiTokenResponse
-		// let resp
-		// if (Capacitor.isNativePlatform() && Capacitor.getPlatform() == 'ios') {
-		// 	resp = await this.execute(req)
-		// 	const response = req.parse(resp)
-		// 	result = response[0]
-		// } else {
-		const formBody = new FormData()
-		formBody.set('grant_type', 'refresh_token')
-		formBody.set('refresh_token', user.refreshToken)
-		const url = this.getResourceUrl(req.resource, req.endPoint)
-
-		const resp = await fetch(url, {
-			method: 'POST',
-			body: formBody,
-			headers: await this.getAuthHeader(true),
-		})
-		const result = await resp.json()
-		// }
+		const resp = await this.execute(req)
+		const response = req.parse(resp)
+		const result = response[0]
 
 		console.log('Refresh token', result, resp)
 		if (!result || !result.access_token) {
@@ -300,15 +284,14 @@ export class ApiService extends CacheModule {
 	}
 
 	private async post(resource: string, data, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
-		const contentType = this.getContentType(data)
 		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
-			options.headers = { ...options.headers, ...{ 'Content-Type': contentType } }
+			options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentTypeBasedOnData(data) } }
 		}
 
 		const result = await fetch(this.getResourceUrl(resource, endpoint), {
 			method: 'POST',
 			headers: options.headers,
-			body: this.formatPostData(data),
+			body: this.formatPostData(data, resource),
 		}).catch((err) => {
 			this.updateConnectionState(ignoreFails, false)
 			console.warn('Connection err', err)
@@ -317,13 +300,13 @@ export class ApiService extends CacheModule {
 		return await this.validateResponse(ignoreFails, result)
 	}
 
-	private getContentType(data: unknown): string {
+	private getContentTypeBasedOnData(data: unknown): string {
 		if (data instanceof FormData) return 'application/x-www-form-urlencoded'
 		return 'application/json'
 	}
 
-	private formatPostData(data): BodyInit {
-		if (data instanceof FormData) return data
+	private formatPostData(data, resource: string): BodyInit {
+		if (data instanceof FormData || resource.indexOf('user/token') != -1) return data
 		return JSON.stringify(data)
 	}
 

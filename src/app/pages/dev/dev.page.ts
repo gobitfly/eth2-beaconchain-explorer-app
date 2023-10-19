@@ -31,11 +31,17 @@ export class DevPage extends Tab3Page implements OnInit {
 
 	// --- Development methods ---
 
-	forceTokenRefresh() {
-		this.api.refreshToken()
-		Toast.show({
-			text: 'Token refreshed',
-		})
+	async forceTokenRefresh() {
+		const result = await this.api.refreshToken()
+		if (result) {
+			Toast.show({
+				text: 'Token refreshed',
+			})
+		} else {
+			Toast.show({
+				text: 'Token refreshed failed :(',
+			})
+		}
 	}
 
 	clearApiCache() {
