@@ -26,6 +26,12 @@ import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 
 import { Browser } from '@capacitor/browser'
 import { ApiService } from 'src/app/services/api.service'
+import { changeNetwork } from 'src/app/tab-preferences/tab-preferences.page'
+import { UnitconvService } from 'src/app/services/unitconv.service'
+import { NotificationBase } from 'src/app/tab-preferences/notification-base'
+import ThemeUtils from 'src/app/utils/ThemeUtils'
+import { AlertService } from 'src/app/services/alert.service'
+import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 
 @Component({
 	selector: 'app-help',
@@ -36,18 +42,27 @@ export class HelpComponent implements OnInit {
 	@Input() onlyGuides: boolean
 	isAlreadyLoggedIn = false
 
+	isGnosis: boolean
+
 	constructor(
 		private oauthUtils: OAuthUtils,
 		private validator: ValidatorUtils,
 		private storage: StorageService,
 		private router: Router,
-		public api: ApiService
+		public api: ApiService,
+		private validatorUtils: ValidatorUtils,
+		private unit: UnitconvService,
+		private notificationBase: NotificationBase,
+		private theme: ThemeUtils,
+		private alert: AlertService,
+		private merchant: MerchantUtils
 	) {}
 
 	ngOnInit() {
 		this.storage.isLoggedIn().then((result) => {
 			this.isAlreadyLoggedIn = result
 		})
+		this.isGnosis = this.api.isGnosis()
 	}
 
 	async openBrowser(link) {
@@ -63,5 +78,21 @@ export class HelpComponent implements OnInit {
 			const hasValidators = await this.validator.hasLocalValdiators()
 			if (!hasValidators) this.router.navigate(['/tabs/validators'])
 		}
+	}
+
+	async switchNetwork() {
+		await changeNetwork(
+			this.api.isGnosis() ? 'main' : 'gnosis',
+			this.storage,
+			this.api,
+			this.validatorUtils,
+			this.unit,
+			this.notificationBase,
+			this.theme,
+			this.alert,
+			this.merchant,
+			true
+		)
+		this.isGnosis = this.api.isGnosis()
 	}
 }

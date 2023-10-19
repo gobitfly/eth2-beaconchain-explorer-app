@@ -317,17 +317,18 @@ export class Tab3Page {
 	}
 
 	async changeNetwork() {
-		const newConfig = findConfigForKey(this.network)
-		await this.storage.clearCache()
-		await this.api.clearCache()
-		await this.validatorUtils.clearCache()
-
-		await this.storage.setNetworkPreferences(newConfig)
-		await this.api.initialize()
-		await this.notificationBase.loadAllToggles()
-		await this.unit.networkSwitchReload()
-		//await this.unit.changeCurrency(this.currentFiatCurrency)
-		this.validatorUtils.notifyListeners()
+		await changeNetwork(
+			this.network,
+			this.storage,
+			this.api,
+			this.validatorUtils,
+			this.unit,
+			this.notificationBase,
+			this.theme,
+			this.alerts,
+			this.merchant,
+			false
+		)
 	}
 
 	async openIconCredit() {
@@ -440,5 +441,52 @@ export class Tab3Page {
 		})
 
 		await alert.present()
+	}
+}
+
+export async function changeNetwork(
+	network: string,
+	storage: StorageService,
+	api: ApiService,
+	validatorUtils: ValidatorUtils,
+	unit: UnitconvService,
+	notificationBase: NotificationBase,
+	theme: ThemeUtils,
+	alertService: AlertService,
+	merchant: MerchantUtils,
+	forceThemeSwitch: boolean
+) {
+	const darkTheme = await theme.isDarkThemed()
+
+	const newConfig = findConfigForKey(network)
+	await storage.clearCache()
+	await api.clearCache()
+	await validatorUtils.clearCache()
+
+	await storage.setNetworkPreferences(newConfig)
+	await api.initialize()
+	await notificationBase.loadAllToggles()
+	await unit.networkSwitchReload()
+	//await this.unit.changeCurrency(this.currentFiatCurrency)
+	validatorUtils.notifyListeners()
+
+	const currentTheme = theme.currentThemeColor
+
+	if (forceThemeSwitch && (currentTheme == '' || currentTheme == 'gnosis')) {
+		theme.undoColor()
+		setTimeout(() => {
+			theme.toggle(darkTheme, true, api.isGnosis() ? 'gnosis' : ''), 50
+		})
+	} else {
+		const hasTheming = await merchant.hasPremiumTheming()
+		if (hasTheming) return
+		if (currentTheme == '' && !api.isGnosis()) return
+		if (currentTheme == 'gnosis' && api.isGnosis()) return
+		alertService.confirmDialog('Switch App Theme', 'Do you want to switch to the free ' + api.getNetwork().name + ' App theme?', 'Sure', () => {
+			theme.undoColor()
+			setTimeout(() => {
+				theme.toggle(darkTheme, true, api.isGnosis() ? 'gnosis' : ''), 50
+			})
+		})
 	}
 }
