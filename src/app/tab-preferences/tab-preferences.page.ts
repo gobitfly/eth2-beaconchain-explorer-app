@@ -157,8 +157,13 @@ export class Tab3Page {
 		this.updateUtils.convertOldToNewClientSettings()
 	}
 
+	private loadingNotificationPage = false
 	async goToNotificationPage() {
+		if (this.loadingNotificationPage) return
+		this.loadingNotificationPage = true
+
 		await this.sync.syncAllSettings(true)
+		this.loadingNotificationPage = false
 		this.router.navigate(['/notifications'])
 	}
 
