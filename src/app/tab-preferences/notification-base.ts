@@ -109,7 +109,6 @@ export class NotificationBase implements OnInit {
 			)
 			//network = 'prater' // use me, dear developer
 		}
-		console.log('result', results, network)
 
 		const clientsToActivate = <string[]>[]
 
@@ -299,6 +298,7 @@ export class NotificationBase implements OnInit {
 			this.sync.changeClient(clientKey, clientKey)
 		} else {
 			this.sync.changeClient(clientKey, 'null')
+			this.api.deleteAllCacheKeyContains(clientKey)
 		}
 	}
 

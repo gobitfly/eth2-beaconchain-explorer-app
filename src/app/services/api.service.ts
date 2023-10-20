@@ -48,12 +48,12 @@ export class ApiService extends CacheModule {
 	private lastCacheInvalidate = 0
 
 	constructor(private storage: StorageService) {
-		super('api', 6 * 60 * 1000, storage)
-		this.storage.getBooleanSetting('migrated_4_3_0', false).then((migrated) => {
+		super('api', 6 * 60 * 1000, storage, false)
+		this.storage.getBooleanSetting('migrated_4_4_0', false).then((migrated) => {
 			if (!migrated) {
 				this.clearHardCache()
-				console.info('Cleared hard cache storage as part of 4.3.0 migration')
-				this.storage.setBooleanSetting('migrated_4_3_0', true)
+				console.info('Cleared hard cache storage as part of 4.4.0 migration')
+				this.storage.setBooleanSetting('migrated_4_4_0', true)
 			}
 		})
 
@@ -62,8 +62,6 @@ export class ApiService extends CacheModule {
 			window.localStorage.setItem('debug', this.debug ? 'true' : 'false')
 		})
 		this.lastCacheInvalidate = Date.now()
-
-		this.initialize()
 	}
 
 	mayInvalidateOnFaultyConnectionState() {
@@ -87,6 +85,8 @@ export class ApiService extends CacheModule {
 			}
 			return config
 		})
+		await this.init()
+		console.log('API SERVICE INITIALISED')
 	}
 
 	networkName = null
@@ -412,8 +412,4 @@ export interface Response {
 	headers: Headers
 	status: number
 	url: string
-}
-
-export function initializeApiService(service: ApiService): () => Promise<void> {
-	return () => service.initialize()
 }

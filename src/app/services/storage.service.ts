@@ -21,7 +21,7 @@
 import { Injectable, isDevMode } from '@angular/core'
 import { Plugins } from '@capacitor/core'
 import * as StorageTypes from '../models/StorageTypes'
-import { findConfigForKey } from '../utils/NetworkData'
+import { MAP, findConfigForKey } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
 import BigNumber from 'bignumber.js'
 import { Platform } from '@ionic/angular'
@@ -165,8 +165,8 @@ export class StorageService extends CacheModule {
 
 	// --- Low level ---
 
-	async setObject(key: string, value: unknown) {
-		this.putCache(key, value)
+	async setObject(key: string, value: unknown, cache = true) {
+		if (cache) this.putCache(key, value)
 		await this.setItem(key, JSON.stringify(value, replacer), false)
 	}
 
@@ -196,17 +196,15 @@ export class StorageService extends CacheModule {
 	private reflectiOSStorage() {
 		try {
 			if (!this.platform.is('ios')) return
+			const reflectKeys = ['CapacitorStorage.prefered_unit', 'CapacitorStorage.network_preferences', 'CapacitorStorage.auth_user']
+			for (let i = 0; i < MAP.length; i++) {
+				if (MAP[i].key.indexOf('invalid') > -1) continue
+				if (MAP[i].key.indexOf('local') > -1) continue
+				reflectKeys.push('CapacitorStorage.validators_' + MAP[i].key)
+			}
+
 			StorageMirror.reflect({
-				keys: [
-					'CapacitorStorage.prefered_unit',
-					'CapacitorStorage.network_preferences',
-					'CapacitorStorage.validators_main',
-					'CapacitorStorage.validators_holesky',
-					'CapacitorStorage.validators_prater',
-					'CapacitorStorage.validators_sepolia',
-					'CapacitorStorage.validators_gnosis',
-					'CapacitorStorage.auth_user',
-				],
+				keys: reflectKeys,
 			})
 		} catch (e) {
 			console.warn('StorageMirror exception', e)

@@ -25,7 +25,6 @@ import FirebaseUtils from '../utils/FirebaseUtils'
 import { MerchantUtils } from '../utils/MerchantUtils'
 import ThemeUtils from '../utils/ThemeUtils'
 import { Toast } from '@capacitor/toast'
-import { BlockUtils } from '../utils/BlockUtils'
 @Component({
 	selector: 'app-tabs',
 	templateUrl: 'tabs.page.html',
@@ -37,8 +36,7 @@ export class TabsPage {
 		private sync: SyncService,
 		private storage: StorageService,
 		private merchant: MerchantUtils,
-		private theme: ThemeUtils,
-		private blockUtils: BlockUtils
+		private theme: ThemeUtils
 	) {}
 
 	ionViewDidEnter() {
@@ -48,11 +46,6 @@ export class TabsPage {
 	private preload() {
 		// lazy initiating firebase token exchange
 		this.firebaseUtils.registerPush() // just initialize the firebaseutils service
-		try {
-			this.blockUtils.getMyBlocks(0) // preload blocks
-		} catch (e) {
-			console.warn('can not preload blocks')
-		}
 
 		// lazy sync & notification token update
 		setTimeout(async () => {

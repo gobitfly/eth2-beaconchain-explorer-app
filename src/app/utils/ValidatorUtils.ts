@@ -358,7 +358,7 @@ export class ValidatorUtils extends CacheModule {
 		return result
 	}
 
-	async getDashboardDataValidators(storage: 0 | 1, ...validators): Promise<Validator[]> {
+	private async getDashboardDataValidators(storage: 0 | 1, ...validators): Promise<Validator[]> {
 		const request = new DashboardRequest(...validators)
 		const response = await this.api.execute(request)
 		if (!request.wasSuccessful(response)) {

@@ -119,6 +119,7 @@ export default class ClientUpdateUtils {
 	private oldClientInfoConverted = false
 	updates: Release[] = null
 	lastTry = 0
+	private locked = false
 
 	constructor(private api: ApiService, private storage: StorageService) {}
 
@@ -137,7 +138,9 @@ export default class ClientUpdateUtils {
 
 	async checkAllUpdates() {
 		if (this.lastTry + 10 * 60 * 1000 > Date.now()) return
+		if (this.locked) return
 
+		this.locked = true
 		const promiseArray: Promise<Release>[] = []
 		for (let i = 0; i < Clients.length; i++) {
 			promiseArray.push(this.checkUpdateFor(await this.storage.getItem(Clients[i].storageKey)))
@@ -163,6 +166,7 @@ export default class ClientUpdateUtils {
 		} catch (error) {
 			console.error('An error occurred:', error)
 		}
+		this.locked = false
 	}
 
 	async checkClientUpdate(clientKey: string) {

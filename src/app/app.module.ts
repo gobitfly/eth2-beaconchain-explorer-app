@@ -30,7 +30,8 @@ import { PipesModule } from './pipes/pipes.module'
 import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import 'hammerjs'
-import { ApiService, initializeApiService } from './services/api.service'
+import { ApiService } from './services/api.service'
+import { BootPreloadService } from './services/boot-preload.service'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let Hammer: any
@@ -63,11 +64,21 @@ export class MyHammerConfig extends HammerGestureConfig {
 		},
 		{
 			provide: APP_INITIALIZER,
-			useFactory: initializeApiService,
-			deps: [ApiService],
+			useFactory: initializeApp,
 			multi: true,
+			deps: [ApiService, BootPreloadService],
 		},
 	],
 	bootstrap: [AppComponent],
 })
 export class AppModule {}
+
+export function initializeApp(apiService: ApiService, bootPreloadService: BootPreloadService): () => Promise<void> {
+	return async () => {
+		// Initialize ApiService first
+		await apiService.initialize()
+
+		// Now that ApiService is initialized, you can preload using BootPreloadService
+		bootPreloadService.preload()
+	}
+}

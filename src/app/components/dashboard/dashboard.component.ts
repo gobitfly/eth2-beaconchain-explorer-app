@@ -114,7 +114,6 @@ export class DashboardComponent implements OnInit {
 		private platform: Platform
 	) {
 		this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
-		//this.storage.setBooleanSetting("merge_list_dismissed", false)
 		this.updateMergeListDismissed()
 	}
 
@@ -131,7 +130,6 @@ export class DashboardComponent implements OnInit {
 	isAfterPotentialMergeTarget() {
 		const now = Date.now()
 		const target = 1663624800000 // target sept 20th to dismiss merge checklist
-		console.log('afterPotentialMerge', now, target, now >= target)
 		return now >= target
 	}
 
@@ -176,8 +174,6 @@ export class DashboardComponent implements OnInit {
 					this.updateVacantMinipoolText(),
 					this.updateWithdrawalInfo(),
 				])
-
-				console.log('dashboard data', this.data)
 
 				if (!this.data.foreignValidator) {
 					await Promise.all([this.checkForFinalization(), this.checkForGenesisOccurred()])

@@ -127,6 +127,6 @@ export function findConfigForKey(key: string): ApiNetwork {
 			return entry
 		}
 	}
-	console.debug('config for ' + key + ' not found, using mainnet instead', key)
+	console.log('config for ' + key + ' not found, using mainnet instead', key)
 	return MAP[0]
 }

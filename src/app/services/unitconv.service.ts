@@ -131,9 +131,7 @@ export class UnitconvService {
 			}
 		}
 
-		if (this.isDefaultCurrency(currency)) {
-			result.value = new BigNumber(1)
-		} else if (price) {
+		if (price && !this.isDefaultCurrency(currency) && currency.value != 'mGNO') {
 			result.value = price
 		}
 
@@ -203,8 +201,12 @@ export class UnitconvService {
 	}
 
 	private triggerPropertyChange() {
-		if (this.isDefaultCurrency(this.pref.Cons)) {
-			this.pref.Cons = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Cons), 'cons')
+		if (this.isDefaultCurrency(this.pref.Cons) || this.pref.Cons.value == 'mGNO') {
+			if (this.pref.Cons.value == 'mGNO') {
+				this.pref.Cons = this.createCurrency(this.pref.Cons.value, 'cons')
+			} else {
+				this.pref.Cons = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Cons), 'cons')
+			}
 			this.pref.Exec = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Cons), 'exec')
 			this.pref.RPL = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.RPL), 'rpl')
 			return
@@ -321,16 +323,18 @@ export class UnitconvService {
 		const consPrice = await this.getPriceData(this.pref.Cons.unit)
 		if (consPrice) {
 			this.lastPrice.Cons = consPrice
-			this.storage.setObject(this.getLastPriceKey(this.pref.Cons), { lastPrice: consPrice } as LastPrice)
+			this.storage.setObject(this.getLastPriceKey(this.pref.Cons), { lastPrice: this.lastPrice.Cons } as LastPrice)
 		} else {
 			this.lastPrice.Cons = this.pref.Cons.unit.value
-			this.pref.Cons.value = this.getNetworkDefaultCurrency(this.pref.Cons)
+			if (this.pref.Cons.value != 'mGNO') {
+				this.pref.Cons.value = this.getNetworkDefaultCurrency(this.pref.Cons)
+			}
 		}
 
 		const execPrice = await this.getPriceData(this.pref.Exec.unit)
 		if (execPrice) {
 			this.lastPrice.Exec = execPrice
-			this.storage.setObject(this.getLastPriceKey(this.pref.Exec), { lastPrice: execPrice } as LastPrice)
+			this.storage.setObject(this.getLastPriceKey(this.pref.Exec), { lastPrice: this.lastPrice.Exec } as LastPrice)
 		} else {
 			this.lastPrice.Exec = this.pref.Exec.unit.value
 			this.pref.Exec.value = this.getNetworkDefaultCurrency(this.pref.Exec)
@@ -357,6 +361,7 @@ export class UnitconvService {
 				return null
 			}
 		}
+		return null
 	}
 
 	private async getExchangeRate(unitPair: string): Promise<CoinbaseExchangeResponse> {
