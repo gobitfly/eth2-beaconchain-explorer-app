@@ -322,7 +322,7 @@ export class UnitconvService {
 	async updatePriceData() {
 		const consPrice = await this.getPriceData(this.pref.Cons.unit)
 		if (consPrice) {
-			this.lastPrice.Cons = consPrice
+			this.lastPrice.Cons = consPrice.multipliedBy(MAPPING.get(this.getNetworkDefaultCurrency(this.pref.Cons)).value)
 			this.storage.setObject(this.getLastPriceKey(this.pref.Cons), { lastPrice: this.lastPrice.Cons } as LastPrice)
 		} else {
 			this.lastPrice.Cons = this.pref.Cons.unit.value
@@ -333,7 +333,7 @@ export class UnitconvService {
 
 		const execPrice = await this.getPriceData(this.pref.Exec.unit)
 		if (execPrice) {
-			this.lastPrice.Exec = execPrice
+			this.lastPrice.Exec = execPrice.multipliedBy(MAPPING.get(this.getNetworkDefaultCurrency(this.pref.Exec)).value)
 			this.storage.setObject(this.getLastPriceKey(this.pref.Exec), { lastPrice: this.lastPrice.Exec } as LastPrice)
 		} else {
 			this.lastPrice.Exec = this.pref.Exec.unit.value
