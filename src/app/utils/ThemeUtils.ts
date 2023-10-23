@@ -60,7 +60,7 @@ export default class ThemeUtils {
 			setTimeout(() => {
 				splashScreenCallback()
 				this.applyColorInitially()
-			}, 200)
+			}, 10)
 			return preferenceDarkMode as StoredTheme
 		})
 	}
