@@ -3,7 +3,7 @@
 
 # Beaconchain Dashboard App
 
-Beaconchain Dashboard is an open source ethereum validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
+Beaconchain Dashboard is an open source ethereum and gnosis validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
 
 
 [![Get it on Google Play](https://beaconcha.in/img/android.png)](https://play.google.com/store/apps/details?id=in.beaconcha.mobile)
@@ -15,6 +15,7 @@ Beaconchain Dashboard is an Angular app written in Typescript, HTML & CSS. It ut
 
 ## Features
 
+- Ethereum and Gnosis supported
 - Keep track on your validators online status, balances, returns and more  
 - Various notification alerts for your validators  
 - Execution block rewards overview
