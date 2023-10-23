@@ -145,7 +145,17 @@ export class ApiService extends CacheModule {
 		const response = req.parse(resp)
 		const result = response[0]
 
-		console.log('Refresh token', result, resp)
+		// Intention to not log access token in app logs
+		if (this.debug) {
+			console.log('Refresh token', result, resp)
+		} else {
+			if (result && result.access_token) {
+				console.log('Refresh token', 'success')
+			} else {
+				console.log('Refresh token', result, resp)
+			}
+		}
+
 		if (!result || !result.access_token) {
 			console.warn('could not refresh token', result)
 			return null
@@ -160,15 +170,12 @@ export class ApiService extends CacheModule {
 
 	private async lockOrWait(resource) {
 		if (!this.awaitingResponses[resource]) {
-			console.log('Locking ', resource)
 			this.awaitingResponses[resource] = new Mutex()
 		}
 		await this.awaitingResponses[resource].acquire()
 	}
 
 	private unlock(resource) {
-		console.log('Unlocking  ', resource)
-
 		this.awaitingResponses[resource].release()
 	}
 
@@ -197,68 +204,70 @@ export class ApiService extends CacheModule {
 			this.invalidateCache()
 		}
 
-		// If cached and not stale, return cache
-		const cached = (await this.getCache(this.getCacheKey(request))) as Response
-		if (cached) {
-			if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
-			cached.cached = true
-			return cached
-		}
-
-		const options = request.options
-
-		// second is special case for notifications
-		// notifications are rescheduled if response is != 200
-		// but user can switch network in the mean time, so we need to reapply the network
-		// the user was currently on, when they set the notification toggle
-		// hence the additional request.requiresAuth
-		if (request.endPoint == 'default' || request.requiresAuth) {
-			const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
-
-			if (authHeader) {
-				const headers = { ...options.headers, ...authHeader }
-				options.headers = headers
-			}
-		}
-
 		await this.lockOrWait(request.resource)
 
-		console.log(LOGTAG + ' Send request: ' + request.resource, request.method, request)
-		const startTs = Date.now()
+		try {
+			// If cached and not stale, return cache
+			const cached = (await this.getCache(this.getCacheKey(request))) as Response
+			if (cached) {
+				if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
+				cached.cached = true
+				return cached
+			}
 
-		let response: Promise<Response>
-		switch (request.method) {
-			case Method.GET:
-				response = this.get(request.resource, request.endPoint, request.ignoreFails, options)
-				break
-			case Method.POST:
-				response = this.post(request.resource, request.postData, request.endPoint, request.ignoreFails, options)
-				break
-			default:
-				throw 'Unsupported method: ' + request.method
-		}
+			const options = request.options
 
-		const result = await response
-		this.updateConnectionState(request.ignoreFails, result && result.data && !!result.url)
+			// second is special case for notifications
+			// notifications are rescheduled if response is != 200
+			// but user can switch network in the mean time, so we need to reapply the network
+			// the user was currently on, when they set the notification toggle
+			// hence the additional request.requiresAuth
+			if (request.endPoint == 'default' || request.requiresAuth) {
+				const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
 
-		if (!result) {
-			this.unlock(request.resource)
-			console.log(LOGTAG + ' Empty Response: ' + request.resource, Date.now() - startTs)
+				if (authHeader) {
+					const headers = { ...options.headers, ...authHeader }
+					options.headers = headers
+				}
+			}
+
+			console.log(LOGTAG + ' Send request: ' + request.resource, request.method, request)
+			const startTs = Date.now()
+
+			let response: Promise<Response>
+			switch (request.method) {
+				case Method.GET:
+					response = this.get(request.resource, request.endPoint, request.ignoreFails, options)
+					break
+				case Method.POST:
+					response = this.post(request.resource, request.postData, request.endPoint, request.ignoreFails, options)
+					break
+				default:
+					throw 'Unsupported method: ' + request.method
+			}
+
+			const result = await response
+			this.updateConnectionState(request.ignoreFails, result && result.data && !!result.url)
+
+			if (!result) {
+				console.log(LOGTAG + ' Empty Response: ' + request.resource, 'took ' + (Date.now() - startTs) + 'ms')
+				return result
+			}
+
+			if ((request.method == Method.GET || request.cacheablePOST) && result && result.status == 200 && result.data) {
+				this.putCache(this.getCacheKey(request), result, request.maxCacheAge)
+			}
+
+			if (request.updatesLastRefreshState) this.updateLastRefreshed(result)
+
+			console.log(LOGTAG + ' Response: ' + result.url + '', 'took ' + (Date.now() - startTs) + 'ms', result)
+
+			result.cached = false
+
 			return result
+		} finally {
+			this.unlock(request.resource)
 		}
-
-		if ((request.method == Method.GET || request.cacheablePOST) && result && result.status == 200 && result.data) {
-			this.putCache(this.getCacheKey(request), result, request.maxCacheAge)
-		}
-
-		if (request.updatesLastRefreshState) this.updateLastRefreshed(result)
-
-		this.unlock(request.resource)
-		console.log(LOGTAG + ' Response: ' + result.url + '', result, Date.now() - startTs)
-
-		result.cached = false
-
-		return result
 	}
 
 	async clearSpecificCache(request: APIRequest<unknown>) {

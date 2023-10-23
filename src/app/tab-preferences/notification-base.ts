@@ -208,7 +208,7 @@ export class NotificationBase implements OnInit {
 		const net = this.api.networkConfig.net
 		this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
 		this.settingsChanged = true
-		if (!this.api.isNotMainnet()) {
+		if (this.api.isMainnet()) {
 			this.sync.changeGeneralNotify(this.notify)
 		}
 
