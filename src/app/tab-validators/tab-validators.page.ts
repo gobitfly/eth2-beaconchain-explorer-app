@@ -18,9 +18,9 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from '@angular/core'
+import { Component, ViewChild } from '@angular/core'
 import { ValidatorUtils, Validator, ValidatorState } from '../utils/ValidatorUtils'
-import { ModalController, Platform } from '@ionic/angular'
+import { IonSearchbar, ModalController, Platform } from '@ionic/angular'
 import { ValidatordetailPage } from '../pages/validatordetail/validatordetail.page'
 import { ApiService } from '../services/api.service'
 import { AlertController } from '@ionic/angular'
@@ -67,6 +67,8 @@ export class Tab2Page {
 
 	selected = new Map<number, boolean>()
 
+	@ViewChild('searchbarRef', { static: true }) searchbarRef: IonSearchbar
+
 	constructor(
 		private validatorUtils: ValidatorUtils,
 		public modalController: ModalController,
@@ -81,6 +83,10 @@ export class Tab2Page {
 		public unit: UnitconvService
 	) {
 		this.validatorUtils.registerListener(() => {
+			if (this.searchResultMode && this.searchbarRef) {
+				this.searchResultMode = false
+				this.searchbarRef.value = null
+			}
 			this.refresh()
 		})
 		this.merchant.getCurrentPlanMaxValidator().then((result) => {

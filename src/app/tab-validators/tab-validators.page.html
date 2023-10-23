@@ -38,7 +38,8 @@
 
 	<ion-toolbar [style.--background]="selectMode ? 'var(--ion-color-primary)' : 'var(--ion-toolbar-background)'">
 		<ion-searchbar
-			*ngIf="!selectMode"
+			#searchbarRef
+			[class.hidden]="selectMode"
 			showCancelButton="focus"
 			enterkeyhint="search"
 			(search)="searchEvent($event)"

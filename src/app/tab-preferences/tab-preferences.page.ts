@@ -461,7 +461,7 @@ export async function changeNetwork(
 
 	const newConfig = findConfigForKey(network)
 	await storage.clearCache()
-	await api.clearNetworkCache()
+	//await api.clearNetworkCache()
 	await validatorUtils.clearCache()
 
 	await storage.setNetworkPreferences(newConfig)
