@@ -336,8 +336,8 @@ export class DashboardComponent implements OnInit {
 		//this.doneLoading = false
 		this.storage.getBooleanSetting('rank_percent_mode', false).then((result) => (this.rankPercentMode = result))
 		this.storage.getItem('rpl_pdisplay_mode').then((result) => (this.rplState = result ? result : 'rpl'))
-		highChartOptions(HighCharts)
-		highChartOptions(Highstock)
+		highChartOptions(HighCharts, this.api.getHostName())
+		highChartOptions(Highstock, this.api.getHostName())
 		this.merchant.getCurrentPlanMaxValidator().then((result) => {
 			this.currentPackageMaxValidators = result
 		})
@@ -661,14 +661,14 @@ export class DashboardComponent implements OnInit {
 		const network = this.api.getNetwork()
 
 		const getValueString = (value: BigNumber, type: RewardType): string => {
-			let text = `${value.toFixed(5)} ETH`
+			let text = `${value.toFixed(5)} ` + this.unit.getNetworkDefaultUnit(type).display
 			if (type == 'cons') {
-				if (this.unit.isDefaultCurrency(this.unit.pref.Cons) && network.key == 'main') {
-					text += ` (${this.unit.convertToPref(value, 'ETHER', type)})`
+				if (!this.unit.isDefaultCurrency(this.unit.pref.Cons)) {
+					text += ` (${this.unit.convertToPref(value, this.unit.getNetworkDefaultCurrency(type), type)})`
 				}
 			} else if (type == 'exec') {
-				if (this.unit.isDefaultCurrency(this.unit.pref.Exec) && network.key == 'main') {
-					text += ` (${this.unit.convertToPref(value, 'ETHER', type)})`
+				if (!this.unit.isDefaultCurrency(this.unit.pref.Exec)) {
+					text += ` (${this.unit.convertToPref(value, this.unit.getNetworkDefaultCurrency(type), type)})`
 				}
 			}
 
@@ -720,11 +720,16 @@ export class DashboardComponent implements OnInit {
 						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
 
 						// income
-						let consAndExecSameCurrency = 0
+						let lastCurrency = null
+						let consAndExecSameCurrency = true
 						let total = new BigNumber(0)
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
 							const type = tooltip.chart.hoverPoints[i].series.name == 'Execution' ? 'exec' : 'cons'
-							consAndExecSameCurrency += type == 'exec' ? 1 : -1
+							const currency = this.unit.getNetworkDefaultCurrency(type)
+							if (lastCurrency != null && lastCurrency != currency) {
+								consAndExecSameCurrency = false
+							}
+							lastCurrency = currency
 
 							const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
 							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${
@@ -735,7 +740,7 @@ export class DashboardComponent implements OnInit {
 
 						// add total if hovered point contains rewards for both EL and CL
 						// only if both exec and cons currencies are the same
-						if (tooltip.chart.hoverPoints.length > 1 && Math.abs(consAndExecSameCurrency) == 2) {
+						if (tooltip.chart.hoverPoints.length > 1 && consAndExecSameCurrency) {
 							text += `<b>Total: ${getValueString(total, 'cons')}</b>`
 						}
 

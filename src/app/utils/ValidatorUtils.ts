@@ -38,7 +38,6 @@ import {
 	ETH1ValidatorResponse,
 	SyncCommitteesStatisticsResponse,
 } from '../requests/requests'
-import { CacheModule } from './CacheModule'
 import { MerchantUtils } from './MerchantUtils'
 import BigNumber from 'bignumber.js'
 import { UnitconvService } from '../services/unitconv.service'
@@ -51,12 +50,6 @@ const VERSION = 1
 const KEYPREFIX = 'validators_'
 export const LAST_TIME_ADDED_KEY = 'last_time_added'
 export const LAST_TIME_REMOVED_KEY = 'last_time_removed'
-
-const cachePerformanceKeyBare = 'performance'
-const cacheAttestationKeyBare = 'attestationperformance'
-const epochCachedKeyBare = 'epochcached'
-const allMyKeyBare = 'allmy'
-const cacheValidatorsKeyBare = 'validators_'
 
 export enum ValidatorState {
 	ACTIVE,
@@ -90,7 +83,7 @@ export interface Validator {
 @Injectable({
 	providedIn: 'root',
 })
-export class ValidatorUtils extends CacheModule {
+export class ValidatorUtils {
 	private listeners: (() => void)[] = []
 
 	private currentEpoch: EpochResponse
@@ -103,9 +96,7 @@ export class ValidatorUtils extends CacheModule {
 		private storage: StorageService,
 		private merchantUtils: MerchantUtils,
 		private unitConversion: UnitconvService
-	) {
-		super('vu_') // initialize cache module with vu prefix
-	}
+	) {}
 
 	notifyListeners() {
 		this.listeners.forEach((callback) => callback())
@@ -266,13 +257,6 @@ export class ValidatorUtils extends CacheModule {
 
 		const validatorString = getValidatorQueryString([...local.values()], 2000, (await this.merchantUtils.getCurrentPlanMaxValidator()) - 1)
 
-		// TODO::
-		/* const cached = await this.getMultipleCached(allMyKeyBare, validatorString.split(","))
-         if (cached != null) {
-             console.log("return my validators from cache")
-             return cached
-         }*/
-
 		const remoteUpdatesPromise = this.getDashboardDataValidators(SAVED, validatorString).catch((err) => {
 			console.warn('error getAllMyValidators getDashboardDataValidators', err)
 			return []
@@ -289,8 +273,6 @@ export class ValidatorUtils extends CacheModule {
 		this.storage.setObject(storageKey, local)
 
 		const result = [...local.values()]
-
-		this.cacheMultiple(allMyKeyBare, result)
 
 		return result
 	}
@@ -375,12 +357,10 @@ export class ValidatorUtils extends CacheModule {
 			console.warn('error getDashboardDataValidators', response, result)
 			return []
 		}
-		if (result.currentEpoch && result.currentEpoch.length > 0) {
-			this.currentEpoch = result.currentEpoch[0]
-		}
-		if (result.olderEpoch && result.olderEpoch.length > 0) {
-			this.olderEpoch = result.olderEpoch[0]
-		}
+
+		this.currentEpoch = result.currentEpoch[0]
+		this.olderEpoch = result.olderEpoch[0]
+
 		if (result.rocketpool_network_stats && result.rocketpool_network_stats.length > 0) {
 			this.rocketpoolStats = result.rocketpool_network_stats[0]
 		}
@@ -520,22 +500,6 @@ export class ValidatorUtils extends CacheModule {
 		return Promise.reject(new Error('Response is invalid'))
 	}
 
-	getCachedAttestationKey() {
-		return cacheAttestationKeyBare + this.api.getNetworkName()
-	}
-
-	getCachedPerformanceKey() {
-		return cachePerformanceKeyBare + this.api.getNetworkName()
-	}
-
-	getCachedValidatorKey() {
-		return cacheValidatorsKeyBare + this.api.getNetworkName()
-	}
-
-	getCachedEpochKey() {
-		return epochCachedKeyBare + this.api.getNetworkName()
-	}
-
 	// single
 	async convertToValidatorModelAndSaveValidatorLocal(synced: boolean, validator: ValidatorResponse) {
 		await this.convertToValidatorModelsAndSaveLocal(synced, [validator])
@@ -546,7 +510,6 @@ export class ValidatorUtils extends CacheModule {
 		await this.saveValidatorsLocal(this.convertToValidatorModel({ synced, storage: SAVED, validatorResponse: validator }))
 		if (!synced) {
 			await this.storage.setObject(LAST_TIME_ADDED_KEY, { timestamp: Date.now() } as StoredTimestamp)
-			await this.clearCache()
 		}
 	}
 
