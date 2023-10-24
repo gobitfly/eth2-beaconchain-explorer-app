@@ -325,15 +325,25 @@ export default class OverviewController {
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
 			)
 		)
+		const performance365d = this.sumBigIntPerformanceRP(validators, (cur) =>
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance365d.toString()).multipliedBy(
+				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
+			)
+		)
+		const total = this.sumBigIntPerformanceRP(validators, (cur) =>
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performanceTotal.toString()).multipliedBy(
+				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
+			)
+		)
 
 		const aprExecution = this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution) // todo
 		return {
 			performance1d: performance1d,
 			performance31d: performance31d,
 			performance7d: performance7d,
-			performance365d: new BigNumber(0), // not yet implemented
+			performance365d: performance365d,
 			apr: aprExecution,
-			total: new BigNumber(0), // not yet implemented
+			total: total, 
 		}
 	}
 

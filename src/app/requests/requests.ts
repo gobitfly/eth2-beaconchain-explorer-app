@@ -299,6 +299,8 @@ export interface ExecutionResponse {
 	performance1d: number
 	performance7d: number
 	performance31d: number
+	performance365d: number
+	performanceTotal: number
 }
 
 export interface NotificationGetResponse {
