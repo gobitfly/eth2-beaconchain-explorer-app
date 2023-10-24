@@ -37,14 +37,23 @@ export class CacheModule {
 	private cache: Map<string, CachedData> = new Map()
 	private hotOnly: Map<string, CachedData> = new Map()
 
-	constructor(keyPrefix = '', staleTime = 6 * 60 * 1000, hardStorage: StorageService = null, callInit: boolean = true) {
+	private hardStorageSizeLimit: number
+
+	constructor(
+		keyPrefix = '',
+		staleTime = 6 * 60 * 1000,
+		hardStorage: StorageService = null,
+		hardStorageSizeLimit: number = 1000,
+		callInit: boolean = true
+	) {
 		this.keyPrefix = keyPrefix
 		this.staleTime = staleTime
 		this.hardStorage = hardStorage
+		this.hardStorageSizeLimit = hardStorageSizeLimit
 		if (callInit) this.init()
 	}
 
-	async init() {
+	protected async init() {
 		if (this.hardStorage) {
 			this.hardStorage.setObject('cachemodule_' + this.keyPrefix, null, false)
 			await this.initHardCache()
@@ -76,7 +85,7 @@ export class CacheModule {
 				kiloBytes = Math.round((size * 100) / 1024) / 100
 			}
 			console.log('[CacheModule] initialized with ', kiloBytes == null ? '(unknown size)' : '(' + kiloBytes + ' KiB)', this.cache)
-			if (kiloBytes && kiloBytes > 1000) {
+			if (kiloBytes && kiloBytes > this.hardStorageSizeLimit) {
 				console.warn('[CacheModule] storage cap exceeded (1 MB), clearing cache')
 				await this.clearHardCache()
 			}
@@ -94,7 +103,7 @@ export class CacheModule {
 		return storeHard ? this.cache : this.hotOnly
 	}
 
-	public async deleteAllCacheKeyContains(search: string) {
+	public async deleteAllHardStorageCacheKeyContains(search: string) {
 		if (!this.hardStorage) {
 			return
 		}
@@ -137,21 +146,21 @@ export class CacheModule {
 		}
 	}
 
-	async clearCache() {
+	public async clearCache() {
 		await this.clearHardCache()
 		this.hotOnly.clear()
 	}
 
-	async clearNetworkCache() {
+	public async clearNetworkCache() {
 		if (this.hardStorage) {
 			const network = await this.hardStorage.getNetworkPreferences()
-			this.deleteAllCacheKeyContains(network.key == 'main' ? '//beaconcha.in' : '//' + network.key)
+			this.deleteAllHardStorageCacheKeyContains(network.key == 'main' ? '//beaconcha.in' : '//' + network.key)
 		}
 
 		this.hotOnly.clear()
 	}
 
-	async clearHardCache() {
+	public async clearHardCache() {
 		if (this.hardStorage) {
 			await this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, null, false)
 			this.setLastHardCacheWrite()
@@ -207,7 +216,7 @@ export class CacheModule {
 		this.cache[this.getKey(key)] = null
 	}
 
-	invalidateAllCache() {
+	public invalidateAllCache() {
 		this.cache = new Map()
 		if (this.hardStorage) {
 			this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, null, false)

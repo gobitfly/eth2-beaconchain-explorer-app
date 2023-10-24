@@ -48,7 +48,7 @@ export class ApiService extends CacheModule {
 	private lastCacheInvalidate = 0
 
 	constructor(private storage: StorageService) {
-		super('api', 6 * 60 * 1000, storage, false)
+		super('api', 6 * 60 * 1000, storage, 1000, false)
 		this.storage.getBooleanSetting('migrated_4_4_0', false).then((migrated) => {
 			if (!migrated) {
 				this.clearHardCache()
@@ -179,13 +179,13 @@ export class ApiService extends CacheModule {
 		this.awaitingResponses[resource].release()
 	}
 
-	isNotMainnet(): boolean {
+	isNotEthereumMainnet(): boolean {
 		const test = this.networkConfig.net != ''
 		return test
 	}
 
-	isMainnet(): boolean {
-		return !this.isNotMainnet()
+	isEthereumMainnet(): boolean {
+		return !this.isNotEthereumMainnet()
 	}
 
 	private getCacheKey(request: APIRequest<unknown>): string {

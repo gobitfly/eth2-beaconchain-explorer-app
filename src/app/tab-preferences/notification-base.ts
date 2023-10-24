@@ -158,7 +158,7 @@ export class NotificationBase implements OnInit {
 		// locking toggle so we dont execute onChange when setting initial values
 		const preferences = await this.storage.loadPreferencesToggles(net)
 
-		if (this.api.isNotMainnet()) {
+		if (this.api.isNotEthereumMainnet()) {
 			this.notify = preferences
 			this.notifyInitialized = true
 			this.disableToggleLock()
@@ -188,7 +188,9 @@ export class NotificationBase implements OnInit {
 		if (!(await this.isSupportedOnAndroid())) {
 			this.alerts.showInfo(
 				'Play Service',
-				'Your device can not receive push notifications. Please note that notifications do not work without Google Play Services. As an alternative you can configure webhook notifications on the beaconcha.in website, otherwise changing these settings will have no effect.'
+				'Your device can not receive push notifications. Please note that notifications do not work without Google Play Services. As an alternative you can configure webhook notifications on the ' +
+					this.api.getHostName() +
+					' website, otherwise changing these settings will have no effect.'
 			)
 		}
 
@@ -208,7 +210,10 @@ export class NotificationBase implements OnInit {
 		const net = this.api.networkConfig.net
 		this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
 		this.settingsChanged = true
-		if (this.api.isMainnet()) {
+		// TODO: instead of using this.api.isEthereumMainnet(), check each app supported network and if
+		// one single network has notifications enabled, also sync general als true. If all are disabled,
+		// set general notify as false
+		if (this.api.isEthereumMainnet() || this.notify == true) {
 			this.sync.changeGeneralNotify(this.notify)
 		}
 
@@ -298,7 +303,7 @@ export class NotificationBase implements OnInit {
 			this.sync.changeClient(clientKey, clientKey)
 		} else {
 			this.sync.changeClient(clientKey, 'null')
-			this.api.deleteAllCacheKeyContains(clientKey)
+			this.api.deleteAllHardStorageCacheKeyContains(clientKey)
 		}
 	}
 

@@ -40,7 +40,7 @@ export class UnitconvService {
 		Exec: { value: 'ETHER', type: 'exec', unit: Unit.ETHER } as Currency,
 		RPL: { value: 'ETHER', type: 'rpl', unit: Unit.RPL } as Currency,
 	}
-	private lastPrice: LastPrice
+	public lastPrice: LastPrice
 	private rplETHPrice: BigNumber = new BigNumber(1)
 
 	/*
@@ -151,6 +151,10 @@ export class UnitconvService {
 		return currency.value == this.getNetworkDefaultCurrency(currency.type)
 	}
 
+	public getNetworkDefaultUnit(type: RewardType): Unit {
+		return MAPPING.get(this.getNetworkDefaultCurrency(type))
+	}
+
 	public getNetworkDefaultCurrency(type: RewardType | Currency): string {
 		if (typeof type == 'object') {
 			type = type.type
@@ -166,6 +170,22 @@ export class UnitconvService {
 		}
 
 		return 'ETHER'
+	}
+
+	public getFiatCurrency(type: RewardType) {
+		if (type == 'cons') {
+			if (this.isDefaultCurrency(this.pref.Cons)) {
+				return UnitconvService.currencyPipe.Cons
+			} else {
+				return this.pref.Cons.value
+			}
+		} else if (type == 'exec') {
+			if (this.isDefaultCurrency(this.pref.Exec)) {
+				return UnitconvService.currencyPipe.Exec
+			} else {
+				return this.pref.Exec.value
+			}
+		}
 	}
 
 	private async getLastStoredPrice(currency: Currency) {
@@ -256,7 +276,7 @@ export class UnitconvService {
 	 * (cons and exec could have different conversions so they cant use the same reference to unit)
 	 */
 	public convertNonFiat(value: BigNumber | number | string, from: string, to: string, displayable = true) {
-		if (MAPPING.get(to).coinbaseSpot != null && to != 'ETH' && to != 'ETHER') {
+		if (MAPPING.get(to).coinbaseSpot != null && to != 'ETH' && to != 'ETHER' && from != to) {
 			console.warn('convertNonFiat does not support fiat currencies. Use convert instead', value.toString(), from, to, displayable)
 		}
 		return this.convertBase(value, from, MAPPING.get(to), displayable)

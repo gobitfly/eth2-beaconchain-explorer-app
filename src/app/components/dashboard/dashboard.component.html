@@ -851,10 +851,10 @@
 			</ion-label>
 		</ion-item>
 
-		<ion-item lines="none" *ngIf="(unit.pref.Cons.value != 'ETHER' && unit.pref.Cons.value != 'FINNEY') || classReference.currencyPipe.Cons != null">
-			<ion-label class="stat-title"> {{ unit.pref.Cons.getCurrencyName() }} Price </ion-label>
+		<ion-item lines="none" *ngIf="unit.pref.Cons.value != unit.getNetworkDefaultCurrency('cons') || classReference.currencyPipe.Cons != null">
+			<ion-label class="stat-title"> {{ unit.getNetworkDefaultUnit('cons').display }} Price </ion-label>
 			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
-				{{ 1 | mcurrency : 'ETHER' : unit.pref.Cons }}
+				{{ unit.lastPrice.Cons | mcurrency : unit.getFiatCurrency('cons') : unit.getFiatCurrency('cons') }}
 			</ion-label>
 		</ion-item>
 

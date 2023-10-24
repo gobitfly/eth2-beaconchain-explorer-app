@@ -21,7 +21,6 @@
 import { ApiService } from '../services/api.service'
 import { Injectable } from '@angular/core'
 import { BlockProducedByRequest, BlockResponse, DashboardRequest } from '../requests/requests'
-import { CacheModule } from './CacheModule'
 import BigNumber from 'bignumber.js'
 import { ValidatorUtils } from './ValidatorUtils'
 
@@ -33,10 +32,8 @@ const MONTH = 60 * 60 * 24 * 30
 @Injectable({
 	providedIn: 'root',
 })
-export class BlockUtils extends CacheModule {
-	constructor(public api: ApiService, public validatorUtils: ValidatorUtils) {
-		super()
-	}
+export class BlockUtils {
+	constructor(public api: ApiService, public validatorUtils: ValidatorUtils) {}
 
 	async getBlockRewardWithShare(block: BlockResponse): Promise<BigNumber> {
 		const proposer = block.posConsensus.proposerIndex

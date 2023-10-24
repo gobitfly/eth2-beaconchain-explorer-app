@@ -243,7 +243,7 @@ export class Tab3Page {
 		if (this.changeCurrencyLocked) return
 		this.changeCurrencyLocked = true
 
-		await this.api.deleteAllCacheKeyContains('coinbase')
+		await this.api.deleteAllHardStorageCacheKeyContains('coinbase')
 		this.overrideDisplayCurrency = this.unit.pref
 
 		await this.unit.changeCurrency(this.currentFiatCurrency)
@@ -462,7 +462,6 @@ export async function changeNetwork(
 	const newConfig = findConfigForKey(network)
 	await storage.clearCache()
 	//await api.clearNetworkCache()
-	await validatorUtils.clearCache()
 
 	await storage.setNetworkPreferences(newConfig)
 	await api.initialize()
