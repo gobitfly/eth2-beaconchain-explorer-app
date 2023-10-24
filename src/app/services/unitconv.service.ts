@@ -54,7 +54,7 @@ export class UnitconvService {
 	}
 
 	private async init() {
-		await this.migrateToPostGnosisEra()
+		await this.migrateToGnosisEra()
 
 		this.lastPrice = {
 			Cons: await this.getLastStoredPrice(this.pref.Cons),
@@ -296,7 +296,7 @@ export class UnitconvService {
 		} as StoredPref)
 	}
 
-	private async migrateToPostGnosisEra() {
+	private async migrateToGnosisEra() {
 		const migratedToGnosis = await this.storage.getBooleanSetting('migrated_gnosis', false)
 		if (!migratedToGnosis) {
 			const oldCons = await this.loadStored(STORAGE_KEY_CONS)
