@@ -358,8 +358,16 @@ export class ValidatorUtils {
 			return []
 		}
 
-		this.currentEpoch = result.currentEpoch[0]
-		this.olderEpoch = result.olderEpoch[0]
+		if (result.currentEpoch && result.currentEpoch.length > 0) {
+			this.currentEpoch = result.currentEpoch[0]
+		} else {
+			console.warn('no current epoch information!', result)
+		}
+		if (result.olderEpoch && result.olderEpoch.length > 0) {
+			this.olderEpoch = result.olderEpoch[0]
+		} else {
+			console.warn('no older epoch information!', result)
+		}
 
 		if (result.rocketpool_network_stats && result.rocketpool_network_stats.length > 0) {
 			this.rocketpoolStats = result.rocketpool_network_stats[0]
@@ -375,7 +383,9 @@ export class ValidatorUtils {
 			await this.storage.setLastEpochRequestTime(Date.now())
 		} else {
 			const lastCachedTime = await this.storage.getLastEpochRequestTime()
-			this.currentEpoch.lastCachedTimestamp = lastCachedTime
+			if (this.currentEpoch) {
+				this.currentEpoch.lastCachedTimestamp = lastCachedTime
+			}
 		}
 
 		let local = null
