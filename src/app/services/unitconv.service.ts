@@ -43,6 +43,8 @@ export class UnitconvService {
 	public lastPrice: LastPrice
 	private rplETHPrice: BigNumber = new BigNumber(1)
 
+	private mGNOXDAI = { value: 'GNOXDAI', type: 'cons', unit: Unit.DAI_GNO_HELPER } as Currency // dummy var to help us get the price of mGNO in xDAI
+
 	/*
 		Users can quickly toggle between native currency and fiat currency by clicking on the value.
 		This variable holds the previous setting (native or fiat) for each currency type (cons, exec, rpl.
@@ -59,6 +61,7 @@ export class UnitconvService {
 		this.lastPrice = {
 			Cons: await this.getLastStoredPrice(this.pref.Cons),
 			Exec: await this.getLastStoredPrice(this.pref.Exec),
+			mGNOXDAI: await this.getLastStoredPrice(this.mGNOXDAI),
 		} as LastPrice
 
 		this.pref.Cons = this.createCurrency(this.getPref(await this.loadStored(STORAGE_KEY_CONS), this.getNetworkDefaultCurrency('cons')), 'cons')
@@ -75,6 +78,10 @@ export class UnitconvService {
 
 	public async networkSwitchReload() {
 		await this.init()
+	}
+
+	public hasSameCLAndELCurrency() {
+		return this.getNetworkDefaultCurrency('cons') == this.getNetworkDefaultCurrency('exec')
 	}
 
 	public async changeCurrency(value: string) {
@@ -172,6 +179,13 @@ export class UnitconvService {
 		return 'ETHER'
 	}
 
+	public convertELtoCL(cl: BigNumber) {
+		if (this.hasSameCLAndELCurrency()) {
+			return cl
+		}
+		return cl.multipliedBy(this.lastPrice.mGNOXDAI)
+	}
+
 	public getFiatCurrency(type: RewardType) {
 		if (type == 'cons') {
 			if (this.isDefaultCurrency(this.pref.Cons)) {
@@ -184,6 +198,12 @@ export class UnitconvService {
 				return UnitconvService.currencyPipe.Exec
 			} else {
 				return this.pref.Exec.value
+			}
+		} else if (type == 'rpl') {
+			if (this.isDefaultCurrency(this.pref.RPL)) {
+				return UnitconvService.currencyPipe.RPL
+			} else {
+				return this.pref.RPL.value
 			}
 		}
 	}
@@ -221,12 +241,8 @@ export class UnitconvService {
 	}
 
 	private triggerPropertyChange() {
-		if (this.isDefaultCurrency(this.pref.Cons) || this.pref.Cons.value == 'mGNO') {
-			if (this.pref.Cons.value == 'mGNO') {
-				this.pref.Cons = this.createCurrency(this.pref.Cons.value, 'cons')
-			} else {
-				this.pref.Cons = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Cons), 'cons')
-			}
+		if (this.isDefaultCurrency(this.pref.Cons)) {
+			this.pref.Cons = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Cons), 'cons')
 			this.pref.Exec = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Cons), 'exec')
 			this.pref.RPL = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.RPL), 'rpl')
 			return
@@ -276,7 +292,7 @@ export class UnitconvService {
 	 * (cons and exec could have different conversions so they cant use the same reference to unit)
 	 */
 	public convertNonFiat(value: BigNumber | number | string, from: string, to: string, displayable = true) {
-		if (MAPPING.get(to).coinbaseSpot != null && to != 'ETH' && to != 'ETHER' && from != to) {
+		if (MAPPING.get(to).coinbaseSpot != null && to != 'ETH' && to != 'ETHER' && to != this.getNetworkDefaultCurrency('cons') && from != to) {
 			console.warn('convertNonFiat does not support fiat currencies. Use convert instead', value.toString(), from, to, displayable)
 		}
 		return this.convertBase(value, from, MAPPING.get(to), displayable)
@@ -340,11 +356,13 @@ export class UnitconvService {
 	}
 
 	async updatePriceData() {
+		let skipFetchingMGNOtoDAIPrice = true
 		const consPrice = await this.getPriceData(this.pref.Cons.unit)
 		if (consPrice) {
 			this.lastPrice.Cons = consPrice.multipliedBy(MAPPING.get(this.getNetworkDefaultCurrency(this.pref.Cons)).value)
 			this.storage.setObject(this.getLastPriceKey(this.pref.Cons), { lastPrice: this.lastPrice.Cons } as LastPrice)
 		} else {
+			skipFetchingMGNOtoDAIPrice = false
 			this.lastPrice.Cons = this.pref.Cons.unit.value
 			if (this.pref.Cons.value != 'mGNO') {
 				this.pref.Cons.value = this.getNetworkDefaultCurrency(this.pref.Cons)
@@ -356,8 +374,26 @@ export class UnitconvService {
 			this.lastPrice.Exec = execPrice.multipliedBy(MAPPING.get(this.getNetworkDefaultCurrency(this.pref.Exec)).value)
 			this.storage.setObject(this.getLastPriceKey(this.pref.Exec), { lastPrice: this.lastPrice.Exec } as LastPrice)
 		} else {
+			skipFetchingMGNOtoDAIPrice = false
 			this.lastPrice.Exec = this.pref.Exec.unit.value
 			this.pref.Exec.value = this.getNetworkDefaultCurrency(this.pref.Exec)
+		}
+
+		// Two ways to get the DAI <-> mGNO price
+		// First, simply ask coinbase for the price of mGNO in DAI.
+		// Alternatively to save API calls, we can also calculate the price of mGNO in DAI by dividing the price of mGNO in Fiat by the price of DAI in Fiat.
+		// For the second approach we need both fiat values though
+		if (!skipFetchingMGNOtoDAIPrice && this.api.isGnosis()) {
+			const daiToGno = await this.getPriceData(this.mGNOXDAI.unit)
+			if (daiToGno) {
+				this.lastPrice.mGNOXDAI = daiToGno.dividedBy(MAPPING.get(this.getNetworkDefaultCurrency(this.pref.Cons)).value)
+				this.storage.setObject(this.getLastPriceKey(this.mGNOXDAI), { lastPrice: this.lastPrice.mGNOXDAI } as LastPrice)
+			} else {
+				this.lastPrice.mGNOXDAI = this.mGNOXDAI.unit.value
+			}
+		} else {
+			// Keep in mind that both those values already contain any base unit convertion (fe mGNO to GNO)
+			this.lastPrice.mGNOXDAI = this.lastPrice.Exec.dividedBy(this.lastPrice.Cons)
 		}
 
 		this.triggerPropertyChange()
@@ -404,6 +440,7 @@ interface LastPrice {
 interface LastPrice {
 	Cons: BigNumber
 	Exec: BigNumber
+	mGNOXDAI: BigNumber
 }
 
 interface PreferredCurrency {

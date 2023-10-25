@@ -160,35 +160,6 @@
 		<app-ad location="info"></app-ad>
 	</ion-list>
 
-	<!--<ion-list-header>
-		<ion-label>Staking & Transactions</ion-label>
-	</ion-list-header>
-	<ion-list class="performances">
-		<ion-item lines="none">
-			<div class="grid">
-				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value left" [class]="data.combinedPerformance.total | valuestyle : 0">
-							{{ data.combinedPerformance.total | mcurrency : 'GWEI' : unit.pref.Cons }} TODO
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title"> Total Earned </ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value" [class]="data.combinedPerformance.apr | valuestyle : 0"> {{ data.combinedPerformance.apr }} % </ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> APR </ion-label>
-					</div>
-				</div>
-			</div>
-		</ion-item>
-	</ion-list>-->
-
 	<ion-list-header>
 		<ion-label>Staking</ion-label>
 	</ion-list-header>
@@ -208,34 +179,17 @@
 
 				<div class="grid-cell">
 					<div>
-						<ion-label class="value" [class]="data.apr | valuestyle : 0"> {{ data.apr }} % </ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right">
-							<span
-								tooltip="Estimated yearly returns on the consensus layer (staking), based on the last 31 days"
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>APR</span
-							>
-						</ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell left">
-					<div>
 						<ng-container *ngIf="data.displayAttrEffectiveness">
-							<ion-label class="value left" [class]="data.attrEffectiveness | valuestyle : 80">
+							<ion-label class="value" [class]="data.attrEffectiveness | valuestyle : 80">
 								{{ data.attrEffectiveness !== -1 ? data.attrEffectiveness + ' %' : 'NaN' }}
 							</ion-label>
 						</ng-container>
 						<ng-container *ngIf="!data.displayAttrEffectiveness">
-							<ion-label class="value left"> - </ion-label>
+							<ion-label class="value"> - </ion-label>
 						</ng-container>
 					</div>
 					<div>
-						<ion-label class="income-title">
+						<ion-label class="income-title right">
 							<span
 								tooltip="The attestation inclusion effectiveness should be 80% or higher to minimize reward penalties."
 								placement="right"
@@ -246,27 +200,109 @@
 						</ion-label>
 					</div>
 				</div>
+			</div>
+		</ion-item>
+	</ion-list>
 
-				<div class="grid-cell">
-					<div>
-						<ion-label class="value" *ngIf="proposals">
-							<span class="ok-proposals">{{ proposals.good }}</span> /
-							<span [class]="proposals.bad == 0 ? '' : 'err-proposals'">{{ proposals.bad }}</span>
+	<app-ad location="dashboard"></app-ad>
+
+	<ion-list-header>
+		<ion-label>Rewards</ion-label>
+	</ion-list-header>
+	<ion-segment [(ngModel)]="rewardTab" mode="md">
+		<ion-segment-button value="combined" [disabled]="scrolling">
+			<ion-label>Combined</ion-label>
+		</ion-segment-button>
+		<ion-segment-button value="cons" [disabled]="scrolling">
+			<ion-label>Consensus</ion-label>
+		</ion-segment-button>
+		<ion-segment-button value="exec" [disabled]="scrolling">
+			<ion-label>Blocks</ion-label>
+		</ion-segment-button>
+	</ion-segment>
+	<ion-list class="performances">
+		<ion-item lines="none">
+			<div *ngIf="rewardTab == 'combined'" class="grid">
+				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
+					<div class="grid">
+						<ion-label class="value left" [class]="data.combinedPerformance.performance1d | valuestyle : 0">
+							{{ data.combinedPerformance.performance1d | mcurrency : 'GWEI' : unit.pref.Cons }}
 						</ion-label>
 					</div>
-					<div>
-						<ion-label class="income-title right">
+					<div class="grid">
+						<ion-label class="income-title">
 							<span
-								tooltip="Amount of valid or invalid (orphaned or missed) block proposals."
-								placement="right"
+								tooltip="Today's consensus and execution reward income. Note that this is counted in beaconchain days, a beaconchain day starts at 2 PM UTC. "
 								trigger="click"
-								hideDelayAfterClick="5000">
-								Proposals
-							</span>
+								hideDelayAfterClick="5000"
+								>Today</span
+							>
 						</ion-label>
 					</div>
 				</div>
 
+				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
+					<div>
+						<ion-label class="value" [class]="data.combinedPerformance.performance7d | valuestyle : 0">
+							{{ data.combinedPerformance.performance7d | mcurrency : 'GWEI' : unit.pref.Cons }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right"> Last Week </ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
+					<div>
+						<ion-label class="value left" [class]="data.combinedPerformance.performance31d | valuestyle : 0">
+							{{ data.combinedPerformance.performance31d | mcurrency : 'GWEI' : unit.pref.Cons }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title"> Last Month </ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
+					<div>
+						<ion-label class="value" [class]="data.combinedPerformance.performance365d | valuestyle : 0">
+							{{ data.combinedPerformance.performance365d | mcurrency : 'GWEI' : unit.pref.Cons }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right"> Last Year </ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell left">
+					<div>
+						<ion-label class="value left" [class]="data.combinedPerformance.apr | valuestyle : 0"> {{ data.combinedPerformance.apr }} % </ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title">
+							<span
+								tooltip="Estimated yearly returns on both consensus layer (staking) and execution layer (transaction fees), based on the last 31 days"
+								placement="right"
+								trigger="click"
+								hideDelayAfterClick="5000"
+								>APR</span
+							>
+						</ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
+					<div>
+						<ion-label class="value" [class]="data.combinedPerformance.total | valuestyle : 0">
+							{{ data.combinedPerformance.total | mcurrency : 'GWEI' : unit.pref.Cons }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right"> Total </ion-label>
+					</div>
+				</div>
+			</div>
+			<div *ngIf="rewardTab == 'cons'" class="grid">
 				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
 					<div class="grid">
 						<ion-label class="value left" [class]="data.consensusPerformance.performance1d | valuestyle : 0">
@@ -309,8 +345,123 @@
 
 				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
 					<div>
+						<ion-label class="value" [class]="data.consensusPerformance.performance365d | valuestyle : 0">
+							{{ data.consensusPerformance.performance365d | mcurrency : 'GWEI' : unit.pref.Cons }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right"> Last Year </ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell left">
+					<div>
+						<ion-label class="value left" [class]="data.consensusPerformance.apr | valuestyle : 0"> {{ data.consensusPerformance.apr }} % </ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title">
+							<span
+								tooltip="Estimated yearly returns on consensus layer (staking), based on the last 31 days"
+								placement="right"
+								trigger="click"
+								hideDelayAfterClick="5000"
+								>APR</span
+							>
+						</ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
+					<div>
 						<ion-label class="value" [class]="data.consensusPerformance.total | valuestyle : 0">
 							{{ data.consensusPerformance.total | mcurrency : 'GWEI' : unit.pref.Cons }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right">
+							<span
+								tooltip="Contains your consensus rewards, your execution rewards and any claimed or unclaimed smoothing pool rewards. "
+								trigger="click"
+								hideDelayAfterClick="5000"
+								>Total</span
+							>
+						</ion-label>
+					</div>
+				</div>
+			</div>
+			<div *ngIf="rewardTab == 'exec'" class="grid">
+				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
+					<div class="grid">
+						<ion-label class="value left" [class]="data.executionPerformance.performance1d | valuestyle : 0">
+							{{ data.executionPerformance.performance1d | mcurrency : 'GWEI' : unit.pref.Exec }}
+						</ion-label>
+					</div>
+					<div class="grid">
+						<ion-label class="income-title">
+							<span
+								tooltip="Today's execution reward income. Note that this is counted in beaconchain days, a beaconchain day starts at 2 PM UTC. "
+								trigger="click"
+								hideDelayAfterClick="5000"
+								>Today</span
+							>
+						</ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
+					<div>
+						<ion-label class="value" [class]="data.executionPerformance.performance7d | valuestyle : 0">
+							{{ data.executionPerformance.performance7d | mcurrency : 'GWEI' : unit.pref.Exec }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right"> Last Week </ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
+					<div>
+						<ion-label class="value left" [class]="data.executionPerformance.performance31d | valuestyle : 0">
+							{{ data.executionPerformance.performance31d | mcurrency : 'GWEI' : unit.pref.Exec }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title"> Last Month </ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
+					<div>
+						<ion-label class="value" [class]="data.executionPerformance.performance365d | valuestyle : 0">
+							{{ data.executionPerformance.performance365d | mcurrency : 'GWEI' : unit.pref.Exec }}
+						</ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title right"> Last year </ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell left">
+					<div>
+						<ion-label class="value left" [class]="data.executionPerformance.apr | valuestyle : 0"> {{ data.executionPerformance.apr }} % </ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title">
+							<span
+								tooltip="Estimated yearly returns on execution layer (transaction fees), based on the last 31 days"
+								placement="right"
+								trigger="click"
+								hideDelayAfterClick="5000"
+								>APR</span
+							>
+						</ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
+					<div>
+						<ion-label class="value" [class]="data.executionPerformance.total | valuestyle : 0">
+							{{ data.executionPerformance.total | mcurrency : 'GWEI' : unit.pref.Exec }}
 						</ion-label>
 					</div>
 					<div>
@@ -319,52 +470,6 @@
 				</div>
 			</div>
 		</ion-item>
-
-		<app-ad location="dashboard"></app-ad>
-
-		<ion-list-header *ngIf="hasNonSmoothingPoolAsWell">
-			<ion-label>Transaction Fees</ion-label>
-		</ion-list-header>
-
-		<ion-list class="performances" *ngIf="hasNonSmoothingPoolAsWell">
-			<ion-item lines="none">
-				<div class="grid">
-					<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
-						<div>
-							<ion-label class="value left" [class]="data.executionPerformance.performance31d | valuestyle : 0">
-								{{ data.executionPerformance.performance31d | mcurrency : 'GWEI' : unit.pref.Exec }}
-							</ion-label>
-						</div>
-						<div>
-							<ion-label class="income-title">
-								<span
-									tooltip="Income of last 31 days solely from transaction fees and mev. Staking or smoothing pool rewards are not included. "
-									trigger="click"
-									hideDelayAfterClick="5000"
-									>Last Month</span
-								>
-							</ion-label>
-						</div>
-					</div>
-
-					<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-						<div>
-							<ion-label class="value" [class]="data.executionPerformance.apr | valuestyle : 0"> {{ data.executionPerformance.apr }} % </ion-label>
-						</div>
-						<div>
-							<ion-label class="income-title right">
-								<span
-									tooltip="Estimated yearly returns with transaction fees (execution layer), based on the last 31 days"
-									trigger="click"
-									hideDelayAfterClick="5000"
-									>APR</span
-								>
-							</ion-label>
-						</div>
-					</div>
-				</div>
-			</ion-item>
-		</ion-list>
 	</ion-list>
 
 	<ion-list-header *ngIf="displaySmoothingPool">
@@ -676,6 +781,38 @@
 		</div>
 	</ion-list>
 
+	<div *ngIf="proposals">
+		<ion-list-header>
+			<ion-label>Blocks</ion-label>
+		</ion-list-header>
+		<ion-list class="performances">
+			<ion-item lines="none">
+				<ion-label class="income-title">
+					<span
+						tooltip="Amount of valid or invalid (orphaned or missed) block proposals."
+						placement="right"
+						trigger="click"
+						hideDelayAfterClick="5000">
+						Proposals
+					</span>
+				</ion-label>
+				<ion-label class="value">
+					<span class="ok-proposals">{{ proposals.good }}</span> /
+					<span [class]="proposals.bad == 0 ? '' : 'err-proposals'">{{ proposals.bad }}</span>
+				</ion-label>
+			</ion-item>
+			<ion-item lines="none" *ngIf="data.proposalLuckResponse">
+				<ion-label class="stat-title">Luck</ion-label>
+				<span [class]="data.proposalLuckResponse.proposal_luck | valuestyle : 1">
+					<ion-label class="value" *ngIf="data.proposalLuckResponse.proposal_luck > 0"
+						>{{ data.proposalLuckResponse.proposal_luck * 100 | number : '1.0-1' }}%</ion-label
+					>
+					<ion-label class="value" style="color: var(--text-color)" *ngIf="data.proposalLuckResponse.proposal_luck <= 0">-</ion-label>
+				</span>
+			</ion-item>
+		</ion-list>
+	</div>
+
 	<div *ngIf="data.syncCommitteesStats">
 		<ion-list-header>
 			<ion-label>Sync Committees</ion-label>
@@ -713,7 +850,7 @@
 					tooltip="Sync committees expected: {{ data.syncCommitteesStats.committeesExpected }}"
 					trigger="click"
 					hideDelayAfterClick="5000">
-					<ion-label class="value" *ngIf="data.syncCommitteesStats.luck > 0">{{ data.syncCommitteesStats.luck | number : '1.0-2' }}%</ion-label>
+					<ion-label class="value" *ngIf="data.syncCommitteesStats.luck > 0">{{ data.syncCommitteesStats.luck | number : '1.0-1' }}%</ion-label>
 					<ion-label class="value" style="color: var(--text-color)" *ngIf="data.syncCommitteesStats.luck <= 0">-</ion-label>
 				</span>
 			</ion-item>
@@ -813,7 +950,7 @@
 				</span>
 			</ion-label>
 			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
-				{{ data.effectiveBalance | mcurrency : 'GWEI' : 'ETHER' }}
+				{{ data.effectiveBalance | mcurrency : 'GWEI' : unit.getNetworkDefaultCurrency('cons') }}
 			</ion-label>
 		</ion-item>
 	</ion-list>
@@ -847,7 +984,7 @@
 		<ion-item lines="none" *ngIf="data.foreignValidator">
 			<ion-label class="stat-title"> Effective Balance </ion-label>
 			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
-				{{ data.effectiveBalance | mcurrency : 'GWEI' : 'ETHER' }}
+				{{ data.effectiveBalance | mcurrency : 'GWEI' : unit.getNetworkDefaultCurrency('cons') }}
 			</ion-label>
 		</ion-item>
 

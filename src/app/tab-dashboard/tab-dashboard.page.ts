@@ -120,13 +120,22 @@ export class Tab1Page {
 			console.warn('error getRemoteCurrentEpoch', error)
 			return null
 		})
-		const overviewController = new OverviewController(() => {
-			if (this.lastRefreshTs + 60 > this.getUnixSeconds()) return
-			this.api.invalidateCache()
-			this.refresh()
-		}, await this.merchant.getCurrentPlanMaxValidator())
+		const overviewController = new OverviewController(
+			() => {
+				if (this.lastRefreshTs + 60 > this.getUnixSeconds()) return
+				this.api.invalidateCache()
+				this.refresh()
+			},
+			await this.merchant.getCurrentPlanMaxValidator(),
+			this.unitConv
+		)
 
-		this.overallData = overviewController.processDashboard(validators, epoch, this.validatorUtils.syncCommitteesStatsResponse)
+		this.overallData = overviewController.processDashboard(
+			validators,
+			epoch,
+			this.validatorUtils.syncCommitteesStatsResponse,
+			this.validatorUtils.proposalLuckResponse
+		)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}
 

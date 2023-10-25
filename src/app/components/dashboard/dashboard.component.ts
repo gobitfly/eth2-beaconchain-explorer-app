@@ -102,6 +102,8 @@ export class DashboardComponent implements OnInit {
 	vacantMinipoolText = null
 	showWithdrawalInfo = false
 
+	rewardTab: 'combined' | 'cons' | 'exec' = 'combined'
+
 	constructor(
 		public unit: UnitconvService,
 		public api: ApiService,
@@ -261,8 +263,8 @@ export class DashboardComponent implements OnInit {
 			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
 			this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
 			this.displaySmoothingPool = this.data.rocketpool.smoothingPool
-			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber('1e9'))
-			this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber('1e9'))
+			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed
+			this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed
 			this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
 			this.totalRplEarned = this.data.rocketpool.totalClaims.plus(this.data.rocketpool.rplUnclaimed)
 		} catch (e) {
@@ -720,27 +722,26 @@ export class DashboardComponent implements OnInit {
 						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
 
 						// income
-						let lastCurrency = null
-						let consAndExecSameCurrency = true
+						const consAndExecSameCurrency = this.unit.hasSameCLAndELCurrency()
 						let total = new BigNumber(0)
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
 							const type = tooltip.chart.hoverPoints[i].series.name == 'Execution' ? 'exec' : 'cons'
-							const currency = this.unit.getNetworkDefaultCurrency(type)
-							if (lastCurrency != null && lastCurrency != currency) {
-								consAndExecSameCurrency = false
-							}
-							lastCurrency = currency
 
 							const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
 							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${
 								tooltip.chart.hoverPoints[i].series.name
 							}: ${getValueString(value, type)}</b><br/>`
-							total = total.plus(value)
+
+							if (!consAndExecSameCurrency && type == 'exec') {
+								total = total.plus(this.unit.convertELtoCL(value))
+							} else {
+								total = total.plus(value)
+							}
 						}
 
 						// add total if hovered point contains rewards for both EL and CL
 						// only if both exec and cons currencies are the same
-						if (tooltip.chart.hoverPoints.length > 1 && consAndExecSameCurrency) {
+						if (tooltip.chart.hoverPoints.length > 1) {
 							text += `<b>Total: ${getValueString(total, 'cons')}</b>`
 						}
 

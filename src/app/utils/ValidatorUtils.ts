@@ -37,6 +37,7 @@ import {
 	SyncCommitteeResponse,
 	ETH1ValidatorResponse,
 	SyncCommitteesStatisticsResponse,
+	ProposalLuckResponse,
 } from '../requests/requests'
 import { MerchantUtils } from './MerchantUtils'
 import BigNumber from 'bignumber.js'
@@ -90,6 +91,7 @@ export class ValidatorUtils {
 	private olderEpoch: EpochResponse
 	rocketpoolStats: RocketPoolNetworkStats
 	syncCommitteesStatsResponse: SyncCommitteesStatisticsResponse
+	proposalLuckResponse: ProposalLuckResponse
 
 	constructor(
 		private api: ApiService,
@@ -376,6 +378,7 @@ export class ValidatorUtils {
 		const validatorsResponse = result.validators
 
 		this.syncCommitteesStatsResponse = result.sync_committees_stats
+		this.proposalLuckResponse = result.proposal_luck_stats
 
 		this.updateRplAndRethPrice()
 

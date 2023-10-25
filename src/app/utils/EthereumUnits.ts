@@ -38,8 +38,9 @@ export default class Unit {
 	public static RPL_NAKED = new Unit('RPL', new BigNumber('1'), 2)
 	public static NO_CURRENCY = new Unit('', new BigNumber('1'), 0)
 	public static RETH = new Unit('RETH', new BigNumber('1'), 2)
+	public static DAI_GNO_HELPER = new Unit('dummy', new BigNumber(1), 5, 'DAI-GNO')
 
-	public static XDAI = new Unit('xDAI', new BigNumber('1'), 3, 'XXX-DAI', 'xDAI')
+	public static XDAI = new Unit('DAI', new BigNumber('1'), 3, 'XXX-DAI', 'xDAI')
 	public static GNO = new Unit('GNO', new BigNumber('0.03125'), 5, 'XXX-GNO', 'GNO')
 	public static MGNO = new Unit('mGNO', new BigNumber('1'), 5, 'XXX-GNO', 'mGNO')
 

@@ -18,12 +18,13 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
+import { EpochResponse, ProposalLuckResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
 import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
 import BigNumber from 'bignumber.js'
 import { getValidatorQueryString, ValidatorState, Validator } from '../utils/ValidatorUtils'
 import { formatDate } from '@angular/common'
 import { SyncCommitteesStatistics, SyncCommitteesStatisticsResponse } from '../requests/requests'
+import { UnitconvService } from '../services/unitconv.service'
 
 export type OverviewData = {
 	overallBalance: BigNumber
@@ -43,7 +44,7 @@ export type OverviewData = {
 	worstTopPercentage: number
 	displayAttrEffectiveness: boolean
 	attrEffectiveness: number
-
+	proposalLuckResponse: ProposalLuckResponse
 	dashboardState: DashboardStatus
 	lazyLoadChart: boolean
 	lazyChartValidators: string
@@ -57,6 +58,7 @@ export type OverviewData = {
 	currentSyncCommittee: SyncCommitteeResponse
 	nextSyncCommittee: SyncCommitteeResponse
 	syncCommitteesStats: SyncCommitteesStatistics
+	proposalLuck: ProposalLuckResponse
 	withdrawalsEnabledForAll: boolean
 }
 
@@ -122,17 +124,28 @@ export type Description = {
 const VALIDATOR_32ETH = new BigNumber(32000000000)
 
 export default class OverviewController {
-	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280) {}
+	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280, private unit: UnitconvService = null) {}
 
-	public processDashboard(validators: Validator[], currentEpoch: EpochResponse, syncCommitteesStatsResponse = null) {
-		return this.process(validators, currentEpoch, false, syncCommitteesStatsResponse)
+	public processDashboard(
+		validators: Validator[],
+		currentEpoch: EpochResponse,
+		syncCommitteesStatsResponse = null,
+		proposalLuckResponse: ProposalLuckResponse = null
+	) {
+		return this.process(validators, currentEpoch, false, syncCommitteesStatsResponse, proposalLuckResponse)
 	}
 
 	public processDetail(validators: Validator[], currentEpoch: EpochResponse) {
-		return this.process(validators, currentEpoch, true, null)
+		return this.process(validators, currentEpoch, true, null, null)
 	}
 
-	private process(validators: Validator[], currentEpoch: EpochResponse, foreignValidator = false, syncCommitteesStatsResponse = null): OverviewData {
+	private process(
+		validators: Validator[],
+		currentEpoch: EpochResponse,
+		foreignValidator = false,
+		syncCommitteesStatsResponse = null,
+		proposalLuckResponse: ProposalLuckResponse = null
+	): OverviewData {
 		if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
 		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
@@ -165,13 +178,27 @@ export default class OverviewController {
 
 		const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive, aprPerformance31dExecution)
 
+		const smoothingPoolClaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
+			true,
+			validators,
+			(cur) => cur.rocketpool.claimed_smoothing_pool,
+			(cur) => cur.execshare
+		).dividedBy(new BigNumber('1e9'))
+
+		const smoothingPoolUnclaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
+			true,
+			validators,
+			(cur) => cur.rocketpool.unclaimed_smoothing_pool,
+			(cur) => cur.execshare
+		).dividedBy(new BigNumber('1e9'))
+
 		const combinedPerf = {
-			performance1d: consensusPerf.performance1d.plus(executionPerf.performance1d),
-			performance31d: consensusPerf.performance31d.plus(executionPerf.performance31d),
-			performance7d: consensusPerf.performance7d.plus(executionPerf.performance7d),
-			performance365d: consensusPerf.performance365d.plus(executionPerf.performance365d),
-			apr: this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution.plus(consensusPerf.performance31d)),
-			total: consensusPerf.total.plus(executionPerf.total),
+			performance1d: consensusPerf.performance1d.plus(this.unit.convertELtoCL(executionPerf.performance1d)),
+			performance31d: consensusPerf.performance31d.plus(this.unit.convertELtoCL(executionPerf.performance31d)),
+			performance7d: consensusPerf.performance7d.plus(this.unit.convertELtoCL(executionPerf.performance7d)),
+			performance365d: consensusPerf.performance365d.plus(this.unit.convertELtoCL(executionPerf.performance365d)),
+			apr: this.getAPRFromMonth(validatorDepositActive, this.unit.convertELtoCL(aprPerformance31dExecution).plus(consensusPerf.performance31d)),
+			total: consensusPerf.total.plus(this.unit.convertELtoCL(executionPerf.total)).plus(smoothingPoolClaimed).plus(smoothingPoolUnclaimed),
 		}
 
 		let attrEffectiveness = 0
@@ -242,10 +269,11 @@ export default class OverviewController {
 			foreignValidatorWithdrawalCredsAre0x01: foreignWCAre0x01,
 			effectiveBalance: effectiveBalance,
 			currentEpoch: currentEpoch,
-			apr: consensusPerf.apr,
+			apr: combinedPerf.apr,
 			currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
 			nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
 			syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse),
+			proposalLuckResponse: proposalLuckResponse,
 			withdrawalsEnabledForAll:
 				validators.filter((cur) => (cur.data.withdrawalcredentials.startsWith('0x01') ? true : false)).length == validatorCount,
 			rocketpool: {
@@ -276,18 +304,8 @@ export default class OverviewController {
 				fee: feeAvg,
 				status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
 				depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
-				smoothingPoolClaimed: this.sumRocketpoolSmoothingBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.claimed_smoothing_pool,
-					(cur) => cur.execshare
-				),
-				smoothingPoolUnclaimed: this.sumRocketpoolSmoothingBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.unclaimed_smoothing_pool,
-					(cur) => cur.execshare
-				),
+				smoothingPoolClaimed: smoothingPoolClaimed,
+				smoothingPoolUnclaimed: smoothingPoolUnclaimed,
 				rplUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(
 					true,
 					validators,
@@ -343,7 +361,7 @@ export default class OverviewController {
 			performance7d: performance7d,
 			performance365d: performance365d,
 			apr: aprExecution,
-			total: total, 
+			total: total,
 		}
 	}
 

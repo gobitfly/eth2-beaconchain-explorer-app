@@ -30,6 +30,10 @@ ion-segment-button {
 	opacity: 1 !important;
 }
 
+ion-segment {
+	background: var(--ion-background-color);
+}
+
 .segment-button-checked {
 	color: var(--segment-primary) !important;
 	font-weight: 600 !important;
@@ -118,7 +122,11 @@ ion-segment-button {
 	padding-bottom: 6px !important;
 }
 
-ion-list {
+ion-list-header {
+	padding-left: 0px;
+	text-align: center;
+	font-size: 1em;
+	font-weight: bold;
 }
 
 ion-item {
@@ -147,9 +155,6 @@ ion-item {
 .updates {
 	padding-top: 0px;
 	padding-bottom: 0px;
-}
-
-.first-item-group {
 }
 
 .status-container {
