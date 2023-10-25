@@ -25,8 +25,8 @@ ion-segment-button {
 	text-transform: none !important;
 	--ripple-color: transparent !important;
 	//transition: color 0.15s ease;
-	font-size: 1.05em !important;
-	letter-spacing: normal !important;
+	font-family: 'Varela';
+	font-size: 0.75em;
 	opacity: 1 !important;
 }
 
@@ -125,8 +125,13 @@ ion-segment {
 ion-list-header {
 	padding-left: 0px;
 	text-align: center;
-	font-size: 1em;
-	font-weight: bold;
+}
+ion-list-header ion-label {
+	font-size: 0.9em;
+	font-weight: 600 !important;
+	font-family: 'Varela';
+	letter-spacing: 1.05px;
+	opacity: 1;
 }
 
 ion-item {
