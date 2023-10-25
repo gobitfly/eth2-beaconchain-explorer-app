@@ -153,7 +153,6 @@ export interface CoinbaseExchangeResponse {
 
 export interface ETH1ValidatorResponse {
 	publickey: string
-	valid_signature: boolean
 	validatorindex: number
 }
 
@@ -354,18 +353,32 @@ export class ValidatorRequest extends APIRequest<ValidatorResponse> {
 	}
 }
 
-export class ValidatorETH1Request extends APIRequest<ETH1ValidatorResponse> {
+export class ValidatorViaDepositAddress extends APIRequest<ETH1ValidatorResponse> {
 	resource = 'validator/eth1/'
 	method = Method.GET
 
 	/**
-	 * @param validator Index or PubKey
+	 * @param ethAddress Address
 	 */
 	constructor(ethAddress: string) {
 		super()
 		this.resource += ethAddress.replace(/\s/g, '')
 	}
 }
+
+export class ValidatorViaWithdrawalAddress extends APIRequest<ETH1ValidatorResponse> {
+	resource = 'validator/withdrawalCredentials/'
+	method = Method.GET
+
+	/**
+	 * @param ethAddress Address or Withdrawal Credential
+	 */
+	constructor(ethAddress: string) {
+		super()
+		this.resource += ethAddress.replace(/\s/g, '')
+	}
+}
+
 export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 	resource = 'execution/'
 	method = Method.GET

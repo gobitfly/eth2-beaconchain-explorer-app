@@ -27,7 +27,6 @@ import {
 	AttestationPerformanceResponse,
 	ValidatorRequest,
 	ValidatorResponse,
-	ValidatorETH1Request,
 	GetMyValidatorsRequest,
 	MyValidatorResponse,
 	DashboardRequest,
@@ -38,6 +37,8 @@ import {
 	ETH1ValidatorResponse,
 	SyncCommitteesStatisticsResponse,
 	ProposalLuckResponse,
+	ValidatorViaDepositAddress,
+	ValidatorViaWithdrawalAddress,
 } from '../requests/requests'
 import { MerchantUtils } from './MerchantUtils'
 import BigNumber from 'bignumber.js'
@@ -492,20 +493,37 @@ export class ValidatorUtils {
 		}
 	}
 
-	async getRemoteValidatorViaETH1(arg: string, enforceMax = -1): Promise<Validator[]> {
+	async getRemoteValidatorViaETHAddress(arg: string, enforceMax = -1): Promise<Validator[]> {
 		if (!arg) return []
-		const request = new ValidatorETH1Request(arg)
-		const response = await this.api.execute(request)
+		const viaDeposit = new ValidatorViaDepositAddress(arg)
+		const viaDepositPromise = this.api.execute(viaDeposit)
 
-		if (request.wasSuccessful(response)) {
-			const eth1ValidatorList = request.parse(response)
-			const queryString = getValidatorQueryString(eth1ValidatorList, 2000, enforceMax)
+		const viaWithdrawal = new ValidatorViaWithdrawalAddress(arg)
+		const viaWithdrawalPromise = this.api.execute(viaWithdrawal)
 
-			return await this.getDashboardDataValidators(MEMORY, queryString)
-		} else {
-			return this.apiStatusHandler(response)
+		const response = await Promise.all([viaDepositPromise, viaWithdrawalPromise])
+		let result: ETH1ValidatorResponse[] = []
+
+		for (const resp of response) {
+			if (viaDeposit.wasSuccessful(resp)) {
+				// since both results are identical we can use any of the requests for parsing
+				const temp = viaDeposit.parse(resp)
+				if (temp) {
+					if (result.length > 0) {
+						result = Array.from(new Map([...result, ...temp].map((item) => [item.validatorindex, item])).values())
+					} else {
+						result = temp
+					}
+				}
+			} else {
+				return this.apiStatusHandler(response)
+			}
 		}
+
+		const queryString = getValidatorQueryString(result, 2000, enforceMax)
+		return await this.getDashboardDataValidators(MEMORY, queryString)
 	}
+
 	private async apiStatusHandler(response) {
 		if (response && response.data && response.data.status) {
 			return Promise.reject(new Error(response.data.status))
@@ -564,8 +582,8 @@ export class ValidatorUtils {
 		return result
 	}
 
-	async searchValidatorsViaETH1(search: string, enforceMax = -1): Promise<Validator[]> {
-		const result = await this.getRemoteValidatorViaETH1(search, enforceMax)
+	async searchValidatorsViaETHAddress(search: string, enforceMax = -1): Promise<Validator[]> {
+		const result = await this.getRemoteValidatorViaETHAddress(search, enforceMax)
 		if (result == null) return []
 		return result
 	}

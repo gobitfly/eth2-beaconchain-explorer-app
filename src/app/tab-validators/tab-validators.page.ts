@@ -256,8 +256,9 @@ export class Tab2Page {
 		this.searchResultMode = true
 		this.loading = true
 		const isETH1Address = searchString.startsWith('0x') && searchString.length == 42
+		const isWithdrawalCredential = searchString.startsWith('0x') && searchString.length == 66
 
-		if (isETH1Address) await this.searchETH1(searchString)
+		if (isETH1Address || isWithdrawalCredential) await this.searchETH1(searchString)
 		else await this.searchByPubKeyOrIndex(searchString)
 
 		// this.loading = false would be preferable here but somehow the first time it is called the promises resolve instantly without waiting
@@ -284,12 +285,12 @@ export class Tab2Page {
 	private async searchETH1(target) {
 		this.dataSource.setLoadFrom(() => {
 			return this.validatorUtils
-				.searchValidatorsViaETH1(target)
+				.searchValidatorsViaETHAddress(target)
 				.catch(async (error) => {
 					if (error && error.message && error.message.indexOf('only a maximum of') > 0) {
 						console.log('SET reachedMaxValidators to true')
 						this.reachedMaxValidators = true
-						return this.validatorUtils.searchValidatorsViaETH1(target, this.currentPackageMaxValidators - 1)
+						return this.validatorUtils.searchValidatorsViaETHAddress(target, this.currentPackageMaxValidators - 1)
 					}
 					return []
 				})
