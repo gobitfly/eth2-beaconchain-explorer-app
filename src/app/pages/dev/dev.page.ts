@@ -39,7 +39,7 @@ export class DevPage extends Tab3Page implements OnInit {
 			})
 		} else {
 			Toast.show({
-				text: 'Token refreshed failed :(',
+				text: 'Token refresh failed :(',
 			})
 		}
 	}

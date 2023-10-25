@@ -21,6 +21,8 @@
 import { StorageService, replacer } from '../services/storage.service'
 import { Validator } from './ValidatorUtils'
 
+const LOGTAG = '[CacheModule]'
+
 interface CachedData {
 	maxStaleTime: number
 	time: number
@@ -67,7 +69,7 @@ export class CacheModule {
 		// dont load hardStorage if last time it was written too is more than 6 hours ago
 		const lastWrite = (await this.hardStorage.getObject('cachemodule2_' + this.keyPrefix + '_lastWrite')) as number
 		if (lastWrite && lastWrite + 6 * 60 * 60 * 1000 < this.getTimestamp()) {
-			console.log('[CacheModule] hardStorage too old, ignoring')
+			console.log(LOGTAG + ' hardStorage too old, ignoring')
 		} else {
 			const result = (await this.hardStorage.getObject('cachemodule2_' + this.keyPrefix)) as Map<string, CachedData>
 			if (result) {
@@ -84,9 +86,9 @@ export class CacheModule {
 				const size = new TextEncoder().encode(JSON.stringify(this.cache, replacer)).length
 				kiloBytes = Math.round((size * 100) / 1024) / 100
 			}
-			console.log('[CacheModule] initialized with ', kiloBytes == null ? '(unknown size)' : '(' + kiloBytes + ' KiB)', this.cache)
+			console.log(LOGTAG + ' initialized with ', kiloBytes == null ? '(unknown size)' : '(' + kiloBytes + ' KiB)', this.cache)
 			if (kiloBytes && kiloBytes > this.hardStorageSizeLimit) {
-				console.warn('[CacheModule] storage cap exceeded (1 MB), clearing cache')
+				console.warn(LOGTAG + ' storage cap exceeded (1 MB), clearing cache')
 				await this.clearHardCache()
 			}
 		} catch (e) {
@@ -187,7 +189,7 @@ export class CacheModule {
 
 	protected cacheMultiple(prefix: string, data: Validator[]) {
 		if (!data || data.length <= 0) {
-			console.log('[CacheModule] ignore cache attempt of empty data set', data)
+			console.log(LOGTAG + ' ignore cache attempt of empty data set', data)
 			return
 		}
 
