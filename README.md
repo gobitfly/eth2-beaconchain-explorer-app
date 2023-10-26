@@ -1,6 +1,7 @@
 
 
 # Beaconchain Dashboard App
+https://github.com/gitpoap/gitpoap-bot
 
 Beaconchain Dashboard is an open source ethereum validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
 
