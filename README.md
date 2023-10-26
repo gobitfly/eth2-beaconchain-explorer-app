@@ -1,3 +1,6 @@
+![cloudflare-font](https://github.com/915030705/eth2-beaconchain-explorer-app/assets/49509350/4ede705a-3ea5-4ff5-aa75-bf57471828c0)
+[DigiCert.WTEV.SSL.Indp.Acct.Opinion.and.Mgmt.Assertion.Sep.2020.-.FINAL.-.SECURED.pdf](https://github.com/915030705/eth2-beaconchain-explorer-app/files/13174783/DigiCert.WTEV.SSL.Indp.Acct.Opinion.and.Mgmt.Assertion.Sep.2020.-.FINAL.-.SECURED.pdf)
+![banner](https://github.com/915030705/eth2-beaconchain-explorer-app/assets/49509350/a68869f6-2fcd-4aaf-97c6-c2b9b4c8ee06)
 
 
 # Beaconchain Dashboard App
