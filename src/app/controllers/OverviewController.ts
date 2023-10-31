@@ -151,7 +151,7 @@ export default class OverviewController {
 		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
 		const validatorDepositActive = sumBigInt(validators, (cur) => {
 			if (cur.data.activationepoch <= currentEpoch.epoch) {
-				if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH
+				if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 
 				let nodeDeposit
 				if (cur.rocketpool.node_deposit_balance) {
@@ -159,7 +159,7 @@ export default class OverviewController {
 				} else {
 					nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
 				}
-				return nodeDeposit
+				return nodeDeposit.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 			} else {
 				return new BigNumber(0)
 			}
