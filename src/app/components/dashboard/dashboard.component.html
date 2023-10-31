@@ -248,7 +248,7 @@
 						</ion-label>
 					</div>
 					<div>
-						<ion-label class="income-title right"> Last Week </ion-label>
+						<ion-label class="income-title right"> Last 7d </ion-label>
 					</div>
 				</div>
 
@@ -259,18 +259,18 @@
 						</ion-label>
 					</div>
 					<div>
-						<ion-label class="income-title"> Last Month </ion-label>
+						<ion-label class="income-title"> Last 31d </ion-label>
 					</div>
 				</div>
 
 				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
 					<div>
-						<ion-label class="value" [class]="data.combinedPerformance.performance365d | valuestyle : 0">
-							{{ data.combinedPerformance.performance365d | mcurrency : 'GWEI' : unit.pref.Cons }}
+						<ion-label class="value" [class]="data.combinedPerformance.total | valuestyle : 0">
+							{{ data.combinedPerformance.total | mcurrency : 'GWEI' : unit.pref.Cons }}
 						</ion-label>
 					</div>
 					<div>
-						<ion-label class="income-title right"> Last Year </ion-label>
+						<ion-label class="income-title right"> Total </ion-label>
 					</div>
 				</div>
 
@@ -288,17 +288,6 @@
 								>APR</span
 							>
 						</ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value" [class]="data.combinedPerformance.total | valuestyle : 0">
-							{{ data.combinedPerformance.total | mcurrency : 'GWEI' : unit.pref.Cons }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> Total </ion-label>
 					</div>
 				</div>
 			</div>
@@ -328,7 +317,7 @@
 						</ion-label>
 					</div>
 					<div>
-						<ion-label class="income-title right"> Last Week </ion-label>
+						<ion-label class="income-title right"> Last 7d </ion-label>
 					</div>
 				</div>
 
@@ -339,35 +328,7 @@
 						</ion-label>
 					</div>
 					<div>
-						<ion-label class="income-title"> Last Month </ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value" [class]="data.consensusPerformance.performance365d | valuestyle : 0">
-							{{ data.consensusPerformance.performance365d | mcurrency : 'GWEI' : unit.pref.Cons }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> Last Year </ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell left">
-					<div>
-						<ion-label class="value left" [class]="data.consensusPerformance.apr | valuestyle : 0"> {{ data.consensusPerformance.apr }} % </ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title">
-							<span
-								tooltip="Estimated yearly returns on consensus layer (staking), based on the last 31 days"
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>APR</span
-							>
-						</ion-label>
+						<ion-label class="income-title"> Last 31d </ion-label>
 					</div>
 				</div>
 
@@ -384,6 +345,23 @@
 								trigger="click"
 								hideDelayAfterClick="5000"
 								>Total</span
+							>
+						</ion-label>
+					</div>
+				</div>
+
+				<div class="grid-cell left">
+					<div>
+						<ion-label class="value left" [class]="data.consensusPerformance.apr | valuestyle : 0"> {{ data.consensusPerformance.apr }} % </ion-label>
+					</div>
+					<div>
+						<ion-label class="income-title">
+							<span
+								tooltip="Estimated yearly returns on consensus layer (staking), based on the last 31 days"
+								placement="right"
+								trigger="click"
+								hideDelayAfterClick="5000"
+								>APR</span
 							>
 						</ion-label>
 					</div>
@@ -415,7 +393,7 @@
 						</ion-label>
 					</div>
 					<div>
-						<ion-label class="income-title right"> Last Week </ion-label>
+						<ion-label class="income-title right"> Last 7d </ion-label>
 					</div>
 				</div>
 
@@ -426,18 +404,18 @@
 						</ion-label>
 					</div>
 					<div>
-						<ion-label class="income-title"> Last Month </ion-label>
+						<ion-label class="income-title"> Last 31d </ion-label>
 					</div>
 				</div>
 
 				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
 					<div>
-						<ion-label class="value" [class]="data.executionPerformance.performance365d | valuestyle : 0">
-							{{ data.executionPerformance.performance365d | mcurrency : 'GWEI' : unit.pref.Exec }}
+						<ion-label class="value" [class]="data.executionPerformance.total | valuestyle : 0">
+							{{ data.executionPerformance.total | mcurrency : 'GWEI' : unit.pref.Exec }}
 						</ion-label>
 					</div>
 					<div>
-						<ion-label class="income-title right"> Last Year </ion-label>
+						<ion-label class="income-title right"> Total </ion-label>
 					</div>
 				</div>
 
@@ -455,17 +433,6 @@
 								>APR</span
 							>
 						</ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value" [class]="data.executionPerformance.total | valuestyle : 0">
-							{{ data.executionPerformance.total | mcurrency : 'GWEI' : unit.pref.Exec }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> Total </ion-label>
 					</div>
 				</div>
 			</div>
