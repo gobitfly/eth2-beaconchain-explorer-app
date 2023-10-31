@@ -124,10 +124,14 @@ export class ValidatorUtils {
 	async migrateTo3Dot2() {
 		const share = await this.storage.getStakingShare()
 		const valis = await this.getAllValidatorsLocal()
-		for (let i = 0; i < valis.length; i++) {
-			valis[i].share = share.toNumber()
+		if (valis) {
+			for (let i = 0; i < valis.length; i++) {
+				if (share) {
+					valis[i].share = share.toNumber()
+				}
+			}
+			this.saveValidatorsLocal(valis)
 		}
-		this.saveValidatorsLocal(valis)
 	}
 
 	public async getMap(storageKey: string): Promise<Map<string, Validator>> {
