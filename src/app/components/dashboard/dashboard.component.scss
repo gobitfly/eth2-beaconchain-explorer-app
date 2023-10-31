@@ -27,7 +27,11 @@ ion-segment-button {
 	//transition: color 0.15s ease;
 	font-family: 'Varela';
 	font-size: 0.75em;
-	opacity: 1 !important;
+	--background-focused-opacity: 1;
+}
+
+ion-segment-button.md::part(native) {
+	opacity: 0.7;
 }
 
 ion-segment {
@@ -37,6 +41,10 @@ ion-segment {
 .segment-button-checked {
 	color: var(--segment-primary) !important;
 	font-weight: 600 !important;
+}
+
+.segment-button-checked.md::part(native) {
+	opacity: 1 !important;
 }
 
 .status ion-icon {
@@ -131,7 +139,6 @@ ion-list-header ion-label {
 	font-weight: 600 !important;
 	font-family: 'Varela';
 	letter-spacing: 1.05px;
-	opacity: 1;
 }
 
 ion-item {

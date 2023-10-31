@@ -102,8 +102,12 @@ export class MerchantUtils {
 			return
 		}
 
+		this.init()
+	}
+
+	private async init() {
 		try {
-			this.initProducts()
+			await this.initProducts()
 			this.initCustomValidator()
 			this.setupListeners()
 		} catch (e) {
@@ -174,7 +178,7 @@ export class MerchantUtils {
 		return result
 	}
 
-	private initProducts() {
+	private async initProducts() {
 		let platform = CdvPurchase.Platform.GOOGLE_PLAY
 		if (this.platform.is('ios')) {
 			platform = CdvPurchase.Platform.APPLE_APPSTORE
@@ -189,7 +193,16 @@ export class MerchantUtils {
 			}
 		}
 
-		CdvPurchase.store.initialize()
+		await CdvPurchase.store.initialize()
+		for (let i = 0; i < CdvPurchase.store.products.length; i++) {
+			const lastIndex = CdvPurchase.store.products[i].offers[0].pricingPhases.length - 1
+			if (lastIndex < 0) {
+				console.warn('no pricingphases found', CdvPurchase.store.products[i])
+				continue
+			}
+
+			this.updatePrice(CdvPurchase.store.products[i].id, CdvPurchase.store.products[i].offers[0].pricingPhases[lastIndex].price)
+		}
 	}
 
 	private updatePrice(id, price) {
@@ -204,9 +217,6 @@ export class MerchantUtils {
 		// General query to all products
 		CdvPurchase.store
 			.when()
-			.productUpdated((p: CdvPurchase.Product) => {
-				this.updatePrice(p.id, p.pricing.price)
-			})
 			.approved((p: CdvPurchase.Transaction) => {
 				// Handle the product deliverable
 				this.currentPlan = p.products[0].id
