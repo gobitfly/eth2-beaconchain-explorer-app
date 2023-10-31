@@ -376,6 +376,7 @@ export class ValidatorViaWithdrawalAddress extends APIRequest<ETH1ValidatorRespo
 	constructor(ethAddress: string) {
 		super()
 		this.resource += ethAddress.replace(/\s/g, '')
+		this.resource += '?limit=300'
 	}
 }
 

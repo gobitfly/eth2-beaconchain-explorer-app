@@ -179,11 +179,18 @@ export class UnitconvService {
 		return 'ETHER'
 	}
 
-	public convertELtoCL(cl: BigNumber) {
+	public convertELtoCL(el: BigNumber) {
+		if (this.hasSameCLAndELCurrency()) {
+			return el
+		}
+		return el.multipliedBy(this.lastPrice.mGNOXDAI)
+	}
+
+	public convertCLtoEL(cl: BigNumber) {
 		if (this.hasSameCLAndELCurrency()) {
 			return cl
 		}
-		return cl.multipliedBy(this.lastPrice.mGNOXDAI)
+		return cl.dividedBy(this.pref.Cons.unit.value).dividedBy(this.lastPrice.mGNOXDAI)
 	}
 
 	public getFiatCurrency(type: RewardType) {
@@ -241,9 +248,18 @@ export class UnitconvService {
 	}
 
 	private triggerPropertyChange() {
-		if (this.isDefaultCurrency(this.pref.Cons)) {
+		if (this.isDefaultCurrency(this.pref.Cons) && UnitconvService.currencyPipe.Cons == null) {
 			this.pref.Cons = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Cons), 'cons')
-			this.pref.Exec = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Cons), 'exec')
+			if (this.hasSameCLAndELCurrency()) {
+				this.pref.Exec = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Cons), 'exec')
+			} else {
+				this.pref.Exec = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.Exec), 'exec')
+			}
+			if (this.api.isGnosis()) {
+				UnitconvService.currencyPipe.Exec = this.getNetworkDefaultCurrency(this.pref.Cons)
+				this.lastPrice.Exec = this.lastPrice.mGNOXDAI.dividedBy(32)
+			}
+
 			this.pref.RPL = this.createCurrency(this.getNetworkDefaultCurrency(this.pref.RPL), 'rpl')
 			return
 		}
@@ -263,7 +279,7 @@ export class UnitconvService {
 		throw new Error('Unsupported reward type')
 	}
 
-	public switchCurrencyPipe() {
+	private switchConsPipe() {
 		if (this.isDefaultCurrency(this.pref.Cons)) {
 			if (UnitconvService.currencyPipe.Cons == null) return
 			this.pref.Cons = this.createCurrency(UnitconvService.currencyPipe.Cons, 'cons')
@@ -271,7 +287,9 @@ export class UnitconvService {
 			UnitconvService.currencyPipe.Cons = this.pref.Cons.value
 			this.pref.Cons = this.createCurrency(this.getNetworkDefaultCurrency('cons'), 'cons')
 		}
+	}
 
+	private switchExecPipe() {
 		if (this.isDefaultCurrency(this.pref.Exec)) {
 			if (UnitconvService.currencyPipe.Exec == null) return
 			this.pref.Exec = this.createCurrency(UnitconvService.currencyPipe.Exec, 'exec')
@@ -279,6 +297,11 @@ export class UnitconvService {
 			UnitconvService.currencyPipe.Exec = this.pref.Exec.value
 			this.pref.Exec = this.createCurrency(this.getNetworkDefaultCurrency('exec'), 'exec')
 		}
+	}
+
+	public switchCurrencyPipe() {
+		this.switchConsPipe()
+		this.switchExecPipe()
 
 		this.pref.RPL = this.createCurrency(this.pref.Cons.value, 'rpl')
 	}
@@ -400,6 +423,8 @@ export class UnitconvService {
 			// Keep in mind that both those values already contain any base unit convertion (fe mGNO to GNO)
 			this.lastPrice.mGNOXDAI = this.lastPrice.Exec.dividedBy(this.lastPrice.Cons)
 		}
+
+		console.log('skipFetchingMGNOtoDAIPrice', skipFetchingMGNOtoDAIPrice, this.lastPrice.mGNOXDAI.toString())
 
 		this.triggerPropertyChange()
 	}

@@ -36,6 +36,8 @@ export interface ApiNetwork {
 	genesisTs: number
 	elCurrency: NetworkMainCurrency
 	clCurrency: NetworkMainCurrency
+	slotPerEpoch: number
+	slotsTime: number
 	name: string
 }
 
