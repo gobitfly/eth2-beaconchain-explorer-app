@@ -28,6 +28,7 @@ ion-segment-button {
 	font-family: 'Varela';
 	font-size: 0.75em;
 	--background-focused-opacity: 1;
+	opacity: 1 !important;
 }
 
 ion-segment-button.md::part(native) {
