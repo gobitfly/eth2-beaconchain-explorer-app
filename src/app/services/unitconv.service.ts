@@ -77,6 +77,7 @@ export class UnitconvService {
 	}
 
 	public async networkSwitchReload() {
+		UnitconvService.currencyPipe = { Cons: null, Exec: null, RPL: null }
 		await this.init()
 	}
 
