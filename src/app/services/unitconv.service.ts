@@ -357,26 +357,31 @@ export class UnitconvService {
 
 	async updatePriceData() {
 		let skipFetchingMGNOtoDAIPrice = true
-		const consPrice = await this.getPriceData(this.pref.Cons.unit)
-		if (consPrice) {
-			this.lastPrice.Cons = consPrice.multipliedBy(MAPPING.get(this.getNetworkDefaultCurrency(this.pref.Cons)).value)
-			this.storage.setObject(this.getLastPriceKey(this.pref.Cons), { lastPrice: this.lastPrice.Cons } as LastPrice)
-		} else {
-			skipFetchingMGNOtoDAIPrice = false
-			this.lastPrice.Cons = this.pref.Cons.unit.value
-			if (this.pref.Cons.value != 'mGNO') {
-				this.pref.Cons.value = this.getNetworkDefaultCurrency(this.pref.Cons)
-			}
-		}
 
-		const execPrice = await this.getPriceData(this.pref.Exec.unit)
-		if (execPrice) {
-			this.lastPrice.Exec = execPrice.multipliedBy(MAPPING.get(this.getNetworkDefaultCurrency(this.pref.Exec)).value)
-			this.storage.setObject(this.getLastPriceKey(this.pref.Exec), { lastPrice: this.lastPrice.Exec } as LastPrice)
+		if (!this.isDefaultCurrency(this.pref.Cons)) {
+			const consPrice = await this.getPriceData(this.pref.Cons.unit)
+			if (consPrice) {
+				this.lastPrice.Cons = consPrice.multipliedBy(MAPPING.get(this.getNetworkDefaultCurrency(this.pref.Cons)).value)
+				this.storage.setObject(this.getLastPriceKey(this.pref.Cons), { lastPrice: this.lastPrice.Cons } as LastPrice)
+			} else {
+				skipFetchingMGNOtoDAIPrice = false
+				this.lastPrice.Cons = this.pref.Cons.unit.value
+				if (this.pref.Cons.value != 'mGNO') {
+					this.pref.Cons.value = this.getNetworkDefaultCurrency(this.pref.Cons)
+				}
+			}
+
+			const execPrice = await this.getPriceData(this.pref.Exec.unit)
+			if (execPrice) {
+				this.lastPrice.Exec = execPrice.multipliedBy(MAPPING.get(this.getNetworkDefaultCurrency(this.pref.Exec)).value)
+				this.storage.setObject(this.getLastPriceKey(this.pref.Exec), { lastPrice: this.lastPrice.Exec } as LastPrice)
+			} else {
+				skipFetchingMGNOtoDAIPrice = false
+				this.lastPrice.Exec = this.pref.Exec.unit.value
+				this.pref.Exec.value = this.getNetworkDefaultCurrency(this.pref.Exec)
+			}
 		} else {
 			skipFetchingMGNOtoDAIPrice = false
-			this.lastPrice.Exec = this.pref.Exec.unit.value
-			this.pref.Exec.value = this.getNetworkDefaultCurrency(this.pref.Exec)
 		}
 
 		// Two ways to get the DAI <-> mGNO price
