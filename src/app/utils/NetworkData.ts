@@ -33,6 +33,9 @@ export const MAP: ApiNetwork[] = [
 		genesisTs: 1606824023,
 		clCurrency: NetworkMainCurrency.ETH,
 		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 	{
@@ -47,6 +50,9 @@ export const MAP: ApiNetwork[] = [
 		genesisTs: 1638993340,
 		clCurrency: NetworkMainCurrency.GNO,
 		elCurrency: NetworkMainCurrency.xDAI,
+		slotPerEpoch: 16,
+		slotsTime: 5,
+		epochsPerSyncPeriod: 512,
 		name: 'Gnosis',
 	},
 	{
@@ -61,6 +67,9 @@ export const MAP: ApiNetwork[] = [
 		genesisTs: 1616508000,
 		clCurrency: NetworkMainCurrency.ETH,
 		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 	{
@@ -75,6 +84,9 @@ export const MAP: ApiNetwork[] = [
 		genesisTs: 1655733600,
 		clCurrency: NetworkMainCurrency.ETH,
 		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 	{
@@ -89,6 +101,9 @@ export const MAP: ApiNetwork[] = [
 		genesisTs: 1695902400,
 		clCurrency: NetworkMainCurrency.ETH,
 		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 	{
@@ -103,6 +118,9 @@ export const MAP: ApiNetwork[] = [
 		genesisTs: 1606824023,
 		clCurrency: NetworkMainCurrency.ETH,
 		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 	{
@@ -117,6 +135,9 @@ export const MAP: ApiNetwork[] = [
 		genesisTs: 1606824023,
 		clCurrency: NetworkMainCurrency.ETH,
 		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 ]

@@ -330,6 +330,7 @@ export class Tab3Page {
 			this.merchant,
 			false
 		)
+		this.currentFiatCurrency = await this.unit.getCurrentConsFiat()
 	}
 
 	async openIconCredit() {

@@ -102,6 +102,8 @@ export class DashboardComponent implements OnInit {
 	vacantMinipoolText = null
 	showWithdrawalInfo = false
 
+	rewardTab: 'combined' | 'cons' | 'exec' = 'combined'
+
 	constructor(
 		public unit: UnitconvService,
 		public api: ApiService,
@@ -215,7 +217,7 @@ export class DashboardComponent implements OnInit {
 
 	epochToTimestamp(epoch: number) {
 		const network = this.api.getNetwork()
-		return (network.genesisTs + epoch * 32 * 12) * 1000
+		return (network.genesisTs + epoch * network.slotPerEpoch * network.slotsTime) * 1000
 	}
 
 	updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
@@ -261,8 +263,8 @@ export class DashboardComponent implements OnInit {
 			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
 			this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
 			this.displaySmoothingPool = this.data.rocketpool.smoothingPool
-			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber('1e9'))
-			this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber('1e9'))
+			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed
+			this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed
 			this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
 			this.totalRplEarned = this.data.rocketpool.totalClaims.plus(this.data.rocketpool.rplUnclaimed)
 		} catch (e) {
@@ -514,10 +516,10 @@ export class DashboardComponent implements OnInit {
 		this.storage.setBooleanSetting('rank_percent_mode', this.rankPercentMode)
 	}
 
-	private getChartToolTipCaption(timestamp: number, genesisTs: number, dataGroupLength: number) {
+	private getChartToolTipCaption(timestamp: number, genesisTs: number, slotTime: number, slotsPerEpoch: number, dataGroupLength: number) {
 		const dateToEpoch = (ts: number): number => {
-			const slot = Math.floor((ts / 1000 - genesisTs) / 12)
-			const epoch = Math.floor(slot / 32)
+			const slot = Math.floor((ts / 1000 - genesisTs) / slotTime)
+			const epoch = Math.floor(slot / slotsPerEpoch)
 			return Math.max(0, epoch)
 		}
 
@@ -588,7 +590,13 @@ export class DashboardComponent implements OnInit {
 					shared: true,
 					formatter: (tooltip) => {
 						// date and epoch
-						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
+						let text = this.getChartToolTipCaption(
+							tooltip.chart.hoverPoints[0].x,
+							network.genesisTs,
+							network.slotsTime,
+							network.slotPerEpoch,
+							tooltip.chart.hoverPoints[0].dataGroup.length
+						)
 
 						// summary
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
@@ -661,14 +669,17 @@ export class DashboardComponent implements OnInit {
 		const network = this.api.getNetwork()
 
 		const getValueString = (value: BigNumber, type: RewardType): string => {
-			let text = `${value.toFixed(5)} ` + this.unit.getNetworkDefaultUnit(type).display
+			let text
 			if (type == 'cons') {
+				text = `${value.toFixed(5)} ` + this.unit.getNetworkDefaultUnit(type).display
 				if (!this.unit.isDefaultCurrency(this.unit.pref.Cons)) {
 					text += ` (${this.unit.convertToPref(value, this.unit.getNetworkDefaultCurrency(type), type)})`
 				}
 			} else if (type == 'exec') {
+				// Gnosis: All values provided by the API are in the CL currency, including the el rewards
+				text = `${this.unit.convertCLtoEL(value).toFixed(5)} ` + this.unit.getNetworkDefaultUnit(type).display
 				if (!this.unit.isDefaultCurrency(this.unit.pref.Exec)) {
-					text += ` (${this.unit.convertToPref(value, this.unit.getNetworkDefaultCurrency(type), type)})`
+					text += ` (${this.unit.convertToPref(this.unit.convertCLtoEL(value), this.unit.getNetworkDefaultCurrency(type), type)})`
 				}
 			}
 
@@ -717,30 +728,31 @@ export class DashboardComponent implements OnInit {
 					shared: true,
 					formatter: (tooltip) => {
 						// date and epoch
-						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
+						let text = this.getChartToolTipCaption(
+							tooltip.chart.hoverPoints[0].x,
+							network.genesisTs,
+							network.slotsTime,
+							network.slotPerEpoch,
+							tooltip.chart.hoverPoints[0].dataGroup.length
+						)
 
 						// income
-						let lastCurrency = null
-						let consAndExecSameCurrency = true
+						// Gnosis: All values provided by the API are in the CL currency, including the el rewards which is why we can simply add them for total
 						let total = new BigNumber(0)
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
 							const type = tooltip.chart.hoverPoints[i].series.name == 'Execution' ? 'exec' : 'cons'
-							const currency = this.unit.getNetworkDefaultCurrency(type)
-							if (lastCurrency != null && lastCurrency != currency) {
-								consAndExecSameCurrency = false
-							}
-							lastCurrency = currency
 
 							const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
 							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${
 								tooltip.chart.hoverPoints[i].series.name
 							}: ${getValueString(value, type)}</b><br/>`
+
 							total = total.plus(value)
 						}
 
 						// add total if hovered point contains rewards for both EL and CL
 						// only if both exec and cons currencies are the same
-						if (tooltip.chart.hoverPoints.length > 1 && consAndExecSameCurrency) {
+						if (tooltip.chart.hoverPoints.length > 1) {
 							text += `<b>Total: ${getValueString(total, 'cons')}</b>`
 						}
 

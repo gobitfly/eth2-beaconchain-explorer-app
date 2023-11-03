@@ -180,7 +180,7 @@ export class ApiService extends CacheModule {
 	}
 
 	isNotEthereumMainnet(): boolean {
-		const test = this.networkConfig.net != ''
+		const test = this.networkConfig.key != 'main'
 		return test
 	}
 
