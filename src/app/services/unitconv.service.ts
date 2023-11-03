@@ -191,7 +191,7 @@ export class UnitconvService {
 		if (this.hasSameCLAndELCurrency()) {
 			return cl
 		}
-		return cl.dividedBy(this.pref.Cons.unit.value).dividedBy(this.lastPrice.mGNOXDAI)
+		return cl.dividedBy(this.getNetworkDefaultUnit('cons').value).dividedBy(this.lastPrice.mGNOXDAI)
 	}
 
 	public getFiatCurrency(type: RewardType) {
