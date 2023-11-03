@@ -850,7 +850,7 @@ export default class OverviewController {
 
 			const date = new Date(currentEpoch.lastCachedTimestamp)
 
-			const inEpochOffset = (network.slotPerEpoch - currentEpoch.scheduledblocks) * network.slotsTime // block time 12s
+			const inEpochOffset = (network.slotPerEpoch - currentEpoch.scheduledblocks) * network.slotsTime
 
 			date.setSeconds(diff * 6.4 * 60 - inEpochOffset)
 
