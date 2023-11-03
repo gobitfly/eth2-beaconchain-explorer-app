@@ -10,7 +10,7 @@
 <ion-content>
 	<div class="notificationnote" *ngIf="noGoogle" (click)="configureWebhooks()">
 		<strong>Note: </strong>You are using the No-Google version of this app. Push notifications will not work, but you can configure webhook
-		notifications on beaconcha.in directly or by clicking here.
+		notifications on {{ api.getHostName() }} directly or by clicking here.
 	</div>
 
 	<ion-list-header>

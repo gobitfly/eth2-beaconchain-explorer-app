@@ -34,7 +34,7 @@ export class LicencesPage implements OnInit {
 	ngOnInit() {
 		this.populatePre('./3rdpartylicenses.txt')
 		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(async () => {
+		this.backbuttonSubscription = event.subscribe(() => {
 			this.modalCtrl.dismiss()
 		})
 	}

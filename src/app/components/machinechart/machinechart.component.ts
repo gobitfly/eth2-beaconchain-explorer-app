@@ -3,6 +3,7 @@ import { highChartOptions } from 'src/app/utils/HighchartOptions'
 import * as HighCharts from 'highcharts'
 import * as Highstock from 'highcharts/highstock'
 import { MachineChartData } from 'src/app/controllers/MachineController'
+import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-machinechart',
@@ -25,6 +26,8 @@ export class MachinechartComponent implements OnInit {
 	id = ''
 	chartError = false
 	specificError: string = null
+
+	constructor(private api: ApiService) {}
 
 	doClick() {
 		this.clickAction()
@@ -58,7 +61,7 @@ export class MachinechartComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		highChartOptions(Highstock)
+		highChartOptions(Highstock, this.api.getHostName())
 		this.id = makeid(6)
 	}
 

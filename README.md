@@ -3,7 +3,7 @@
 
 # Beaconchain Dashboard App
 
-Beaconchain Dashboard is an open source ethereum validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
+Beaconchain Dashboard is an open source ethereum and gnosis validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
 
 
 [![Get it on Google Play](https://beaconcha.in/img/android.png)](https://play.google.com/store/apps/details?id=in.beaconcha.mobile)
@@ -15,6 +15,7 @@ Beaconchain Dashboard is an Angular app written in Typescript, HTML & CSS. It ut
 
 ## Features
 
+- Ethereum and Gnosis supported
 - Keep track on your validators online status, balances, returns and more  
 - Various notification alerts for your validators  
 - Execution block rewards overview
@@ -70,7 +71,7 @@ Build the the app at least once before proceeding:
 
 Make sure port 8100 is accessable on your computer and use the following command to run a livereload server
 
-`ionic capacitor run android --livereload --external --host=192.168.0.124 --disableHostCheck`
+`ionic cap run android --livereload --external --host=192.168.1.64 --disableHostCheck --configuration=development`
 
 Adapt the --host param to match your computers IP. 
 
@@ -98,7 +99,7 @@ Build the the app at least once before proceeding:
 
 Make sure port 8100 is accessable on your mac and use the following command to run a livereload server
 
-`ionic capacitor run ios --livereload --external --host=192.168.0.124 --disableHostCheck`
+`ionic cap run ios --livereload --external --host=192.168.1.64 --disableHostCheck --configuration=development`
 
 Adapt the --host param to match your macs IP. 
 

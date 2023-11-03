@@ -18,9 +18,9 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from '@angular/core'
+import { Component, ViewChild } from '@angular/core'
 import { ValidatorUtils, Validator, ValidatorState } from '../utils/ValidatorUtils'
-import { ModalController, Platform } from '@ionic/angular'
+import { IonSearchbar, ModalController, Platform } from '@ionic/angular'
 import { ValidatordetailPage } from '../pages/validatordetail/validatordetail.page'
 import { ApiService } from '../services/api.service'
 import { AlertController } from '@ionic/angular'
@@ -67,6 +67,8 @@ export class Tab2Page {
 
 	selected = new Map<number, boolean>()
 
+	@ViewChild('searchbarRef', { static: true }) searchbarRef: IonSearchbar
+
 	constructor(
 		private validatorUtils: ValidatorUtils,
 		public modalController: ModalController,
@@ -81,6 +83,10 @@ export class Tab2Page {
 		public unit: UnitconvService
 	) {
 		this.validatorUtils.registerListener(() => {
+			if (this.searchResultMode && this.searchbarRef) {
+				this.searchResultMode = false
+				this.searchbarRef.value = null
+			}
 			this.refresh()
 		})
 		this.merchant.getCurrentPlanMaxValidator().then((result) => {
@@ -101,7 +107,7 @@ export class Tab2Page {
 		if (!this.searchResultMode) {
 			this.dataSource.setLoadFrom(this.getDefaultDataRetriever())
 		}
-		this.dataSource.reset()
+		await this.dataSource.reset()
 	}
 
 	async syncRemote() {
@@ -189,13 +195,13 @@ export class Tab2Page {
 		}
 	}
 
-	async removeAllDialog() {
+	removeAllDialog() {
 		this.showDialog('Remove all', 'Do you want to remove {AMOUNT} validators from your dashboard?', () => {
 			this.confirmRemoveAll()
 		})
 	}
 
-	async addAllDialog() {
+	addAllDialog() {
 		this.showDialog('Add all', 'Do you want to add {AMOUNT} validators to your dashboard?', () => {
 			this.confirmAddAll()
 		})
@@ -223,18 +229,18 @@ export class Tab2Page {
 	}
 
 	async confirmRemoveAll() {
-		this.validatorUtils.deleteAll()
-		this.dataSource.reset()
+		await this.validatorUtils.deleteAll()
+		await this.dataSource.reset()
 	}
 
 	async confirmAddAll() {
 		const responses: ValidatorResponse[] = []
-		this.dataSource.getItems().forEach(async (item) => {
+		this.dataSource.getItems().forEach((item) => {
 			responses.push(item.data)
 		})
 
-		this.validatorUtils.convertToValidatorModelsAndSaveLocal(false, responses)
-		this.dataSource.reset()
+		await this.validatorUtils.convertToValidatorModelsAndSaveLocal(false, responses)
+		await this.dataSource.reset()
 	}
 
 	searchEvent(event) {
@@ -250,8 +256,9 @@ export class Tab2Page {
 		this.searchResultMode = true
 		this.loading = true
 		const isETH1Address = searchString.startsWith('0x') && searchString.length == 42
+		const isWithdrawalCredential = searchString.startsWith('0x') && searchString.length == 66
 
-		if (isETH1Address) await this.searchETH1(searchString)
+		if (isETH1Address || isWithdrawalCredential) await this.searchETH1(searchString)
 		else await this.searchByPubKeyOrIndex(searchString)
 
 		// this.loading = false would be preferable here but somehow the first time it is called the promises resolve instantly without waiting
@@ -278,12 +285,12 @@ export class Tab2Page {
 	private async searchETH1(target) {
 		this.dataSource.setLoadFrom(() => {
 			return this.validatorUtils
-				.searchValidatorsViaETH1(target)
+				.searchValidatorsViaETHAddress(target)
 				.catch(async (error) => {
 					if (error && error.message && error.message.indexOf('only a maximum of') > 0) {
 						console.log('SET reachedMaxValidators to true')
 						this.reachedMaxValidators = true
-						return this.validatorUtils.searchValidatorsViaETH1(target, this.currentPackageMaxValidators - 1)
+						return this.validatorUtils.searchValidatorsViaETHAddress(target, this.currentPackageMaxValidators - 1)
 					}
 					return []
 				})
@@ -478,7 +485,7 @@ export class Tab2Page {
 			buttons: [
 				{
 					text: 'Remove',
-					handler: async () => {
+					handler: () => {
 						this.validatorUtils.saveRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address, null)
 						this.cancelSelect()
 						this.validatorUtils.notifyListeners()
@@ -486,7 +493,7 @@ export class Tab2Page {
 				},
 				{
 					text: 'Save',
-					handler: async (alertData) => {
+					handler: (alertData) => {
 						const shares = alertData.share
 						if (shares < minShareStake) {
 							Toast.show({
@@ -546,7 +553,9 @@ export class Tab2Page {
 			cssClass: 'my-custom-class',
 			header: 'Define stake share',
 			message:
-				'If you own partial amounts of these validators, specify the amount of ether for a custom dashboard. First value defines your consensus share, second value your execution share.',
+				'If you own partial amounts of these validators, specify the amount of ' +
+				this.api.getCurrenciesFormatted() +
+				' for a custom dashboard. First value defines your consensus share, second value your execution share.',
 			inputs: [
 				{
 					name: 'share',
@@ -564,7 +573,7 @@ export class Tab2Page {
 			buttons: [
 				{
 					text: 'Remove',
-					handler: async () => {
+					handler: () => {
 						for (let i = 0; i < validatorSubArray.length; i++) {
 							validatorSubArray[i].share = null
 							validatorSubArray[i].execshare = null
@@ -576,7 +585,7 @@ export class Tab2Page {
 				},
 				{
 					text: 'Save',
-					handler: async (alertData) => {
+					handler: (alertData) => {
 						const shares = alertData.share
 						const sharesEL = alertData.execshare
 						if ((shares && shares < minShareStake) || (sharesEL && sharesEL < minShareStake)) {
@@ -615,15 +624,5 @@ export class Tab2Page {
 		})
 
 		await alert.present()
-	}
-
-	switchCurrencyPipe() {
-		if (this.unit.pref == 'ETHER') {
-			if (UnitconvService.currencyPipe == null) return
-			this.unit.pref = UnitconvService.currencyPipe
-		} else {
-			UnitconvService.currencyPipe = this.unit.pref
-			this.unit.pref = 'ETHER'
-		}
 	}
 }

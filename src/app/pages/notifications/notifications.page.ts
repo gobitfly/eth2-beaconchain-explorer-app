@@ -73,7 +73,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 	}
 
 	async configureWebhooks() {
-		await Browser.open({ url: 'https://beaconcha.in/user/webhooks', toolbarColor: '#2f2e42' })
+		await Browser.open({ url: this.api.getBaseUrl() + '/user/webhooks', toolbarColor: '#2f2e42' })
 	}
 
 	async ionViewWillEnter() {
@@ -84,9 +84,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 		})
 
 		this.storage.getAuthUser().then((result) => (this.authUser = result))
-		this.api.getNetworkName().then((result) => {
-			this.network = this.api.capitalize(result)
-		})
+		this.network = this.api.capitalize(this.api.getNetworkName())
 		this.merchantUtils.hasCustomizableNotifications().then((result) => {
 			this.canCustomizeThresholds = result
 		})

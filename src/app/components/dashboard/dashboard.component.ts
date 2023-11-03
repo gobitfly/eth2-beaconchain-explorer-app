@@ -19,7 +19,7 @@
  */
 
 import { Component, OnInit, Input, SimpleChange } from '@angular/core'
-import { UnitconvService } from '../../services/unitconv.service'
+import { RewardType, UnitconvService } from '../../services/unitconv.service'
 import { ApiService } from '../../services/api.service'
 import { DashboardDataRequest, EpochResponse, SyncCommitteeResponse } from '../../requests/requests'
 import * as HighCharts from 'highcharts'
@@ -102,6 +102,8 @@ export class DashboardComponent implements OnInit {
 	vacantMinipoolText = null
 	showWithdrawalInfo = false
 
+	rewardTab: 'combined' | 'cons' | 'exec' = 'combined'
+
 	constructor(
 		public unit: UnitconvService,
 		public api: ApiService,
@@ -114,7 +116,6 @@ export class DashboardComponent implements OnInit {
 		private platform: Platform
 	) {
 		this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
-		//this.storage.setBooleanSetting("merge_list_dismissed", false)
 		this.updateMergeListDismissed()
 	}
 
@@ -131,7 +132,6 @@ export class DashboardComponent implements OnInit {
 	isAfterPotentialMergeTarget() {
 		const now = Date.now()
 		const target = 1663624800000 // target sept 20th to dismiss merge checklist
-		console.log('afterPotentialMerge', now, target, now >= target)
 		return now >= target
 	}
 
@@ -161,7 +161,7 @@ export class DashboardComponent implements OnInit {
 					this.drawProposalChart()
 				}, 500)
 
-				this.beaconChainUrl = await this.getBaseBrowserUrl()
+				this.beaconChainUrl = this.api.getBaseUrl()
 
 				await Promise.all([
 					this.updateRplDisplay(),
@@ -177,8 +177,6 @@ export class DashboardComponent implements OnInit {
 					this.updateWithdrawalInfo(),
 				])
 
-				console.log('dashboard data', this.data)
-
 				if (!this.data.foreignValidator) {
 					await Promise.all([this.checkForFinalization(), this.checkForGenesisOccurred()])
 				}
@@ -188,15 +186,15 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	async updateWithdrawalInfo() {
+	updateWithdrawalInfo() {
 		this.storage.getBooleanSetting('withdrawal_info_dismissed', false).then((result) => {
 			this.showWithdrawalInfo = !this.data.withdrawalsEnabledForAll && !result
 		})
 	}
 
-	async updateDepositCreditText() {
+	updateDepositCreditText() {
 		if (this.data.rocketpool.depositCredit && this.data.rocketpool.depositCredit.gt(0)) {
-			this.depositCreditText = `You have ${this.unit.convert(
+			this.depositCreditText = `You have ${this.unit.convertNonFiat(
 				this.data.rocketpool.depositCredit,
 				'WEI',
 				'ETHER',
@@ -205,7 +203,7 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	async updateVacantMinipoolText() {
+	updateVacantMinipoolText() {
 		if (this.data.rocketpool.vacantPools && this.data.rocketpool.vacantPools > 0) {
 			this.vacantMinipoolText = `${this.data.rocketpool.vacantPools} of your ${
 				this.data.rocketpool.vacantPools == 1 ? 'minipool is' : 'minipools are'
@@ -217,15 +215,15 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	async epochToTimestamp(epoch: number) {
-		const network = await this.api.getNetwork()
-		return (network.genesisTs + epoch * 32 * 12) * 1000
+	epochToTimestamp(epoch: number) {
+		const network = this.api.getNetwork()
+		return (network.genesisTs + epoch * network.slotPerEpoch * network.slotsTime) * 1000
 	}
 
-	async updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
+	updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			const endTs = await this.epochToTimestamp(committee.end_epoch)
-			const startTs = await this.epochToTimestamp(committee.start_epoch)
+			const endTs = this.epochToTimestamp(committee.end_epoch)
+			const startTs = this.epochToTimestamp(committee.start_epoch)
 			this.currentSyncCommitteeMessage = {
 				title: 'Sync Committee',
 				text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${
@@ -241,10 +239,10 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	async updateNextSyncCommitteeMessage(committee: SyncCommitteeResponse) {
+	updateNextSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			const endTs = await this.epochToTimestamp(committee.end_epoch)
-			const startTs = await this.epochToTimestamp(committee.start_epoch)
+			const endTs = this.epochToTimestamp(committee.end_epoch)
+			const startTs = this.epochToTimestamp(committee.start_epoch)
 			this.nextSyncCommitteeMessage = {
 				title: 'Sync Committee Soon',
 				text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${
@@ -265,8 +263,8 @@ export class DashboardComponent implements OnInit {
 			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
 			this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
 			this.displaySmoothingPool = this.data.rocketpool.smoothingPool
-			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed.dividedBy(new BigNumber('1e9'))
-			this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed.dividedBy(new BigNumber('1e9'))
+			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed
+			this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed
 			this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
 			this.totalRplEarned = this.data.rocketpool.totalClaims.plus(this.data.rocketpool.rplUnclaimed)
 		} catch (e) {
@@ -340,14 +338,14 @@ export class DashboardComponent implements OnInit {
 		//this.doneLoading = false
 		this.storage.getBooleanSetting('rank_percent_mode', false).then((result) => (this.rankPercentMode = result))
 		this.storage.getItem('rpl_pdisplay_mode').then((result) => (this.rplState = result ? result : 'rpl'))
-		highChartOptions(HighCharts)
-		highChartOptions(Highstock)
+		highChartOptions(HighCharts, this.api.getHostName())
+		highChartOptions(Highstock, this.api.getHostName())
 		this.merchant.getCurrentPlanMaxValidator().then((result) => {
 			this.currentPackageMaxValidators = result
 		})
 	}
 
-	private async checkForGenesisOccurred() {
+	private checkForGenesisOccurred() {
 		if (!this.data || !this.data.currentEpoch) return
 		const currentEpoch = this.data.currentEpoch as EpochResponse
 		this.awaitGenesis = currentEpoch.epoch == 0 && currentEpoch.proposedblocks <= 1
@@ -364,7 +362,7 @@ export class DashboardComponent implements OnInit {
 			}
 		}
 
-		const olderResult = await this.validatorUtils.getOlderEpoch()
+		const olderResult = this.validatorUtils.getOlderEpoch()
 		if (!this.data || !this.data.currentEpoch || !olderResult) return
 		console.log('checkForFinalization', olderResult)
 		this.finalizationIssue = new BigNumber(olderResult.globalparticipationrate).isLessThan('0.664') && olderResult.epoch > 7
@@ -395,26 +393,6 @@ export class DashboardComponent implements OnInit {
 		return await modal.present()
 	}
 
-	switchCurrencyPipe() {
-		if (this.unit.pref == 'ETHER') {
-			if (UnitconvService.currencyPipe == null) return
-			this.unit.pref = UnitconvService.currencyPipe
-		} else {
-			UnitconvService.currencyPipe = this.unit.pref
-			this.unit.pref = 'ETHER'
-		}
-	}
-
-	switchCurrencyPipeRocketpool() {
-		if (this.unit.prefRpl == 'RPL') {
-			if (UnitconvService.currencyPipe == null) return
-			this.unit.prefRpl = UnitconvService.currencyPipe
-		} else {
-			UnitconvService.currencyPipe = this.unit.pref
-			this.unit.prefRpl = 'RPL'
-		}
-	}
-
 	switchRplStake(canPercent = false) {
 		if (this.rplState == 'rpl' && canPercent) {
 			// next %
@@ -438,7 +416,11 @@ export class DashboardComponent implements OnInit {
 
 	updateRplDisplay() {
 		if (this.rplState == '%') {
-			this.rplDisplay = this.data.rocketpool.currentRpl.dividedBy(this.data.rocketpool.maxRpl).multipliedBy(new BigNumber(150)).decimalPlaces(1)
+			const rplPrice = this.unit.getRPLPrice()
+			const currentETH = this.data.rocketpool.currentRpl.multipliedBy(rplPrice)
+			const minETH = this.data.rocketpool.minRpl.multipliedBy(rplPrice).multipliedBy(10) // since collateral is 10% of borrowed eth, multiply by 10 to get to the borrowed eth amount
+
+			this.rplDisplay = currentETH.dividedBy(minETH).multipliedBy(100).decimalPlaces(1).toNumber()
 		} else {
 			this.rplDisplay = this.data.rocketpool.currentRpl
 		}
@@ -534,10 +516,10 @@ export class DashboardComponent implements OnInit {
 		this.storage.setBooleanSetting('rank_percent_mode', this.rankPercentMode)
 	}
 
-	private getChartToolTipCaption(timestamp: number, genesisTs: number, dataGroupLength: number) {
+	private getChartToolTipCaption(timestamp: number, genesisTs: number, slotTime: number, slotsPerEpoch: number, dataGroupLength: number) {
 		const dateToEpoch = (ts: number): number => {
-			const slot = Math.floor((ts / 1000 - genesisTs) / 12)
-			const epoch = Math.floor(slot / 32)
+			const slot = Math.floor((ts / 1000 - genesisTs) / slotTime)
+			const epoch = Math.floor(slot / slotsPerEpoch)
 			return Math.max(0, epoch)
 		}
 
@@ -555,8 +537,8 @@ export class DashboardComponent implements OnInit {
 	}
 
 	private proposalChart = null
-	async createProposedChart(proposed, missed, orphaned) {
-		const network = await this.api.getNetwork()
+	createProposedChart(proposed, missed, orphaned) {
+		const network = this.api.getNetwork()
 
 		this.proposalChart = Highstock.chart(
 			'highchartsBlocks' + this.randomChartId,
@@ -608,7 +590,13 @@ export class DashboardComponent implements OnInit {
 					shared: true,
 					formatter: (tooltip) => {
 						// date and epoch
-						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
+						let text = this.getChartToolTipCaption(
+							tooltip.chart.hoverPoints[0].x,
+							network.genesisTs,
+							network.slotsTime,
+							network.slotPerEpoch,
+							tooltip.chart.hoverPoints[0].dataGroup.length
+						)
 
 						// summary
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
@@ -674,17 +662,27 @@ export class DashboardComponent implements OnInit {
 	}
 
 	private balanceChart = null
-	async createBalanceChart(consensusIncome, executionIncome) {
+	createBalanceChart(consensusIncome, executionIncome) {
 		executionIncome = executionIncome || []
 
 		const ticksDecimalPlaces = 3
-		const network = await this.api.getNetwork()
+		const network = this.api.getNetwork()
 
-		const getValueString = (value: BigNumber): string => {
-			let text = `${value.toFixed(5)} ETH`
-			if (this.unit.pref != 'ETHER' && network.key == 'main') {
-				text += ` (${this.unit.convertToPref(value, 'ETHER')})`
+		const getValueString = (value: BigNumber, type: RewardType): string => {
+			let text
+			if (type == 'cons') {
+				text = `${value.toFixed(5)} ` + this.unit.getNetworkDefaultUnit(type).display
+				if (!this.unit.isDefaultCurrency(this.unit.pref.Cons)) {
+					text += ` (${this.unit.convertToPref(value, this.unit.getNetworkDefaultCurrency(type), type)})`
+				}
+			} else if (type == 'exec') {
+				// Gnosis: All values provided by the API are in the CL currency, including the el rewards
+				text = `${this.unit.convertCLtoEL(value).toFixed(5)} ` + this.unit.getNetworkDefaultUnit(type).display
+				if (!this.unit.isDefaultCurrency(this.unit.pref.Exec)) {
+					text += ` (${this.unit.convertToPref(this.unit.convertCLtoEL(value), this.unit.getNetworkDefaultCurrency(type), type)})`
+				}
 			}
+
 			return text
 		}
 
@@ -730,21 +728,32 @@ export class DashboardComponent implements OnInit {
 					shared: true,
 					formatter: (tooltip) => {
 						// date and epoch
-						let text = this.getChartToolTipCaption(tooltip.chart.hoverPoints[0].x, network.genesisTs, tooltip.chart.hoverPoints[0].dataGroup.length)
+						let text = this.getChartToolTipCaption(
+							tooltip.chart.hoverPoints[0].x,
+							network.genesisTs,
+							network.slotsTime,
+							network.slotPerEpoch,
+							tooltip.chart.hoverPoints[0].dataGroup.length
+						)
 
 						// income
+						// Gnosis: All values provided by the API are in the CL currency, including the el rewards which is why we can simply add them for total
 						let total = new BigNumber(0)
 						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
+							const type = tooltip.chart.hoverPoints[i].series.name == 'Execution' ? 'exec' : 'cons'
+
 							const value = new BigNumber(tooltip.chart.hoverPoints[i].y)
 							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${
 								tooltip.chart.hoverPoints[i].series.name
-							}: ${getValueString(value)}</b><br/>`
+							}: ${getValueString(value, type)}</b><br/>`
+
 							total = total.plus(value)
 						}
 
 						// add total if hovered point contains rewards for both EL and CL
+						// only if both exec and cons currencies are the same
 						if (tooltip.chart.hoverPoints.length > 1) {
-							text += `<b>Total: ${getValueString(total)}</b>`
+							text += `<b>Total: ${getValueString(total, 'cons')}</b>`
 						}
 
 						return text
@@ -861,20 +870,15 @@ export class DashboardComponent implements OnInit {
 	}
 
 	async openBrowser() {
-		await Browser.open({ url: await this.getBrowserURL(), toolbarColor: '#2f2e42' })
+		await Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
 	}
 
-	async getBrowserURL(): Promise<string> {
+	getBrowserURL(): string {
 		if (this.data.foreignValidator) {
-			return (await this.getBaseBrowserUrl()) + '/validator/' + this.data.foreignValidatorItem.pubkey
+			return this.api.getBaseUrl() + '/validator/' + this.data.foreignValidatorItem.pubkey
 		} else {
-			return (await this.getBaseBrowserUrl()) + '/dashboard?validators=' + this.data.lazyChartValidators
+			return this.api.getBaseUrl() + '/dashboard?validators=' + this.data.lazyChartValidators
 		}
-	}
-
-	async getBaseBrowserUrl() {
-		const net = (await this.api.networkConfig).net
-		return 'https://' + net + 'beaconcha.in'
 	}
 }
 

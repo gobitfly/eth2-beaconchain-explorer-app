@@ -45,7 +45,6 @@ export abstract class APIRequest<T> {
 		return this.parseBase(response)
 	}
 
-	// Since we use native http and axios we have various response types
 	// Usually you can expect either a Response or a boolean
 	// response.status can be a string though depending on the type of http connector used
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,12 +52,7 @@ export abstract class APIRequest<T> {
 		if (typeof response === 'boolean') {
 			return response
 		}
-		if (this.nativeHttp) {
-			if (!response || !response.status) return false
-			return response.status == 200 && (response.data.status == 'OK' || !hasDataStatus)
-		} else {
-			return response && (response.status == 'OK' || response.status == 200 || !hasDataStatus)
-		}
+		return response && (response.status == 'OK' || response.status == 200 || !hasDataStatus)
 	}
 
 	protected parseBase(response: Response, hasDataStatus = true): T[] {
@@ -87,7 +81,6 @@ export abstract class APIRequest<T> {
 	updatesLastRefreshState = false
 	ignoreFails = false
 	maxCacheAge = 6 * 60 * 1000
-	nativeHttp = true // TODO: for some reason, native HTTP Post doesnt work on iOS..
 }
 
 // ------------- Responses -------------
@@ -160,7 +153,6 @@ export interface CoinbaseExchangeResponse {
 
 export interface ETH1ValidatorResponse {
 	publickey: string
-	valid_signature: boolean
 	validatorindex: number
 }
 
@@ -306,6 +298,8 @@ export interface ExecutionResponse {
 	performance1d: number
 	performance7d: number
 	performance31d: number
+	performance365d: number
+	performanceTotal: number
 }
 
 export interface NotificationGetResponse {
@@ -359,18 +353,33 @@ export class ValidatorRequest extends APIRequest<ValidatorResponse> {
 	}
 }
 
-export class ValidatorETH1Request extends APIRequest<ETH1ValidatorResponse> {
+export class ValidatorViaDepositAddress extends APIRequest<ETH1ValidatorResponse> {
 	resource = 'validator/eth1/'
 	method = Method.GET
 
 	/**
-	 * @param validator Index or PubKey
+	 * @param ethAddress Address
 	 */
 	constructor(ethAddress: string) {
 		super()
 		this.resource += ethAddress.replace(/\s/g, '')
 	}
 }
+
+export class ValidatorViaWithdrawalAddress extends APIRequest<ETH1ValidatorResponse> {
+	resource = 'validator/withdrawalCredentials/'
+	method = Method.GET
+
+	/**
+	 * @param ethAddress Address or Withdrawal Credential
+	 */
+	constructor(ethAddress: string) {
+		super()
+		this.resource += ethAddress.replace(/\s/g, '')
+		this.resource += '?limit=300'
+	}
+}
+
 export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 	resource = 'execution/'
 	method = Method.GET
@@ -421,7 +430,6 @@ export class SetMobileSettingsRequest extends APIRequest<MobileSettingsResponse>
 
 	requiresAuth = true
 	ignoreFails = true
-	nativeHttp = false
 
 	parse(response: Response): MobileSettingsResponse[] {
 		if (!response || !response.data) return null
@@ -453,7 +461,6 @@ export class PostMobileSubscription extends APIRequest<MobileSettingsResponse> {
 	method = Method.POST
 	requiresAuth = true
 	ignoreFails = true
-	nativeHttp = false
 
 	constructor(subscriptionData: SubscriptionData) {
 		super()
@@ -492,7 +499,6 @@ export class RemoveMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	requiresAuth = true
 	postData = {}
 	ignoreFails = true
-	nativeHttp = false
 
 	options = {
 		url: null, // unused
@@ -518,7 +524,6 @@ export class AddMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	method = Method.POST
 	requiresAuth = true
 	ignoreFails = true
-	nativeHttp = false
 
 	options = {
 		url: null, // unused
@@ -591,7 +596,6 @@ export class NotificationBundleSubsRequest extends APIRequest<ApiTokenResponse> 
 	requiresAuth = true
 	postData = {}
 	ignoreFails = true
-	nativeHttp = false
 
 	constructor(enabled: boolean, data: BundleSub[]) {
 		super()
@@ -606,18 +610,34 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 	requiresAuth = true
 	ignoreFails = true
 	maxCacheAge = 1000
+	options = {
+		url: null,
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+			Accept: 'application/json',
+		},
+	}
 
 	parse(response: Response): ApiTokenResponse[] {
 		if (response && response.data) return [response.data] as ApiTokenResponse[]
 		else return []
 	}
 
-	constructor(refreshToken: string) {
+	constructor(refreshToken: string, isIOS: boolean) {
 		super()
-		this.postData = new FormDataContainer({
-			grant_type: 'refresh_token',
-			refresh_token: refreshToken,
-		})
+		// ¯\_(ツ)_/¯
+		if (isIOS) {
+			this.postData = {
+				grant_type: 'refresh_token',
+				refresh_token: refreshToken,
+			}
+		} else {
+			const formBody = new FormData()
+			formBody.set('grant_type', 'refresh_token')
+			formBody.set('refresh_token', refreshToken)
+			this.postData = formBody
+			this.options.headers = undefined
+		}
 	}
 }
 
@@ -626,7 +646,6 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 	method = Method.POST
 	requiresAuth = true
 	ignoreFails = true
-	nativeHttp = false
 
 	parse(response: Response): APIResponse[] {
 		if (response && response.data) return response.data as APIResponse[]
@@ -641,21 +660,6 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 
 // ------------ Special external api requests -----------------
 
-export class AdSeenRequest extends APIRequest<unknown> {
-	endPoint = 'https://request-global.czilladx.com'
-
-	resource = ''
-	method = Method.GET
-	ignoreFails = true
-	maxCacheAge = 0
-	nativeHttp = false
-
-	constructor(url: string) {
-		super()
-		this.resource = url.replace('https://request-global.czilladx.com/', '')
-	}
-}
-
 export class BitflyAdRequest extends APIRequest<BitflyAdResponse> {
 	endPoint = 'https://ads.bitfly.at'
 
@@ -663,7 +667,11 @@ export class BitflyAdRequest extends APIRequest<BitflyAdResponse> {
 	method = Method.GET
 	ignoreFails = true
 	maxCacheAge = 4 * 60 * 1000
-	nativeHttp = false
+
+	options = {
+		url: null, // unused
+		headers: undefined,
+	}
 
 	parse(response: Response): BitflyAdResponse[] {
 		if (!response || !response.data) {
@@ -734,14 +742,3 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 }
 
 export default class {}
-
-export class FormDataContainer {
-	private data: unknown
-	constructor(data: unknown) {
-		this.data = data
-	}
-
-	getBody() {
-		return this.data
-	}
-}

@@ -55,8 +55,7 @@
 			<ion-icon slot="start" name="wallet-outline" class="opacity-icon"></ion-icon>
 			<ion-select
 				label="Display Currency"
-				value="ETHER"
-				[(ngModel)]="this.unit.pref"
+				[(ngModel)]="currentFiatCurrency"
 				(ionChange)="changeCurrency()"
 				interface="popover"
 				*ngIf="overrideDisplayCurrency == null">
@@ -85,6 +84,7 @@
 				<ion-select-option value=""> Default </ion-select-option>
 				<ion-select-option value="ethpool"> Ethpool </ion-select-option>
 				<ion-select-option value="rocketpool"> Rocketpool </ion-select-option>
+				<ion-select-option value="gnosis"> Gnosis </ion-select-option>
 				<ion-select-option value="teal"> Teal </ion-select-option>
 				<ion-select-option value="green"> Green </ion-select-option>
 				<ion-select-option value="cyan"> Cyan </ion-select-option>
@@ -211,6 +211,7 @@
 			<ion-icon class="opacity-icon" slot="start" name="planet-outline"></ion-icon>
 			<ion-select label="Network" value="main" [(ngModel)]="network" (ionChange)="changeNetwork()" interface="popover">
 				<ion-select-option value="main">Mainnet</ion-select-option>
+				<ion-select-option value="gnosis">Gnosis</ion-select-option>
 				<ion-select-option *ngFor="let item of allTestNetworks;" value="{{item[1]}}"> {{ item[0] }} </ion-select-option>
 			</ion-select>
 		</ion-item>
@@ -249,7 +250,7 @@
 			<ion-label>Login</ion-label>
 		</ion-item>
 
-		<ion-item lines="none" (click)="openBrowser('https://beaconcha.in/user/settings', true)">
+		<ion-item lines="none" (click)="openBrowser(this.api.getBaseUrl()+'/user/settings', true)">
 			<ion-icon class="opacity-icon" slot="start" name="trash-outline"></ion-icon>
 			<ion-label>Delete Account</ion-label>
 		</ion-item>
@@ -259,18 +260,18 @@
 		<ion-label>Legal</ion-label>
 	</ion-list-header>
 	<ion-list>
-		<ion-item lines="none" (click)="openBrowser('https://beaconcha.in/legal/privacy.pdf', true)">
+		<ion-item lines="none" (click)="openBrowser('https://storage.googleapis.com/legal.beaconcha.in/privacy.pdf', true)">
 			<ion-label>Privacy Policy</ion-label>
 		</ion-item>
 
-		<ion-item lines="none" (click)="openBrowser('https://beaconcha.in/legal/tos.pdf', true)">
+		<ion-item lines="none" (click)="openBrowser('https://storage.googleapis.com/legal.beaconcha.in/tos.pdf', true)">
 			<ion-label>Terms of Service</ion-label>
 		</ion-item>
 		<ion-item lines="none" (click)="openOpenSource()">
 			<ion-label>Open Source Licences</ion-label>
 		</ion-item>
 
-		<ion-item lines="none" (click)="openBrowser('https://beaconcha.in/imprint')">
+		<ion-item lines="none" (click)="openBrowser(this.api.getBaseUrl()+'/imprint')">
 			<ion-label>Imprint</ion-label>
 		</ion-item>
 

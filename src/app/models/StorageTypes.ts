@@ -34,6 +34,27 @@ export interface ApiNetwork {
 	onlyDebug: boolean
 	active: boolean
 	genesisTs: number
+	elCurrency: NetworkMainCurrency
+	clCurrency: NetworkMainCurrency
+	slotPerEpoch: number
+	slotsTime: number
+	epochsPerSyncPeriod: number
+	name: string
+}
+
+export class NetworkMainCurrency {
+	static readonly ETH = new NetworkMainCurrency('ETHER', 'Ether', 'ETH')
+	static readonly GNO = new NetworkMainCurrency('GNO', 'GNO', 'GNO')
+	static readonly xDAI = new NetworkMainCurrency('xDAI', 'xDAI', 'DAI')
+
+	public internalName: string
+	public formattedName: string
+	public coinbaseSpot: string
+	private constructor(internName: string, formattedName: string, coinbaseSpot: string) {
+		this.internalName = internName
+		this.coinbaseSpot = coinbaseSpot
+		this.formattedName = formattedName
+	}
 }
 
 export interface NetworkPreferences {

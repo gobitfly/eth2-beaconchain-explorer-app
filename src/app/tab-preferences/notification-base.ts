@@ -3,7 +3,7 @@ import { Platform } from '@ionic/angular'
 import { ApiService } from 'src/app/services/api.service'
 import { CPU_THRESHOLD, HDD_THRESHOLD, RAM_THRESHOLD, SETTING_NOTIFY, StorageService } from 'src/app/services/storage.service'
 import { GetMobileSettingsRequest, MobileSettingsResponse, NotificationGetRequest } from '../requests/requests'
-import { AlertService, SETTINGS_PAGE } from '../services/alert.service'
+import { AlertService } from '../services/alert.service'
 import { SyncService } from '../services/sync.service'
 import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils'
 import FirebaseUtils from '../utils/FirebaseUtils'
@@ -80,13 +80,6 @@ export class NotificationBase implements OnInit {
 		if (this.platform.is('android')) {
 			const hasToken = await this.firebaseUtils.hasNotificationToken()
 			if (!hasToken) {
-				this.alerts.showError(
-					'Play Service',
-					'We could not enable notifications for your device which might be due to missing Google Play Services. Please note that notifications do not work without Google Play Services.',
-					SETTINGS_PAGE + 2
-				)
-				this.notify = false
-
 				return false
 			}
 		}
@@ -97,7 +90,7 @@ export class NotificationBase implements OnInit {
 	async loadAllToggles() {
 		if (!(await this.storage.isLoggedIn())) return
 
-		const net = (await this.api.networkConfig).net
+		const net = this.api.networkConfig.net
 
 		const request = new NotificationGetRequest()
 		const response = await this.api.execute(request)
@@ -105,7 +98,7 @@ export class NotificationBase implements OnInit {
 
 		const isNotifyClientUpdatesEnabled = await this.storage.isNotifyClientUpdatesEnabled()
 
-		let network = await this.api.getNetworkName()
+		let network = this.api.getNetworkName()
 		if (network == 'main') {
 			network = 'mainnet'
 		} else if (network == 'local dev') {
@@ -116,7 +109,6 @@ export class NotificationBase implements OnInit {
 			)
 			//network = 'prater' // use me, dear developer
 		}
-		console.log('result', results, network)
 
 		const clientsToActivate = <string[]>[]
 
@@ -166,7 +158,7 @@ export class NotificationBase implements OnInit {
 		// locking toggle so we dont execute onChange when setting initial values
 		const preferences = await this.storage.loadPreferencesToggles(net)
 
-		if (await this.api.isNotMainnet()) {
+		if (this.api.isNotEthereumMainnet()) {
 			this.notify = preferences
 			this.notifyInitialized = true
 			this.disableToggleLock()
@@ -193,7 +185,14 @@ export class NotificationBase implements OnInit {
 	}
 
 	async notifyToggle() {
-		if (!(await this.isSupportedOnAndroid())) return
+		if (!(await this.isSupportedOnAndroid())) {
+			this.alerts.showInfo(
+				'Play Service',
+				'Your device can not receive push notifications. Please note that notifications do not work without Google Play Services. As an alternative you can configure webhook notifications on the ' +
+					this.api.getHostName() +
+					' website, otherwise changing these settings will have no effect.'
+			)
+		}
 
 		if (this.platform.is('ios') && (await this.firebaseUtils.hasSeenConsentScreenAndNotConsented())) {
 			this.notify = false
@@ -208,10 +207,13 @@ export class NotificationBase implements OnInit {
 			}
 		}
 
-		const net = (await this.api.networkConfig).net
+		const net = this.api.networkConfig.net
 		this.storage.setBooleanSetting(net + SETTING_NOTIFY, this.notify)
 		this.settingsChanged = true
-		if (!(await this.api.isNotMainnet())) {
+		// TODO: instead of using this.api.isEthereumMainnet(), check each app supported network and if
+		// one single network has notifications enabled, also sync general als true. If all are disabled,
+		// set general notify as false
+		if (this.api.isEthereumMainnet() || this.notify == true) {
 			this.sync.changeGeneralNotify(this.notify)
 		}
 
@@ -289,7 +291,7 @@ export class NotificationBase implements OnInit {
 		return count ? count : 0
 	}
 
-	async notifyEventToggle(eventName, filter = null, threshold = null) {
+	notifyEventToggle(eventName, filter = null, threshold = null) {
 		this.settingsChanged = true
 		this.sync.changeNotifyEvent(eventName, eventName, this.getNotifyToggleFromEvent(eventName), filter, threshold)
 		this.api.clearSpecificCache(new NotificationGetRequest())
@@ -301,11 +303,12 @@ export class NotificationBase implements OnInit {
 			this.sync.changeClient(clientKey, clientKey)
 		} else {
 			this.sync.changeClient(clientKey, 'null')
+			this.api.deleteAllHardStorageCacheKeyContains(clientKey)
 		}
 	}
 
 	// include filter in key (fe used by machine toggles)
-	async notifyEventFilterToggle(eventName, filter = null, threshold = null) {
+	notifyEventFilterToggle(eventName, filter = null, threshold = null) {
 		const key = eventName + filter
 		const value = this.getNotifyToggleFromEvent(eventName)
 		this.settingsChanged = true

@@ -81,6 +81,7 @@ export class Tab3Page {
 	premiumLabel = ''
 
 	protected package = ''
+	protected currentFiatCurrency
 
 	constructor(
 		protected api: ApiService,
@@ -103,6 +104,9 @@ export class Tab3Page {
 	) {}
 
 	ngOnInit() {
+		this.unit.getCurrentConsFiat().then((result) => {
+			this.currentFiatCurrency = result
+		})
 		this.theme.isDarkThemed().then((result) => (this.darkMode = result))
 
 		this.theme.getThemeColor().then((result) => (this.themeColor = result))
@@ -153,8 +157,13 @@ export class Tab3Page {
 		this.updateUtils.convertOldToNewClientSettings()
 	}
 
+	private loadingNotificationPage = false
 	async goToNotificationPage() {
+		if (this.loadingNotificationPage) return
+		this.loadingNotificationPage = true
+
 		await this.sync.syncAllSettings(true)
+		this.loadingNotificationPage = false
 		this.router.navigate(['/notifications'])
 	}
 
@@ -211,9 +220,7 @@ export class Tab3Page {
 	ionViewWillEnter() {
 		this.storage.getAuthUser().then((result) => (this.authUser = result))
 		this.debug = this.api.debug
-		this.api.getNetworkName().then((result) => {
-			this.network = result
-		})
+		this.network = this.api.getNetworkName()
 	}
 
 	private getAllCurrencies() {
@@ -232,13 +239,14 @@ export class Tab3Page {
 
 	overrideDisplayCurrency = null
 	private changeCurrencyLocked = false
-	changeCurrency() {
+	async changeCurrency() {
 		if (this.changeCurrencyLocked) return
 		this.changeCurrencyLocked = true
 
+		await this.api.deleteAllHardStorageCacheKeyContains('coinbase')
 		this.overrideDisplayCurrency = this.unit.pref
 
-		this.unit.updatePriceData()
+		await this.unit.changeCurrency(this.currentFiatCurrency)
 		this.unit.save()
 
 		setTimeout(() => {
@@ -276,7 +284,7 @@ export class Tab3Page {
 		}
 	}
 
-	async logout() {
+	logout() {
 		this.alerts.confirmDialog('Confirm logout', 'Notifications will stop working if you sign out. Continue?', 'Logout', () => {
 			this.confirmLogout()
 		})
@@ -310,15 +318,19 @@ export class Tab3Page {
 	}
 
 	async changeNetwork() {
-		const newConfig = findConfigForKey(this.network)
-		await this.storage.clearCache()
-		await this.api.clearCache()
-		await this.validatorUtils.clearCache()
-
-		await this.storage.setNetworkPreferences(newConfig)
-		await this.api.updateNetworkConfig()
-		await this.notificationBase.loadAllToggles()
-		this.validatorUtils.notifyListeners()
+		await changeNetwork(
+			this.network,
+			this.storage,
+			this.api,
+			this.validatorUtils,
+			this.unit,
+			this.notificationBase,
+			this.theme,
+			this.alerts,
+			this.merchant,
+			false
+		)
+		this.currentFiatCurrency = await this.unit.getCurrentConsFiat()
 	}
 
 	async openIconCredit() {
@@ -431,5 +443,51 @@ export class Tab3Page {
 		})
 
 		await alert.present()
+	}
+}
+
+export async function changeNetwork(
+	network: string,
+	storage: StorageService,
+	api: ApiService,
+	validatorUtils: ValidatorUtils,
+	unit: UnitconvService,
+	notificationBase: NotificationBase,
+	theme: ThemeUtils,
+	alertService: AlertService,
+	merchant: MerchantUtils,
+	forceThemeSwitch: boolean
+) {
+	const darkTheme = await theme.isDarkThemed()
+
+	const newConfig = findConfigForKey(network)
+	await storage.clearCache()
+	//await api.clearNetworkCache()
+
+	await storage.setNetworkPreferences(newConfig)
+	await api.initialize()
+	await notificationBase.loadAllToggles()
+	await unit.networkSwitchReload()
+	//await this.unit.changeCurrency(this.currentFiatCurrency)
+	validatorUtils.notifyListeners()
+
+	const currentTheme = theme.currentThemeColor
+
+	if (forceThemeSwitch && (currentTheme == '' || currentTheme == 'gnosis')) {
+		theme.undoColor()
+		setTimeout(() => {
+			theme.toggle(darkTheme, true, api.isGnosis() ? 'gnosis' : ''), 50
+		})
+	} else {
+		const hasTheming = await merchant.hasPremiumTheming()
+		if (hasTheming) return
+		if (currentTheme == '' && !api.isGnosis()) return
+		if (currentTheme == 'gnosis' && api.isGnosis()) return
+		alertService.confirmDialog('Switch App Theme', 'Do you want to switch to the free ' + api.getNetwork().name + ' App theme?', 'Sure', () => {
+			theme.undoColor()
+			setTimeout(() => {
+				theme.toggle(darkTheme, true, api.isGnosis() ? 'gnosis' : ''), 50
+			})
+		})
 	}
 }

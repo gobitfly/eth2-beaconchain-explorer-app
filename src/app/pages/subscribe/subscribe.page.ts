@@ -9,6 +9,7 @@ import { Toast } from '@capacitor/toast'
 import FlavorUtils from 'src/app/utils/FlavorUtils'
 
 import { Browser } from '@capacitor/browser'
+import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-subscribe',
@@ -32,14 +33,15 @@ export class SubscribePage implements OnInit {
 		private oauth: OAuthUtils,
 		private alertService: AlertService,
 		private platform: Platform,
-		private flavor: FlavorUtils
+		private flavor: FlavorUtils,
+		private api: ApiService
 	) {
 		this.selectedPackage = this.merchant.PACKAGES[2]
 	}
 
 	ngOnInit() {
 		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(async () => {
+		this.backbuttonSubscription = event.subscribe(() => {
 			this.modalCtrl.dismiss()
 		})
 
@@ -80,7 +82,7 @@ export class SubscribePage implements OnInit {
 				'Yes',
 				async () => {
 					if (isNoGoogle) {
-						await Browser.open({ url: 'https://beaconcha.in/premium', toolbarColor: '#2f2e42' })
+						await Browser.open({ url: this.api.getBaseUrl() + '/premium', toolbarColor: '#2f2e42' })
 					} else {
 						this.merchant.purchase(this.selectedPackage.purchaseKey)
 					}
@@ -90,18 +92,18 @@ export class SubscribePage implements OnInit {
 		}
 
 		if (isNoGoogle) {
-			await Browser.open({ url: 'https://beaconcha.in/premium', toolbarColor: '#2f2e42' })
+			await Browser.open({ url: this.api.getBaseUrl() + '/premium', toolbarColor: '#2f2e42' })
 		} else {
 			this.merchant.purchase(this.selectedPackage.purchaseKey)
 		}
 	}
 
 	async purchaseIntern() {
-		const loggedIn = await this.storage.isLoggedIn()
+		let loggedIn = await this.storage.isLoggedIn()
 		if (!loggedIn) {
-			this.alertService.confirmDialog('Login', 'You need to login to your beaconcha.in account first. Continue?', 'Login', () => {
+			this.alertService.confirmDialog('Login', 'You need to login to your ' + this.api.getHostName() + ' account first. Continue?', 'Login', () => {
 				this.oauth.login().then(async () => {
-					const loggedIn = await this.storage.isLoggedIn()
+					loggedIn = await this.storage.isLoggedIn()
 					if (loggedIn) this.continuePurchaseIntern()
 				})
 			})

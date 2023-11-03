@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiNetwork } from '../models/StorageTypes'
+import { ApiNetwork, NetworkMainCurrency } from '../models/StorageTypes'
 
 export const MAP: ApiNetwork[] = [
 	{
@@ -31,6 +31,29 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1606824023,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+		name: 'Ethereum',
+	},
+	{
+		key: 'gnosis',
+		protocol: 'https',
+		host: 'gnosischa.in',
+		net: '',
+		endpoint: '/api/',
+		version: 'v1',
+		onlyDebug: false,
+		active: true,
+		genesisTs: 1638993340,
+		clCurrency: NetworkMainCurrency.GNO,
+		elCurrency: NetworkMainCurrency.xDAI,
+		slotPerEpoch: 16,
+		slotsTime: 5,
+		epochsPerSyncPeriod: 512,
+		name: 'Gnosis',
 	},
 	{
 		key: 'prater',
@@ -42,6 +65,12 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1616508000,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+		name: 'Ethereum',
 	},
 	{
 		key: 'sepolia',
@@ -53,6 +82,12 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1655733600,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+		name: 'Ethereum',
 	},
 	{
 		key: 'holesky',
@@ -64,6 +99,12 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: false,
 		active: true,
 		genesisTs: 1695902400,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+		name: 'Ethereum',
 	},
 	{
 		key: 'local dev',
@@ -75,6 +116,12 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: true,
 		active: true,
 		genesisTs: 1606824023,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+		name: 'Ethereum',
 	},
 	{
 		key: 'invalid (no connection)',
@@ -86,16 +133,21 @@ export const MAP: ApiNetwork[] = [
 		onlyDebug: true,
 		active: true,
 		genesisTs: 1606824023,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+		name: 'Ethereum',
 	},
 ]
 
 export function findConfigForKey(key: string): ApiNetwork {
 	for (const entry of MAP) {
 		if (entry.key == key) {
-			console.log('found config', key, entry)
 			return entry
 		}
 	}
-	console.debug('config for ' + key + ' not found, using mainnet instead', key)
+	console.log('config for ' + key + ' not found, using mainnet instead', key)
 	return MAP[0]
 }

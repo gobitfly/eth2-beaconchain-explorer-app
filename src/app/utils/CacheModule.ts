@@ -18,8 +18,10 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { StorageService } from '../services/storage.service'
+import { StorageService, replacer } from '../services/storage.service'
 import { Validator } from './ValidatorUtils'
+
+const LOGTAG = '[CacheModule]'
 
 interface CachedData {
 	maxStaleTime: number
@@ -32,42 +34,93 @@ export class CacheModule {
 
 	private keyPrefix = ''
 	private hardStorage: StorageService = null
-	initialized: Promise<Map<string, CachedData>>
-
-	constructor(keyPrefix = '', staleTime = 6 * 60 * 1000, hardStorage: StorageService = null) {
-		this.keyPrefix = keyPrefix
-		this.staleTime = staleTime
-		this.hardStorage = hardStorage
-		this.init()
-	}
-
-	private async init() {
-		if (this.hardStorage) {
-			this.hardStorage.setObject('cachemodule_' + this.keyPrefix, null)
-			this.initialized = this.hardStorage.getObject('cachemodule2_' + this.keyPrefix) as Promise<Map<string, CachedData>>
-			const result = await this.initialized
-			if (result) {
-				this.cache = result
-			}
-			console.log('[CacheModule] initialized with ', this.cache)
-		} else {
-			this.initialized = new Promise<Map<string, CachedData>>((resolve) => {
-				resolve(new Map<string, CachedData>())
-			})
-			await this.initialized
-		}
-	}
+	protected initialized: Promise<void>
 
 	private cache: Map<string, CachedData> = new Map()
 	private hotOnly: Map<string, CachedData> = new Map()
 
+	private hardStorageSizeLimit: number
+
+	constructor(
+		keyPrefix = '',
+		staleTime = 6 * 60 * 1000,
+		hardStorage: StorageService = null,
+		hardStorageSizeLimit: number = 1000,
+		callInit: boolean = true
+	) {
+		this.keyPrefix = keyPrefix
+		this.staleTime = staleTime
+		this.hardStorage = hardStorage
+		this.hardStorageSizeLimit = hardStorageSizeLimit
+		if (callInit) this.init()
+	}
+
+	protected async init() {
+		if (this.hardStorage) {
+			this.hardStorage.setObject('cachemodule_' + this.keyPrefix, null, false)
+			await this.initHardCache()
+			this.initialized = Promise.resolve()
+		} else {
+			this.initialized = Promise.resolve()
+		}
+	}
+
+	private async initHardCache() {
+		// dont load hardStorage if last time it was written too is more than 6 hours ago
+		const lastWrite = (await this.hardStorage.getObject('cachemodule2_' + this.keyPrefix + '_lastWrite')) as number
+		if (lastWrite && lastWrite + 6 * 60 * 60 * 1000 < this.getTimestamp()) {
+			console.log(LOGTAG + ' hardStorage too old, ignoring')
+		} else {
+			const result = (await this.hardStorage.getObject('cachemodule2_' + this.keyPrefix)) as Map<string, CachedData>
+			if (result) {
+				this.cache = result
+			}
+			this.checkHardCacheSize()
+		}
+	}
+
+	private async checkHardCacheSize() {
+		try {
+			let kiloBytes = null
+			if (this.hardStorage) {
+				const size = new TextEncoder().encode(JSON.stringify(this.cache, replacer)).length
+				kiloBytes = Math.round((size * 100) / 1024) / 100
+			}
+			console.log(LOGTAG + ' initialized with ', kiloBytes == null ? '(unknown size)' : '(' + kiloBytes + ' KiB)', this.cache)
+			if (kiloBytes && kiloBytes > this.hardStorageSizeLimit) {
+				console.warn(LOGTAG + ' storage cap exceeded (1 MB), clearing cache')
+				await this.clearHardCache()
+			}
+		} catch (e) {
+			console.warn('could not calculate cache size')
+		}
+	}
+
 	private getStoreForCacheKey(cacheKey: string): Map<string, CachedData> {
 		// rationale: don't store big data objects in hardStorage due to severe performance impacts
-		const storeHard = cacheKey.indexOf('app/dashboard') >= 0
+		const storeHard =
+			cacheKey.indexOf('app/dashboard') >= 0 ||
+			cacheKey.indexOf('produced?offset=0') >= 0 || // first page of blocks page
+			(cacheKey.indexOf('beaconcha.in') < 0 && cacheKey.indexOf('gnosischa.in') < 0 && cacheKey.indexOf('ads.bitfly') < 0)
 		return storeHard ? this.cache : this.hotOnly
 	}
 
-	protected putCache(key: string, data: unknown, staleTime = this.staleTime) {
+	public async deleteAllHardStorageCacheKeyContains(search: string) {
+		if (!this.hardStorage) {
+			return
+		}
+		search = search.toLocaleLowerCase()
+		const keys = Array.from(this.cache.keys())
+		for (let i = 0; i < keys.length; i++) {
+			if (keys[i].toLocaleLowerCase().indexOf(search) >= 0) {
+				this.cache.delete(keys[i])
+			}
+		}
+
+		await this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, this.cache, false)
+	}
+
+	protected async putCache(key: string, data: unknown, staleTime = this.staleTime) {
 		const cacheKey = this.getKey(key)
 		const store = this.getStoreForCacheKey(cacheKey)
 
@@ -79,24 +132,41 @@ export class CacheModule {
 
 		try {
 			if (this.hardStorage) {
-				this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, this.cache)
+				await this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, this.cache, false)
+				this.setLastHardCacheWrite()
 			}
 		} catch (e) {
 			if (isQuotaExceededError(e)) {
-				this.clearHardCache()
+				await this.clearHardCache()
 			}
 		}
 	}
 
-	clearCache() {
-		this.clearHardCache()
-		this.cache.clear()
+	private setLastHardCacheWrite() {
+		if (this.hardStorage) {
+			this.hardStorage.setObject('cachemodule2_' + this.keyPrefix + '_lastWrite', this.getTimestamp(), false)
+		}
+	}
+
+	public async clearCache() {
+		await this.clearHardCache()
 		this.hotOnly.clear()
 	}
 
-	clearHardCache() {
+	public async clearNetworkCache() {
 		if (this.hardStorage) {
-			this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, null)
+			const network = await this.hardStorage.getNetworkPreferences()
+			this.deleteAllHardStorageCacheKeyContains(network.key == 'main' ? '//beaconcha.in' : '//' + network.key)
+		}
+
+		this.hotOnly.clear()
+	}
+
+	public async clearHardCache() {
+		if (this.hardStorage) {
+			await this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, null, false)
+			this.setLastHardCacheWrite()
+			this.cache.clear()
 		}
 	}
 
@@ -119,7 +189,7 @@ export class CacheModule {
 
 	protected cacheMultiple(prefix: string, data: Validator[]) {
 		if (!data || data.length <= 0) {
-			console.log('[CacheModule] ignore cache attempt of empty data set', data)
+			console.log(LOGTAG + ' ignore cache attempt of empty data set', data)
 			return
 		}
 
@@ -148,10 +218,11 @@ export class CacheModule {
 		this.cache[this.getKey(key)] = null
 	}
 
-	invalidateAllCache() {
+	public invalidateAllCache() {
 		this.cache = new Map()
 		if (this.hardStorage) {
-			this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, null)
+			this.hardStorage.setObject('cachemodule2_' + this.keyPrefix, null, false)
+			this.setLastHardCacheWrite()
 		}
 	}
 
