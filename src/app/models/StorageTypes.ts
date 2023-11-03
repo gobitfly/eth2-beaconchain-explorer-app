@@ -38,6 +38,7 @@ export interface ApiNetwork {
 	clCurrency: NetworkMainCurrency
 	slotPerEpoch: number
 	slotsTime: number
+	epochsPerSyncPeriod: number
 	name: string
 }
 

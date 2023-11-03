@@ -25,6 +25,7 @@ import OverviewController, { OverviewData } from '../../controllers/OverviewCont
 import { fromEvent, Subscription } from 'rxjs'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { UnitconvService } from 'src/app/services/unitconv.service'
+import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-validatordetail',
@@ -49,7 +50,8 @@ export class ValidatordetailPage implements OnInit {
 		private validatorUtils: ValidatorUtils,
 		private modalCtrl: ModalController,
 		private merchant: MerchantUtils,
-		private unit: UnitconvService
+		private unit: UnitconvService,
+		private api: ApiService
 	) {}
 
 	setInput(validator: Validator) {
@@ -94,7 +96,7 @@ export class ValidatordetailPage implements OnInit {
 
 		const epoch = await this.validatorUtils.getRemoteCurrentEpoch()
 		const overviewController = new OverviewController(null, await this.merchant.getCurrentPlanMaxValidator(), this.unit)
-		this.data = overviewController.processDetail([item], epoch)
+		this.data = overviewController.processDetail([item], epoch, this.api.getNetwork())
 	}
 
 	tag() {

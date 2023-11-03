@@ -25,6 +25,7 @@ import { getValidatorQueryString, ValidatorState, Validator } from '../utils/Val
 import { formatDate } from '@angular/common'
 import { SyncCommitteesStatistics, SyncCommitteesStatisticsResponse } from '../requests/requests'
 import { UnitconvService } from '../services/unitconv.service'
+import { ApiNetwork } from '../models/StorageTypes'
 
 export type OverviewData = {
 	overallBalance: BigNumber
@@ -130,13 +131,14 @@ export default class OverviewController {
 		validators: Validator[],
 		currentEpoch: EpochResponse,
 		syncCommitteesStatsResponse = null,
-		proposalLuckResponse: ProposalLuckResponse = null
+		proposalLuckResponse: ProposalLuckResponse = null,
+		network: ApiNetwork
 	) {
-		return this.process(validators, currentEpoch, false, syncCommitteesStatsResponse, proposalLuckResponse)
+		return this.process(validators, currentEpoch, false, syncCommitteesStatsResponse, proposalLuckResponse, network)
 	}
 
-	public processDetail(validators: Validator[], currentEpoch: EpochResponse) {
-		return this.process(validators, currentEpoch, true, null, null)
+	public processDetail(validators: Validator[], currentEpoch: EpochResponse, network: ApiNetwork) {
+		return this.process(validators, currentEpoch, true, null, null, network)
 	}
 
 	private process(
@@ -144,7 +146,8 @@ export default class OverviewController {
 		currentEpoch: EpochResponse,
 		foreignValidator = false,
 		syncCommitteesStatsResponse = null,
-		proposalLuckResponse: ProposalLuckResponse = null
+		proposalLuckResponse: ProposalLuckResponse = null,
+		network: ApiNetwork
 	): OverviewData {
 		if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
@@ -261,7 +264,7 @@ export default class OverviewController {
 			consensusPerformance: consensusPerf,
 			executionPerformance: executionPerf,
 			combinedPerformance: combinedPerf,
-			dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator),
+			dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator, network),
 			lazyLoadChart: true,
 			lazyChartValidators: getValidatorQueryString(validators, 2000, this.userMaxValidators - 1),
 			foreignValidator: foreignValidator,
@@ -272,7 +275,7 @@ export default class OverviewController {
 			apr: combinedPerf.apr,
 			currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
 			nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
-			syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse),
+			syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse, network),
 			proposalLuckResponse: proposalLuckResponse,
 			withdrawalsEnabledForAll:
 				validators.filter((cur) => (cur.data.withdrawalcredentials.startsWith('0x01') ? true : false)).length == validatorCount,
@@ -567,7 +570,7 @@ export default class OverviewController {
 		return new BigNumber(performance.toString()).multipliedBy('1177').dividedBy(validatorDepositActive).decimalPlaces(1).toNumber()
 	}
 
-	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
+	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator, network: ApiNetwork): DashboardStatus {
 		// collect data
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
@@ -597,7 +600,7 @@ export default class OverviewController {
 		// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
 
 		// handle slashed validators
-		this.updateStateSlashed(dashboardStatus, slashedCount, validatorCount, foreignValidator, slashedValidators[0]?.data, currentEpoch)
+		this.updateStateSlashed(dashboardStatus, slashedCount, validatorCount, foreignValidator, slashedValidators[0]?.data, currentEpoch, network)
 
 		// handle offline validators
 		const offlineCount = validatorCount - activeValidatorCount - exitedValidatorsCount - slashedCount - awaitingCount - eligibilityCount
@@ -605,19 +608,27 @@ export default class OverviewController {
 
 		// handle awaiting activation validators
 		if (awaitingCount > 0) {
-			this.updateStateAwaiting(dashboardStatus, awaitingCount, validatorCount, foreignValidator, awaitingActivation[0].data, currentEpoch)
+			this.updateStateAwaiting(dashboardStatus, awaitingCount, validatorCount, foreignValidator, awaitingActivation[0].data, currentEpoch, network)
 		}
 
 		// handle eligable validators
 		if (eligibilityCount > 0) {
-			this.updateStateEligibility(dashboardStatus, eligibilityCount, validatorCount, foreignValidator, activationEligibility[0].data, currentEpoch)
+			this.updateStateEligibility(
+				dashboardStatus,
+				eligibilityCount,
+				validatorCount,
+				foreignValidator,
+				activationEligibility[0].data,
+				currentEpoch,
+				network
+			)
 		}
 
 		// handle exited validators
 		this.updateExitedState(dashboardStatus, exitedValidatorsCount, validatorCount, foreignValidator)
 
 		// handle ok state, always call last
-		this.updateStateOk(dashboardStatus, activeValidatorCount, validatorCount, foreignValidator, activeValidators[0]?.data, currentEpoch)
+		this.updateStateOk(dashboardStatus, activeValidatorCount, validatorCount, foreignValidator, activeValidators[0]?.data, currentEpoch, network)
 
 		if (dashboardStatus.state == StateType.mixed) {
 			// remove extended description if more than one state is shown
@@ -632,12 +643,12 @@ export default class OverviewController {
 		return foreignValidator ? foreignText : myText
 	}
 
-	private getExitingDescription(validatorResp: ValidatorResponse, currentEpoch: EpochResponse): Description {
+	private getExitingDescription(validatorResp: ValidatorResponse, currentEpoch: EpochResponse, network: ApiNetwork): Description {
 		if (!validatorResp.exitepoch) return { extendedDescriptionPre: null, extendedDescription: null }
 
 		const exitDiff = validatorResp.exitepoch - currentEpoch.epoch
 		const isExiting = exitDiff >= 0 && exitDiff < 6480 // ~ 1 month
-		const exitingDate = isExiting ? this.getEpochDate(validatorResp.exitepoch, currentEpoch) : null
+		const exitingDate = isExiting ? this.getEpochDate(validatorResp.exitepoch, currentEpoch, network) : null
 
 		return {
 			extendedDescriptionPre: isExiting ? 'Exiting on ' : null,
@@ -659,7 +670,8 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		validatorResp: ValidatorResponse,
-		currentEpoch: EpochResponse
+		currentEpoch: EpochResponse,
+		network: ApiNetwork
 	) {
 		if (slashedCount == 0) {
 			return
@@ -668,7 +680,7 @@ export default class OverviewController {
 		if (dashboardStatus.state == StateType.none) {
 			dashboardStatus.icon = 'alert-circle-outline'
 			dashboardStatus.iconCss = 'err'
-			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
+			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch, network)
 			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
 			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
 			dashboardStatus.state = StateType.slashed
@@ -690,14 +702,15 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		awaitingActivation: ValidatorResponse,
-		currentEpoch: EpochResponse
+		currentEpoch: EpochResponse,
+		network: ApiNetwork
 	) {
 		if (awaitingCount == 0) {
 			return
 		}
 
 		if (dashboardStatus.state == StateType.none) {
-			const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, currentEpoch)
+			const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, currentEpoch, network)
 
 			dashboardStatus.icon = 'timer-outline'
 			dashboardStatus.iconCss = 'waiting'
@@ -724,13 +737,14 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		eligbleState: ValidatorResponse,
-		currentEpoch: EpochResponse
+		currentEpoch: EpochResponse,
+		network: ApiNetwork
 	) {
 		if (eligibilityCount == 0) {
 			return
 		}
 
-		const estEta = this.getEpochDate(eligbleState.activationeligibilityepoch, currentEpoch)
+		const estEta = this.getEpochDate(eligbleState.activationeligibilityepoch, currentEpoch, network)
 
 		if (dashboardStatus.state == StateType.none) {
 			dashboardStatus.icon = 'timer-outline'
@@ -804,7 +818,8 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		validatorResp: ValidatorResponse,
-		currentEpoch: EpochResponse
+		currentEpoch: EpochResponse,
+		network: ApiNetwork
 	) {
 		if (dashboardStatus.state != StateType.mixed && dashboardStatus.state != StateType.none) {
 			return
@@ -818,14 +833,14 @@ export default class OverviewController {
 				highlight: true,
 			})
 
-			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
+			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch, network)
 			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
 			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
 			dashboardStatus.state = StateType.online
 		}
 	}
 
-	private getEpochDate(activationEpoch: number, currentEpoch: EpochResponse) {
+	private getEpochDate(activationEpoch: number, currentEpoch: EpochResponse, network: ApiNetwork) {
 		try {
 			const diff = activationEpoch - currentEpoch.epoch
 			if (diff <= 0) {
@@ -835,7 +850,7 @@ export default class OverviewController {
 
 			const date = new Date(currentEpoch.lastCachedTimestamp)
 
-			const inEpochOffset = (32 - currentEpoch.scheduledblocks) * 12 // block time 12s
+			const inEpochOffset = (network.slotPerEpoch - currentEpoch.scheduledblocks) * network.slotsTime // block time 12s
 
 			date.setSeconds(diff * 6.4 * 60 - inEpochOffset)
 
@@ -883,15 +898,15 @@ export default class OverviewController {
 		})
 	}
 
-	private calculateSyncCommitteeStats(stats: SyncCommitteesStatisticsResponse): SyncCommitteesStatistics {
+	private calculateSyncCommitteeStats(stats: SyncCommitteesStatisticsResponse, network: ApiNetwork): SyncCommitteesStatistics {
 		if (stats) {
 			// if no slots where expected yet, don't show any statistic as either no validator is subscribed or they have not been active in the selected timeframe
 			if (stats.expectedSlots > 0) {
 				const slotsTotal = stats.participatedSlots + stats.missedSlots
-				const slotsPerSyncPeriod = 32 * 256
+				const slotsPerSyncPeriod = network.slotPerEpoch * network.epochsPerSyncPeriod
 				const r: SyncCommitteesStatistics = {
-					committeesParticipated: Math.ceil(slotsTotal / 32 / 256),
-					committeesExpected: Math.round((stats.expectedSlots * 100) / 32 / 256) / 100,
+					committeesParticipated: Math.ceil(slotsTotal / network.slotPerEpoch / network.epochsPerSyncPeriod),
+					committeesExpected: Math.round((stats.expectedSlots * 100) / network.slotPerEpoch / network.epochsPerSyncPeriod) / 100,
 					slotsPerSyncCommittee: slotsPerSyncPeriod,
 					slotsLeftInSyncCommittee: slotsPerSyncPeriod - stats.scheduledSlots,
 					slotsParticipated: stats.participatedSlots,

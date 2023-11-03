@@ -134,7 +134,8 @@ export class Tab1Page {
 			validators,
 			epoch,
 			this.validatorUtils.syncCommitteesStatsResponse,
-			this.validatorUtils.proposalLuckResponse
+			this.validatorUtils.proposalLuckResponse,
+			this.api.getNetwork()
 		)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}

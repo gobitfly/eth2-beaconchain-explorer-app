@@ -35,6 +35,7 @@ export const MAP: ApiNetwork[] = [
 		elCurrency: NetworkMainCurrency.ETH,
 		slotPerEpoch: 32,
 		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 	{
@@ -51,6 +52,7 @@ export const MAP: ApiNetwork[] = [
 		elCurrency: NetworkMainCurrency.xDAI,
 		slotPerEpoch: 16,
 		slotsTime: 5,
+		epochsPerSyncPeriod: 512,
 		name: 'Gnosis',
 	},
 	{
@@ -67,6 +69,7 @@ export const MAP: ApiNetwork[] = [
 		elCurrency: NetworkMainCurrency.ETH,
 		slotPerEpoch: 32,
 		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 	{
@@ -83,6 +86,7 @@ export const MAP: ApiNetwork[] = [
 		elCurrency: NetworkMainCurrency.ETH,
 		slotPerEpoch: 32,
 		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 	{
@@ -99,6 +103,7 @@ export const MAP: ApiNetwork[] = [
 		elCurrency: NetworkMainCurrency.ETH,
 		slotPerEpoch: 32,
 		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 	{
@@ -115,6 +120,7 @@ export const MAP: ApiNetwork[] = [
 		elCurrency: NetworkMainCurrency.ETH,
 		slotPerEpoch: 32,
 		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 	{
@@ -131,6 +137,7 @@ export const MAP: ApiNetwork[] = [
 		elCurrency: NetworkMainCurrency.ETH,
 		slotPerEpoch: 32,
 		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
 	},
 ]

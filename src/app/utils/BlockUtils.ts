@@ -82,7 +82,7 @@ export class BlockUtils {
 				luckPercentage: proposalLuckStats.proposal_luck,
 				timeFrameName: proposalLuckStats.time_frame_name,
 				userValidators: valis.length,
-				expectedBlocksPerMonth: MONTH / (proposalLuckStats.average_proposal_interval * 12),
+				expectedBlocksPerMonth: MONTH / (proposalLuckStats.average_proposal_interval * this.api.getNetwork().slotsTime),
 				nextBlockEstimate: proposalLuckStats.next_proposal_estimate_ts * 1000,
 			} as Luck
 		}

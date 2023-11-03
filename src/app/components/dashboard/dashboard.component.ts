@@ -217,7 +217,7 @@ export class DashboardComponent implements OnInit {
 
 	epochToTimestamp(epoch: number) {
 		const network = this.api.getNetwork()
-		return (network.genesisTs + epoch * 32 * 12) * 1000
+		return (network.genesisTs + epoch * network.slotPerEpoch * network.slotsTime) * 1000
 	}
 
 	updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
