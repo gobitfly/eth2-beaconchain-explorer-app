@@ -679,7 +679,7 @@ export class DashboardComponent implements OnInit {
 				// Gnosis: All values provided by the API are in the CL currency, including the el rewards
 				text = `${this.unit.convertCLtoEL(value).toFixed(5)} ` + this.unit.getNetworkDefaultUnit(type).display
 				if (!this.unit.isDefaultCurrency(this.unit.pref.Exec)) {
-					text += ` (${this.unit.convertToPref(this.unit.convertCLtoEL(value), this.unit.getNetworkDefaultCurrency(type), type)})`
+					text += ` (${this.unit.convertToPref(value, this.unit.getNetworkDefaultCurrency('cons'), 'cons')})`
 				}
 			}
 
