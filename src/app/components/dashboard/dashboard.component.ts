@@ -222,7 +222,7 @@ export class DashboardComponent implements OnInit {
 
 	updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			const endTs = this.epochToTimestamp(committee.end_epoch+1)
+			const endTs = this.epochToTimestamp(committee.end_epoch + 1)
 			const startTs = this.epochToTimestamp(committee.start_epoch)
 			this.currentSyncCommitteeMessage = {
 				title: 'Sync Committee',
@@ -241,7 +241,7 @@ export class DashboardComponent implements OnInit {
 
 	updateNextSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			const endTs = this.epochToTimestamp(committee.end_epoch+1)
+			const endTs = this.epochToTimestamp(committee.end_epoch + 1)
 			const startTs = this.epochToTimestamp(committee.start_epoch)
 			this.nextSyncCommitteeMessage = {
 				title: 'Sync Committee Soon',
