@@ -34,7 +34,7 @@ export default class Unit {
 
 	public static ETHER = new Unit('ETH', new BigNumber('1'), 5, 'XXX-ETH', 'Ether')
 	public static KETHER = new Unit('KETH', new BigNumber('0.001'))
-	public static RPL = new Unit('RPL', new BigNumber('1'), 1) // RPL TO ETH
+	public static RPL = new Unit('RPL', new BigNumber('1'), 2) // RPL TO ETH
 	public static RPL_NAKED = new Unit('RPL', new BigNumber('1'), 2)
 	public static NO_CURRENCY = new Unit('', new BigNumber('1'), 0)
 	public static RETH = new Unit('RETH', new BigNumber('1'), 2)
