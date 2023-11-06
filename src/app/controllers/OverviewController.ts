@@ -26,7 +26,6 @@ import { formatDate } from '@angular/common'
 import { SyncCommitteesStatistics, SyncCommitteesStatisticsResponse } from '../requests/requests'
 import { UnitconvService } from '../services/unitconv.service'
 import { ApiNetwork } from '../models/StorageTypes'
-import { WINDOWS_WIDE_310_X_150_LOGO } from 'cordova-res/dist/resources'
 
 export type OverviewData = {
 	overallBalance: BigNumber
