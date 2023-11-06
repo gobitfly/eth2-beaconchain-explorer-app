@@ -222,7 +222,7 @@ export class DashboardComponent implements OnInit {
 
 	updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			const endTs = this.epochToTimestamp(committee.end_epoch)
+			const endTs = this.epochToTimestamp(committee.end_epoch + 1)
 			const startTs = this.epochToTimestamp(committee.start_epoch)
 			this.currentSyncCommitteeMessage = {
 				title: 'Sync Committee',
@@ -230,7 +230,7 @@ export class DashboardComponent implements OnInit {
 					committee.validators.length > 1 ? 'are' : 'is'
 				} currently part of the active sync committee.
       <br/><br/>This duty started at epoch ${committee.start_epoch} at ${new Date(startTs).toLocaleString()} and 
-      will end at epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
+      will end after epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
       <br/><br/>You'll earn extra rewards during this period.
       `,
 			} as SyncCommitteeMessage
@@ -241,7 +241,7 @@ export class DashboardComponent implements OnInit {
 
 	updateNextSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			const endTs = this.epochToTimestamp(committee.end_epoch)
+			const endTs = this.epochToTimestamp(committee.end_epoch + 1)
 			const startTs = this.epochToTimestamp(committee.start_epoch)
 			this.nextSyncCommitteeMessage = {
 				title: 'Sync Committee Soon',
@@ -249,7 +249,7 @@ export class DashboardComponent implements OnInit {
 					committee.validators.length > 1 ? 'are' : 'is'
 				} part of the <strong>next</strong> sync committee.
       <br/><br/>This duty starts at epoch ${committee.start_epoch} at ${new Date(startTs).toLocaleString()} and 
-      will end at epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
+      will end after epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
       <br/><br/>You'll earn extra rewards during this period.
       `,
 			} as SyncCommitteeMessage
