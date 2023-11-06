@@ -225,6 +225,7 @@
 			<div class="grid">
 				<app-performance-item
 					*ngIf="rewardTab === 'combined'"
+					[targetCurrency]="unit.pref.Cons"
 					[performanceData]="data.combinedPerformance"
 					[currency]="'GWEI'"
 					[unit]="unit"
@@ -240,6 +241,7 @@
 
 				<app-performance-item
 					*ngIf="rewardTab === 'cons'"
+					[targetCurrency]="unit.pref.Cons"
 					[performanceData]="data.consensusPerformance"
 					[currency]="'GWEI'"
 					[unit]="unit"
@@ -249,12 +251,11 @@
 					[last7DaysTooltip]=""
 					[last31DaysTooltip]=""
 					[totalTooltip]="'Total (Contains your consensus rewards)'"
-					[aprTooltip]="
-						'APR (Estimated yearly returns on both consensus layer (staking) and execution layer (transaction fees))'
-					"></app-performance-item>
+					[aprTooltip]="'APR (Estimated yearly returns on consensus layer (staking))'"></app-performance-item>
 
 				<app-performance-item
 					*ngIf="rewardTab === 'exec'"
+					[targetCurrency]="unit.pref.Exec"
 					[performanceData]="data.executionPerformance"
 					[currency]="'GWEI'"
 					[unit]="unit"
@@ -264,9 +265,7 @@
 					[last7DaysTooltip]=""
 					[last31DaysTooltip]=""
 					[totalTooltip]="'Total (Contains execution rewards without any claimed or unclaimed smoothing pool rewards.)'"
-					[aprTooltip]="
-						'APR (Estimated yearly returns on both consensus layer (staking) and execution layer (transaction fees))'
-					"></app-performance-item>
+					[aprTooltip]="'APR (Estimated yearly returns on execution layer (transaction fees))'"></app-performance-item>
 			</div>
 		</ion-item>
 	</ion-list>

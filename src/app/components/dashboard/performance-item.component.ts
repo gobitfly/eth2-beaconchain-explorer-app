@@ -19,7 +19,7 @@
 
 import { Component, Input } from '@angular/core'
 import { Performance } from 'src/app/controllers/OverviewController'
-import { UnitconvService } from 'src/app/services/unitconv.service'
+import { Currency, UnitconvService } from 'src/app/services/unitconv.service'
 
 @Component({
 	selector: 'app-performance-item',
@@ -29,6 +29,7 @@ import { UnitconvService } from 'src/app/services/unitconv.service'
 export class PerformanceItemComponent {
 	@Input() performanceData: Performance
 	@Input() unit: UnitconvService
+	@Input() targetCurrency: Currency
 	@Input() currency: string
 	@Input() todayTooltip: string
 	@Input() last7DaysTooltip: string

@@ -21,7 +21,7 @@
 	<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
 		<div class="grid">
 			<ion-label class="value left" [class]="performanceData.performance1d | valuestyle : 0">
-				{{ performanceData.performance1d | mcurrency : currency : unit.pref.Cons }}
+				{{ performanceData.performance1d | mcurrency : currency : targetCurrency }}
 			</ion-label>
 		</div>
 		<div class="grid">
@@ -35,7 +35,7 @@
 	<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
 		<div>
 			<ion-label class="value right" [class]="performanceData.performance7d | valuestyle : 0">
-				{{ performanceData.performance7d | mcurrency : currency : unit.pref.Cons }}
+				{{ performanceData.performance7d | mcurrency : currency : targetCurrency }}
 			</ion-label>
 		</div>
 		<div>
@@ -49,7 +49,7 @@
 	<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
 		<div>
 			<ion-label class="value left" [class]="performanceData.performance31d | valuestyle : 0">
-				{{ performanceData.performance31d | mcurrency : currency : unit.pref.Cons }}
+				{{ performanceData.performance31d | mcurrency : currency : targetCurrency }}
 			</ion-label>
 		</div>
 		<div>
@@ -63,7 +63,7 @@
 	<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
 		<div>
 			<ion-label class="value right" [class]="performanceData.total | valuestyle : 0">
-				{{ performanceData.total | mcurrency : currency : unit.pref.Cons }}
+				{{ performanceData.total | mcurrency : currency : targetCurrency }}
 			</ion-label>
 		</div>
 		<div>
