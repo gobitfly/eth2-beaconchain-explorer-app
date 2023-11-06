@@ -222,219 +222,51 @@
 	</ion-segment>
 	<ion-list class="performances">
 		<ion-item lines="none">
-			<div *ngIf="rewardTab == 'combined'" class="grid">
-				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
-					<div class="grid">
-						<ion-label class="value left" [class]="data.combinedPerformance.performance1d | valuestyle : 0">
-							{{ data.combinedPerformance.performance1d | mcurrency : 'GWEI' : unit.pref.Cons }}
-						</ion-label>
-					</div>
-					<div class="grid">
-						<ion-label class="income-title">
-							<span
-								tooltip="Today's consensus and execution reward income. Note that this is counted in beaconchain days, a beaconchain day might start mid day depending on the network. "
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>Today</span
-							>
-						</ion-label>
-					</div>
-				</div>
+			<div class="grid">
+				<app-performance-item
+					*ngIf="rewardTab === 'combined'"
+					[performanceData]="data.combinedPerformance"
+					[currency]="'GWEI'"
+					[unit]="unit"
+					[todayTooltip]="
+						'Today\'s consensus and execution reward income. Note that this is counted in beaconchain days, a beaconchain day might start mid day depending on the network.'
+					"
+					[last7DaysTooltip]=""
+					[last31DaysTooltip]=""
+					[totalTooltip]="'Total (Contains your consensus rewards, your execution rewards and any claimed or unclaimed smoothing pool rewards.)'"
+					[aprTooltip]="
+						'APR (Estimated yearly returns on both consensus layer (staking) and execution layer (transaction fees))'
+					"></app-performance-item>
 
-				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value" [class]="data.combinedPerformance.performance7d | valuestyle : 0">
-							{{ data.combinedPerformance.performance7d | mcurrency : 'GWEI' : unit.pref.Cons }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> Last 7d </ion-label>
-					</div>
-				</div>
+				<app-performance-item
+					*ngIf="rewardTab === 'cons'"
+					[performanceData]="data.consensusPerformance"
+					[currency]="'GWEI'"
+					[unit]="unit"
+					[todayTooltip]="
+						'Today\'s consensus reward income. Note that this is counted in beaconchain days, a beaconchain day might start mid day depending on the network.'
+					"
+					[last7DaysTooltip]=""
+					[last31DaysTooltip]=""
+					[totalTooltip]="'Total (Contains your consensus rewards)'"
+					[aprTooltip]="
+						'APR (Estimated yearly returns on both consensus layer (staking) and execution layer (transaction fees))'
+					"></app-performance-item>
 
-				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value left" [class]="data.combinedPerformance.performance31d | valuestyle : 0">
-							{{ data.combinedPerformance.performance31d | mcurrency : 'GWEI' : unit.pref.Cons }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title"> Last 31d </ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value" [class]="data.combinedPerformance.total | valuestyle : 0">
-							{{ data.combinedPerformance.total | mcurrency : 'GWEI' : unit.pref.Cons }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> Total </ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell left">
-					<div>
-						<ion-label class="value left" [class]="data.combinedPerformance.apr | valuestyle : 0"> {{ data.combinedPerformance.apr }} % </ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title">
-							<span
-								tooltip="Estimated yearly returns on both consensus layer (staking) and execution layer (transaction fees), based on the last 31 days"
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>APR</span
-							>
-						</ion-label>
-					</div>
-				</div>
-			</div>
-			<div *ngIf="rewardTab == 'cons'" class="grid">
-				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
-					<div class="grid">
-						<ion-label class="value left" [class]="data.consensusPerformance.performance1d | valuestyle : 0">
-							{{ data.consensusPerformance.performance1d | mcurrency : 'GWEI' : unit.pref.Cons }}
-						</ion-label>
-					</div>
-					<div class="grid">
-						<ion-label class="income-title">
-							<span
-								tooltip="Today's consensus reward income. Note that this is counted in beaconchain days, a beaconchain day might start mid day depending on the network. "
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>Today</span
-							>
-						</ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value" [class]="data.consensusPerformance.performance7d | valuestyle : 0">
-							{{ data.consensusPerformance.performance7d | mcurrency : 'GWEI' : unit.pref.Cons }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> Last 7d </ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value left" [class]="data.consensusPerformance.performance31d | valuestyle : 0">
-							{{ data.consensusPerformance.performance31d | mcurrency : 'GWEI' : unit.pref.Cons }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title"> Last 31d </ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value" [class]="data.consensusPerformance.total | valuestyle : 0">
-							{{ data.consensusPerformance.total | mcurrency : 'GWEI' : unit.pref.Cons }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right">
-							<span
-								tooltip="Contains your consensus rewards, your execution rewards and any claimed or unclaimed smoothing pool rewards. "
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>Total</span
-							>
-						</ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell left">
-					<div>
-						<ion-label class="value left" [class]="data.consensusPerformance.apr | valuestyle : 0"> {{ data.consensusPerformance.apr }} % </ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title">
-							<span
-								tooltip="Estimated yearly returns on consensus layer (staking), based on the last 31 days"
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>APR</span
-							>
-						</ion-label>
-					</div>
-				</div>
-			</div>
-			<div *ngIf="rewardTab == 'exec'" class="grid">
-				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
-					<div class="grid">
-						<ion-label class="value left" [class]="data.executionPerformance.performance1d | valuestyle : 0">
-							{{ data.executionPerformance.performance1d | mcurrency : 'GWEI' : unit.pref.Exec }}
-						</ion-label>
-					</div>
-					<div class="grid">
-						<ion-label class="income-title">
-							<span
-								tooltip="Today's execution reward income. Note that this is counted in beaconchain days, a beaconchain day might start mid day depending on the network. "
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>Today</span
-							>
-						</ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value" [class]="data.executionPerformance.performance7d | valuestyle : 0">
-							{{ data.executionPerformance.performance7d | mcurrency : 'GWEI' : unit.pref.Exec }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> Last 7d </ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value left" [class]="data.executionPerformance.performance31d | valuestyle : 0">
-							{{ data.executionPerformance.performance31d | mcurrency : 'GWEI' : unit.pref.Exec }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title"> Last 31d </ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
-					<div>
-						<ion-label class="value" [class]="data.executionPerformance.total | valuestyle : 0">
-							{{ data.executionPerformance.total | mcurrency : 'GWEI' : unit.pref.Exec }}
-						</ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title right"> Total </ion-label>
-					</div>
-				</div>
-
-				<div class="grid-cell left">
-					<div>
-						<ion-label class="value left" [class]="data.executionPerformance.apr | valuestyle : 0"> {{ data.executionPerformance.apr }} % </ion-label>
-					</div>
-					<div>
-						<ion-label class="income-title">
-							<span
-								tooltip="Estimated yearly returns on execution layer (transaction fees), based on the last 31 days"
-								placement="right"
-								trigger="click"
-								hideDelayAfterClick="5000"
-								>APR</span
-							>
-						</ion-label>
-					</div>
-				</div>
+				<app-performance-item
+					*ngIf="rewardTab === 'exec'"
+					[performanceData]="data.executionPerformance"
+					[currency]="'GWEI'"
+					[unit]="unit"
+					[todayTooltip]="
+						'Today\'s execution reward income. Note that this is counted in beaconchain days, a beaconchain day might start mid day depending on the network.'
+					"
+					[last7DaysTooltip]=""
+					[last31DaysTooltip]=""
+					[totalTooltip]="'Total (Contains execution rewards without any claimed or unclaimed smoothing pool rewards.)'"
+					[aprTooltip]="
+						'APR (Estimated yearly returns on both consensus layer (staking) and execution layer (transaction fees))'
+					"></app-performance-item>
 			</div>
 		</ion-item>
 	</ion-list>

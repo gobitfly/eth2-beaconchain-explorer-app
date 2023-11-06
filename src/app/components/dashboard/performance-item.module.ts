@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2023 Bitfly GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -24,27 +23,13 @@ import { FormsModule } from '@angular/forms'
 
 import { IonicModule } from '@ionic/angular'
 
-import { DashboardComponent } from './dashboard.component'
+import { PerformanceItemComponent } from './performance-item.component'
 import { PipesModule } from '../../pipes/pipes.module'
-import { ClientupdateComponentModule } from '../../components/clientupdate/clientupdate.module'
-import { MessageComponentModule } from '../../components/message/message.module'
 import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
-import { AdComponentModule } from '../ad/ad.module'
-import { PerformanceItemComponentModule } from '../dashboard/performance-item.module'
 
 @NgModule({
-	imports: [
-		CommonModule,
-		FormsModule,
-		IonicModule,
-		PipesModule,
-		ClientupdateComponentModule,
-		MessageComponentModule,
-		TooltipModule,
-		AdComponentModule,
-		PerformanceItemComponentModule,
-	],
-	declarations: [DashboardComponent],
-	exports: [DashboardComponent],
+	imports: [CommonModule, FormsModule, IonicModule, PipesModule, TooltipModule],
+	declarations: [PerformanceItemComponent],
+	exports: [PerformanceItemComponent],
 })
-export class DashboardComponentModule {}
+export class PerformanceItemComponentModule {}

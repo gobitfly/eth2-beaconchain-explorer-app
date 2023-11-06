@@ -1,0 +1,88 @@
+<!-- 
+    Copyright (C) 2020 - 2023 Bitfly GmbH
+    
+    This file is part of Beaconchain Dashboard.
+
+    Beaconchain Dashboard is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Beaconchain Dashboard is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<div class="grid">
+	<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
+		<div class="grid">
+			<ion-label class="value left" [class]="performanceData.performance1d | valuestyle : 0">
+				{{ performanceData.performance1d | mcurrency : currency : unit.pref.Cons }}
+			</ion-label>
+		</div>
+		<div class="grid">
+			<ion-label class="income-title">
+				<span *ngIf="!todayTooltip">Today</span>
+				<span *ngIf="todayTooltip" [tooltip]="todayTooltip" trigger="click" hideDelayAfterClick="5000">Today</span>
+			</ion-label>
+		</div>
+	</div>
+
+	<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
+		<div>
+			<ion-label class="value right" [class]="performanceData.performance7d | valuestyle : 0">
+				{{ performanceData.performance7d | mcurrency : currency : unit.pref.Cons }}
+			</ion-label>
+		</div>
+		<div>
+			<ion-label class="income-title right">
+				<span *ngIf="!last7DaysTooltip">Last 7d</span>
+				<span *ngIf="last7DaysTooltip" [tooltip]="last7DaysTooltip" trigger="click" hideDelayAfterClick="5000">Last 7d</span>
+			</ion-label>
+		</div>
+	</div>
+
+	<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
+		<div>
+			<ion-label class="value left" [class]="performanceData.performance31d | valuestyle : 0">
+				{{ performanceData.performance31d | mcurrency : currency : unit.pref.Cons }}
+			</ion-label>
+		</div>
+		<div>
+			<ion-label class="income-title">
+				<span *ngIf="!last31DaysTooltip">Last 31d</span>
+				<span *ngIf="last31DaysTooltip" [tooltip]="last31DaysTooltip" trigger="click" hideDelayAfterClick="5000">Last 31d</span>
+			</ion-label>
+		</div>
+	</div>
+
+	<div class="grid-cell" (click)="unit.switchCurrencyPipe()">
+		<div>
+			<ion-label class="value right" [class]="performanceData.total | valuestyle : 0">
+				{{ performanceData.total | mcurrency : currency : unit.pref.Cons }}
+			</ion-label>
+		</div>
+		<div>
+			<ion-label class="income-title right">
+				<span *ngIf="!totalTooltip">Total</span>
+				<span *ngIf="totalTooltip" [tooltip]="totalTooltip" trigger="click" hideDelayAfterClick="5000">Total</span>
+			</ion-label>
+		</div>
+	</div>
+
+	<div class="grid-cell left">
+		<div>
+			<ion-label class="value left" [class]="performanceData.apr31d | valuestyle : 0"> {{ performanceData.apr31d }} % </ion-label>
+		</div>
+		<div>
+			<ion-label class="income-title">
+				<span *ngIf="!aprTooltip">APR 31d</span>
+				<span *ngIf="aprTooltip" [tooltip]="aprTooltip" trigger="click" hideDelayAfterClick="5000">APR 31d</span>
+			</ion-label>
+		</div>
+	</div>
+</div>
