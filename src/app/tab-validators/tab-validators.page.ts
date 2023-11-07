@@ -176,12 +176,9 @@ export class Tab2Page {
 
 	private setLoading(loading: boolean) {
 		if (loading) {
-			// Reasoning: Don't show loading indicator if it takes less than 400ms (already cached locally but storage is slow-ish so we adjust for that)
-			setTimeout(() => {
-				if (!this.dataSource || !this.dataSource.hasItems()) {
-					this.loading = true
-				}
-			}, 200)
+			if (!this.dataSource || !this.dataSource.hasItems()) {
+				this.loading = true
+			}
 		} else {
 			if (this.loading) {
 				setTimeout(() => {

@@ -54,7 +54,7 @@
 	</ion-toolbar>
 	<app-offline *ngIf="!api.connectionStateOK"></app-offline>
 
-	<ion-item *ngIf="dataSource && !loading && initialized" class="top-bar" @fadeIn>
+	<ion-item *ngIf="dataSource && (!loading || initialized)" class="top-bar" @fadeIn>
 		<ion-label *ngIf="searchResultMode">Search Results</ion-label>
 		<ion-label *ngIf="!searchResultMode">My Validators</ion-label>
 		<ion-icon
@@ -116,7 +116,7 @@
 		</ion-label>
 	</div>
 
-	<div id="container" *ngIf="loading" class="fadein fadeout">
+	<div id="container" *ngIf="loading && !initialized" class="fadein fadeout">
 		<div class="center">
 			<ion-spinner class="status-icon loading-spinner"></ion-spinner>
 		</div>

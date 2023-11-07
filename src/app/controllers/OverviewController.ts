@@ -52,7 +52,6 @@ export type OverviewData = {
 	foreignValidator: boolean
 	foreignValidatorItem?: Validator
 	foreignValidatorWithdrawalCredsAre0x01: boolean
-	apr: number
 	effectiveBalance: BigNumber
 	currentEpoch: EpochResponse
 	rocketpool: Rocketpool
@@ -69,7 +68,9 @@ export type Performance = {
 	performance7d: BigNumber
 	performance365d: BigNumber
 	total: BigNumber
-	apr: number
+	apr7d: number
+	apr31d: number
+	apr365d: number
 }
 
 export type Rocketpool = {
@@ -168,10 +169,6 @@ export default class OverviewController {
 			}
 		})
 
-		const aprPerformance31dExecution = sumBigInt(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance31d.toString())
-		)
-
 		const overallBalance = this.sumBigIntBalanceRP(validators, (cur) => new BigNumber(cur.data.balance))
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
@@ -179,7 +176,7 @@ export default class OverviewController {
 
 		const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive)
 
-		const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive, aprPerformance31dExecution)
+		const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive)
 
 		const smoothingPoolClaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
 			true,
@@ -200,9 +197,15 @@ export default class OverviewController {
 			performance31d: consensusPerf.performance31d.plus(this.unit.convertELtoCL(executionPerf.performance31d)),
 			performance7d: consensusPerf.performance7d.plus(this.unit.convertELtoCL(executionPerf.performance7d)),
 			performance365d: consensusPerf.performance365d.plus(this.unit.convertELtoCL(executionPerf.performance365d)),
-			apr: this.getAPRFromMonth(validatorDepositActive, this.unit.convertELtoCL(aprPerformance31dExecution).plus(consensusPerf.performance31d)),
+			apr31d: this.getAPRFrom(31, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance31d).plus(consensusPerf.performance31d)),
+			apr7d: this.getAPRFrom(7, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance7d).plus(consensusPerf.performance7d)),
+			apr365d: this.getAPRFrom(
+				365,
+				validatorDepositActive,
+				this.unit.convertELtoCL(executionPerf.performance365d).plus(consensusPerf.performance365d)
+			),
 			total: consensusPerf.total.plus(this.unit.convertELtoCL(executionPerf.total)).plus(smoothingPoolClaimed).plus(smoothingPoolUnclaimed),
-		}
+		} as Performance
 
 		let attrEffectiveness = 0
 		let displayAttrEffectiveness = false
@@ -272,7 +275,6 @@ export default class OverviewController {
 			foreignValidatorWithdrawalCredsAre0x01: foreignWCAre0x01,
 			effectiveBalance: effectiveBalance,
 			currentEpoch: currentEpoch,
-			apr: combinedPerf.apr,
 			currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
 			nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
 			syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse, network),
@@ -330,7 +332,7 @@ export default class OverviewController {
 		} as OverviewData
 	}
 
-	private getExecutionPerformance(validators: Validator[], validatorDepositActive: BigNumber, aprPerformance31dExecution: BigNumber) {
+	private getExecutionPerformance(validators: Validator[], validatorDepositActive: BigNumber) {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance1d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
@@ -357,13 +359,14 @@ export default class OverviewController {
 			)
 		)
 
-		const aprExecution = this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution) // todo
 		return {
 			performance1d: performance1d,
 			performance31d: performance31d,
 			performance7d: performance7d,
 			performance365d: performance365d,
-			apr: aprExecution,
+			apr31d: this.getAPRFrom(31, validatorDepositActive, performance31d),
+			apr7d: this.getAPRFrom(7, validatorDepositActive, performance7d),
+			apr365d: this.getAPRFrom(365, validatorDepositActive, performance365d),
 			total: total,
 		}
 	}
@@ -376,7 +379,7 @@ export default class OverviewController {
 		return new BigNumber(0)
 	}
 
-	private getConsensusPerformance(validators: Validator[], validatorDepositActive: BigNumber) {
+	private getConsensusPerformance(validators: Validator[], validatorDepositActive: BigNumber): Performance {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
@@ -397,14 +400,14 @@ export default class OverviewController {
 			}
 		})
 
-		const aprConsensus = this.getAPRFromMonth(validatorDepositActive, performance31d)
-
 		return {
 			performance1d: performance1d,
 			performance31d: performance31d,
 			performance7d: performance7d,
 			performance365d: performance365d,
-			apr: aprConsensus,
+			apr31d: this.getAPRFrom(31, validatorDepositActive, performance31d),
+			apr7d: this.getAPRFrom(7, validatorDepositActive, performance7d),
+			apr365d: this.getAPRFrom(365, validatorDepositActive, performance365d),
 			total: total,
 		}
 	}
@@ -566,8 +569,12 @@ export default class OverviewController {
 		})
 	}
 
-	private getAPRFromMonth(validatorDepositActive: BigNumber, performance: BigNumber): number {
-		return new BigNumber(performance.toString()).multipliedBy('1177').dividedBy(validatorDepositActive).decimalPlaces(1).toNumber()
+	private getAPRFrom(days: number, validatorDepositActive: BigNumber, performance: BigNumber): number {
+		return new BigNumber(performance.toString())
+			.multipliedBy(36500 / days)
+			.dividedBy(validatorDepositActive)
+			.decimalPlaces(1)
+			.toNumber()
 	}
 
 	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator, network: ApiNetwork): DashboardStatus {
