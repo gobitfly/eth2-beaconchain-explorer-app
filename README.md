@@ -1,5 +1,4 @@
-![[beaconchain Dashboard](https://beaconcha.in/mobile)](.github/banner.png)  
-[![Build](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml/badge.svg)](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml)  
+
 
 # Beaconchain Dashboard App
 
@@ -32,10 +31,8 @@ Beaconchain Dashboard is an Angular app written in Typescript, HTML & CSS. It ut
 
 ## Device support
 
-- Android 5.1 or newer
 - iOS 13 or newer
 
-## Development
 ### Getting started
 
 1. Clone repo
@@ -47,31 +44,12 @@ npm i
   
 NOTE: You need to provide your own google-services.json for Android and GoogleService-Info.plist for iOS.  
 
-### Browser
-To run the app in your browser, simply use
-
-`npm run-script serve`
-
-to start a local webserver with livereload enabled.
-
-### Android
-
-**Prerequisites**
-* NodeJS 16
-* Install [Android Studio](https://developer.android.com/studio#downloads]) (2022.2.1 or newer)
-* Use Android Studio to install the Android SDK: https://capacitorjs.com/docs/android
-
-For Linux Users: Open capacitor.config.json (in the root of the project) and adapt the paths for the _linuxAndroidStudioPath_ variable to reflect your local setup.
-
-Build the the app at least once before proceeding:
-
-`ionic build`
 
 #### Livereload
 
 Make sure port 8100 is accessable on your computer and use the following command to run a livereload server
 
-`ionic cap run android --livereload --external --host=192.168.1.64 --disableHostCheck --configuration=development`
+`ionic cap run ios --livereload --external --host=192.168.1.64 --disableHostCheck --configuration=development`
 
 Adapt the --host param to match your computers IP. 
 
