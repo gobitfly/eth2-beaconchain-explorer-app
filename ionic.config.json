@@ -1,7 +1,0 @@
-{
-  "name": "validator-app",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "angular"
-}
