@@ -42,7 +42,7 @@
 			[class.hidden]="selectMode"
 			showCancelButton="focus"
 			enterkeyhint="search"
-			(search)="searchEvent($event)"
+			(ionChange)="searchEvent($event)"
 			(ionClear)="cancelSearch()"
 			(ionCancel)="cancelSearch()"
 			placeholder="Public Key / Index / Address / Cred"
