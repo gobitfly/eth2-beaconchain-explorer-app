@@ -561,26 +561,6 @@ export class NotificationGetRequest extends APIRequest<NotificationGetResponse> 
 	}
 }
 
-export class NotificationSubsRequest extends APIRequest<ApiTokenResponse> {
-	private subscribe = 'subscribe'
-	private unsubscribe = 'unsubscribe'
-
-	resource = 'user/notifications/'
-	method = Method.POST
-	requiresAuth = true
-	postData = {}
-	ignoreFails = true
-
-	constructor(eventName: string, filter: string = null, enabled: boolean) {
-		super()
-		if (filter != null) {
-			this.resource += (enabled ? this.subscribe : this.unsubscribe) + '?event=' + eventName + '&filter=' + filter
-		} else {
-			this.resource += (enabled ? this.subscribe : this.unsubscribe) + '?event=' + eventName
-		}
-	}
-}
-
 export interface BundleSub {
 	event_name: string
 	event_filter: string
