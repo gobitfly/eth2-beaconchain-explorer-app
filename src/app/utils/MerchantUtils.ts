@@ -96,7 +96,7 @@ export class MerchantUtils {
 
 	currentPlan = PRODUCT_STANDARD // use getCurrentPlanConfirmed instead
 
-	purchaseIntent = "" // temp workaround until new api is live
+	purchaseIntent = '' // temp workaround until new api is live
 
 	constructor(private alertService: AlertService, private api: ApiService, private platform: Platform, private storage: StorageService) {
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
@@ -251,7 +251,7 @@ export class MerchantUtils {
 		const loading = await this.alertService.presentLoading('')
 		loading.present()
 		this.restorePurchase = true
-		this.purchaseIntent = product 
+		this.purchaseIntent = product
 		CdvPurchase.store.order(offer).then(
 			() => {
 				setTimeout(() => {
