@@ -146,7 +146,7 @@ export class SubscribePage implements OnInit {
 				return
 			}
 
-			await this.merchant.restore()
+			await this.merchant.restore(this.selectedPackage.purchaseKey)
 		}
 
 		const currentPackage = await this.merchant.getCurrentPlanConfirmed()
