@@ -270,8 +270,6 @@ export class MerchantUtils {
 	private async confirmPurchaseOnRemote(product) {
 		const isIOS = this.platform.is('ios')
 
-		// TODO in the future replace isIOS ? product.transaction.appStoreReceipt : product.transaction.purchaseToken
-		// with isIOS ? product.id : product.transaction.purchaseToken
 		const purchaseData = {
 			currency: product.currency,
 			id: isIOS ? this.purchaseIntent : product.id,
@@ -279,7 +277,7 @@ export class MerchantUtils {
 			valid: product.valid,
 			transaction: {
 				id: product.id,
-				receipt: isIOS ? product.transaction.appStoreReceipt : product.transaction.purchaseToken,
+				receipt: isIOS ? product.id : product.transaction.purchaseToken,
 				type: product.transaction.type,
 			},
 		}
