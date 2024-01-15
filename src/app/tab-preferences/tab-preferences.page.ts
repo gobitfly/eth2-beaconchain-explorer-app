@@ -83,6 +83,8 @@ export class Tab3Page {
 	protected package = ''
 	protected currentFiatCurrency
 
+	protected currentYear = new Date().getFullYear()
+
 	constructor(
 		protected api: ApiService,
 		protected oauth: OAuthUtils,

@@ -96,6 +96,8 @@ export class MerchantUtils {
 
 	currentPlan = PRODUCT_STANDARD // use getCurrentPlanConfirmed instead
 
+	purchaseIntent = '' // temp workaround until new api is live
+
 	constructor(private alertService: AlertService, private api: ApiService, private platform: Platform, private storage: StorageService) {
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
 			console.info('merchant is not supported on this platform')
@@ -124,7 +126,7 @@ export class MerchantUtils {
 			product: CdvPurchase.Validator.Request.Body,
 			callback: CdvPurchase.Callback<CdvPurchase.Validator.Response.Payload>
 		) => {
-			if (this.restorePurchase && product.id != 'in.beaconcha.mobile') {
+			if (this.restorePurchase) {
 				this.restorePurchase = false
 				await this.confirmPurchaseOnRemote(product)
 			}
@@ -238,8 +240,9 @@ export class MerchantUtils {
 		CdvPurchase.store.manageSubscriptions()
 	}
 
-	async restore() {
+	async restore(product: string) {
 		this.restorePurchase = true
+		this.purchaseIntent = product
 		await CdvPurchase.store.restorePurchases()
 	}
 
@@ -247,10 +250,10 @@ export class MerchantUtils {
 		const offer = CdvPurchase.store.get(product).getOffer()
 		const loading = await this.alertService.presentLoading('')
 		loading.present()
+		this.restorePurchase = true
+		this.purchaseIntent = product
 		CdvPurchase.store.order(offer).then(
 			() => {
-				this.restorePurchase = true
-
 				setTimeout(() => {
 					loading.dismiss()
 				}, 1500)
@@ -265,15 +268,13 @@ export class MerchantUtils {
 	}
 
 	private async confirmPurchaseOnRemote(product) {
-		if (product.id == 'in.beaconcha.mobile') {
-			this.alertService.showError('Purchase Error', 'Invalid product, try again later or report this issue to us if persistent.', PURCHASEUTILS + 4)
-			return
-		}
-
 		const isIOS = this.platform.is('ios')
+
+		// TODO in the future replace isIOS ? product.transaction.appStoreReceipt : product.transaction.purchaseToken
+		// with isIOS ? product.id : product.transaction.purchaseToken
 		const purchaseData = {
 			currency: product.currency,
-			id: product.id,
+			id: isIOS ? this.purchaseIntent : product.id,
 			priceMicros: product.priceMicros,
 			valid: product.valid,
 			transaction: {
