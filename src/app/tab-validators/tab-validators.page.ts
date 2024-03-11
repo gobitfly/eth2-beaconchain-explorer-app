@@ -534,9 +534,9 @@ export class Tab2Page {
 		for (const val of validatorSubArray) {
 			let temp = new BigNumber(val.data.effectivebalance)
 			if (val.rocketpool) {
-				const nodeBalance = new BigNumber(val.rocketpool.node_deposit_balance).dividedBy(1e9);
-				const partRatio = nodeBalance.dividedBy(temp);
-				temp = temp.multipliedBy(partRatio);
+				const nodeBalance = new BigNumber(val.rocketpool.node_deposit_balance).dividedBy(1e9)
+				const partRatio = nodeBalance.dividedBy(temp)
+				temp = temp.multipliedBy(partRatio)
 			}
 			sum = sum.plus(temp)
 		}
