@@ -11,6 +11,7 @@ import MachineUtils from 'src/app/utils/MachineUtils'
 
 import { Browser } from '@capacitor/browser'
 import { trigger, style, animate, transition } from '@angular/animations'
+import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-machines',
@@ -60,7 +61,8 @@ export class MachinesPage extends MachineController implements OnInit {
 		private storage: StorageService,
 		private oauthUtils: OAuthUtils,
 		private machineUtils: MachineUtils,
-		private ref: ChangeDetectorRef
+		private ref: ChangeDetectorRef,
+		protected api: ApiService
 	) {
 		super(storage)
 	}
@@ -84,11 +86,12 @@ export class MachinesPage extends MachineController implements OnInit {
 	}
 
 	lastEnter = 0
-	ionViewWillEnter() {
+	async ionViewWillEnter() {
 		if (this.lastEnter == 0 || this.lastEnter + 5 * 60 * 1000 < Date.now()) {
 			this.lastEnter = Date.now()
 			this.getAndProcessData()
 		}
+		this.loggedIn = await this.storage.isLoggedIn()
 	}
 
 	delegater(func) {

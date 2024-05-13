@@ -32,27 +32,32 @@ export default class Unit {
 	public static SZABO = new Unit('Szabo', new BigNumber('1000000'))
 	public static FINNEY = new Unit('Finney', new BigNumber('1000'), 2, null, 'Finney')
 
-	public static ETHER = new Unit('ETH', new BigNumber('1'), 5, null, 'Ether')
+	public static ETHER = new Unit('ETH', new BigNumber('1'), 5, 'XXX-ETH', 'Ether')
 	public static KETHER = new Unit('KETH', new BigNumber('0.001'))
-	public static RPL = new Unit('RPL', new BigNumber('1'), 1) // RPL TO ETH
+	public static RPL = new Unit('RPL', new BigNumber('1'), 2) // RPL TO ETH
 	public static RPL_NAKED = new Unit('RPL', new BigNumber('1'), 2)
 	public static NO_CURRENCY = new Unit('', new BigNumber('1'), 0)
 	public static RETH = new Unit('RETH', new BigNumber('1'), 2)
+	public static DAI_GNO_HELPER = new Unit('dummy', new BigNumber(1), 5, 'DAI-GNO')
 
-	public static USDETH = new Unit('$', new BigNumber('388.43'), 2, 'ETH-USD', 'Dollar')
-	public static EURETH = new Unit('€', new BigNumber('329.22'), 2, 'ETH-EUR', 'Euro')
-	public static RUBETH = new Unit('₽', new BigNumber('38093'), 2, 'ETH-RUB', 'Rubel')
-	public static JPYETH = new Unit('¥', new BigNumber('38093'), 0, 'ETH-JPY', 'Yen')
-	public static GBPETH = new Unit('£', new BigNumber('368.5'), 2, 'ETH-GBP', 'Pound')
-	public static AUDETH = new Unit('A$', new BigNumber('683.65'), 2, 'ETH-AUD', 'Australian Dollar')
-	public static CADETH = new Unit('C$', new BigNumber('651.02'), 2, 'ETH-CAD', 'Canadian Dollar')
-	public static CHFETH = new Unit('CHF', new BigNumber('455.55'), 2, 'ETH-CHF', 'Swiss Franc')
-	public static MXNETH = new Unit('MXN', new BigNumber('455.55'), 2, 'ETH-MXN', 'Mexican Peso')
-	public static ZARETH = new Unit('R', new BigNumber('455.55'), 2, 'ETH-ZAR', 'South African Rand')
-	public static CNYETH = new Unit('元', new BigNumber('455.55'), 2, 'ETH-CNY', 'Renminbi')
-	public static HKDETH = new Unit('HK$', new BigNumber('455.55'), 2, 'ETH-HKD', 'Hong Kong Dollar')
-	public static NZDETH = new Unit('NZ$', new BigNumber('455.55'), 2, 'ETH-NZD', 'New Zealand Dollar')
-	public static BTCETH = new Unit('₿', new BigNumber('455.55'), 6, 'ETH-BTC', 'Bitcoin') // coinbase endpoit: invalid currency :/ workaroung in unit converter
+	public static XDAI = new Unit('DAI', new BigNumber('1'), 4, 'XXX-DAI', 'xDAI')
+	public static GNO = new Unit('GNO', new BigNumber('0.03125'), 5, 'XXX-GNO', 'GNO')
+	public static MGNO = new Unit('mGNO', new BigNumber('1'), 5, 'XXX-GNO', 'mGNO')
+
+	public static USDETH = new Unit('$', new BigNumber('1'), 2, 'XXX-USD', 'Dollar')
+	public static EURETH = new Unit('€', new BigNumber('1'), 2, 'XXX-EUR', 'Euro')
+	public static RUBETH = new Unit('₽', new BigNumber('1'), 2, 'XXX-RUB', 'Rubel')
+	public static JPYETH = new Unit('¥', new BigNumber('1'), 0, 'XXX-JPY', 'Yen')
+	public static GBPETH = new Unit('£', new BigNumber('1'), 2, 'XXX-GBP', 'Pound')
+	public static AUDETH = new Unit('A$', new BigNumber('1'), 2, 'XXX-AUD', 'Australian Dollar')
+	public static CADETH = new Unit('C$', new BigNumber('1'), 2, 'XXX-CAD', 'Canadian Dollar')
+	public static CHFETH = new Unit('CHF', new BigNumber('1'), 2, 'XXX-CHF', 'Swiss Franc')
+	public static MXNETH = new Unit('MXN', new BigNumber('1'), 2, 'XXX-MXN', 'Mexican Peso')
+	public static ZARETH = new Unit('R', new BigNumber('1'), 2, 'XXX-ZAR', 'South African Rand')
+	public static CNYETH = new Unit('元', new BigNumber('1'), 2, 'XXX-CNY', 'Renminbi')
+	public static HKDETH = new Unit('HK$', new BigNumber('1'), 2, 'XXX-HKD', 'Hong Kong Dollar')
+	public static NZDETH = new Unit('NZ$', new BigNumber('1'), 2, 'XXX-NZD', 'New Zealand Dollar')
+	public static BTCETH = new Unit('₿', new BigNumber('1'), 6, 'XXX-BTC', 'Bitcoin')
 
 	private constructor(symbol: string, value: BigNumber, rounding = 2, coinbaseSpot = null, settingsName = null) {
 		this.display = symbol
@@ -62,10 +67,25 @@ export default class Unit {
 		this.settingName = settingsName
 	}
 
+	public toString(): string {
+		return (
+			this.value.toString() +
+			' ' +
+			this.display +
+			' (rounding: ' +
+			this.rounding +
+			', coinbaseSpot: ' +
+			this.coinbaseSpot +
+			', settingName: ' +
+			this.settingName +
+			')'
+		)
+	}
+
 	readonly display: string
 	value: BigNumber
 	readonly rounding: number
-	readonly coinbaseSpot: string
+	coinbaseSpot: string
 	readonly settingName: string
 }
 
@@ -84,6 +104,9 @@ export const MAPPING = new Map([
 	['RPL_NAKED', Unit.RPL_NAKED],
 	['NO_CURRENCY', Unit.NO_CURRENCY],
 	['RETH', Unit.RETH],
+	['GNO', Unit.GNO],
+	['mGNO', Unit.MGNO],
+	['xDAI', Unit.XDAI],
 
 	['RUBLE', Unit.RUBETH],
 	['YEN', Unit.JPYETH],

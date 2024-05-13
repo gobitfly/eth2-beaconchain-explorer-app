@@ -133,7 +133,7 @@ export class ValidatorSyncUtils {
 	}
 
 	private async deleteUp(): Promise<boolean> {
-		const storageKey = await this.validator.getStorageKey()
+		const storageKey = this.validator.getStorageKey()
 		const deletedSet = await this.validator.getDeletedSet(storageKey)
 
 		console.log('delete queue', deletedSet)
@@ -171,7 +171,7 @@ export class ValidatorSyncUtils {
 	private async syncUp(syncNotificationsForNewValidators: () => void) {
 		console.log('[SYNC] syncing up')
 
-		const storageKey = await this.validator.getStorageKey()
+		const storageKey = this.validator.getStorageKey()
 		const current = await this.validator.getMap(storageKey)
 
 		const syncUpList: string[] = []
@@ -195,7 +195,7 @@ export class ValidatorSyncUtils {
 	}
 
 	private async syncRemoteRemovals(myRemotes: MyValidatorResponse[]) {
-		const storageKey = await this.validator.getStorageKey()
+		const storageKey = this.validator.getStorageKey()
 		const current = await this.validator.getMap(storageKey)
 
 		const existsSynced: Set<string> = new Set<string>()

@@ -26,7 +26,9 @@
 			</ion-button>
 		</ion-buttons>
 		<ion-buttons slot="end">
-			<ion-button (click)="switchCurrencyPipe()" *ngIf="(unit.pref != 'ETHER' && unit.pref != 'FINNEY') || classReference.currencyPipe != null">
+			<ion-button
+				(click)="unit.switchCurrencyPipe()"
+				*ngIf="(unit.pref.Cons.value != 'ETHER' && unit.pref.Cons.value != 'FINNEY') || classReference.currencyPipe.Cons != null">
 				<ion-icon size="small" name="swap-vertical-outline"></ion-icon>
 			</ion-button>
 		</ion-buttons>
@@ -36,13 +38,14 @@
 
 	<ion-toolbar [style.--background]="selectMode ? 'var(--ion-color-primary)' : 'var(--ion-toolbar-background)'">
 		<ion-searchbar
-			*ngIf="!selectMode"
+			#searchbarRef
+			[class.hidden]="selectMode"
 			showCancelButton="focus"
 			enterkeyhint="search"
-			(search)="searchEvent($event)"
+			(ionChange)="searchEvent($event)"
 			(ionClear)="cancelSearch()"
 			(ionCancel)="cancelSearch()"
-			placeholder="Public Key / Index / ETH Address"
+			placeholder="Public Key / Index / Address / Cred"
 			animated>
 		</ion-searchbar>
 
@@ -51,7 +54,7 @@
 	</ion-toolbar>
 	<app-offline *ngIf="!api.connectionStateOK"></app-offline>
 
-	<ion-item *ngIf="dataSource && !loading && initialized" class="top-bar" @fadeIn>
+	<ion-item *ngIf="dataSource && (!loading || initialized)" class="top-bar" @fadeIn>
 		<ion-label *ngIf="searchResultMode">Search Results</ion-label>
 		<ion-label *ngIf="!searchResultMode">My Validators</ion-label>
 		<ion-icon
@@ -99,16 +102,21 @@
 	<div class="nothingfound" *ngIf="dataSource && !dataSource.hasItems() && searchResultMode && !loading">
 		<ion-icon name="telescope-outline"></ion-icon>
 		<h2>Nothing found</h2>
-		<ion-label>We couldn't find the validators you are looking for. Try searching by Index, Public Key or ETH address.</ion-label>
+		<ion-label
+			>We couldn't find the validators you are looking for. Try searching by index, public key, deposit / withdrawal address or withdrawal
+			credential.</ion-label
+		>
 	</div>
 
 	<div class="nothingfound" *ngIf="dataSource && !dataSource.hasItems() && !searchResultMode && !loading && initialized">
 		<ion-icon name="arrow-up-circle-outline"></ion-icon>
 		<h2>Add Validators</h2>
-		<ion-label> You can add your validators by searching for a public key, validator index or your ETH address. </ion-label>
+		<ion-label>
+			You can add your validators by searching for a public key, validator index, your deposit / withdrawal address or withdrawal credential.
+		</ion-label>
 	</div>
 
-	<div id="container" *ngIf="loading" class="fadein fadeout">
+	<div id="container" *ngIf="loading && !initialized" class="fadein fadeout">
 		<div class="center">
 			<ion-spinner class="status-icon loading-spinner"></ion-spinner>
 		</div>

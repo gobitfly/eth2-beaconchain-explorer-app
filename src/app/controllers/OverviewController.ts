@@ -18,12 +18,14 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
+import { EpochResponse, ProposalLuckResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
 import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
 import BigNumber from 'bignumber.js'
 import { getValidatorQueryString, ValidatorState, Validator } from '../utils/ValidatorUtils'
 import { formatDate } from '@angular/common'
 import { SyncCommitteesStatistics, SyncCommitteesStatisticsResponse } from '../requests/requests'
+import { UnitconvService } from '../services/unitconv.service'
+import { ApiNetwork } from '../models/StorageTypes'
 
 export type OverviewData = {
 	overallBalance: BigNumber
@@ -43,20 +45,20 @@ export type OverviewData = {
 	worstTopPercentage: number
 	displayAttrEffectiveness: boolean
 	attrEffectiveness: number
-
+	proposalLuckResponse: ProposalLuckResponse
 	dashboardState: DashboardStatus
 	lazyLoadChart: boolean
 	lazyChartValidators: string
 	foreignValidator: boolean
 	foreignValidatorItem?: Validator
 	foreignValidatorWithdrawalCredsAre0x01: boolean
-	apr: number
 	effectiveBalance: BigNumber
 	currentEpoch: EpochResponse
 	rocketpool: Rocketpool
 	currentSyncCommittee: SyncCommitteeResponse
 	nextSyncCommittee: SyncCommitteeResponse
 	syncCommitteesStats: SyncCommitteesStatistics
+	proposalLuck: ProposalLuckResponse
 	withdrawalsEnabledForAll: boolean
 }
 
@@ -66,7 +68,9 @@ export type Performance = {
 	performance7d: BigNumber
 	performance365d: BigNumber
 	total: BigNumber
-	apr: number
+	apr7d: number
+	apr31d: number
+	apr365d: number
 }
 
 export type Rocketpool = {
@@ -122,23 +126,36 @@ export type Description = {
 const VALIDATOR_32ETH = new BigNumber(32000000000)
 
 export default class OverviewController {
-	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280) {}
+	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280, private unit: UnitconvService = null) {}
 
-	public processDashboard(validators: Validator[], currentEpoch: EpochResponse, syncCommitteesStatsResponse = null) {
-		return this.process(validators, currentEpoch, false, syncCommitteesStatsResponse)
+	public processDashboard(
+		validators: Validator[],
+		currentEpoch: EpochResponse,
+		syncCommitteesStatsResponse = null,
+		proposalLuckResponse: ProposalLuckResponse = null,
+		network: ApiNetwork
+	) {
+		return this.process(validators, currentEpoch, false, syncCommitteesStatsResponse, proposalLuckResponse, network)
 	}
 
-	public processDetail(validators: Validator[], currentEpoch: EpochResponse) {
-		return this.process(validators, currentEpoch, true, null)
+	public processDetail(validators: Validator[], currentEpoch: EpochResponse, network: ApiNetwork) {
+		return this.process(validators, currentEpoch, true, null, null, network)
 	}
 
-	private process(validators: Validator[], currentEpoch: EpochResponse, foreignValidator = false, syncCommitteesStatsResponse = null): OverviewData {
+	private process(
+		validators: Validator[],
+		currentEpoch: EpochResponse,
+		foreignValidator = false,
+		syncCommitteesStatsResponse = null,
+		proposalLuckResponse: ProposalLuckResponse = null,
+		network: ApiNetwork
+	): OverviewData {
 		if (!validators || validators.length <= 0 || currentEpoch == null) return null
 
 		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
 		const validatorDepositActive = sumBigInt(validators, (cur) => {
 			if (cur.data.activationepoch <= currentEpoch.epoch) {
-				if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH
+				if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 
 				let nodeDeposit
 				if (cur.rocketpool.node_deposit_balance) {
@@ -146,15 +163,11 @@ export default class OverviewController {
 				} else {
 					nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
 				}
-				return nodeDeposit
+				return nodeDeposit.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 			} else {
 				return new BigNumber(0)
 			}
 		})
-
-		const aprPerformance31dExecution = sumBigInt(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance31d.toString())
-		)
 
 		const overallBalance = this.sumBigIntBalanceRP(validators, (cur) => new BigNumber(cur.data.balance))
 		const validatorCount = validators.length
@@ -163,16 +176,36 @@ export default class OverviewController {
 
 		const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive)
 
-		const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive, aprPerformance31dExecution)
+		const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive)
+
+		const smoothingPoolClaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
+			true,
+			validators,
+			(cur) => cur.rocketpool.claimed_smoothing_pool,
+			(cur) => cur.execshare
+		).dividedBy(new BigNumber('1e9'))
+
+		const smoothingPoolUnclaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
+			true,
+			validators,
+			(cur) => cur.rocketpool.unclaimed_smoothing_pool,
+			(cur) => cur.execshare
+		).dividedBy(new BigNumber('1e9'))
 
 		const combinedPerf = {
-			performance1d: consensusPerf.performance1d.plus(executionPerf.performance1d),
-			performance31d: consensusPerf.performance31d.plus(executionPerf.performance31d),
-			performance7d: consensusPerf.performance7d.plus(executionPerf.performance7d),
-			performance365d: consensusPerf.performance365d.plus(executionPerf.performance365d),
-			apr: this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution.plus(consensusPerf.performance31d)),
-			total: consensusPerf.total.plus(executionPerf.total),
-		}
+			performance1d: consensusPerf.performance1d.plus(this.unit.convertELtoCL(executionPerf.performance1d)),
+			performance31d: consensusPerf.performance31d.plus(this.unit.convertELtoCL(executionPerf.performance31d)),
+			performance7d: consensusPerf.performance7d.plus(this.unit.convertELtoCL(executionPerf.performance7d)),
+			performance365d: consensusPerf.performance365d.plus(this.unit.convertELtoCL(executionPerf.performance365d)),
+			apr31d: this.getAPRFrom(31, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance31d).plus(consensusPerf.performance31d)),
+			apr7d: this.getAPRFrom(7, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance7d).plus(consensusPerf.performance7d)),
+			apr365d: this.getAPRFrom(
+				365,
+				validatorDepositActive,
+				this.unit.convertELtoCL(executionPerf.performance365d).plus(consensusPerf.performance365d)
+			),
+			total: consensusPerf.total.plus(this.unit.convertELtoCL(executionPerf.total)).plus(smoothingPoolClaimed).plus(smoothingPoolUnclaimed),
+		} as Performance
 
 		let attrEffectiveness = 0
 		let displayAttrEffectiveness = false
@@ -234,7 +267,7 @@ export default class OverviewController {
 			consensusPerformance: consensusPerf,
 			executionPerformance: executionPerf,
 			combinedPerformance: combinedPerf,
-			dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator),
+			dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator, network),
 			lazyLoadChart: true,
 			lazyChartValidators: getValidatorQueryString(validators, 2000, this.userMaxValidators - 1),
 			foreignValidator: foreignValidator,
@@ -242,10 +275,10 @@ export default class OverviewController {
 			foreignValidatorWithdrawalCredsAre0x01: foreignWCAre0x01,
 			effectiveBalance: effectiveBalance,
 			currentEpoch: currentEpoch,
-			apr: consensusPerf.apr,
 			currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
 			nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
-			syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse),
+			syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse, network),
+			proposalLuckResponse: proposalLuckResponse,
 			withdrawalsEnabledForAll:
 				validators.filter((cur) => (cur.data.withdrawalcredentials.startsWith('0x01') ? true : false)).length == validatorCount,
 			rocketpool: {
@@ -276,18 +309,8 @@ export default class OverviewController {
 				fee: feeAvg,
 				status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
 				depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
-				smoothingPoolClaimed: this.sumRocketpoolSmoothingBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.claimed_smoothing_pool,
-					(cur) => cur.execshare
-				),
-				smoothingPoolUnclaimed: this.sumRocketpoolSmoothingBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.unclaimed_smoothing_pool,
-					(cur) => cur.execshare
-				),
+				smoothingPoolClaimed: smoothingPoolClaimed,
+				smoothingPoolUnclaimed: smoothingPoolUnclaimed,
 				rplUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(
 					true,
 					validators,
@@ -309,31 +332,42 @@ export default class OverviewController {
 		} as OverviewData
 	}
 
-	private getExecutionPerformance(validators: Validator[], validatorDepositActive: BigNumber, aprPerformance31dExecution: BigNumber) {
+	private getExecutionPerformance(validators: Validator[], validatorDepositActive: BigNumber) {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance1d.toString()).multipliedBy(
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance1d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
 			)
 		)
 		const performance31d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance31d.toString()).multipliedBy(
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance31d.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
 			)
 		)
 		const performance7d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (cur) => cur.execution.performance7d.toString()).multipliedBy(
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance7d.toString()).multipliedBy(
+				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
+			)
+		)
+		const performance365d = this.sumBigIntPerformanceRP(validators, (cur) =>
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance365d.toString()).multipliedBy(
+				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
+			)
+		)
+		const total = this.sumBigIntPerformanceRP(validators, (cur) =>
+			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performanceTotal.toString()).multipliedBy(
 				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
 			)
 		)
 
-		const aprExecution = this.getAPRFromMonth(validatorDepositActive, aprPerformance31dExecution) // todo
 		return {
 			performance1d: performance1d,
 			performance31d: performance31d,
 			performance7d: performance7d,
-			performance365d: new BigNumber(0), // not yet implemented
-			apr: aprExecution,
-			total: new BigNumber(0), // not yet implemented
+			performance365d: performance365d,
+			apr31d: this.getAPRFrom(31, validatorDepositActive, performance31d),
+			apr7d: this.getAPRFrom(7, validatorDepositActive, performance7d),
+			apr365d: this.getAPRFrom(365, validatorDepositActive, performance365d),
+			total: total,
 		}
 	}
 
@@ -345,7 +379,7 @@ export default class OverviewController {
 		return new BigNumber(0)
 	}
 
-	private getConsensusPerformance(validators: Validator[], validatorDepositActive: BigNumber) {
+	private getConsensusPerformance(validators: Validator[], validatorDepositActive: BigNumber): Performance {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
 			new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 		)
@@ -366,14 +400,14 @@ export default class OverviewController {
 			}
 		})
 
-		const aprConsensus = this.getAPRFromMonth(validatorDepositActive, performance31d)
-
 		return {
 			performance1d: performance1d,
 			performance31d: performance31d,
 			performance7d: performance7d,
 			performance365d: performance365d,
-			apr: aprConsensus,
+			apr31d: this.getAPRFrom(31, validatorDepositActive, performance31d),
+			apr7d: this.getAPRFrom(7, validatorDepositActive, performance7d),
+			apr365d: this.getAPRFrom(365, validatorDepositActive, performance365d),
 			total: total,
 		}
 	}
@@ -535,11 +569,15 @@ export default class OverviewController {
 		})
 	}
 
-	private getAPRFromMonth(validatorDepositActive: BigNumber, performance: BigNumber): number {
-		return new BigNumber(performance.toString()).multipliedBy('1177').dividedBy(validatorDepositActive).decimalPlaces(1).toNumber()
+	private getAPRFrom(days: number, validatorDepositActive: BigNumber, performance: BigNumber): number {
+		return new BigNumber(performance.toString())
+			.multipliedBy(36500 / days)
+			.dividedBy(validatorDepositActive)
+			.decimalPlaces(1)
+			.toNumber()
 	}
 
-	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator): DashboardStatus {
+	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator, network: ApiNetwork): DashboardStatus {
 		// collect data
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
@@ -569,7 +607,7 @@ export default class OverviewController {
 		// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
 
 		// handle slashed validators
-		this.updateStateSlashed(dashboardStatus, slashedCount, validatorCount, foreignValidator, slashedValidators[0]?.data, currentEpoch)
+		this.updateStateSlashed(dashboardStatus, slashedCount, validatorCount, foreignValidator, slashedValidators[0]?.data, currentEpoch, network)
 
 		// handle offline validators
 		const offlineCount = validatorCount - activeValidatorCount - exitedValidatorsCount - slashedCount - awaitingCount - eligibilityCount
@@ -577,19 +615,27 @@ export default class OverviewController {
 
 		// handle awaiting activation validators
 		if (awaitingCount > 0) {
-			this.updateStateAwaiting(dashboardStatus, awaitingCount, validatorCount, foreignValidator, awaitingActivation[0].data, currentEpoch)
+			this.updateStateAwaiting(dashboardStatus, awaitingCount, validatorCount, foreignValidator, awaitingActivation[0].data, currentEpoch, network)
 		}
 
 		// handle eligable validators
 		if (eligibilityCount > 0) {
-			this.updateStateEligibility(dashboardStatus, eligibilityCount, validatorCount, foreignValidator, activationEligibility[0].data, currentEpoch)
+			this.updateStateEligibility(
+				dashboardStatus,
+				eligibilityCount,
+				validatorCount,
+				foreignValidator,
+				activationEligibility[0].data,
+				currentEpoch,
+				network
+			)
 		}
 
 		// handle exited validators
 		this.updateExitedState(dashboardStatus, exitedValidatorsCount, validatorCount, foreignValidator)
 
 		// handle ok state, always call last
-		this.updateStateOk(dashboardStatus, activeValidatorCount, validatorCount, foreignValidator, activeValidators[0]?.data, currentEpoch)
+		this.updateStateOk(dashboardStatus, activeValidatorCount, validatorCount, foreignValidator, activeValidators[0]?.data, currentEpoch, network)
 
 		if (dashboardStatus.state == StateType.mixed) {
 			// remove extended description if more than one state is shown
@@ -604,12 +650,12 @@ export default class OverviewController {
 		return foreignValidator ? foreignText : myText
 	}
 
-	private getExitingDescription(validatorResp: ValidatorResponse, currentEpoch: EpochResponse): Description {
+	private getExitingDescription(validatorResp: ValidatorResponse, currentEpoch: EpochResponse, network: ApiNetwork): Description {
 		if (!validatorResp.exitepoch) return { extendedDescriptionPre: null, extendedDescription: null }
 
 		const exitDiff = validatorResp.exitepoch - currentEpoch.epoch
 		const isExiting = exitDiff >= 0 && exitDiff < 6480 // ~ 1 month
-		const exitingDate = isExiting ? this.getEpochDate(validatorResp.exitepoch, currentEpoch) : null
+		const exitingDate = isExiting ? this.getEpochDate(validatorResp.exitepoch, currentEpoch, network) : null
 
 		return {
 			extendedDescriptionPre: isExiting ? 'Exiting on ' : null,
@@ -631,7 +677,8 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		validatorResp: ValidatorResponse,
-		currentEpoch: EpochResponse
+		currentEpoch: EpochResponse,
+		network: ApiNetwork
 	) {
 		if (slashedCount == 0) {
 			return
@@ -640,7 +687,7 @@ export default class OverviewController {
 		if (dashboardStatus.state == StateType.none) {
 			dashboardStatus.icon = 'alert-circle-outline'
 			dashboardStatus.iconCss = 'err'
-			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
+			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch, network)
 			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
 			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
 			dashboardStatus.state = StateType.slashed
@@ -662,14 +709,15 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		awaitingActivation: ValidatorResponse,
-		currentEpoch: EpochResponse
+		currentEpoch: EpochResponse,
+		network: ApiNetwork
 	) {
 		if (awaitingCount == 0) {
 			return
 		}
 
 		if (dashboardStatus.state == StateType.none) {
-			const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, currentEpoch)
+			const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, currentEpoch, network)
 
 			dashboardStatus.icon = 'timer-outline'
 			dashboardStatus.iconCss = 'waiting'
@@ -696,13 +744,14 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		eligbleState: ValidatorResponse,
-		currentEpoch: EpochResponse
+		currentEpoch: EpochResponse,
+		network: ApiNetwork
 	) {
 		if (eligibilityCount == 0) {
 			return
 		}
 
-		const estEta = this.getEpochDate(eligbleState.activationeligibilityepoch, currentEpoch)
+		const estEta = this.getEpochDate(eligbleState.activationeligibilityepoch, currentEpoch, network)
 
 		if (dashboardStatus.state == StateType.none) {
 			dashboardStatus.icon = 'timer-outline'
@@ -776,7 +825,8 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		validatorResp: ValidatorResponse,
-		currentEpoch: EpochResponse
+		currentEpoch: EpochResponse,
+		network: ApiNetwork
 	) {
 		if (dashboardStatus.state != StateType.mixed && dashboardStatus.state != StateType.none) {
 			return
@@ -790,14 +840,14 @@ export default class OverviewController {
 				highlight: true,
 			})
 
-			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch)
+			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch, network)
 			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
 			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
 			dashboardStatus.state = StateType.online
 		}
 	}
 
-	private getEpochDate(activationEpoch: number, currentEpoch: EpochResponse) {
+	private getEpochDate(activationEpoch: number, currentEpoch: EpochResponse, network: ApiNetwork) {
 		try {
 			const diff = activationEpoch - currentEpoch.epoch
 			if (diff <= 0) {
@@ -807,7 +857,7 @@ export default class OverviewController {
 
 			const date = new Date(currentEpoch.lastCachedTimestamp)
 
-			const inEpochOffset = (32 - currentEpoch.scheduledblocks) * 12 // block time 12s
+			const inEpochOffset = (network.slotPerEpoch - currentEpoch.scheduledblocks) * network.slotsTime
 
 			date.setSeconds(diff * 6.4 * 60 - inEpochOffset)
 
@@ -855,15 +905,15 @@ export default class OverviewController {
 		})
 	}
 
-	private calculateSyncCommitteeStats(stats: SyncCommitteesStatisticsResponse): SyncCommitteesStatistics {
+	private calculateSyncCommitteeStats(stats: SyncCommitteesStatisticsResponse, network: ApiNetwork): SyncCommitteesStatistics {
 		if (stats) {
 			// if no slots where expected yet, don't show any statistic as either no validator is subscribed or they have not been active in the selected timeframe
 			if (stats.expectedSlots > 0) {
 				const slotsTotal = stats.participatedSlots + stats.missedSlots
-				const slotsPerSyncPeriod = 32 * 256
+				const slotsPerSyncPeriod = network.slotPerEpoch * network.epochsPerSyncPeriod
 				const r: SyncCommitteesStatistics = {
-					committeesParticipated: Math.ceil(slotsTotal / 32 / 256),
-					committeesExpected: Math.round((stats.expectedSlots * 100) / 32 / 256) / 100,
+					committeesParticipated: Math.ceil(slotsTotal / network.slotPerEpoch / network.epochsPerSyncPeriod),
+					committeesExpected: Math.round((stats.expectedSlots * 100) / network.slotPerEpoch / network.epochsPerSyncPeriod) / 100,
 					slotsPerSyncCommittee: slotsPerSyncPeriod,
 					slotsLeftInSyncCommittee: slotsPerSyncPeriod - stats.scheduledSlots,
 					slotsParticipated: stats.participatedSlots,

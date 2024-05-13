@@ -4,7 +4,7 @@ import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils'
 import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page'
 import { Toast } from '@capacitor/toast'
 import { Clients } from '../../utils/ClientUpdateUtils'
-import { DevModeEnabled } from 'src/app/services/api.service'
+import { DevModeEnabled } from 'src/app/services/storage.service'
 
 @Component({
 	selector: 'app-dev',
@@ -31,11 +31,17 @@ export class DevPage extends Tab3Page implements OnInit {
 
 	// --- Development methods ---
 
-	forceTokenRefresh() {
-		this.api.refreshToken()
-		Toast.show({
-			text: 'Token refreshed',
-		})
+	async forceTokenRefresh() {
+		const result = await this.api.refreshToken()
+		if (result) {
+			Toast.show({
+				text: 'Token refreshed',
+			})
+		} else {
+			Toast.show({
+				text: 'Token refresh failed :(',
+			})
+		}
 	}
 
 	clearApiCache() {

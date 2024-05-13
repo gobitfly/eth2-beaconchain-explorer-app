@@ -96,7 +96,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 	async ngOnInit() {
 		this.selectionTimeFrame = this.timeframe
 		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(async () => {
+		this.backbuttonSubscription = event.subscribe(() => {
 			this.modalCtrl.dismiss()
 		})
 

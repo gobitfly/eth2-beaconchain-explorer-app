@@ -24,6 +24,8 @@ import { ModalController } from '@ionic/angular'
 import OverviewController, { OverviewData } from '../../controllers/OverviewController'
 import { fromEvent, Subscription } from 'rxjs'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
+import { UnitconvService } from 'src/app/services/unitconv.service'
+import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-validatordetail',
@@ -44,7 +46,13 @@ export class ValidatordetailPage implements OnInit {
 
 	scrolling = false
 
-	constructor(private validatorUtils: ValidatorUtils, private modalCtrl: ModalController, private merchant: MerchantUtils) {}
+	constructor(
+		private validatorUtils: ValidatorUtils,
+		private modalCtrl: ModalController,
+		private merchant: MerchantUtils,
+		private unit: UnitconvService,
+		private api: ApiService
+	) {}
 
 	setInput(validator: Validator) {
 		this.item = validator
@@ -52,7 +60,7 @@ export class ValidatordetailPage implements OnInit {
 
 	ngOnInit() {
 		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(async () => {
+		this.backbuttonSubscription = event.subscribe(() => {
 			this.modalCtrl.dismiss()
 		})
 		this.updateDetails(this.item)
@@ -87,8 +95,8 @@ export class ValidatordetailPage implements OnInit {
 		this.name = getDisplayName(item)
 
 		const epoch = await this.validatorUtils.getRemoteCurrentEpoch()
-		const overviewController = new OverviewController(null, await this.merchant.getCurrentPlanMaxValidator())
-		this.data = overviewController.processDetail([item], epoch)
+		const overviewController = new OverviewController(null, await this.merchant.getCurrentPlanMaxValidator(), this.unit)
+		this.data = overviewController.processDetail([item], epoch, this.api.getNetwork())
 	}
 
 	tag() {

@@ -96,14 +96,20 @@ export class MerchantUtils {
 
 	currentPlan = PRODUCT_STANDARD // use getCurrentPlanConfirmed instead
 
+	purchaseIntent = '' // temp workaround until new api is live
+
 	constructor(private alertService: AlertService, private api: ApiService, private platform: Platform, private storage: StorageService) {
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
-			console.log('merchant is not supported on this platform')
+			console.info('merchant is not supported on this platform')
 			return
 		}
 
+		this.init()
+	}
+
+	private async init() {
 		try {
-			this.initProducts()
+			await this.initProducts()
 			this.initCustomValidator()
 			this.setupListeners()
 		} catch (e) {
@@ -120,7 +126,7 @@ export class MerchantUtils {
 			product: CdvPurchase.Validator.Request.Body,
 			callback: CdvPurchase.Callback<CdvPurchase.Validator.Response.Payload>
 		) => {
-			if (this.restorePurchase && product.id != 'in.beaconcha.mobile') {
+			if (this.restorePurchase) {
 				this.restorePurchase = false
 				await this.confirmPurchaseOnRemote(product)
 			}
@@ -144,13 +150,13 @@ export class MerchantUtils {
 	}
 
 	async refreshToken() {
-		const refreshSuccess = (await this.api.refreshToken()) != null
+		let refreshSuccess = (await this.api.refreshToken()) != null
 		if (!refreshSuccess) {
 			console.log('refreshing token after purchase failed, scheduling retry')
 			const loading = await this.alertService.presentLoading('This can take a minute')
 			loading.present()
 			await this.sleep(35000)
-			const refreshSuccess = (await this.api.refreshToken()) != null
+			refreshSuccess = (await this.api.refreshToken()) != null
 			if (!refreshSuccess) {
 				this.alertService.showError(
 					'Purchase Error',
@@ -174,7 +180,7 @@ export class MerchantUtils {
 		return result
 	}
 
-	private initProducts() {
+	private async initProducts() {
 		let platform = CdvPurchase.Platform.GOOGLE_PLAY
 		if (this.platform.is('ios')) {
 			platform = CdvPurchase.Platform.APPLE_APPSTORE
@@ -189,7 +195,16 @@ export class MerchantUtils {
 			}
 		}
 
-		CdvPurchase.store.initialize()
+		await CdvPurchase.store.initialize()
+		for (let i = 0; i < CdvPurchase.store.products.length; i++) {
+			const lastIndex = CdvPurchase.store.products[i].offers[0].pricingPhases.length - 1
+			if (lastIndex < 0) {
+				console.warn('no pricingphases found', CdvPurchase.store.products[i])
+				continue
+			}
+
+			this.updatePrice(CdvPurchase.store.products[i].id, CdvPurchase.store.products[i].offers[0].pricingPhases[lastIndex].price)
+		}
 	}
 
 	private updatePrice(id, price) {
@@ -204,9 +219,6 @@ export class MerchantUtils {
 		// General query to all products
 		CdvPurchase.store
 			.when()
-			.productUpdated((p: CdvPurchase.Product) => {
-				this.updatePrice(p.id, p.pricing.price)
-			})
 			.approved((p: CdvPurchase.Transaction) => {
 				// Handle the product deliverable
 				this.currentPlan = p.products[0].id
@@ -228,19 +240,20 @@ export class MerchantUtils {
 		CdvPurchase.store.manageSubscriptions()
 	}
 
-	async restore() {
+	async restore(product: string) {
 		this.restorePurchase = true
-		CdvPurchase.store.restorePurchases()
+		this.purchaseIntent = product
+		await CdvPurchase.store.restorePurchases()
 	}
 
 	async purchase(product: string) {
 		const offer = CdvPurchase.store.get(product).getOffer()
 		const loading = await this.alertService.presentLoading('')
 		loading.present()
+		this.restorePurchase = true
+		this.purchaseIntent = product
 		CdvPurchase.store.order(offer).then(
-			async () => {
-				this.restorePurchase = true
-
+			() => {
 				setTimeout(() => {
 					loading.dismiss()
 				}, 1500)
@@ -255,15 +268,13 @@ export class MerchantUtils {
 	}
 
 	private async confirmPurchaseOnRemote(product) {
-		if (product.id == 'in.beaconcha.mobile') {
-			this.alertService.showError('Purchase Error', 'Invalid product, try again later or report this issue to us if persistent.', PURCHASEUTILS + 4)
-			return
-		}
-
 		const isIOS = this.platform.is('ios')
+
+		// TODO in the future replace isIOS ? product.transaction.appStoreReceipt : product.transaction.purchaseToken
+		// with isIOS ? product.id : product.transaction.purchaseToken
 		const purchaseData = {
 			currency: product.currency,
-			id: product.id,
+			id: isIOS ? this.purchaseIntent : product.id,
 			priceMicros: product.priceMicros,
 			valid: product.valid,
 			transaction: {
@@ -276,12 +287,12 @@ export class MerchantUtils {
 		const loading = await this.alertService.presentLoading('Confirming, this might take a couple seconds')
 		loading.present()
 
-		const result = await this.registerPurchaseOnRemote(purchaseData)
+		let result = await this.registerPurchaseOnRemote(purchaseData)
 		if (!result) {
 			console.log('registering receipt at remote failed, scheduling retry')
 
 			await this.sleep(35000)
-			const result = await this.registerPurchaseOnRemote(purchaseData)
+			result = await this.registerPurchaseOnRemote(purchaseData)
 			if (!result) {
 				this.alertService.showError(
 					'Purchase Error',
@@ -386,16 +397,16 @@ export class MerchantUtils {
 		const currentProduct = this.findProduct(currentPlan)
 		if (currentProduct == null) return 100
 
-		const notMainnet = await this.api.isNotMainnet()
+		const notMainnet = this.api.isNotEthereumMainnet()
 		if (notMainnet) return currentProduct.maxTestnetValidators
 		return currentProduct.maxValidators
 	}
 
-	async getHighestPackageValidator(): Promise<number> {
+	getHighestPackageValidator(): number {
 		const currentProduct = this.findProduct(MAX_PRODUCT)
 		if (currentProduct == null) return 100
 
-		const notMainnet = await this.api.isNotMainnet()
+		const notMainnet = this.api.isNotEthereumMainnet()
 		if (notMainnet) return currentProduct.maxTestnetValidators
 		return currentProduct.maxValidators
 	}
