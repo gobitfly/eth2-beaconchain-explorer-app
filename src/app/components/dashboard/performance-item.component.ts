@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2023 Bitfly GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,32 +17,23 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core'
-import { ModalController } from '@ionic/angular'
-import { fromEvent, Subscription } from 'rxjs'
+import { Component, Input } from '@angular/core'
+import { Performance } from 'src/app/controllers/OverviewController'
+import { Currency, UnitconvService } from 'src/app/services/unitconv.service'
 
 @Component({
-	selector: 'app-helppage',
-	templateUrl: './helppage.page.html',
-	styleUrls: ['./helppage.page.scss'],
+	selector: 'app-performance-item',
+	templateUrl: './performance-item.component.html',
+	styleUrls: ['./performance-item.component.scss'],
 })
-export class HelppagePage implements OnInit {
-	private backbuttonSubscription: Subscription
-
-	constructor(private modalCtrl: ModalController) {}
-
-	ngOnInit() {
-		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(() => {
-			this.modalCtrl.dismiss()
-		})
-	}
-
-	ngOnDestroy() {
-		this.backbuttonSubscription.unsubscribe()
-	}
-
-	closeModal() {
-		this.modalCtrl.dismiss()
-	}
+export class PerformanceItemComponent {
+	@Input() performanceData: Performance
+	@Input() unit: UnitconvService
+	@Input() targetCurrency: Currency
+	@Input() currency: string
+	@Input() todayTooltip: string
+	@Input() last7DaysTooltip: string
+	@Input() last31DaysTooltip: string
+	@Input() totalTooltip: string
+	@Input() aprTooltip: string
 }

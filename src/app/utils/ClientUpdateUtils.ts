@@ -119,6 +119,7 @@ export default class ClientUpdateUtils {
 	private oldClientInfoConverted = false
 	updates: Release[] = null
 	lastTry = 0
+	private locked = false
 
 	constructor(private api: ApiService, private storage: StorageService) {}
 
@@ -127,7 +128,7 @@ export default class ClientUpdateUtils {
 			return null
 		}
 
-		const client = Clients.find((client) => client.key == clientKey)
+		const client = Clients.find((c) => c.key == clientKey)
 		if (client == undefined) {
 			console.log('ClientInfo for', clientKey, 'not found')
 			return null
@@ -137,18 +138,48 @@ export default class ClientUpdateUtils {
 
 	async checkAllUpdates() {
 		if (this.lastTry + 10 * 60 * 1000 > Date.now()) return
-		this.updates = null
+		if (this.locked) return
+
+		this.locked = true
+		const promiseArray: Promise<Release>[] = []
 		for (let i = 0; i < Clients.length; i++) {
-			this.append(this.checkUpdateFor(await this.storage.getItem(Clients[i].storageKey)))
+			promiseArray.push(this.checkUpdateFor(await this.storage.getItem(Clients[i].storageKey)))
 		}
+
+		try {
+			const results = await Promise.all(promiseArray)
+			let changeFound = false
+			for (let i = 0; i < results.length; i++) {
+				if (results[i] && !this.contains(results[i])) {
+					changeFound = true
+					break
+				}
+			}
+
+			if (changeFound) {
+				this.updates = null
+				for (let i = 0; i < results.length; i++) {
+					if (results[i]) {
+						this.append(results[i])
+					}
+				}
+			}
+		} catch (error) {
+			console.error('An error occurred while checking for all updates:', error)
+		}
+		this.locked = false
 	}
 
 	async checkClientUpdate(clientKey: string) {
-		this.remove(clientKey)
-
 		const client = this.getClientInfo(clientKey)
-		if (client != null) {
-			this.append(this.checkUpdateFor(await this.storage.getItem(client.storageKey)))
+		if (client == null) {
+			return
+		}
+		const update = await this.checkUpdateFor(await this.storage.getItem(client.storageKey))
+
+		if (update && !this.contains(update)) {
+			this.remove(clientKey)
+			this.append(update)
 		}
 	}
 
@@ -156,8 +187,8 @@ export default class ClientUpdateUtils {
 		return (await this.getUpdateChannel()) == 'PRERELEASE'
 	}
 
-	private async append(info: Promise<null | false | Release>) {
-		const data = await info
+	private append(info: Release) {
+		const data = info
 		if (!data) return
 
 		if (this.updates == null) this.updates = [data]
@@ -255,7 +286,7 @@ export default class ClientUpdateUtils {
 	}
 
 	async dismissRelease(clientKey: string, id: string) {
-		this.storage.setObject(LOCAL_UPDATED_KEY + clientKey, { clientKey: clientKey, version: id })
+		await this.storage.setObject(LOCAL_UPDATED_KEY + clientKey, { clientKey: clientKey, version: id })
 	}
 
 	private async getLastClosedVersion(clientKey: string): Promise<LocalReleaseMark> {

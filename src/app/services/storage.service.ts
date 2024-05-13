@@ -18,10 +18,10 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core'
+import { Injectable, isDevMode } from '@angular/core'
 import { Plugins } from '@capacitor/core'
 import * as StorageTypes from '../models/StorageTypes'
-import { findConfigForKey } from '../utils/NetworkData'
+import { MAP, findConfigForKey } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
 import BigNumber from 'bignumber.js'
 import { Platform } from '@ionic/angular'
@@ -76,6 +76,13 @@ export class StorageService extends CacheModule {
 		return this.remove(AUTH_USER)
 	}
 
+	public async isDebugMode() {
+		const devMode = isDevMode()
+		if (devMode) return true
+		const permanentDevMode = (await this.getObject('dev_mode')) as DevModeEnabled
+		return permanentDevMode && permanentDevMode.enabled
+	}
+
 	async getNetworkPreferences(): Promise<StorageTypes.ApiNetwork> {
 		const result = await this.getObject(PREFERENCES)
 		if (!result) {
@@ -85,7 +92,7 @@ export class StorageService extends CacheModule {
 	}
 
 	async setNetworkPreferences(value: StorageTypes.ApiNetwork) {
-		return this.setObject(PREFERENCES, value)
+		return await this.setObject(PREFERENCES, value)
 	}
 
 	async loadPreferencesToggles(network: string): Promise<boolean> {
@@ -139,7 +146,7 @@ export class StorageService extends CacheModule {
 	}
 
 	async openLogSession(modalCtr, offset: number) {
-		let lastLogSession = parseInt(await window.localStorage.getItem('last_log_session'))
+		let lastLogSession = parseInt(window.localStorage.getItem('last_log_session'))
 		if (isNaN(lastLogSession)) lastLogSession = 0
 
 		const modal = await modalCtr.create({
@@ -158,8 +165,8 @@ export class StorageService extends CacheModule {
 
 	// --- Low level ---
 
-	async setObject(key: string, value: unknown) {
-		this.putCache(key, value)
+	async setObject(key: string, value: unknown, cache = true) {
+		if (cache) this.putCache(key, value)
 		await this.setItem(key, JSON.stringify(value, replacer), false)
 	}
 
@@ -189,16 +196,15 @@ export class StorageService extends CacheModule {
 	private reflectiOSStorage() {
 		try {
 			if (!this.platform.is('ios')) return
+			const reflectKeys = ['CapacitorStorage.prefered_unit', 'CapacitorStorage.network_preferences', 'CapacitorStorage.auth_user']
+			for (let i = 0; i < MAP.length; i++) {
+				if (MAP[i].key.indexOf('invalid') > -1) continue
+				if (MAP[i].key.indexOf('local') > -1) continue
+				reflectKeys.push('CapacitorStorage.validators_' + MAP[i].key)
+			}
+
 			StorageMirror.reflect({
-				keys: [
-					'CapacitorStorage.prefered_unit',
-					'CapacitorStorage.network_preferences',
-					'CapacitorStorage.validators_main',
-					'CapacitorStorage.validators_pyrmont',
-					'CapacitorStorage.validators_prater',
-					'CapacitorStorage.validators_staging',
-					'CapacitorStorage.auth_user',
-				],
+				keys: reflectKeys,
 			})
 		} catch (e) {
 			console.warn('StorageMirror exception', e)
@@ -235,7 +241,7 @@ export class StorageService extends CacheModule {
 	}
 }
 
-function replacer(key, value) {
+export function replacer(key, value) {
 	const originalObject = this[key]
 	if (originalObject instanceof Map) {
 		return {
@@ -270,4 +276,8 @@ export interface StoredTimestamp {
 
 export interface StoredShare {
 	share: number
+}
+
+export interface DevModeEnabled {
+	enabled: boolean
 }

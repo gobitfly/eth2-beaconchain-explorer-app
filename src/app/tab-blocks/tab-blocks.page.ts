@@ -44,14 +44,16 @@ export class TabBlocksPage implements OnInit {
 		})
 		this.validatorUtils.getAllValidatorsLocal().then((validators) => {
 			this.dataSource = new InfiniteScrollDataSource<BlockResponse>(this.blockUtils.getLimit(validators.length), async (offset: number) => {
-				let sleepTime = 1000
-				if (offset >= 50) {
-					sleepTime = 3500 // 20 req per minute => wait at least 3 seconds. Buffer for dashboard and sync stuff
-				} else if (offset >= 120) {
-					sleepTime = 4500
+				if (offset > 0) {
+					let sleepTime = 1000
+					if (offset >= 50) {
+						sleepTime = 3500 // 20 req per minute => wait at least 3 seconds. Buffer for dashboard and sync stuff
+					} else if (offset >= 120) {
+						sleepTime = 4500
+					}
+					this.loadMore = true
+					await sleep(sleepTime) // handling rate limit of some sorts
 				}
-				if (offset > 0) this.loadMore = true
-				await sleep(sleepTime) // handling rate limit of some sorts
 				const result = await this.blockUtils.getMyBlocks(offset)
 				this.loadMore = false
 				return result
@@ -92,22 +94,12 @@ export class TabBlocksPage implements OnInit {
 		return await modal.present()
 	}
 
-	async doRefresh(event) {
+	doRefresh(event) {
 		setTimeout(async () => {
 			this.virtualScroll.scrollToIndex(0)
 			await this.dataSource.reset()
 			event.target.complete()
 		}, 1500)
-	}
-
-	switchCurrencyPipe() {
-		if (this.unit.pref == 'ETHER') {
-			if (UnitconvService.currencyPipe == null) return
-			this.unit.pref = UnitconvService.currencyPipe
-		} else {
-			UnitconvService.currencyPipe = this.unit.pref
-			this.unit.pref = 'ETHER'
-		}
 	}
 
 	luckHelp() {

@@ -21,7 +21,6 @@
 import { Injectable } from '@angular/core'
 import { AlertController, LoadingController } from '@ionic/angular'
 
-export const SETTINGS_PAGE = 100
 export const VALIDATORUTILS = 140
 export const PURCHASEUTILS = 150
 

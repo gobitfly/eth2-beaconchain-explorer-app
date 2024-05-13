@@ -25,14 +25,27 @@ ion-segment-button {
 	text-transform: none !important;
 	--ripple-color: transparent !important;
 	//transition: color 0.15s ease;
-	font-size: 1.05em !important;
-	letter-spacing: normal !important;
+	font-family: 'Varela';
+	font-size: 0.75em;
+	--background-focused-opacity: 1;
 	opacity: 1 !important;
+}
+
+ion-segment-button.md::part(native) {
+	opacity: 0.7;
+}
+
+ion-segment {
+	background: var(--ion-background-color);
 }
 
 .segment-button-checked {
 	color: var(--segment-primary) !important;
 	font-weight: 600 !important;
+}
+
+.segment-button-checked.md::part(native) {
+	opacity: 1 !important;
 }
 
 .status ion-icon {
@@ -118,7 +131,15 @@ ion-segment-button {
 	padding-bottom: 6px !important;
 }
 
-ion-list {
+ion-list-header {
+	padding-left: 0px;
+	text-align: center;
+}
+ion-list-header ion-label {
+	font-size: 0.9rem;
+	font-weight: 600 !important;
+	font-family: 'Varela';
+	letter-spacing: 1.05px;
 }
 
 ion-item {
@@ -147,9 +168,6 @@ ion-item {
 .updates {
 	padding-top: 0px;
 	padding-bottom: 0px;
-}
-
-.first-item-group {
 }
 
 .status-container {

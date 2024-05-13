@@ -80,7 +80,7 @@ export class TabsPage {
 		}
 
 		const hasTheming = await this.merchant.hasPremiumTheming()
-		if (!hasTheming) {
+		if (!hasTheming && this.theme.currentThemeColor != 'gnosis') {
 			this.theme.resetTheming()
 		}
 	}

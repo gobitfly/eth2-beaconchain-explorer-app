@@ -21,7 +21,6 @@
 import { ApiService } from '../services/api.service'
 import { Injectable } from '@angular/core'
 import { BlockProducedByRequest, BlockResponse, DashboardRequest } from '../requests/requests'
-import { CacheModule } from './CacheModule'
 import BigNumber from 'bignumber.js'
 import { ValidatorUtils } from './ValidatorUtils'
 
@@ -33,10 +32,8 @@ const MONTH = 60 * 60 * 24 * 30
 @Injectable({
 	providedIn: 'root',
 })
-export class BlockUtils extends CacheModule {
-	constructor(public api: ApiService, public validatorUtils: ValidatorUtils) {
-		super()
-	}
+export class BlockUtils {
+	constructor(public api: ApiService, public validatorUtils: ValidatorUtils) {}
 
 	async getBlockRewardWithShare(block: BlockResponse): Promise<BigNumber> {
 		const proposer = block.posConsensus.proposerIndex
@@ -85,7 +82,7 @@ export class BlockUtils extends CacheModule {
 				luckPercentage: proposalLuckStats.proposal_luck,
 				timeFrameName: proposalLuckStats.time_frame_name,
 				userValidators: valis.length,
-				expectedBlocksPerMonth: MONTH / (proposalLuckStats.average_proposal_interval * 12),
+				expectedBlocksPerMonth: MONTH / (proposalLuckStats.average_proposal_interval * this.api.getNetwork().slotsTime),
 				nextBlockEstimate: proposalLuckStats.next_proposal_estimate_ts * 1000,
 			} as Luck
 		}

@@ -30,6 +30,7 @@ import { ClientupdateComponentModule } from '../../components/clientupdate/clien
 import { MessageComponentModule } from '../../components/message/message.module'
 import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
 import { AdComponentModule } from '../ad/ad.module'
+import { PerformanceItemComponentModule } from '../dashboard/performance-item.module'
 
 @NgModule({
 	imports: [
@@ -41,6 +42,7 @@ import { AdComponentModule } from '../ad/ad.module'
 		MessageComponentModule,
 		TooltipModule,
 		AdComponentModule,
+		PerformanceItemComponentModule,
 	],
 	declarations: [DashboardComponent],
 	exports: [DashboardComponent],

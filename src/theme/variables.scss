@@ -714,3 +714,24 @@ body.rocketpool.dark {
 
 	--x-toolbar-title-color: #fff;
 }
+
+body.gnosis {
+	--ion-color-primary: #3e6957;
+	--ion-color-primary-rgb: 62, 105, 87;
+	--ion-color-primary-contrast: #ffffff;
+	--ion-color-primary-contrast-rgb: 255, 255, 255;
+	--ion-color-primary-shade: #e97112;
+	--ion-color-primary-tint: #0e0b0a;
+
+	--ion-toolbar-background: #3e6957; //2f2e42
+	--x-alert-primary: #3e6957;
+	--ion-color-success: #3e6957;
+	--chart-default: #3e6957;
+	--x-update-messages-background: #4c816b;
+	--x-update-messages-background-selected: #4c816b;
+
+	--status-ok: white;
+	--status-warn: white;
+	--status-danger: white;
+	--status-secondary: white;
+}

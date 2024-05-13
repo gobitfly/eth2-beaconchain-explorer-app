@@ -18,14 +18,14 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export function highChartOptions(where) {
+export function highChartOptions(where, hostName) {
 	where.setOptions({
 		time: {
 			useUTC: false,
 		},
 		credits: {
 			enabled: true,
-			href: 'https://beaconcha.in',
+			href: 'https://' + hostName,
 			text: '',
 			style: {
 				color: 'var(--body-color)',

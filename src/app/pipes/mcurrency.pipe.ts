@@ -30,6 +30,12 @@ export class McurrencyPipe implements PipeTransform {
 
 	transform(value: BigNumber | number | string, ...args: unknown[]): BigNumber | string | number {
 		const displayAble = args.length == 2
-		return this.unit.convert(value, args[0] as string, args[1] as string, displayAble)
+		if (typeof args[1] == 'string') {
+			return this.unit.convertNonFiat(value, args[0] as string, args[1] as string, displayAble)
+		} else if (typeof args[1] == 'object' && this.unit.isCurrency(args[1])) {
+			return this.unit.convert(value, args[0] as string, args[1], displayAble)
+		} else {
+			console.warn('illegal usage of mcurrency pipe. Usage: value | mcurrency:from:to or value | mcurrency:from:currency')
+		}
 	}
 }

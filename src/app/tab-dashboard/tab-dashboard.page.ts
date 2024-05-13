@@ -92,14 +92,14 @@ export class Tab1Page {
 		this.scrolling = false
 	}
 
-	private async removeTooltips() {
+	private removeTooltips() {
 		const inputs = Array.from(document.getElementsByTagName('tooltip') as HTMLCollectionOf<HTMLElement>)
 		for (let i = 0; i < inputs.length; i++) {
 			inputs[i].style.display = 'none'
 		}
 	}
 
-	async ionViewWillEnter() {
+	ionViewWillEnter() {
 		if (this.lastRefreshTs + 6 * 60 > this.getUnixSeconds()) return
 
 		this.refresh()
@@ -120,13 +120,23 @@ export class Tab1Page {
 			console.warn('error getRemoteCurrentEpoch', error)
 			return null
 		})
-		const overviewController = new OverviewController(() => {
-			if (this.lastRefreshTs + 60 > this.getUnixSeconds()) return
-			this.api.invalidateCache()
-			this.refresh()
-		}, await this.merchant.getCurrentPlanMaxValidator())
+		const overviewController = new OverviewController(
+			() => {
+				if (this.lastRefreshTs + 60 > this.getUnixSeconds()) return
+				this.api.invalidateCache()
+				this.refresh()
+			},
+			await this.merchant.getCurrentPlanMaxValidator(),
+			this.unitConv
+		)
 
-		this.overallData = overviewController.processDashboard(validators, epoch, this.validatorUtils.syncCommitteesStatsResponse)
+		this.overallData = overviewController.processDashboard(
+			validators,
+			epoch,
+			this.validatorUtils.syncCommitteesStatsResponse,
+			this.validatorUtils.proposalLuckResponse,
+			this.api.getNetwork()
+		)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}
 

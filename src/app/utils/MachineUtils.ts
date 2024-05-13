@@ -104,8 +104,8 @@ export default class MachineUtils extends CacheModule {
 		const machineNames = this.getAllMachineNamesFrom(result)
 		console.log(LOGTAG + ' machine names', machineNames)
 
-		this.registerNewRemotesForSync(machineNames).then((result) => {
-			console.log(LOGTAG + ' registerNewRemotesForSync', result)
+		this.registerNewRemotesForSync(machineNames).then((remoteResult) => {
+			console.log(LOGTAG + ' registerNewRemotesForSync', remoteResult)
 		})
 
 		// Storing all machine names if

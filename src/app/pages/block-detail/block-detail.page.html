@@ -23,8 +23,8 @@
 			</div>
 
 			<div class="status-text" [ngStyle]="{'opacity': currentY | fadeoutpipe: 133 }">
-				<ion-label class="validator-count" (click)="switchCurrencyPipe()">
-					<strong> {{ producerReward | mcurrency: "WEI":unit.pref }} </strong>
+				<ion-label class="validator-count" (click)="unit.switchCurrencyPipe()">
+					<strong> {{ producerReward | mcurrency: "WEI":unit.pref.Exec }} </strong>
 				</ion-label>
 			</div>
 
@@ -51,14 +51,14 @@
 
 		<ion-item lines="none">
 			<ion-label class="stat-title"> Producer Reward </ion-label>
-			<ion-label class="value" [class]="block.producerReward| valuestyle:0" (click)="switchCurrencyPipe()">
-				{{ block.producerReward | mcurrency: "WEI":unit.pref }}
+			<ion-label class="value" [class]="block.producerReward| valuestyle:0" (click)="unit.switchCurrencyPipe()">
+				{{ block.producerReward | mcurrency: "WEI":unit.pref.Exec }}
 			</ion-label>
 		</ion-item>
 
 		<ion-item lines="none">
 			<ion-label class="stat-title"> Burned </ion-label>
-			<ion-label class="value negative-value" (click)="switchCurrencyPipe()"> {{ burned | mcurrency: "WEI":unit.pref }} </ion-label>
+			<ion-label class="value negative-value" (click)="unit.switchCurrencyPipe()"> {{ burned | mcurrency: "WEI":unit.pref.Exec }} </ion-label>
 		</ion-item>
 
 		<ion-item lines="none">

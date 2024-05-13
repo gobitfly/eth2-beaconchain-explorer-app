@@ -54,13 +54,13 @@ export default class ThemeUtils {
 
 	constructor(private storage: StorageService, private platform: Platform) {}
 
-	async init(splashScreenCallback: () => void) {
+	init(splashScreenCallback: () => void) {
 		this.lock = this.storage.getObject(STORAGE_KEY).then((preferenceDarkMode) => {
 			this.internalInit(preferenceDarkMode as StoredTheme)
 			setTimeout(() => {
 				splashScreenCallback()
 				this.applyColorInitially()
-			}, 200)
+			}, 10)
 			return preferenceDarkMode as StoredTheme
 		})
 	}

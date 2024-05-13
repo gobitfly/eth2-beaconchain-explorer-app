@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2023 Bitfly GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,32 +17,19 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core'
-import { ModalController } from '@ionic/angular'
-import { fromEvent, Subscription } from 'rxjs'
+import { NgModule } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
 
-@Component({
-	selector: 'app-helppage',
-	templateUrl: './helppage.page.html',
-	styleUrls: ['./helppage.page.scss'],
+import { IonicModule } from '@ionic/angular'
+
+import { PerformanceItemComponent } from './performance-item.component'
+import { PipesModule } from '../../pipes/pipes.module'
+import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
+
+@NgModule({
+	imports: [CommonModule, FormsModule, IonicModule, PipesModule, TooltipModule],
+	declarations: [PerformanceItemComponent],
+	exports: [PerformanceItemComponent],
 })
-export class HelppagePage implements OnInit {
-	private backbuttonSubscription: Subscription
-
-	constructor(private modalCtrl: ModalController) {}
-
-	ngOnInit() {
-		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(() => {
-			this.modalCtrl.dismiss()
-		})
-	}
-
-	ngOnDestroy() {
-		this.backbuttonSubscription.unsubscribe()
-	}
-
-	closeModal() {
-		this.modalCtrl.dismiss()
-	}
-}
+export class PerformanceItemComponentModule {}

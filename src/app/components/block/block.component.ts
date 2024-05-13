@@ -31,7 +31,7 @@ export class BlockComponent implements OnInit {
 	async ngOnChanges() {
 		this.imgData = this.getBlockies()
 		this.timestamp = this.block.timestamp * 1000
-		this.producerReward = await await this.blockUtils.getBlockRewardWithShare(this.block)
+		this.producerReward = await this.blockUtils.getBlockRewardWithShare(this.block)
 		this.resolvedName = null
 
 		this.feeRecipient = this.block.feeRecipient
@@ -47,7 +47,7 @@ export class BlockComponent implements OnInit {
 		}
 	}
 
-	async setInput(block: BlockResponse) {
+	setInput(block: BlockResponse) {
 		this.block = block
 		this.ngOnChanges()
 	}

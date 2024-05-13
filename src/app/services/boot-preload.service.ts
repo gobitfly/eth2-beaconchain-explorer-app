@@ -1,6 +1,5 @@
 /*
  *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,32 +17,24 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core'
-import { ModalController } from '@ionic/angular'
-import { fromEvent, Subscription } from 'rxjs'
+import { Injectable } from '@angular/core'
+import { ValidatorUtils } from '../utils/ValidatorUtils'
+import ClientUpdateUtils from '../utils/ClientUpdateUtils'
+import { BlockUtils } from '../utils/BlockUtils'
 
-@Component({
-	selector: 'app-helppage',
-	templateUrl: './helppage.page.html',
-	styleUrls: ['./helppage.page.scss'],
+@Injectable({
+	providedIn: 'root',
 })
-export class HelppagePage implements OnInit {
-	private backbuttonSubscription: Subscription
+export class BootPreloadService {
+	constructor(private validatorUtils: ValidatorUtils, private clientUpdateUtils: ClientUpdateUtils, private blockUtils: BlockUtils) {}
 
-	constructor(private modalCtrl: ModalController) {}
-
-	ngOnInit() {
-		const event = fromEvent(document, 'backbutton')
-		this.backbuttonSubscription = event.subscribe(() => {
-			this.modalCtrl.dismiss()
-		})
-	}
-
-	ngOnDestroy() {
-		this.backbuttonSubscription.unsubscribe()
-	}
-
-	closeModal() {
-		this.modalCtrl.dismiss()
+	preload() {
+		try {
+			this.validatorUtils.getAllMyValidators()
+			this.clientUpdateUtils.checkAllUpdates()
+			this.blockUtils.getMyBlocks(0) // preload blocks
+		} catch (e) {
+			console.warn('can not preload', e)
+		}
 	}
 }

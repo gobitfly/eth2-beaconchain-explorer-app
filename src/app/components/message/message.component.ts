@@ -99,13 +99,13 @@ export class MessageComponent implements OnInit {
 				buttons: [
 					{
 						text: 'Do not show again',
-						handler: async () => {
+						handler: () => {
 							this.dismiss()
 						},
 					},
 					{
 						text: 'Decide Later',
-						handler: async () => {
+						handler: () => {
 							this.notDismissed = false
 						},
 					},
