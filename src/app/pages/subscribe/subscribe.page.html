@@ -20,15 +20,40 @@
 	</ion-list>
 
 	<div class="packages" *ngIf="merchant.PACKAGES.length > 1">
-		<div
-			*ngFor="let package of merchant.PACKAGES;"
-			class="package"
-			(click)="selectedPackage = package"
-			[class]="selectedPackage == package ? 'packages-selected' : ''">
-			<div class="slide-container package-inner">
-				<ion-label class="pkg-name">{{ package.name }}</ion-label>
-				<br />
-				<ion-label>{{ package.price }} / m</ion-label>
+		<ion-segment [(ngModel)]="renewalFrame" (ionChange)="renewalTimeframeChange()" value="monthly" mode="md">
+			<ion-segment-button value="monthly">
+				<ion-label>Monthly</ion-label>
+			</ion-segment-button>
+			<ion-segment-button value="yearly">
+				<ion-label>Yearly</ion-label>
+			</ion-segment-button>
+		</ion-segment>
+
+		<div *ngIf="renewalFrame == 'monthly'">
+			<div
+				*ngFor="let package of merchant.getMonthlyBilledPackages();"
+				class="package"
+				(click)="selectedPackage = package"
+				[class]="equalPackage(selectedPackage, package) ? 'packages-selected' : ''">
+				<div class="slide-container package-inner">
+					<ion-label class="pkg-name">{{ package.name }}</ion-label>
+					<br />
+					<ion-label style="font-size: medium;">{{ package.price }} / m </ion-label>
+					<br />
+					<ion-label style="font-size: small; opacity: 0.9;">{{ calculateYearlyPrice(package) }} / y</ion-label>
+				</div>
+			</div>
+		</div>
+		<div *ngIf="renewalFrame == 'yearly'">
+			<div *ngFor="let package of merchant.getYearlyBilledPackages();" class="package"
+				(click)="selectedPackage = package" [class]="equalPackage(selectedPackage, package) ? 'packages-selected' : ''">
+				<div class="slide-container package-inner">
+					<ion-label class="pkg-name">{{ package.name }}</ion-label>
+					<br />
+					<ion-label style="font-size: medium;">{{ calculateMonthlyPrice(package) }} / m </ion-label>
+					<br />
+					<ion-label style="font-size: small; opacity: 0.9;">{{ package.price }} / y</ion-label>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -99,7 +124,7 @@
 
 		<div>
 			<ion-button class="purchase-btn" (click)="purchase()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey"
-				>Subscribe for {{ selectedPackage.price }} / month</ion-button
+				>Subscribe for {{ selectedPackage.price }} / {{ getFrameShort(selectedPackage) }}</ion-button
 			>
 			<ion-button class="purchase-btn" *ngIf="activeUserPackageName == selectedPackage.purchaseKey" disabled>You own this package </ion-button>
 		</div>

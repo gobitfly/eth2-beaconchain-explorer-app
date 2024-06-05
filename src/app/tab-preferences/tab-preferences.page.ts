@@ -192,7 +192,7 @@ export class Tab3Page {
 	}
 
 	widgetSetupInfo() {
-		if (this.currentPlan == 'standard' || this.currentPlan == 'plankton') {
+		if (this.currentPlan == 'standard') {
 			this.openUpgrades()
 			return
 		}

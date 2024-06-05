@@ -29,7 +29,7 @@ import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from '../services/stor
 import { SplashScreen } from '@capacitor/splash-screen'
 
 export const PRODUCT_STANDARD = 'standard'
-const MAX_PRODUCT = 'whale'
+const MAX_PRODUCT = 'dolphin'
 
 @Injectable({
 	providedIn: 'root',
@@ -49,24 +49,11 @@ export class MerchantUtils {
 			customTheme: false,
 			supportUs: false,
 			purchaseKey: null,
+			renewFrame: null,
 		},
 		{
-			name: 'Plankton',
-			price: '$1.99',
-			maxValidators: 100,
-			maxTestnetValidators: 100,
-			maxBeaconNodes: 1,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: false,
-			customTheme: false,
-			supportUs: true,
-			purchaseKey: 'plankton',
-		},
-		{
-			name: 'Goldfish',
-			price: '$4.99',
+			name: 'Guppy',
+			price: '$9.99',
 			maxValidators: 100,
 			maxTestnetValidators: 100,
 			maxBeaconNodes: 2,
@@ -76,11 +63,27 @@ export class MerchantUtils {
 			widgets: true,
 			customTheme: true,
 			supportUs: true,
-			purchaseKey: 'goldfish',
+			purchaseKey: 'guppy',
+			renewFrame: 'monthly',
 		},
 		{
-			name: 'Whale',
-			price: '$19.99',
+			name: 'Guppy',
+			price: '$107.88',
+			maxValidators: 100,
+			maxTestnetValidators: 100,
+			maxBeaconNodes: 2,
+			deviceMonitoringHours: 30 * 24,
+			deviceMonitorAlerts: true,
+			noAds: true,
+			widgets: true,
+			customTheme: true,
+			supportUs: true,
+			purchaseKey: 'guppy.yearly',
+			renewFrame: 'yearly',
+		},
+		{
+			name: 'Dolphin',
+			price: '$29.99',
 			maxValidators: 280,
 			maxTestnetValidators: 280,
 			maxBeaconNodes: 10,
@@ -90,7 +93,23 @@ export class MerchantUtils {
 			widgets: true,
 			customTheme: true,
 			supportUs: true,
-			purchaseKey: 'whale',
+			purchaseKey: 'dolphin',
+			renewFrame: 'monthly',
+		},
+		{
+			name: 'Dolphin',
+			price: '$311.88',
+			maxValidators: 280,
+			maxTestnetValidators: 280,
+			maxBeaconNodes: 10,
+			deviceMonitoringHours: 30 * 24,
+			deviceMonitorAlerts: true,
+			noAds: true,
+			widgets: true,
+			customTheme: true,
+			supportUs: true,
+			purchaseKey: 'dolphin.yearly',
+			renewFrame: 'yearly',
 		},
 	]
 
@@ -105,6 +124,14 @@ export class MerchantUtils {
 		}
 
 		this.init()
+	}
+
+	public getMonthlyBilledPackages(): Package[] {
+		return this.PACKAGES.filter((pkg) => pkg.renewFrame == null || pkg.renewFrame == 'monthly')
+	}
+
+	public getYearlyBilledPackages(): Package[] {
+		return this.PACKAGES.filter((pkg) => pkg.renewFrame == null || pkg.renewFrame == 'yearly')
 	}
 
 	private async init() {
@@ -377,7 +404,7 @@ export class MerchantUtils {
 
 	async hasPremiumTheming() {
 		const currentPlan = await this.getCurrentPlanConfirmed()
-		return currentPlan != PRODUCT_STANDARD && currentPlan != '' && currentPlan != 'plankton'
+		return currentPlan != PRODUCT_STANDARD && currentPlan != ''
 	}
 
 	async hasCustomizableNotifications() {
@@ -435,4 +462,5 @@ export interface Package {
 	customTheme: boolean
 	supportUs: boolean
 	purchaseKey: string
+	renewFrame: 'monthly' | 'yearly' | null
 }
