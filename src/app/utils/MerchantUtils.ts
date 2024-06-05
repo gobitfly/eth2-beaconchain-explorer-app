@@ -282,7 +282,7 @@ export class MerchantUtils {
 			valid: product.valid,
 			transaction: {
 				id: product.id,
-				receipt: isIOS ? product.transaction.appStoreReceipt : product.transaction.purchaseToken,
+				receipt: isIOS ? product.transaction.id : product.transaction.purchaseToken,
 				type: product.transaction.type,
 			},
 		}
