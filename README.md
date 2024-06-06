@@ -1,7 +1,4 @@
-![[beaconchain Dashboard](https://beaconcha.in/mobile)](.github/banner.png)  
-[![Build](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml/badge.svg)](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml)  
-
-# Beaconchain Dashboard App
+# Beaconchain Dashboard App by Isabel Schoeps Thiel
 
 Beaconchain Dashboard is an open source ethereum and gnosis validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
 
@@ -64,48 +61,6 @@ to start a local webserver with livereload enabled.
 For Linux Users: Open capacitor.config.json (in the root of the project) and adapt the paths for the _linuxAndroidStudioPath_ variable to reflect your local setup.
 
 Build the the app at least once before proceeding:
-
-`ionic build`
-
-#### Livereload
-
-Make sure port 8100 is accessable on your computer and use the following command to run a livereload server
-
-`ionic cap run android --livereload --external --host=192.168.1.64 --disableHostCheck --configuration=development`
-
-Adapt the --host param to match your computers IP. 
-
-#### Build for production
-
-`npm run-script build-android-for-production`
-
-#### Install via Android Studio
-To install the app on a real device, follow this guide: https://developer.android.com/studio/run/device
-
-Or to run it in an emulator, follow up here: https://developer.android.com/studio/run/emulator
-
-
-### iOS
-**Prerequisites**
-* NodeJS 16
-* macOS with macOS Monterey 12.5 newer
-* Xcode 14.1 or newer
-
-Build the the app at least once before proceeding:
-
-`ionic build`
-
-#### Livereload
-
-Make sure port 8100 is accessable on your mac and use the following command to run a livereload server
-
-`ionic cap run ios --livereload --external --host=192.168.1.64 --disableHostCheck --configuration=development`
-
-Adapt the --host param to match your macs IP. 
-
-#### Build for production
-
-`npm run-script build-ios-for-production`
 
 ### Best Practices
 
