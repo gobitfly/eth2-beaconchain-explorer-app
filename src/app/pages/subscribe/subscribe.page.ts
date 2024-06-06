@@ -37,7 +37,7 @@ export class SubscribePage implements OnInit {
 		private flavor: FlavorUtils,
 		private api: ApiService
 	) {
-		this.selectedPackage = this.merchant.PACKAGES[2]
+		this.selectedPackage = this.merchant.PACKAGES[1]
 	}
 
 	ngOnInit() {
