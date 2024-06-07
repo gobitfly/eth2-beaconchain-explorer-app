@@ -83,19 +83,24 @@ export class SubscribePage implements OnInit {
 	}
 
 	calculateMonthlyPrice(pkg: Package): string {
-		let monthlyPrice = Math.ceil(Number(pkg.price.replace("$", "")) / 12).toFixed(2);
+		let monthlyPrice = Math.ceil((pkg.priceMicros / 1000000) / 12).toFixed(2)
 		if (Number.isInteger(Number(monthlyPrice)) && Number(monthlyPrice) > 0) {
 			monthlyPrice = (Number(monthlyPrice) - 0.01).toFixed(2);
 		}
-		return `$${monthlyPrice}`;
+		return this.replaceNumberInString(pkg.price, monthlyPrice)
+	}
+
+	replaceNumberInString(inputString: string, newNumber: string): string {
+		const regex = /[0-9,.]+/g;
+		return inputString.replace(regex, newNumber);
 	}
 
 	calculateYearlyPrice(pkg: Package): string {
-		let yearlyPrice = Math.ceil(Number(pkg.price.replace("$", "")) * 12).toFixed(2);
+		let yearlyPrice = Math.ceil((pkg.priceMicros / 1000000) * 12).toFixed(2)
 		if (Number.isInteger(Number(yearlyPrice)) && Number(yearlyPrice) > 0) {
 			yearlyPrice = (Number(yearlyPrice) - 0.01).toFixed(2);
 		}
-		return `$${yearlyPrice}`;
+		return this.replaceNumberInString(pkg.price, yearlyPrice)
 	}
 
 	getFrameShort(pkg: Package): string {
@@ -103,7 +108,12 @@ export class SubscribePage implements OnInit {
 	}
 
 	renewalTimeframeChange() {
-		this.selectedPackage = this.merchant.PACKAGES.find(pkg => pkg.renewFrame === this.renewalFrame && this.equalPackage(pkg, this.selectedPackage));
+		if (this.selectedPackage == this.merchant.PACKAGES[0]) {
+			this.selectedPackage = this.merchant.PACKAGES[1]
+			this.selectedPackage = this.merchant.PACKAGES[0]
+			return
+		}
+		this.selectedPackage = this.merchant.PACKAGES.find((pkg) => pkg.renewFrame === this.renewalFrame && this.equalPackage(pkg, this.selectedPackage))
 	}
 
 	async continuePurchaseIntern() {

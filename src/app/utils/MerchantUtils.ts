@@ -35,10 +35,12 @@ const MAX_PRODUCT = 'dolphin'
 	providedIn: 'root',
 })
 export class MerchantUtils {
-	DEPRECATED_PACKAGES = [
+	DEPRECATED_PACKAGES: Package[] = [
 		{
 			name: 'Plankton',
 			price: '$1.99',
+			priceMicros: 1990000,
+			currency: 'USD',
 			maxValidators: 100,
 			maxTestnetValidators: 100,
 			maxBeaconNodes: 1,
@@ -57,6 +59,8 @@ export class MerchantUtils {
 		{
 			name: 'Free',
 			price: '$0.00',
+			priceMicros: 0,
+			currency: 'USD',
 			maxValidators: 100,
 			maxTestnetValidators: 100,
 			maxBeaconNodes: 1,
@@ -72,6 +76,8 @@ export class MerchantUtils {
 		{
 			name: 'Guppy',
 			price: '$9.99',
+			priceMicros: 9990000,
+			currency: 'USD',
 			maxValidators: 100,
 			maxTestnetValidators: 100,
 			maxBeaconNodes: 2,
@@ -87,6 +93,8 @@ export class MerchantUtils {
 		{
 			name: 'Guppy',
 			price: '$107.88',
+			priceMicros: 107880000,
+			currency: 'USD',
 			maxValidators: 100,
 			maxTestnetValidators: 100,
 			maxBeaconNodes: 2,
@@ -102,6 +110,8 @@ export class MerchantUtils {
 		{
 			name: 'Dolphin',
 			price: '$29.99',
+			priceMicros: 29990000,
+			currency: 'USD',
 			maxValidators: 280,
 			maxTestnetValidators: 280,
 			maxBeaconNodes: 10,
@@ -117,6 +127,8 @@ export class MerchantUtils {
 		{
 			name: 'Dolphin',
 			price: '$311.88',
+			priceMicros: 311880000,
+			currency: 'USD',
 			maxValidators: 280,
 			maxTestnetValidators: 280,
 			maxBeaconNodes: 10,
@@ -248,13 +260,17 @@ export class MerchantUtils {
 				continue
 			}
 
-			this.updatePrice(CdvPurchase.store.products[i].id, CdvPurchase.store.products[i].offers[0].pricingPhases[lastIndex].price)
+			this.updatePrice(CdvPurchase.store.products[i].id, CdvPurchase.store.products[i].offers[0].pricingPhases[lastIndex])
 		}
 	}
 
-	private updatePrice(id, price) {
+	private updatePrice(id, prices: CdvPurchase.PricingPhase) {
 		for (let i = 0; i < this.PACKAGES.length; i++) {
-			if (this.PACKAGES[i].purchaseKey == id) this.PACKAGES[i].price = price
+			if (this.PACKAGES[i].purchaseKey == id) {
+				this.PACKAGES[i].price = prices.price
+				this.PACKAGES[i].priceMicros = prices.priceMicros
+				this.PACKAGES[i].currency = prices.currency
+			}
 		}
 	}
 
@@ -292,7 +308,14 @@ export class MerchantUtils {
 	}
 
 	async purchase(product: string) {
-		const offer = CdvPurchase.store.get(product).getOffer()
+		console.log('purchasing product', product)
+		const storeProduct = CdvPurchase.store.get(product)
+		if (storeProduct == null) {
+			this.alertService.showError('Purchase failed', `Product ${product} can not be purchased at the moment, please try again later.`, PURCHASEUTILS)
+			return
+		}
+
+		const offer = storeProduct.getOffer()
 		const loading = await this.alertService.presentLoading('')
 		loading.present()
 		this.restorePurchase = true
@@ -408,17 +431,25 @@ export class MerchantUtils {
 	findProduct(name: string): Package {
 		for (let i = 0; i < this.PACKAGES.length; i++) {
 			const current = this.PACKAGES[i]
-			if (current.purchaseKey == name) {
+			if (current.purchaseKey == name || this.mapv2Tov1(current.purchaseKey) == name) {
 				return current
 			}
 		}
 		for (let i = 0; i < this.DEPRECATED_PACKAGES.length; i++) {
 			const current = this.DEPRECATED_PACKAGES[i]
-			if (current.purchaseKey == name) {
+			if (current.purchaseKey == name || this.mapv2Tov1(current.purchaseKey) == name) {
 				return current
 			}
 		}
 
+		return null
+	}
+
+	mapv2Tov1(name: string): string {
+		if (name == null) return null
+		if (name.indexOf('guppy') >= 0) return 'plankton'
+		if (name.indexOf('dolphin') >= 0) return 'goldfish'
+		if (name.indexOf('orca') >= 0) return 'whale'
 		return null
 	}
 
@@ -477,6 +508,8 @@ interface ClaimParts {
 export interface Package {
 	name: string
 	price: string
+	priceMicros: number
+	currency: string
 	maxValidators: number
 	maxTestnetValidators: number
 	maxBeaconNodes: number

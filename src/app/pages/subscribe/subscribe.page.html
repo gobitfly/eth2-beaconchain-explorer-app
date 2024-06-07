@@ -123,10 +123,10 @@
 		<ion-label class="link" (click)="trial()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Start with a 14 day trial.</ion-label>
 
 		<div>
-			<ion-button class="purchase-btn" (click)="purchase()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey"
+			<ion-button class="purchase-btn" (click)="purchase()" *ngIf="activeUserPackageName != merchant.mapv2Tov1(selectedPackage.purchaseKey)"
 				>Subscribe for {{ selectedPackage.price }} / {{ getFrameShort(selectedPackage) }}</ion-button
 			>
-			<ion-button class="purchase-btn" *ngIf="activeUserPackageName == selectedPackage.purchaseKey" disabled>You own this package </ion-button>
+			<ion-button class="purchase-btn" *ngIf="activeUserPackageName == merchant.mapv2Tov1(selectedPackage.purchaseKey)" disabled>You own this package </ion-button>
 		</div>
 
 		<ion-label class="grey-link" (click)="restore()">Restore purchase</ion-label>
