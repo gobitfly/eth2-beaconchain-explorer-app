@@ -1,0 +1,100 @@
+identifier,asset_type,instruction,eligible_for_bounty,eligible_for_submission,availability_requirement,confidentiality_requirement,integrity_requirement,max_severity,system_tags,created_at,updated_at
+Atom,DOWNLOADABLE_EXECUTABLES,"[https://atom.io](https://atom.io ""https://atom.io"")
+",false,false,,,,critical,,2017-06-23 17:27:08 UTC,2023-01-24 13:25:40 UTC
+*.githubusercontent.com,URL,"",true,true,,,,critical,,2021-06-21 18:04:59 UTC,2023-01-24 13:25:35 UTC
+api.github.com,URL,"The GitHub API is used by thousands of developers and applications to programatically interact with GitHub data and services. Because so much of the GitHub.com functionality is exposed in the API, security has always been a high priority.
+
+Rewards range from $555 up to $20,000 and are determined at our discretion based on a number of factors.
+
+You can find the app at [https://api.github.com](https://api.github.com ""https://api.github.com"") and can find the API documentation at [https://developer.github.com](https://developer.github.com ""https://developer.github.com"").
+
+",true,true,high,high,high,critical,,2017-06-22 23:21:27 UTC,2023-01-24 13:25:35 UTC
+npmjs.org,URL,"This is the domain for npm’s registry, public-facing databases, and APIs. All subdomains under npmjs.org are in scope.",true,true,,,,critical,,2021-09-14 18:59:04 UTC,2023-01-24 13:25:36 UTC
+*.githubapp.com,URL,"Subdomains under `*.githubapp.com` provide a number of internal services to GitHub employees. Not all subdomains are [in-scope](https://bounty.github.com/#scope)
+",true,true,,,,critical,,2017-06-23 18:04:35 UTC,2023-01-24 13:25:35 UTC
+npmjs.com,URL,This is the domain for npm’s public-facing websites. All subdomains under npmjs.com are in scope.,true,true,,,,critical,,2021-09-14 18:58:04 UTC,2023-01-24 13:25:35 UTC
+education.github.com,URL,GitHub Education offers a variety of tools to help educators and researchers work more effectively inside and outside of the classroom. More details are available at https://education.github.com/. GitHub Classroom is [open-source](https://github.com/education/classroom),true,true,,,,critical,,2019-02-19 19:39:46 UTC,2023-01-24 13:25:35 UTC
+Electron,DOWNLOADABLE_EXECUTABLES,"Electron vulnerabilities which do not directly affect GitHub Desktop are out-of-scope and should be [reported](https://electronjs.org/community) to the Electron developers.
+
+",false,false,,,,critical,,2017-06-23 17:28:37 UTC,2023-01-24 13:25:40 UTC
+gist.github.com,URL,"Gist is one of the first products launched by GitHub after GitHub.com. It is a service for sharing snippets of code or other text content. Gist is built on Ruby on Rails and leverages a number of Open Source technologies.
+
+Rewards range from $555 up to $20,000 and are determined at our discretion based on a number of factors. For example, if you find a reflected XSS that is only possible in Opera, and Opera is \<2% of our traffic, then the severity and reward will be lower. But a persistent XSS that works in Chrome, at \>60% of our traffic, will earn a much larger reward.
+
+You can find the app at [https://gist.github.com](https://gist.github.com ""https://gist.github.com"").
+
+",true,true,medium,medium,medium,critical,,2017-06-22 23:25:49 UTC,2023-01-24 13:25:35 UTC
+github.com,URL,"GitHub.com is our main web site. It is our most intricate application with a number of user inputs and access methods. GitHub.com is built on Ruby on Rails and leverages a number of Open Source technologies.
+
+Rewards range from $555 up to $20,000 and are determined at our discretion based on a number of factors. For example, if you find a reflected XSS that is only possible in Opera, and Opera is \<2% of our traffic, then the severity and reward will be lower. But a persistent XSS that works in Chrome, at \>60% of our traffic, will earn a much larger reward.
+
+You can find the app at [https://github.com](https://github.com ""https://github.com"").
+
+",true,true,high,high,high,critical,,2017-06-22 23:21:07 UTC,2023-01-24 13:25:35 UTC
+GitHub Enterprise Server,HARDWARE,"GitHub Enterprise Server is the on-premise version of GitHub Enterprise. GitHub Enterprise Server shares a code-base with GitHub.com, is built on Ruby on Rails and leverages a number of open source technologies. GitHub Enterprise Server adds a number of features for enterprise infrastructures, including additional authentication backends and clustering options.
+
+ Below is a subset of features unique to GitHub Enterprise that might be interesting to investigate.
+
+  * Bypassing instance-wide authentication, also known as [*private mode*](https://help.github.com/enterprise/admin/guides/installation/enabling-private-mode/)
+  * External authentication backends including [CAS, LDAP, and SAML](https://help.github.com/enterprise/admin/guides/user-management/)
+  * In-app administration of the instance using a site administrator control panel
+  * [User, organization, and repository migration](https://help.github.com/enterprise/admin/guides/migrations/)
+  * [Web-based management console](https://help.github.com/enterprise/admin/guides/installation/web-based-management-console/) and [SSH access](https://help.github.com/enterprise/admin/guides/installation/administrative-shell-ssh-access/) to configure and update the instance
+  * [Pre-receive hook scripts](https://help.github.com/enterprise/admin/guides/developer-workflow/creating-a-pre-receive-hook-script/)
+  * [GitHub Connect](https://help.github.com/enterprise/admin/guides/developer-workflow/connecting-github-enterprise-server-to-github-com/) allows users to share specific features and workflows between your GitHub Enterprise Server instance and a GitHub.com organization on GitHub Enterprise Cloud.
+  * See [our documentation](https://help.github.com/enterprise/admin/guides/installation/network-ports-to-open/) for a list of services typically open on an instance.
+
+You can request a trial of GitHub Enterprise Server for security testing at [https://enterprise.github.com/bounty](https://enterprise.github.com/bounty).",true,true,,,,critical,,2017-06-22 23:31:25 UTC,2023-01-24 13:25:39 UTC
+blog.github.com,URL,"The GitHub Blog is not in-scope and ineligible for rewards.
+
+",false,false,,,,critical,,2019-02-27 19:36:17 UTC,2023-01-24 13:25:36 UTC
+GitHub Enterprise Cloud,OTHER,"GitHub Enterprise Cloud is the cloud-hosted version of GitHub Enterprise. It is designed for teams who want advanced authentication and permissions without managing infrastructure. More information about GitHub Enterprise Cloud is available at https://github.com/enterprise
+
+",true,true,,,,critical,,2019-02-19 19:36:19 UTC,2023-01-24 13:25:36 UTC
+community.github.com,URL,The GitHub Community forum is not in-scope and ineligible for rewards.,false,false,,,,critical,,2019-02-27 19:37:02 UTC,2023-01-24 13:25:36 UTC
+classroom.github.com,URL,"
+
+",true,true,,,,critical,,2017-06-23 17:31:05 UTC,2023-01-24 13:25:35 UTC
+*.github.io,URL,"Individual sites which are hosted on GitHub Pages are out-of-scope.
+",false,false,,,,critical,,2017-06-23 18:05:07 UTC,2023-01-24 13:25:36 UTC
+GitHub Desktop,DOWNLOADABLE_EXECUTABLES,"[GitHub Desktop](https://desktop.github.com) is an open-source [Electron](https://electronjs.org)-based app for working with your GitHub.com or GitHub Enterprise account. Only the following vulnerabilities are eligible for reward:
+  * Remote code execution via protocol handlers such as `x-github-client://`
+  * Code execution without user interaction when cloning or fetching malicious repositories
+
+",true,true,,,,critical,,2017-06-23 17:29:26 UTC,2023-01-24 13:25:39 UTC
+npm CLI,DOWNLOADABLE_EXECUTABLES,"",true,true,medium,low,low,high,,2021-09-14 19:00:51 UTC,2023-01-24 13:25:40 UTC
+GitHub Production Credentials,OTHER,"GitHub, Inc. uses a mix of our own physical infrastructure, cloud platforms and third-party services to keep everything running smoothly. Keeping credentials and access tokens secure for these resources is paramount to the security of our employees and users.
+
+* Credentials allowing access to cloud services, package managers and other resources used by GitHub, Inc employees
+* Credentials accidentally made public in repositories which allow access to GitHub, Inc resources. This does *not* include credentials exposed by our users and credentials which do not allow access to GitHub, Inc resources.
+* Credentials exposed by third-party services which allow access to GitHub, Inc resources
+
+Please review our [guidance for handling PII](https://bounty.github.com/#handling_personally_identifiable_information_pii) before investigating credentials allowing access to GitHub, Inc resources. The reward amount is based on the impact of the leaked credential which will be determined by the GitHub Security team.",true,true,,,,critical,,2019-02-19 20:04:30 UTC,2023-01-24 13:25:36 UTC
+GitHub Pages,OTHER,"GitHub Pages is our static site hosting service designed to host your personal, organization, or project pages directly from a GitHub repository. It uses the Jekyll static site generator and officially supported themes are are developed in the pages-themes organization. GitHub Pages support custom domains and can be secured with HTTPS. Eligible submissions include:
+
+* Executing arbitrary code during the build process, either via a custom Jekyll theme or vulnerabilities in the command-line Git tools when cloning or checking-out repositories
+* Reading arbitrary files during the build process which discloses sensitive information, for example by misusing path traversal or symbolic links in a custom Jekyll theme
+
+**Individual GitHub Pages sites hosted under `*.github.io` are out-of-scope.**
+
+",true,true,,,,critical,,2019-02-19 19:38:55 UTC,2023-01-24 13:25:36 UTC
+shop.github.com,URL,The GitHub Shop is not in-scope and ineligible for rewards.,false,false,,,,critical,,2019-02-27 19:37:20 UTC,2023-01-24 13:25:36 UTC
+http://education.github.com/forum,URL,The [GitHub Education Community forum](https://education.github.com/forum) is not in-scope and ineligible for rewards.,false,false,,,,critical,,2019-02-27 19:34:27 UTC,2023-01-24 13:25:36 UTC
+GitHub Classroom Assistant ,DOWNLOADABLE_EXECUTABLES,The [GitHub Classroom Assistant application](https://classroom.github.com/assistant) is currently out-of-scope.,false,false,,,,critical,,2019-02-19 20:05:43 UTC,2023-01-24 13:25:40 UTC
+GitHub CLI,DOWNLOADABLE_EXECUTABLES,"[GitHub CLI](https://cli.github.com) is an open source command line tool for working with your GitHub.com account. It is built with Golang, and performs several GitHub.com commands from your terminal, such as viewing, commenting and performing other actions on issues and PRs.",true,true,medium,low,low,high,,2020-08-25 20:25:42 UTC,2023-01-24 13:25:40 UTC
+github.blog,URL,[github.blog](https://github.blog) is out-of-scope.,false,false,,,,critical,,2019-02-01 16:04:57 UTC,2023-01-24 13:25:36 UTC
+Dependabot,OTHER,"Dependabot powers GitHub's [automated security fixes](https://help.github.com/en/articles/configuring-automated-security-fixes). This feature allows GitHub users to automatically update vulnerable dependencies. The core logic of Dependabot is [open-source](https://github.com/dependabot/dependabot-core) and an [overview of the architecture](https://github.com/dependabot/dependabot-core#architecture) is available.
+
+  * Execution environment breakout attacks, providing access to private networked resources or other users' data
+  * Security issues in [`dependabot-core`](https://github.com/dependabot/dependabot-core)",true,true,high,high,high,critical,,2019-10-08 20:16:27 UTC,2023-01-24 13:25:38 UTC
+*.github.net,URL,Subdomains under `*.github.net` run services for our internal production network. Many of these services are not accessible from outside our internal network. Not all subdomains are [in-scope](https://bounty.github.com/#scope),true,true,,,,critical,,2019-02-19 17:15:15 UTC,2023-01-24 13:25:35 UTC
+enterprise.github.com,URL,"`enterprise.github.com` is commonly confused with the [GitHub Enterprise Server product](https://github.com/enterprise) which is an on-premise instance of GitHub.
+",false,false,,,,critical,,2017-06-22 23:20:21 UTC,2023-01-24 13:25:36 UTC
+git.io,URL,The [git.io](https://git.io) URL shortener is out-of-scope.,false,false,,,,critical,,2018-09-12 18:41:55 UTC,2023-01-24 13:25:36 UTC
+spectrum.chat,URL,[Spectrum](https://spectrum.chat) is currently out-of-scope.,false,false,,,,critical,,2019-01-18 15:40:21 UTC,2023-01-24 13:25:36 UTC
+GitHub CSP,OTHER,"While content-injection vulnerabilities are already in-scope for our [GitHub.com bounty](https://bounty.github.com/targets/github.html), we also accept bounty reports for novel [CSP](https://developers.google.com/web/fundamentals/security/csp/) bypasses affecting GitHub.com, even if they do not include a content-injection vulnerability. Using an intercepting proxy or your browser's developer tools, experiment with injecting content into the DOM. See if you can execute arbitrary JavaScript or exfiltrate sensitive page contents such as CSRF tokens. Reports of other previously-unknown impacts from content-injection will also be considered.
+
+Previously identified attacks are not eligible for reward (we've put a lot of thought into CSP bypasses already). You can find a discussion of known attacks and our attempts to mitigate them [here](http://githubengineering.com/githubs-csp-journey/). Attacks against CSP features not used on GitHub.com, such as script nonces, are not eligible for reward. Vulnerabilities resulting from injection in implausible locations, such as within an element that doesn't contain user-content, are not eligible for reward. Rewards are determined at our discretion: if you think you've found something cool and novel, report it!
+
+",true,true,none,medium,none,high,,2017-06-24 02:38:11 UTC,2023-01-24 13:25:39 UTC
+GitHub for mobile,OTHER,Bring GitHub collaboration tools to your small screens with [GitHub for mobile](https://github.com/mobile).,true,true,,,,critical,,2020-08-25 20:24:29 UTC,2023-01-24 13:25:38 UTC
