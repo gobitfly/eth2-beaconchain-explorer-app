@@ -35,6 +35,23 @@ const MAX_PRODUCT = 'whale'
 	providedIn: 'root',
 })
 export class MerchantUtils {
+	DEPRECATED_PACKAGES = [
+		{
+			name: 'Plankton',
+			price: '$1.99',
+			maxValidators: 100,
+			maxTestnetValidators: 100,
+			maxBeaconNodes: 1,
+			deviceMonitoringHours: 30 * 24,
+			deviceMonitorAlerts: true,
+			noAds: true,
+			widgets: false,
+			customTheme: false,
+			supportUs: true,
+			purchaseKey: 'plankton',
+		},
+	]
+
 	PACKAGES: Package[] = [
 		{
 			name: 'Free',
@@ -49,20 +66,6 @@ export class MerchantUtils {
 			customTheme: false,
 			supportUs: false,
 			purchaseKey: null,
-		},
-		{
-			name: 'Plankton',
-			price: '$1.99',
-			maxValidators: 100,
-			maxTestnetValidators: 100,
-			maxBeaconNodes: 1,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: false,
-			customTheme: false,
-			supportUs: true,
-			purchaseKey: 'plankton',
 		},
 		{
 			name: 'Goldfish',
@@ -279,7 +282,7 @@ export class MerchantUtils {
 			valid: product.valid,
 			transaction: {
 				id: product.id,
-				receipt: isIOS ? product.transaction.appStoreReceipt : product.transaction.purchaseToken,
+				receipt: isIOS ? product.transaction.id : product.transaction.purchaseToken,
 				type: product.transaction.type,
 			},
 		}
@@ -367,6 +370,13 @@ export class MerchantUtils {
 				return current
 			}
 		}
+		for (let i = 0; i < this.DEPRECATED_PACKAGES.length; i++) {
+			const current = this.DEPRECATED_PACKAGES[i]
+			if (current.purchaseKey == name) {
+				return current
+			}
+		}
+
 		return null
 	}
 
