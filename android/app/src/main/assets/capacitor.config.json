@@ -15,5 +15,8 @@
 	},
 	"android": {
 		"flavor": "prod"
+	},
+	"server": {
+		"androidScheme": "http"
 	}
 }
