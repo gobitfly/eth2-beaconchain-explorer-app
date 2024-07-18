@@ -77,7 +77,7 @@ export const Clients: ClientInfo[] = [
 	{
 		key: 'ERIGON',
 		name: 'Erigon',
-		repo: 'ledgerwatch/erigon',
+		repo: 'erigontech/erigon',
 		storageKey: 'client_updates_erigon',
 	},
 
