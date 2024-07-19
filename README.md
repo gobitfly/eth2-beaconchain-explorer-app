@@ -114,5 +114,5 @@ Adapt the --host param to match your macs IP.
 * Keep in mind that the app can be used in light and dark theme, use css vars when styling. Global theme attributes can be found in src/app/theme/variables.scss and src/app/global.scss.
 [![Run spec tests and linter](https://github.com/ethereum/consensus-specs/actions/workflows/run-tests.yml/badge.svg?branch=dev)](https://github.com/ethereum/consensus-specs/actions/workflows/run-tests.yml)
 ## License
-
+https://github.com/circleci/circleci-docs/pull/8408#issue-1945943367
 This project is licensed under GPLv3. [LICENSE](LICENSE)
