@@ -9,6 +9,9 @@
 			"launchAutoHide": false,
 			"androidScaleType": "CENTER_CROP"
 		},
+		"CapacitorCookies": {
+			"enabled": true
+		},
 		"CapacitorHttp": {
 			"enabled": true
 		}
@@ -17,6 +20,8 @@
 		"flavor": "prod"
 	},
 	"server": {
-		"androidScheme": "http"
+		"androidScheme": "http",
+		"url": "http://100.121.110.92:8100",
+		"cleartext": true
 	}
 }

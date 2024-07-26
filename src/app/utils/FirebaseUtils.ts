@@ -20,7 +20,7 @@
 
 import { ApiService } from '../services/api.service'
 import { StorageService } from '../services/storage.service'
-import { UpdateTokenRequest } from '../requests/requests'
+import { APIRequest, UpdateTokenRequest } from '../requests/requests'
 import { Injectable } from '@angular/core'
 import { AlertController, Platform } from '@ionic/angular'
 
@@ -29,6 +29,7 @@ import { PushNotifications, PushNotificationSchema } from '@capacitor/push-notif
 import { LocalNotifications } from '@capacitor/local-notifications'
 import FlavorUtils from './FlavorUtils'
 import { Capacitor } from '@capacitor/core'
+import { V2RegisterPushNotificationToken } from '../requests/v2-user'
 
 const LOGTAG = '[FirebaseUtils]'
 
@@ -197,7 +198,12 @@ export default class FirebaseUtils {
 
 			console.log(LOGTAG + ' user is logged in, last local token was: ' + lastToken)
 			if (force || token != lastToken) {
-				const request = new UpdateTokenRequest(token)
+				let request: APIRequest<unknown> 
+				if (await this.storage.isV2()) {
+					request = new V2RegisterPushNotificationToken(token, await this.storage.getDeviceID())
+				} else {
+					request = new UpdateTokenRequest(token)
+				}
 				const result = await this.api.execute(request).catch((error) => {
 					console.warn('error in updateRemoteNotificationToken execute', error)
 					return false

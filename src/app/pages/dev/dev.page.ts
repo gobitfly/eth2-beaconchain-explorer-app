@@ -5,6 +5,10 @@ import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page'
 import { Toast } from '@capacitor/toast'
 import { Clients } from '../../utils/ClientUpdateUtils'
 import { DevModeEnabled } from 'src/app/services/storage.service'
+import { MigrateV1AuthToV2 } from 'src/app/requests/v2-auth'
+import { V2Me, V2RegisterPushNotificationToken } from 'src/app/requests/v2-user'
+import { V2DashboardSummary } from 'src/app/requests/v2-dashboard'
+import { encodeDashboardID } from 'src/app/utils/DashboardHelper'
 
 @Component({
 	selector: 'app-dev',
@@ -15,6 +19,9 @@ export class DevPage extends Tab3Page implements OnInit {
 	packageOverride = 'default'
 	firebaseToken = ''
 	notificationConsent = false
+	deviceID = ''
+	usev2api = false
+	allowHttp = false
 
 	ngOnInit() {
 		this.notificationBase.disableToggleLock()
@@ -26,7 +33,23 @@ export class DevPage extends Tab3Page implements OnInit {
 			this.firebaseToken = result
 		})
 
+		this.storage.getDeviceID().then((result) => {
+			this.deviceID = result
+		})
+
+		this.storage.isV2().then((result) => {
+			this.usev2api = result
+		})
+
 		this.firebaseUtils.hasNotificationConsent().then((result) => (this.notificationConsent = result))
+
+		this.storage.getAuthUserv2().then((result) => {
+			console.log('v2 auth', result)
+		})
+
+		this.storage.isHttpAllowed().then((result) => {
+			this.allowHttp = result
+		})
 	}
 
 	// --- Development methods ---
@@ -195,5 +218,56 @@ export class DevPage extends Tab3Page implements OnInit {
 
 	openLogSession(offset: number) {
 		this.storage.openLogSession(this.modalController, offset)
+	}
+
+	testv2() {
+		
+			const loginRequest = new V2DashboardSummary(encodeDashboardID([0,1,2,3,4]))
+			this.api.execute(loginRequest).then((response) => {
+				const result = loginRequest.parse(response)
+				console.log('v2 dashboards', response, result)
+			})
+	}
+
+	async equivalentExchange() {
+		const user = await this.storage.getAuthUser()
+		if (!user || !user.refreshToken) {
+			console.warn('No refreshtoken, cannot refresh token')
+			return null
+		}
+		console.log('refresh token', user.refreshToken)
+
+		const loginRequest = new MigrateV1AuthToV2(user.refreshToken, await this.storage.getDeviceID(), await this.storage.getDeviceName())
+		this.api.execute(loginRequest).then((response) => {
+			const result = loginRequest.parse(response)
+			console.log('eq exchange', response, result)
+		})
+	}
+
+	changeToV2Api() {
+		console.log('use v2 api', this.usev2api)
+		this.v2migrator.switchToV2(this.usev2api)
+	}
+
+	getMyDashboards() {
+		const loginRequest = new V2Me()
+		this.api.execute(loginRequest).then((response) => {
+			const result = loginRequest.parse(response)
+			console.log('v2 dashboards', response, result)
+		})
+	}
+
+	async registerV2Push() {
+		//const lastToken = await this.storage.getItem('last_firebase_token')
+		const deviceID = await this.storage.getDeviceID()
+		const registerPush = new V2RegisterPushNotificationToken('hallo', deviceID)
+		this.api.execute(registerPush).then((response) => {
+			const result = registerPush.parse(response)
+			console.log('v2 register push', response, result)
+		})
+	}
+
+	changeAllowHttp() {
+		this.storage.setHttpAllowed(this.allowHttp)
 	}
 }

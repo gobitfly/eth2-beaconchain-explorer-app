@@ -29,7 +29,7 @@ import { MerchantUtils } from './MerchantUtils'
 
 import { Toast } from '@capacitor/toast'
 import { Device } from '@capacitor/device'
-import { OAuth2Client } from '@byteowls/capacitor-oauth2'
+import { OAuth2AuthenticateOptions, OAuth2Client } from '@byteowls/capacitor-oauth2'
 import FlavorUtils from './FlavorUtils'
 
 @Injectable({
@@ -51,29 +51,52 @@ export class OAuthUtils {
 	}
 
 	async login(statusCallback: (finished: boolean) => void = null) {
-		return OAuth2Client.authenticate(await this.getOAuthOptions())
+		let authOptions: OAuth2AuthenticateOptions = await this.getOAuthOptionsv1()
+		const isV2 = await this.storage.isV2()
+		if (isV2) {
+			authOptions = await this.getOAuthOptionsv2()
+		}
+		return OAuth2Client.authenticate(authOptions)
 			.then(async (response: AccessTokenResponse) => {
 				const loadingScreen = await this.presentLoading()
 				loadingScreen.present()
 
-				let result = response.access_token_response
-				if (typeof result === 'string') {
-					result = JSON.parse(response.access_token_response as string)
+				if (isV2) {
+					let result = response.authorization_response
+					if (typeof result === 'string') {
+						result = JSON.parse(response.access_token_response as string)
+					}
+					result = result as Token
+
+					console.log('successful v2 auth')
+
+					await this.storage.setAuthUserv2({
+						Session: result.access_token,
+					})
+
+					await this.api.initV2Cookies()
+				} else {
+					let result = response.access_token_response
+					if (typeof result === 'string') {
+						result = JSON.parse(response.access_token_response as string)
+					}
+					result = result as Token
+					const accessToken = result.access_token
+					const refreshToken = result.refresh_token
+
+					// inconsistent on ios, just assume a 10min lifetime for first token and then just refresh it
+					// and kick off real expiration times
+					const expiresIn = Date.now() + 10 * 60 * 1000
+
+					console.log('successful', accessToken, refreshToken, expiresIn)
+
+					await this.storage.setAuthUser({
+						accessToken: accessToken,
+						refreshToken: refreshToken,
+						expiresIn: expiresIn,
+					})
 				}
-				result = result as Token
-				const accessToken = result.access_token
-				const refreshToken = result.refresh_token
-
-				// inconsistent on ios, just assume a 10min lifetime for first token and then just refresh it
-				// and kick off real expiration times
-				const expiresIn = Date.now() + 10 * 60 * 1000
-
-				console.log('successful', accessToken, refreshToken, expiresIn)
-				await this.storage.setAuthUser({
-					accessToken: accessToken,
-					refreshToken: refreshToken,
-					expiresIn: expiresIn,
-				})
+				
 
 				this.validatorUtils.clearDeletedSet()
 				await this.firebaseUtils.pushLastTokenUpstream(true)
@@ -120,7 +143,7 @@ export class OAuthUtils {
 		return hash.toString(16)
 	}
 
-	private async getOAuthOptions() {
+	private async getOAuthOptionsv1() {
 		const api = this.api
 		const endpointUrl = api.getResourceUrl('user/token')
 
@@ -141,8 +164,10 @@ export class OAuthUtils {
 			}
 		}
 
+		const oAuthURL = api.getBaseUrl() + '/user/authorize'
+
 		return {
-			authorizationBaseUrl: api.getBaseUrl() + '/user/authorize',
+			authorizationBaseUrl: oAuthURL,
 			accessTokenEndpoint: endpointUrl,
 			web: {
 				appId: clientID,
@@ -164,10 +189,49 @@ export class OAuthUtils {
 			},
 		}
 	}
+
+	private async getOAuthOptionsv2() {
+		const responseType = 'token'
+		const clientName = await this.storage.getDeviceName()
+
+		let callback = 'beaconchainmobile://callback'
+		if (this.platform.is('ios') || this.platform.is('android')) {
+			if (await this.flavor.isBetaFlavor()) {
+				callback = 'beaconchainmobilebeta://callback'
+			}
+		}
+
+		const oAuthURL = 'https://local.beaconcha.in:3000/login' // todo
+
+		const clientID = await this.storage.getDeviceID()
+		
+		return {
+			authorizationBaseUrl: oAuthURL,
+			web: {
+				appId: clientID + ':' + clientName,
+				responseType: responseType,
+				redirectUrl: callback,
+				windowOptions: 'height=600,left=0,top=0',
+			},
+			android: {
+				appId: clientID + ':' + clientName,
+				responseType: responseType,
+				redirectUrl: callback,
+				handleResultOnNewIntent: true,
+				handleResultOnActivityResult: true,
+			},
+			ios: {
+				appId: clientID + ':' + clientName,
+				responseType: responseType,
+				redirectUrl: callback,
+			},
+		}
+	}
 }
 
 interface AccessTokenResponse {
 	access_token_response: Token | string
+	authorization_response: Token | string // v2
 }
 
 interface Token {

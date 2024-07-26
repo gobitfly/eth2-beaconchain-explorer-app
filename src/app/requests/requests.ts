@@ -27,6 +27,8 @@ import { ZoneInfo } from '../utils/AdUtils'
 export enum Method {
 	GET,
 	POST,
+	DELETE,
+	PUT
 }
 
 export interface APIResponse {
@@ -34,12 +36,15 @@ export interface APIResponse {
 	data: unknown
 }
 
+export interface NoContent {}
+
 export abstract class APIRequest<T> {
 	abstract resource: string
 	abstract method: Method
 
 	endPoint = 'default'
 	postData?: unknown
+	expectedResponseStatus = 200
 
 	parse(response: Response): T[] {
 		return this.parseBase(response)
@@ -52,7 +57,7 @@ export abstract class APIRequest<T> {
 		if (typeof response === 'boolean') {
 			return response
 		}
-		return response && (response.status == 'OK' || response.status == 200 || !hasDataStatus)
+		return response && (response.status == 'OK' || response.status == this.expectedResponseStatus || !hasDataStatus)
 	}
 
 	protected parseBase(response: Response, hasDataStatus = true): T[] {
@@ -60,12 +65,15 @@ export abstract class APIRequest<T> {
 			return []
 		}
 
-		const data = response.data.data
-		if (Array.isArray(data)) {
-			return data
-		} else {
-			return [data]
+		if (response && response.data && response.data.data) {
+			const data = response.data.data
+			if (Array.isArray(data)) {
+				return data
+			} else {
+				return [data]
+			}
 		}
+		return []
 	}
 
 	options: HttpOptions = {
@@ -76,8 +84,12 @@ export abstract class APIRequest<T> {
 		} as HttpHeaders,
 	}
 
+	/** @deprecated can be removed in v2 */
 	cacheablePOST = false
+
+	/** @deprecated can be removed in v2 */
 	requiresAuth = false
+	
 	updatesLastRefreshState = false
 	ignoreFails = false
 	maxCacheAge = 6 * 60 * 1000
@@ -424,6 +436,7 @@ export class DashboardDataRequest extends APIRequest<number[]> {
 
 // ------------ Authorized Calls -----------------
 
+/** @deprecated Notification management will be removed from app in v2*/
 export class SetMobileSettingsRequest extends APIRequest<MobileSettingsResponse> {
 	resource = 'user/mobile/settings'
 	method = Method.POST
@@ -456,6 +469,7 @@ export interface SubscriptionData {
 	valid: boolean
 }
 
+/**@deprecated Replaced by V2PurchaseValidation */
 export class PostMobileSubscription extends APIRequest<MobileSettingsResponse> {
 	resource = 'user/subscription/register'
 	method = Method.POST
@@ -468,6 +482,7 @@ export class PostMobileSubscription extends APIRequest<MobileSettingsResponse> {
 	}
 }
 
+/** @deprecated Notification management will be removed from app in v2*/
 export class GetMobileSettingsRequest extends APIRequest<MobileSettingsResponse> {
 	resource = 'user/mobile/settings'
 	method = Method.GET
@@ -544,6 +559,7 @@ export class AddMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	}
 }
 
+/** @deprecated Notification management will be removed from app in v2*/
 export class NotificationGetRequest extends APIRequest<NotificationGetResponse> {
 	resource = 'user/notifications'
 	method = Method.GET
@@ -561,12 +577,14 @@ export class NotificationGetRequest extends APIRequest<NotificationGetResponse> 
 	}
 }
 
+/** @deprecated */
 export interface BundleSub {
 	event_name: string
 	event_filter: string
 	event_threshold: number
 }
 
+/** @deprecated Notification management will be removed from app in v2*/
 export class NotificationBundleSubsRequest extends APIRequest<ApiTokenResponse> {
 	private subscribe = 'subscribe'
 	private unsubscribe = 'unsubscribe'
@@ -584,6 +602,7 @@ export class NotificationBundleSubsRequest extends APIRequest<ApiTokenResponse> 
 	}
 }
 
+/** @deprecated */
 export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 	resource = 'user/token'
 	method = Method.POST
@@ -621,6 +640,7 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 	}
 }
 
+/** @deprecated Has been replaced by V2RegisterPushNotificationToken */
 export class UpdateTokenRequest extends APIRequest<APIResponse> {
 	resource = 'user/mobile/notify/register'
 	method = Method.POST

@@ -28,9 +28,11 @@ import { Platform } from '@ionic/angular'
 
 import { Preferences } from '@capacitor/preferences'
 import { LogviewPage } from '../pages/logview/logview.page'
+import { Device } from '@capacitor/device'
 const { StorageMirror } = Plugins
 
 const AUTH_USER = 'auth_user'
+const AUTH_USER_V2 = 'auth_user_v2'
 const PREFERENCES = 'network_preferences'
 
 export const SETTING_NOTIFY = 'setting_notify'
@@ -50,28 +52,58 @@ export class StorageService extends CacheModule {
 
 	// --- upper level helper ---
 
+	async getDeviceID() {
+		return (await Device.getId()).identifier
+	}
+
+	// todo support v2
 	async backupAuthUser() {
 		return this.setObject(AUTH_USER + '_backup', await this.getAuthUser())
 	}
 
+	// todo support v2
 	async restoreAuthUser() {
 		return this.setAuthUser((await this.getObject(AUTH_USER + '_backup')) as StorageTypes.AuthUser)
 	}
 
+	/**@deprecated */
 	async getAuthUser(): Promise<StorageTypes.AuthUser> {
 		return this.getObject(AUTH_USER) as Promise<StorageTypes.AuthUser>
 	}
 
+	/**@deprecated */
 	async setAuthUser(value: StorageTypes.AuthUser) {
 		return this.setObject(AUTH_USER, value)
 	}
 
+	async getAuthUserv2(): Promise<StorageTypes.AuthUserv2> {
+		return this.getObject(AUTH_USER_V2) as Promise<StorageTypes.AuthUserv2>
+	}
+
+	async setAuthUserv2(value: StorageTypes.AuthUserv2) {
+		return this.setObject(AUTH_USER_V2, value)
+	}
+
+	async isV2() {
+		return this.getBooleanSetting("use_v2_api", false)
+	}
+
+	setV2(value: boolean) {
+		return this.setBooleanSetting("use_v2_api", value)
+	}
+
+	async getDeviceName(): Promise<string> {
+		return (await Device.getInfo()).model
+	}
+
+	// todo also support v2
 	async isLoggedIn(): Promise<boolean> {
 		const user = await this.getAuthUser()
 		if (!user || !user.accessToken) return false
 		return true
 	}
 
+	// todo also support v2
 	async removeAuthUser() {
 		return this.remove(AUTH_USER)
 	}
@@ -101,15 +133,23 @@ export class StorageService extends CacheModule {
 	}
 
 	setBooleanSetting(key, value) {
-		this.setSetting(key, value)
+		return this.setSetting(key, value)
 	}
 
 	getBooleanSetting(key: string, defaultV = true): Promise<boolean> {
 		return this.getSetting(key, defaultV) as Promise<boolean>
 	}
 
+	async isHttpAllowed() {
+		return this.getBooleanSetting('allow_http', false)
+	}
+
+	setHttpAllowed(value: boolean) {
+		return this.setBooleanSetting('allow_http', value)
+	}
+
 	setSetting(key, value) {
-		this.setObject(key, { value: value } as ValueWrapper)
+		return this.setObject(key, { value: value } as ValueWrapper)
 	}
 
 	getSetting(key: string, defaultV: unknown = 0) {

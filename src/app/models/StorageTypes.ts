@@ -18,10 +18,15 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**@deprecated */
 export interface AuthUser {
-	accessToken: string
-	refreshToken: string
-	expiresIn: number
+	accessToken: string 
+	refreshToken: string 
+	expiresIn: number 
+}
+
+export interface AuthUserv2 {
+	Session: string
 }
 
 export interface ApiNetwork {
@@ -40,6 +45,7 @@ export interface ApiNetwork {
 	slotsTime: number
 	epochsPerSyncPeriod: number
 	name: string
+	v2NetworkConfigKey?: string
 }
 
 export class NetworkMainCurrency {

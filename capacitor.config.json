@@ -1,22 +1,27 @@
 {
-	"appId": "in.beaconcha.mobile",
-	"appName": "Beaconchain Dashboard",
-	"bundledWebRuntime": false,
-	"npmClient": "npm",
-	"webDir": "www",
-	"plugins": {
-		"SplashScreen": {
-			"launchAutoHide": false,
-			"androidScaleType": "CENTER_CROP"
-		},
-		"CapacitorHttp": {
-			"enabled": true
-		}
-	},
-	"android": {
-		"flavor": "prod"
-	},
-	"server": {
-		"androidScheme": "http"
-	}
+  "appId": "in.beaconcha.mobile",
+  "appName": "Beaconchain Dashboard",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "androidScaleType": "CENTER_CROP"
+    },
+    "CapacitorCookies": {
+      "enabled": true
+    },
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  },
+  "android": {
+    "flavor": "prod"
+  },
+  "server": {
+    "androidScheme": "http",
+    "url": "http://100.121.110.92:8100",
+    "cleartext": true
+  }
 }

@@ -50,6 +50,7 @@ import { ClientsPage } from '../pages/clients/clients.page'
 import FlavorUtils from '../utils/FlavorUtils'
 import { Capacitor } from '@capacitor/core'
 import { trigger, style, animate, transition } from '@angular/animations'
+import V2Migrator from '../utils/V2Migrator'
 @Component({
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
@@ -71,7 +72,7 @@ export class Tab3Page {
 
 	appVersion: string
 
-	debug = false
+	debug = true
 
 	snowing: boolean
 
@@ -102,7 +103,8 @@ export class Tab3Page {
 		protected merchant: MerchantUtils,
 		public notificationBase: NotificationBase,
 		private router: Router,
-		private flavor: FlavorUtils
+		private flavor: FlavorUtils,
+		protected v2migrator: V2Migrator
 	) {}
 
 	ngOnInit() {

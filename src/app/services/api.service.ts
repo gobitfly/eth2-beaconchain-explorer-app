@@ -26,6 +26,8 @@ import { Mutex } from 'async-mutex'
 import { findConfigForKey, MAP } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
 import { Capacitor, HttpOptions } from '@capacitor/core'
+import { CapacitorCookies } from '@capacitor/core'
+
 
 const LOGTAG = '[ApiService]'
 
@@ -78,15 +80,26 @@ export class ApiService extends CacheModule {
 	}
 
 	async initialize() {
-		this.networkConfig = await this.storage.getNetworkPreferences().then((config) => {
+		await this.loadNetworkConfig()
+		await this.initV2Cookies()
+		await this.init()
+		console.log('API SERVICE INITIALISED')
+	}
+
+	async loadNetworkConfig() {
+		this.networkConfig = await this.storage.getNetworkPreferences().then(async (config) => {
 			const temp = findConfigForKey(config.key)
 			if (temp) {
+				if (temp.v2NetworkConfigKey && (await this.storage.isV2())) {
+					const v2Config = findConfigForKey(config.v2NetworkConfigKey)
+					if (v2Config) {
+						return v2Config
+					}
+				}
 				return temp
 			}
 			return config
 		})
-		await this.init()
-		console.log('API SERVICE INITIALISED')
 	}
 
 	networkName = null
@@ -101,6 +114,7 @@ export class ApiService extends CacheModule {
 		return temp
 	}
 
+	/** @deprecated v1 */
 	private async getAuthHeader(isTokenRefreshCall: boolean) {
 		let user = await this.storage.getAuthUser()
 		if (!user || !user.accessToken) return null
@@ -131,6 +145,28 @@ export class ApiService extends CacheModule {
 		}
 	}
 
+	public async initV2Cookies() {
+		const user = await this.storage.getAuthUserv2()
+		if (!user || !user.Session) return null
+
+		console.log('init cookies', this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host, user.Session)
+
+		await CapacitorCookies.setCookie({
+			url: this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host,
+			key: 'session_id',
+			value: user.Session,
+		})
+
+		if (await this.storage.isHttpAllowed()) {
+			await CapacitorCookies.setCookie({
+				url: 'http://' + this.networkConfig.net + this.networkConfig.host,
+				key: 'session_id',
+				value: user.Session,
+			})
+		}
+	}
+
+	/** @deprecated v1 */
 	async refreshToken() {
 		const user = await this.storage.getAuthUser()
 		if (!user || !user.refreshToken) {
@@ -223,6 +259,7 @@ export class ApiService extends CacheModule {
 			// the user was currently on, when they set the notification toggle
 			// hence the additional request.requiresAuth
 			if (request.endPoint == 'default' || request.requiresAuth) {
+				// v1 only
 				const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
 
 				if (authHeader) {
@@ -234,17 +271,7 @@ export class ApiService extends CacheModule {
 			console.log(LOGTAG + ' Send request: ' + request.resource, request.method, request)
 			const startTs = Date.now()
 
-			let response: Promise<Response>
-			switch (request.method) {
-				case Method.GET:
-					response = this.get(request.resource, request.endPoint, request.ignoreFails, options)
-					break
-				case Method.POST:
-					response = this.post(request.resource, request.postData, request.endPoint, request.ignoreFails, options)
-					break
-				default:
-					throw 'Unsupported method: ' + request.method
-			}
+			const response = this.doHttp(request.method, request.resource, request.postData, request.endPoint, request.ignoreFails, options)
 
 			const result = await response
 			this.updateConnectionState(request.ignoreFails, result && result.data && !!result.url)
@@ -254,7 +281,7 @@ export class ApiService extends CacheModule {
 				return result
 			}
 
-			if ((request.method == Method.GET || request.cacheablePOST) && result && result.status == 200 && result.data) {
+			if ((request.method == Method.GET || request.cacheablePOST) && result && result.status == request.expectedResponseStatus && result.data) {
 				this.putCache(this.getCacheKey(request), result, request.maxCacheAge)
 			}
 
@@ -270,6 +297,36 @@ export class ApiService extends CacheModule {
 		}
 	}
 
+	private async doHttp(
+		method: Method,
+		resource: string,
+		data,
+		endpoint = 'default',
+		ignoreFails = false,
+		options: HttpOptions = { url: null, headers: {} }
+	) {
+		let body: BodyInit = undefined
+		if (method == Method.POST || method == Method.PUT) {
+			if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
+				if (!(data instanceof FormData)) {
+					options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentTypeBasedOnData(data) } }
+				}
+			}
+			body = this.formatPostData(data, resource)
+		}
+
+		const result = await fetch(this.getResourceUrl(resource, endpoint), {
+			method: Method[method],
+			headers: options.headers,
+			body: body,
+		}).catch((err) => {
+			this.updateConnectionState(ignoreFails, false)
+			console.warn('Connection err', err)
+		})
+		if (!result) return null
+		return await this.validateResponse(ignoreFails, result)
+	}
+
 	async clearSpecificCache(request: APIRequest<unknown>) {
 		await this.putCache(this.getCacheKey(request), null, request.maxCacheAge)
 	}
@@ -278,37 +335,6 @@ export class ApiService extends CacheModule {
 		if (response && response.status == 200) {
 			this.lastRefreshed = Date.now()
 		}
-	}
-
-	private async get(resource: string, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
-		const result = await fetch(this.getResourceUrl(resource, endpoint), {
-			method: 'GET',
-			headers: options.headers,
-		}).catch((err) => {
-			this.updateConnectionState(ignoreFails, false)
-			console.warn('Connection err', err)
-		})
-		if (!result) return null
-		return await this.validateResponse(ignoreFails, result)
-	}
-
-	private async post(resource: string, data, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
-		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
-			if (!(data instanceof FormData)) {
-				options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentTypeBasedOnData(data) } }
-			}
-		}
-
-		const result = await fetch(this.getResourceUrl(resource, endpoint), {
-			method: 'POST',
-			headers: options.headers,
-			body: this.formatPostData(data, resource),
-		}).catch((err) => {
-			this.updateConnectionState(ignoreFails, false)
-			console.warn('Connection err', err)
-		})
-		if (!result) return null
-		return await this.validateResponse(ignoreFails, result)
 	}
 
 	private getContentTypeBasedOnData(data: unknown): string {
@@ -333,11 +359,16 @@ export class ApiService extends CacheModule {
 			this.updateConnectionState(ignoreFails, false)
 			return
 		}
-		const jsonData = await response.json()
-		if (!jsonData) {
-			console.warn('not json response', response, jsonData)
-			this.updateConnectionState(ignoreFails, false)
-			return
+		let jsonData
+		try {
+			jsonData = await response.json()
+			if (!jsonData) {
+				console.warn('not json response', response, jsonData)
+				this.updateConnectionState(ignoreFails, false)
+				return
+			}
+		} catch (e) {
+			// Auth response can be empty, maybe improve handling in the future
 		}
 		this.updateConnectionState(ignoreFails, true)
 		return {
