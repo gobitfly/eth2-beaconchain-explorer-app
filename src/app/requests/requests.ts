@@ -36,7 +36,13 @@ export interface APIResponse {
 	data: unknown
 }
 
-export interface NoContent {}
+export interface NoContent { }
+
+export interface ApiResult<T> {
+	data: T
+	error: string | null
+	cached: boolean
+}
 
 export abstract class APIRequest<T> {
 	abstract resource: string
@@ -45,9 +51,26 @@ export abstract class APIRequest<T> {
 	endPoint = 'default'
 	postData?: unknown
 	expectedResponseStatus = 200
+	sortResultFn: (a: T, b: T) => number = null
 
 	parse(response: Response): T[] {
 		return this.parseBase(response)
+	}
+
+	parse2(response: Response): ApiResult<T[]> {
+		if (this.wasSuccessful(response)) {
+			return {
+				data: this.parse(response),
+				error: null,
+				cached: response.cached,
+			}
+		}
+
+		return {
+			data: null,
+			error: response.data?.error || "HTTP status code: " + response.status,
+			cached: response.cached,
+		}
 	}
 
 	// Usually you can expect either a Response or a boolean
@@ -68,7 +91,11 @@ export abstract class APIRequest<T> {
 		if (response && response.data && response.data.data) {
 			const data = response.data.data
 			if (Array.isArray(data)) {
-				return data
+				if (this.sortResultFn) {
+					data.sort(this.sortResultFn)
+				}
+
+				return data as T[]
 			} else {
 				return [data]
 			}

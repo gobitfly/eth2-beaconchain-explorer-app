@@ -7,8 +7,7 @@ import { Clients } from '../../utils/ClientUpdateUtils'
 import { DevModeEnabled } from 'src/app/services/storage.service'
 import { MigrateV1AuthToV2 } from 'src/app/requests/v2-auth'
 import { V2Me, V2RegisterPushNotificationToken } from 'src/app/requests/v2-user'
-import { V2DashboardSummary } from 'src/app/requests/v2-dashboard'
-import { encodeDashboardID } from 'src/app/utils/DashboardHelper'
+import { getValidatorData } from 'src/app/controllers/OverviewController'
 
 @Component({
 	selector: 'app-dev',
@@ -221,12 +220,24 @@ export class DevPage extends Tab3Page implements OnInit {
 	}
 
 	testv2() {
+		const dashboardID = 5348
+		getValidatorData(this.api, dashboardID)
+
 		
-			const loginRequest = new V2DashboardSummary(encodeDashboardID([0,1,2,3,4]))
-			this.api.execute(loginRequest).then((response) => {
-				const result = loginRequest.parse(response)
-				console.log('v2 dashboards', response, result)
-			})
+
+		// const test = await this.api.execute2(new V2DashboardOverview(dashboardID))
+		// console.log("test", test)
+
+		// const loginRequest = new V2DashboardOverview(dashboardID) // encodeDashboardID([0,1,2,3,4])
+		// this.api.execute(loginRequest).then((response) => {
+		// 	const result = loginRequest.parse(response)
+		// 	console.log('v2 dashboards', response, result)
+		// })
+		// const summary = new V2UpdateDashboardGroup(dashboardID, 0, 'Genesis')
+		// this.api.execute(summary).then((response) => {
+		// 	const result = summary.parse(response)
+		// 	console.log('v2 dashboards summary', response, result)
+		// })
 	}
 
 	async equivalentExchange() {

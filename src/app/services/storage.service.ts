@@ -96,10 +96,13 @@ export class StorageService extends CacheModule {
 		return (await Device.getInfo()).model
 	}
 
-	// todo also support v2
 	async isLoggedIn(): Promise<boolean> {
 		const user = await this.getAuthUser()
-		if (!user || !user.accessToken) return false
+		if (!user || !user.accessToken) {
+			const userv2 = await this.getAuthUserv2()
+			if (!userv2 || !userv2.Session) return false
+			return true
+		}
 		return true
 	}
 

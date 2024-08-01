@@ -21,7 +21,7 @@
 import { Component } from '@angular/core'
 import { ApiService } from '../services/api.service'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
-import OverviewController, { OverviewData } from '../controllers/OverviewController'
+import { getValidatorData, OverviewData2 } from '../controllers/OverviewController'
 import ClientUpdateUtils from '../utils/ClientUpdateUtils'
 import { StorageService } from '../services/storage.service'
 import { UnitconvService } from '../services/unitconv.service'
@@ -38,7 +38,7 @@ export const REAPPLY_KEY = 'reapply_notification2'
 })
 export class Tab1Page {
 	lastRefreshTs = 0
-	overallData: OverviewData
+	overallData: OverviewData2
 	initialized = true
 	currentY = 0
 	scrolling = false
@@ -112,31 +112,14 @@ export class Tab1Page {
 			return
 		}
 		this.updates.checkAllUpdates()
-		const validators = await this.validatorUtils.getAllMyValidators().catch((error) => {
-			console.warn('error getAllMyValidators', error)
-			return []
-		})
-		const epoch = await this.validatorUtils.getRemoteCurrentEpoch().catch((error) => {
-			console.warn('error getRemoteCurrentEpoch', error)
-			return null
-		})
-		const overviewController = new OverviewController(
-			() => {
-				if (this.lastRefreshTs + 60 > this.getUnixSeconds()) return
-				this.api.invalidateCache()
-				this.refresh()
-			},
-			await this.merchant.getCurrentPlanMaxValidator(),
-			this.unitConv
-		)
+		// const validators = await this.validatorUtils.getAllMyValidators().catch((error) => {
+		// 	console.warn('error getAllMyValidators', error)
+		// 	return []
+		// })
 
-		this.overallData = overviewController.processDashboard(
-			validators,
-			epoch,
-			this.validatorUtils.syncCommitteesStatsResponse,
-			this.validatorUtils.proposalLuckResponse,
-			this.api.getNetwork()
-		)
+		
+		this.overallData = await getValidatorData(this.api, 5348) 
+		console.log('overallData', this.overallData)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}
 

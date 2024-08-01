@@ -21,7 +21,7 @@
 import { Component, OnInit, Input, SimpleChange } from '@angular/core'
 import { RewardType, UnitconvService } from '../../services/unitconv.service'
 import { ApiService } from '../../services/api.service'
-import { DashboardDataRequest, EpochResponse, SyncCommitteeResponse } from '../../requests/requests'
+import { DashboardDataRequest, SyncCommitteeResponse } from '../../requests/requests'
 import * as HighCharts from 'highcharts'
 import * as Highstock from 'highcharts/highstock'
 import BigNumber from 'bignumber.js'
@@ -38,6 +38,7 @@ import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import FirebaseUtils from 'src/app/utils/FirebaseUtils'
 import { trigger, style, animate, transition } from '@angular/animations'
+import { slotToEpoch } from 'src/app/utils/MathUtils'
 @Component({
 	selector: 'app-validator-dashboard',
 	templateUrl: './dashboard.component.html',
@@ -72,7 +73,7 @@ export class DashboardComponent implements OnInit {
 	showMergeChecklist = false
 	firstCelebrate = true
 
-	doneLoading = false
+	doneLoading = true // todo back to false
 	proposals: Proposals = {
 		good: 0,
 		bad: 0,
@@ -136,6 +137,7 @@ export class DashboardComponent implements OnInit {
 	}
 
 	async ngOnChanges(event) {
+		console.log("event data", event.data)
 		if (event.data && event.data instanceof SimpleChange) {
 			if (event.data.currentValue) {
 				this.chartError = false
@@ -345,11 +347,12 @@ export class DashboardComponent implements OnInit {
 		})
 	}
 
-	private checkForGenesisOccurred() {
-		if (!this.data || !this.data.currentEpoch) return
-		const currentEpoch = this.data.currentEpoch as EpochResponse
-		this.awaitGenesis = currentEpoch.epoch == 0 && currentEpoch.proposedblocks <= 1
-		this.earlyGenesis = !this.awaitGenesis && !this.finalizationIssue && currentEpoch.epoch <= 7
+	private async checkForGenesisOccurred() {
+		const latestState = await this.api.getLatestState()
+		if (!this.data || !latestState.state) return
+		const currentEpoch = slotToEpoch(latestState.state.current_slot)
+		this.awaitGenesis = currentEpoch == 0 && latestState.state.current_slot <= 0
+		this.earlyGenesis = !this.awaitGenesis && !this.finalizationIssue && currentEpoch <= 7
 	}
 
 	async checkForFinalization() {
@@ -362,10 +365,10 @@ export class DashboardComponent implements OnInit {
 			}
 		}
 
-		const olderResult = this.validatorUtils.getOlderEpoch()
-		if (!this.data || !this.data.currentEpoch || !olderResult) return
-		console.log('checkForFinalization', olderResult)
-		this.finalizationIssue = new BigNumber(olderResult.globalparticipationrate).isLessThan('0.664') && olderResult.epoch > 7
+		const latestState = await this.api.getLatestState()
+		if (!this.data || !latestState.state) return
+		const epochsToWaitBeforeFinalizationIssue = 4 // 2 normal delay + 2 extra
+		this.finalizationIssue = slotToEpoch(latestState.state.finalized_epoch) - epochsToWaitBeforeFinalizationIssue > latestState.state.finalized_epoch 
 		this.storage.setObject('finalization_issues', { ts: Date.now(), value: this.finalizationIssue } as FinalizationIssue)
 	}
 

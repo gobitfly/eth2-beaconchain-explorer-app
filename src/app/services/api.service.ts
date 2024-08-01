@@ -19,7 +19,7 @@
  */
 
 import { Injectable } from '@angular/core'
-import { APIRequest, Method, RefreshTokenRequest } from '../requests/requests'
+import { APIRequest, ApiResult, Method, RefreshTokenRequest } from '../requests/requests'
 import { StorageService } from './storage.service'
 import { ApiNetwork } from '../models/StorageTypes'
 import { Mutex } from 'async-mutex'
@@ -27,6 +27,8 @@ import { findConfigForKey, MAP } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
 import { Capacitor, HttpOptions } from '@capacitor/core'
 import { CapacitorCookies } from '@capacitor/core'
+import { LatestStateData } from '../requests/types/latest_state'
+import { V2LatestState } from '../requests/network'
 
 
 const LOGTAG = '[ApiService]'
@@ -48,6 +50,8 @@ export class ApiService extends CacheModule {
 	public lastRefreshed = 0 // only updated by calls that have the updatesLastRefreshState flag enabled
 
 	private lastCacheInvalidate = 0
+
+	private sessionCookie: string
 
 	constructor(private storage: StorageService) {
 		super('api', 6 * 60 * 1000, storage, 1000, false)
@@ -164,6 +168,8 @@ export class ApiService extends CacheModule {
 				value: user.Session,
 			})
 		}
+
+		this.sessionCookie = user.Session
 	}
 
 	/** @deprecated v1 */
@@ -233,6 +239,11 @@ export class ApiService extends CacheModule {
 		return null
 	}
 
+	async execute2<T>(request: APIRequest<T>): Promise<ApiResult<T[]>> {
+		const response = await this.execute(request)
+		return request.parse2(response)
+	}
+
 	async execute(request: APIRequest<unknown>): Promise<Response> {
 		await this.initialized
 
@@ -259,12 +270,26 @@ export class ApiService extends CacheModule {
 			// the user was currently on, when they set the notification toggle
 			// hence the additional request.requiresAuth
 			if (request.endPoint == 'default' || request.requiresAuth) {
-				// v1 only
-				const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
+				if (await this.storage.isV2()) {
+					if (!this.sessionCookie) {
+						this.initV2Cookies()
+					}
 
-				if (authHeader) {
-					const headers = { ...options.headers, ...authHeader }
-					options.headers = headers
+					// DANGEROUS
+					// Strictly for development purposes. Intention is this to be used in local
+					// setup to develop in browser instead of native device. Since fetch does not allow
+					// setting cookies yourself, we can use the X-Cookie header with a reverse proxy to
+					// get sessions working in development environment.
+					if (this.networkConfig.passXCookieDANGEROUS) {
+						options.headers = { ...options.headers, 'X-Cookie': 'session_id=' + this.sessionCookie }
+					}
+				} else {
+					const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
+
+					if (authHeader) {
+						const headers = { ...options.headers, ...authHeader }
+						options.headers = headers
+					}
 				}
 			}
 
@@ -319,6 +344,7 @@ export class ApiService extends CacheModule {
 			method: Method[method],
 			headers: options.headers,
 			body: body,
+			credentials: 'include',
 		}).catch((err) => {
 			this.updateConnectionState(ignoreFails, false)
 			console.warn('Connection err', err)
@@ -444,6 +470,32 @@ export class ApiService extends CacheModule {
 		}
 		return network.clCurrency.formattedName + ' / ' + network.elCurrency.formattedName
 	}
+
+	// Helper function since this is used quite often
+	// and caching is already done by ApiService itself
+	public async getLatestState(): Promise<LatestStateWithTime> {
+		const temp = await this.execute2(new V2LatestState())
+		if (temp.error) {
+			console.warn('getLatestState error', temp.error)
+			return null
+		}
+		const result = {
+			state: temp.data[0],
+			ts: Date.now(),
+		}
+
+		if (temp.cached != true) {
+			await this.storage.setLastEpochRequestTime(Date.now())
+		} else {
+			result.ts = await this.storage.getLastEpochRequestTime()
+		}
+		return result
+	}
+}
+
+export interface LatestStateWithTime {
+	state: LatestStateData
+	ts: number // at which the request was made
 }
 
 export interface Response {

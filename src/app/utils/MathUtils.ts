@@ -50,4 +50,8 @@ export function findLowest<T>(validators: T[], field: (cur: T) => number): numbe
 	return lowest
 }
 
+export function slotToEpoch(slot: number): number {
+	return Math.floor(slot / 32)
+}
+
 export default class {}

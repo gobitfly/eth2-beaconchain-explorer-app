@@ -18,14 +18,25 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochResponse, ProposalLuckResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
-import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
+import { ProposalLuckResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
+import { sumBigInt, slotToEpoch } from '../utils/MathUtils'
 import BigNumber from 'bignumber.js'
-import { getValidatorQueryString, ValidatorState, Validator } from '../utils/ValidatorUtils'
+import { ValidatorState, Validator } from '../utils/ValidatorUtils'
 import { formatDate } from '@angular/common'
 import { SyncCommitteesStatistics, SyncCommitteesStatisticsResponse } from '../requests/requests'
 import { UnitconvService } from '../services/unitconv.service'
 import { ApiNetwork } from '../models/StorageTypes'
+import { dashboardID, Period, V2DashboardOverview, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
+import { ApiService, LatestStateWithTime } from '../services/api.service'
+import { VDBGroupSummaryData, VDBOverviewData, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
+
+export type OverviewData2 = {
+	overviewData: VDBOverviewData
+	summaryTableData: VDBSummaryTableRow[]
+	summaryGroupTableData: VDBGroupSummaryData
+	latestState: LatestStateWithTime
+	network: ApiNetwork
+}
 
 export type OverviewData = {
 	overallBalance: BigNumber
@@ -53,7 +64,7 @@ export type OverviewData = {
 	foreignValidatorItem?: Validator
 	foreignValidatorWithdrawalCredsAre0x01: boolean
 	effectiveBalance: BigNumber
-	currentEpoch: EpochResponse
+	latestState: LatestStateWithTime
 	rocketpool: Rocketpool
 	currentSyncCommittee: SyncCommitteeResponse
 	nextSyncCommittee: SyncCommitteeResponse
@@ -125,212 +136,249 @@ export type Description = {
 
 const VALIDATOR_32ETH = new BigNumber(32000000000)
 
+export async function getValidatorData(api: ApiService, id: dashboardID): Promise<OverviewData2> {
+	const results = await Promise.all([
+		api.execute2(new V2DashboardOverview(id)),
+		api.execute2(new V2DashboardSummaryTable(id, Period.AllTime, null)),
+		api.execute2(new V2DashboardSummaryGroupTable(id, 0, Period.AllTime, null)), // hardcode group 0 for now // TODO
+		api.getLatestState()
+	])
+
+	console.log("results", results)
+	const overviewData = results[0].data[0]
+	const summaryTableData = results[1].data
+	const summaryGroupTableData = results[2].data[0]
+	const latestState = results[3]
+
+	return {
+		overviewData: overviewData,
+		summaryTableData: summaryTableData,
+		summaryGroupTableData: summaryGroupTableData,
+		latestState: latestState,
+		network: api.getNetwork()
+	}
+}
+
 export default class OverviewController {
 	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280, private unit: UnitconvService = null) {}
 
-	public processDashboard(
-		validators: Validator[],
-		currentEpoch: EpochResponse,
-		syncCommitteesStatsResponse = null,
-		proposalLuckResponse: ProposalLuckResponse = null,
-		network: ApiNetwork
-	) {
-		return this.process(validators, currentEpoch, false, syncCommitteesStatsResponse, proposalLuckResponse, network)
-	}
+	// public processDashboard(
+	// 	overviewData: VDBOverviewData,
+	// 	summaryTableData: VDBSummaryTableRow[],
+	// 	summaryGroupTableData: VDBGroupSummaryData,
+	// 	latestState: LatestStateWithTime,
+	// 	network: ApiNetwork
+	// ) {
+	// 	return this.process(
+	// 		overviewData,
+	// 		summaryTableData,
+	// 		summaryGroupTableData,
+	// 		latestState,
+	// 		false,
+	// 		network
+	// 	)
+	// }
 
-	public processDetail(validators: Validator[], currentEpoch: EpochResponse, network: ApiNetwork) {
-		return this.process(validators, currentEpoch, true, null, null, network)
-	}
+	// public processDetail(
+	// 	overviewData: VDBOverviewData,
+	// 	summaryTableData: VDBSummaryTableRow[],
+	// 	summaryGroupTableData: VDBGroupSummaryData,
+	// 	latestState: LatestStateWithTime,
+	// 	network: ApiNetwork
+	// ) {
+	// 	return this.process(overviewData, summaryTableData, summaryGroupTableData, latestState, true, network)
+	// }
 
-	private process(
-		validators: Validator[],
-		currentEpoch: EpochResponse,
-		foreignValidator = false,
-		syncCommitteesStatsResponse = null,
-		proposalLuckResponse: ProposalLuckResponse = null,
-		network: ApiNetwork
-	): OverviewData {
-		if (!validators || validators.length <= 0 || currentEpoch == null) return null
+	// private process(
+	// 	overviewData: VDBOverviewData,
+	// 	summaryTableData: VDBSummaryTableRow[],
+	// 	summaryGroupTableData: VDBGroupSummaryData,
+	// 	latestState: LatestStateWithTime,
+	// 	foreignValidator = false, // whether it's part of the users validator set or not, might affect how certain warnings and tooltips behave
+	// 	network: ApiNetwork
+	// ): OverviewData {
+	// 	if (!validators || validators.length <= 0 || latestState.state == null) return null
 
-		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
-		const validatorDepositActive = sumBigInt(validators, (cur) => {
-			if (cur.data.activationepoch <= currentEpoch.epoch) {
-				if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+	// 	const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
+	// 	const validatorDepositActive = sumBigInt(validators, (cur) => {
+	// 		// todo use validator status
+	// 		if (cur.data.activationepoch <= slotToEpoch(latestState.state.current_slot)) {
+	// 			if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 
-				let nodeDeposit
-				if (cur.rocketpool.node_deposit_balance) {
-					nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
-				} else {
-					nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
-				}
-				return nodeDeposit.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-			} else {
-				return new BigNumber(0)
-			}
-		})
+	// 			let nodeDeposit
+	// 			if (cur.rocketpool.node_deposit_balance) {
+	// 				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+	// 			} else {
+	// 				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
+	// 			}
+	// 			return nodeDeposit.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+	// 		} else {
+	// 			return new BigNumber(0)
+	// 		}
+	// 	})
 
-		const overallBalance = this.sumBigIntBalanceRP(validators, (cur) => new BigNumber(cur.data.balance))
-		const validatorCount = validators.length
-		const activeValidators = this.getActiveValidators(validators)
-		const offlineValidators = this.getOfflineValidators(validators)
+	// 	const overallBalance = this.sumBigIntBalanceRP(validators, (cur) => new BigNumber(cur.data.balance))
+	// 	const validatorCount = validators.length
+	// 	const activeValidators = this.getActiveValidators(validators)
+	// 	const offlineValidators = this.getOfflineValidators(validators)
 
-		const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive)
+	// 	const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive)
 
-		const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive)
+	// 	const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive)
 
-		const smoothingPoolClaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
-			true,
-			validators,
-			(cur) => cur.rocketpool.claimed_smoothing_pool,
-			(cur) => cur.execshare
-		).dividedBy(new BigNumber('1e9'))
+	// 	const smoothingPoolClaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
+	// 		true,
+	// 		validators,
+	// 		(cur) => cur.rocketpool.claimed_smoothing_pool,
+	// 		(cur) => cur.execshare
+	// 	).dividedBy(new BigNumber('1e9'))
 
-		const smoothingPoolUnclaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
-			true,
-			validators,
-			(cur) => cur.rocketpool.unclaimed_smoothing_pool,
-			(cur) => cur.execshare
-		).dividedBy(new BigNumber('1e9'))
+	// 	const smoothingPoolUnclaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
+	// 		true,
+	// 		validators,
+	// 		(cur) => cur.rocketpool.unclaimed_smoothing_pool,
+	// 		(cur) => cur.execshare
+	// 	).dividedBy(new BigNumber('1e9'))
 
-		const combinedPerf = {
-			performance1d: consensusPerf.performance1d.plus(this.unit.convertELtoCL(executionPerf.performance1d)),
-			performance31d: consensusPerf.performance31d.plus(this.unit.convertELtoCL(executionPerf.performance31d)),
-			performance7d: consensusPerf.performance7d.plus(this.unit.convertELtoCL(executionPerf.performance7d)),
-			performance365d: consensusPerf.performance365d.plus(this.unit.convertELtoCL(executionPerf.performance365d)),
-			apr31d: this.getAPRFrom(31, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance31d).plus(consensusPerf.performance31d)),
-			apr7d: this.getAPRFrom(7, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance7d).plus(consensusPerf.performance7d)),
-			apr365d: this.getAPRFrom(
-				365,
-				validatorDepositActive,
-				this.unit.convertELtoCL(executionPerf.performance365d).plus(consensusPerf.performance365d)
-			),
-			total: consensusPerf.total.plus(this.unit.convertELtoCL(executionPerf.total)).plus(smoothingPoolClaimed).plus(smoothingPoolUnclaimed),
-		} as Performance
+	// 	const combinedPerf = {
+	// 		performance1d: consensusPerf.performance1d.plus(this.unit.convertELtoCL(executionPerf.performance1d)),
+	// 		performance31d: consensusPerf.performance31d.plus(this.unit.convertELtoCL(executionPerf.performance31d)),
+	// 		performance7d: consensusPerf.performance7d.plus(this.unit.convertELtoCL(executionPerf.performance7d)),
+	// 		performance365d: consensusPerf.performance365d.plus(this.unit.convertELtoCL(executionPerf.performance365d)),
+	// 		apr31d: this.getAPRFrom(31, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance31d).plus(consensusPerf.performance31d)),
+	// 		apr7d: this.getAPRFrom(7, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance7d).plus(consensusPerf.performance7d)),
+	// 		apr365d: this.getAPRFrom(
+	// 			365,
+	// 			validatorDepositActive,
+	// 			this.unit.convertELtoCL(executionPerf.performance365d).plus(consensusPerf.performance365d)
+	// 		),
+	// 		total: consensusPerf.total.plus(this.unit.convertELtoCL(executionPerf.total)).plus(smoothingPoolClaimed).plus(smoothingPoolUnclaimed),
+	// 	} as Performance
 
-		let attrEffectiveness = 0
-		let displayAttrEffectiveness = false
-		if (activeValidators.length > 0) {
-			displayAttrEffectiveness = true
+	// 	let attrEffectiveness = 0
+	// 	let displayAttrEffectiveness = false
+	// 	if (activeValidators.length > 0) {
+	// 		displayAttrEffectiveness = true
 
-			attrEffectiveness = sumBigInt(activeValidators, (cur) =>
-				cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()) : new BigNumber(0)
-			)
-				.dividedBy(activeValidators.length)
-				.decimalPlaces(1)
-				.toNumber()
+	// 		attrEffectiveness = sumBigInt(activeValidators, (cur) =>
+	// 			cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()) : new BigNumber(0)
+	// 		)
+	// 			.dividedBy(activeValidators.length)
+	// 			.decimalPlaces(1)
+	// 			.toNumber()
 
-			const attrChecked = Math.min(Math.max(attrEffectiveness, 0), 100)
-			if (attrEffectiveness != attrChecked) {
-				console.warn(`Effectiveness out of range: ${attrEffectiveness} (displaying "NaN")`)
-				attrEffectiveness = -1 // display "NaN" if something went wrong
-			}
-		}
+	// 		const attrChecked = Math.min(Math.max(attrEffectiveness, 0), 100)
+	// 		if (attrEffectiveness != attrChecked) {
+	// 			console.warn(`Effectiveness out of range: ${attrEffectiveness} (displaying "NaN")`)
+	// 			attrEffectiveness = -1 // display "NaN" if something went wrong
+	// 		}
+	// 	}
 
-		let bestRank = 0
-		let bestTopPercentage = 0
-		let worstRank = 0
-		let worstTopPercentage = 0
-		const rankRelevantValidators = activeValidators.concat(offlineValidators)
-		if (rankRelevantValidators.length > 0) {
-			bestRank = findLowest(rankRelevantValidators, (cur) => cur.data.rank7d)
-			bestTopPercentage = findLowest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
-			worstRank = findHighest(rankRelevantValidators, (cur) => cur.data.rank7d)
-			worstTopPercentage = findHighest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
-		}
+	// 	let bestRank = 0
+	// 	let bestTopPercentage = 0
+	// 	let worstRank = 0
+	// 	let worstTopPercentage = 0
+	// 	const rankRelevantValidators = activeValidators.concat(offlineValidators)
+	// 	if (rankRelevantValidators.length > 0) {
+	// 		bestRank = findLowest(rankRelevantValidators, (cur) => cur.data.rank7d)
+	// 		bestTopPercentage = findLowest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
+	// 		worstRank = findHighest(rankRelevantValidators, (cur) => cur.data.rank7d)
+	// 		worstTopPercentage = findHighest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
+	// 	}
 
-		const rocketpoolValiCount = sumBigInt(validators, (cur) => (cur.rocketpool ? new BigNumber(1) : new BigNumber(0)))
-		const feeSum = sumBigInt(validators, (cur) =>
-			cur.rocketpool ? new BigNumber(cur.rocketpool.minipool_node_fee).multipliedBy('100') : new BigNumber('0')
-		)
-		let feeAvg = 0
-		if (feeSum.decimalPlaces(3).toNumber() != 0) {
-			feeAvg = feeSum.dividedBy(rocketpoolValiCount).decimalPlaces(1).toNumber()
-		}
+	// 	const rocketpoolValiCount = sumBigInt(validators, (cur) => (cur.rocketpool ? new BigNumber(1) : new BigNumber(0)))
+	// 	const feeSum = sumBigInt(validators, (cur) =>
+	// 		cur.rocketpool ? new BigNumber(cur.rocketpool.minipool_node_fee).multipliedBy('100') : new BigNumber('0')
+	// 	)
+	// 	let feeAvg = 0
+	// 	if (feeSum.decimalPlaces(3).toNumber() != 0) {
+	// 		feeAvg = feeSum.dividedBy(rocketpoolValiCount).decimalPlaces(1).toNumber()
+	// 	}
 
-		const currentSync = validators.find((cur) => !!cur.currentSyncCommittee)
-		const nextSync = validators.find((cur) => !!cur.nextSyncCommittee)
+	// 	const currentSync = validators.find((cur) => !!cur.currentSyncCommittee)
+	// 	const nextSync = validators.find((cur) => !!cur.nextSyncCommittee)
 
-		let foreignWCAre0x01 = false
-		if (foreignValidator) {
-			foreignWCAre0x01 = validators[0].data.withdrawalcredentials.startsWith('0x01')
-		}
+	// 	let foreignWCAre0x01 = false
+	// 	if (foreignValidator) {
+	// 		foreignWCAre0x01 = validators[0].data.withdrawalcredentials.startsWith('0x01')
+	// 	}
 
-		return {
-			overallBalance: overallBalance,
-			validatorCount: validatorCount,
-			bestRank: bestRank,
-			bestTopPercentage: bestTopPercentage,
-			worstRank: worstRank,
-			worstTopPercentage: worstTopPercentage,
-			attrEffectiveness: attrEffectiveness,
-			displayAttrEffectiveness: displayAttrEffectiveness,
-			consensusPerformance: consensusPerf,
-			executionPerformance: executionPerf,
-			combinedPerformance: combinedPerf,
-			dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator, network),
-			lazyLoadChart: true,
-			lazyChartValidators: getValidatorQueryString(validators, 2000, this.userMaxValidators - 1),
-			foreignValidator: foreignValidator,
-			foreignValidatorItem: foreignValidator ? validators[0] : null,
-			foreignValidatorWithdrawalCredsAre0x01: foreignWCAre0x01,
-			effectiveBalance: effectiveBalance,
-			currentEpoch: currentEpoch,
-			currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
-			nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
-			syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse, network),
-			proposalLuckResponse: proposalLuckResponse,
-			withdrawalsEnabledForAll:
-				validators.filter((cur) => (cur.data.withdrawalcredentials.startsWith('0x01') ? true : false)).length == validatorCount,
-			rocketpool: {
-				minRpl: this.sumRocketpoolBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.node_min_rpl_stake,
-					(cur) => cur.rplshare
-				),
-				maxRpl: this.sumRocketpoolBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.node_max_rpl_stake,
-					(cur) => cur.rplshare
-				),
-				currentRpl: this.sumRocketpoolBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.node_rpl_stake,
-					(cur) => cur.rplshare
-				),
-				totalClaims: this.sumRocketpoolBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.rpl_cumulative_rewards,
-					(cur) => cur.rplshare
-				),
-				fee: feeAvg,
-				status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
-				depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
-				smoothingPoolClaimed: smoothingPoolClaimed,
-				smoothingPoolUnclaimed: smoothingPoolUnclaimed,
-				rplUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.unclaimed_rpl_rewards,
-					(cur) => cur.rplshare
-				),
-				smoothingPool: validators.find((cur) => (cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == true : false)) != null ? true : false,
-				hasNonSmoothingPoolAsWell:
-					validators.find((cur) => (cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == false : true)) != null ? true : false,
-				cheatingStatus: this.getRocketpoolCheatingStatus(validators),
-				depositCredit: this.sumRocketpoolBigIntPerNodeAddress(
-					false,
-					validators,
-					(cur) => (cur.rocketpool.node_deposit_credit ? cur.rocketpool.node_deposit_credit.toString() : '0'),
-					() => 1
-				),
-				vacantPools: validators.filter((cur) => cur.rocketpool && cur.rocketpool.is_vacant).length,
-			},
-		} as OverviewData
-	}
+	// 	return {
+	// 		overallBalance: overallBalance,
+	// 		validatorCount: validatorCount,
+	// 		bestRank: bestRank,
+	// 		bestTopPercentage: bestTopPercentage,
+	// 		worstRank: worstRank,
+	// 		worstTopPercentage: worstTopPercentage,
+	// 		attrEffectiveness: attrEffectiveness,
+	// 		displayAttrEffectiveness: displayAttrEffectiveness,
+	// 		consensusPerformance: consensusPerf,
+	// 		executionPerformance: executionPerf,
+	// 		combinedPerformance: combinedPerf,
+	// 		dashboardState: this.getDashboardState(validators, latestState, foreignValidator, network),
+	// 		lazyLoadChart: true,
+	// 		lazyChartValidators: getValidatorQueryString(validators, 2000, this.userMaxValidators - 1),
+	// 		foreignValidator: foreignValidator,
+	// 		foreignValidatorItem: foreignValidator ? validators[0] : null,
+	// 		foreignValidatorWithdrawalCredsAre0x01: foreignWCAre0x01,
+	// 		effectiveBalance: effectiveBalance,
+	// 		latestState: latestState,
+	// 		currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
+	// 		nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
+	// 		syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse, network),
+	// 		proposalLuckResponse: proposalLuckResponse,
+	// 		withdrawalsEnabledForAll:
+	// 			validators.filter((cur) => (cur.data.withdrawalcredentials.startsWith('0x01') ? true : false)).length == validatorCount,
+	// 		rocketpool: {
+	// 			minRpl: this.sumRocketpoolBigIntPerNodeAddress(
+	// 				true,
+	// 				validators,
+	// 				(cur) => cur.rocketpool.node_min_rpl_stake,
+	// 				(cur) => cur.rplshare
+	// 			),
+	// 			maxRpl: this.sumRocketpoolBigIntPerNodeAddress(
+	// 				true,
+	// 				validators,
+	// 				(cur) => cur.rocketpool.node_max_rpl_stake,
+	// 				(cur) => cur.rplshare
+	// 			),
+	// 			currentRpl: this.sumRocketpoolBigIntPerNodeAddress(
+	// 				true,
+	// 				validators,
+	// 				(cur) => cur.rocketpool.node_rpl_stake,
+	// 				(cur) => cur.rplshare
+	// 			),
+	// 			totalClaims: this.sumRocketpoolBigIntPerNodeAddress(
+	// 				true,
+	// 				validators,
+	// 				(cur) => cur.rocketpool.rpl_cumulative_rewards,
+	// 				(cur) => cur.rplshare
+	// 			),
+	// 			fee: feeAvg,
+	// 			status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
+	// 			depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
+	// 			smoothingPoolClaimed: smoothingPoolClaimed,
+	// 			smoothingPoolUnclaimed: smoothingPoolUnclaimed,
+	// 			rplUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(
+	// 				true,
+	// 				validators,
+	// 				(cur) => cur.rocketpool.unclaimed_rpl_rewards,
+	// 				(cur) => cur.rplshare
+	// 			),
+	// 			smoothingPool: validators.find((cur) => (cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == true : false)) != null ? true : false,
+	// 			hasNonSmoothingPoolAsWell:
+	// 				validators.find((cur) => (cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == false : true)) != null ? true : false,
+	// 			cheatingStatus: this.getRocketpoolCheatingStatus(validators),
+	// 			depositCredit: this.sumRocketpoolBigIntPerNodeAddress(
+	// 				false,
+	// 				validators,
+	// 				(cur) => (cur.rocketpool.node_deposit_credit ? cur.rocketpool.node_deposit_credit.toString() : '0'),
+	// 				() => 1
+	// 			),
+	// 			vacantPools: validators.filter((cur) => cur.rocketpool && cur.rocketpool.is_vacant).length,
+	// 		},
+	// 	} as OverviewData
+	// }
 
 	private getExecutionPerformance(validators: Validator[], validatorDepositActive: BigNumber) {
 		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
@@ -577,7 +625,7 @@ export default class OverviewController {
 			.toNumber()
 	}
 
-	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator, network: ApiNetwork): DashboardStatus {
+	private getDashboardState(validators: Validator[], latestState: LatestStateWithTime, foreignValidator, network: ApiNetwork): DashboardStatus {
 		// collect data
 		const validatorCount = validators.length
 		const activeValidators = this.getActiveValidators(validators)
@@ -607,7 +655,7 @@ export default class OverviewController {
 		// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
 
 		// handle slashed validators
-		this.updateStateSlashed(dashboardStatus, slashedCount, validatorCount, foreignValidator, slashedValidators[0]?.data, currentEpoch, network)
+		this.updateStateSlashed(dashboardStatus, slashedCount, validatorCount, foreignValidator, slashedValidators[0]?.data, latestState, network)
 
 		// handle offline validators
 		const offlineCount = validatorCount - activeValidatorCount - exitedValidatorsCount - slashedCount - awaitingCount - eligibilityCount
@@ -615,7 +663,7 @@ export default class OverviewController {
 
 		// handle awaiting activation validators
 		if (awaitingCount > 0) {
-			this.updateStateAwaiting(dashboardStatus, awaitingCount, validatorCount, foreignValidator, awaitingActivation[0].data, currentEpoch, network)
+			this.updateStateAwaiting(dashboardStatus, awaitingCount, validatorCount, foreignValidator, awaitingActivation[0].data, latestState, network)
 		}
 
 		// handle eligable validators
@@ -626,7 +674,7 @@ export default class OverviewController {
 				validatorCount,
 				foreignValidator,
 				activationEligibility[0].data,
-				currentEpoch,
+				latestState,
 				network
 			)
 		}
@@ -635,7 +683,7 @@ export default class OverviewController {
 		this.updateExitedState(dashboardStatus, exitedValidatorsCount, validatorCount, foreignValidator)
 
 		// handle ok state, always call last
-		this.updateStateOk(dashboardStatus, activeValidatorCount, validatorCount, foreignValidator, activeValidators[0]?.data, currentEpoch, network)
+		this.updateStateOk(dashboardStatus, activeValidatorCount, validatorCount, foreignValidator, activeValidators[0]?.data, latestState, network)
 
 		if (dashboardStatus.state == StateType.mixed) {
 			// remove extended description if more than one state is shown
@@ -650,12 +698,12 @@ export default class OverviewController {
 		return foreignValidator ? foreignText : myText
 	}
 
-	private getExitingDescription(validatorResp: ValidatorResponse, currentEpoch: EpochResponse, network: ApiNetwork): Description {
+	private getExitingDescription(validatorResp: ValidatorResponse, latestState: LatestStateWithTime, network: ApiNetwork): Description {
 		if (!validatorResp.exitepoch) return { extendedDescriptionPre: null, extendedDescription: null }
 
-		const exitDiff = validatorResp.exitepoch - currentEpoch.epoch
+		const exitDiff = validatorResp.exitepoch - slotToEpoch(latestState.state.current_slot)
 		const isExiting = exitDiff >= 0 && exitDiff < 6480 // ~ 1 month
-		const exitingDate = isExiting ? this.getEpochDate(validatorResp.exitepoch, currentEpoch, network) : null
+		const exitingDate = isExiting ? this.getEpochDate(validatorResp.exitepoch, latestState, network) : null
 
 		return {
 			extendedDescriptionPre: isExiting ? 'Exiting on ' : null,
@@ -677,7 +725,7 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		validatorResp: ValidatorResponse,
-		currentEpoch: EpochResponse,
+		latestState: LatestStateWithTime,
 		network: ApiNetwork
 	) {
 		if (slashedCount == 0) {
@@ -687,7 +735,7 @@ export default class OverviewController {
 		if (dashboardStatus.state == StateType.none) {
 			dashboardStatus.icon = 'alert-circle-outline'
 			dashboardStatus.iconCss = 'err'
-			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch, network)
+			const exitingDescription = this.getExitingDescription(validatorResp, latestState, network)
 			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
 			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
 			dashboardStatus.state = StateType.slashed
@@ -709,7 +757,7 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		awaitingActivation: ValidatorResponse,
-		currentEpoch: EpochResponse,
+		latestState: LatestStateWithTime,
 		network: ApiNetwork
 	) {
 		if (awaitingCount == 0) {
@@ -717,7 +765,7 @@ export default class OverviewController {
 		}
 
 		if (dashboardStatus.state == StateType.none) {
-			const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, currentEpoch, network)
+			const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, latestState, network)
 
 			dashboardStatus.icon = 'timer-outline'
 			dashboardStatus.iconCss = 'waiting'
@@ -744,14 +792,14 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		eligbleState: ValidatorResponse,
-		currentEpoch: EpochResponse,
+		latestState: LatestStateWithTime,
 		network: ApiNetwork
 	) {
 		if (eligibilityCount == 0) {
 			return
 		}
 
-		const estEta = this.getEpochDate(eligbleState.activationeligibilityepoch, currentEpoch, network)
+		const estEta = this.getEpochDate(eligbleState.activationeligibilityepoch, latestState, network)
 
 		if (dashboardStatus.state == StateType.none) {
 			dashboardStatus.icon = 'timer-outline'
@@ -825,7 +873,7 @@ export default class OverviewController {
 		validatorCount: number,
 		foreignValidator: boolean,
 		validatorResp: ValidatorResponse,
-		currentEpoch: EpochResponse,
+		latestState: LatestStateWithTime,
 		network: ApiNetwork
 	) {
 		if (dashboardStatus.state != StateType.mixed && dashboardStatus.state != StateType.none) {
@@ -840,24 +888,25 @@ export default class OverviewController {
 				highlight: true,
 			})
 
-			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch, network)
+			const exitingDescription = this.getExitingDescription(validatorResp, latestState, network)
 			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
 			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
 			dashboardStatus.state = StateType.online
 		}
 	}
 
-	private getEpochDate(activationEpoch: number, currentEpoch: EpochResponse, network: ApiNetwork) {
+	private getEpochDate(activationEpoch: number, latestState: LatestStateWithTime, network: ApiNetwork) {
 		try {
-			const diff = activationEpoch - currentEpoch.epoch
+			const diff = activationEpoch - slotToEpoch(latestState.state.current_slot)
 			if (diff <= 0) {
 				if (this.refreshCallback) this.refreshCallback()
 				return null
 			}
 
-			const date = new Date(currentEpoch.lastCachedTimestamp)
+			const date = new Date(latestState.ts)
 
-			const inEpochOffset = (network.slotPerEpoch - currentEpoch.scheduledblocks) * network.slotsTime
+			const scheduledBlocks = network.slotPerEpoch - (latestState.state.current_slot % network.slotPerEpoch)
+			const inEpochOffset = (network.slotPerEpoch - scheduledBlocks) * network.slotsTime
 
 			date.setSeconds(diff * 6.4 * 60 - inEpochOffset)
 

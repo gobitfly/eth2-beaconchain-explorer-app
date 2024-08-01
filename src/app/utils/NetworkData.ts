@@ -96,7 +96,8 @@ export const MAP: ApiNetwork[] = [
 	{
 		key: 'holesky_v2',
 		protocol: 'http',
-		host: 'local.beaconcha.in:8082',
+		host: 'local.beaconcha.in:8083',
+		passXCookieDANGEROUS: true, // DO NOT COMMIT!
 		net: '',
 		endpoint: '/api/',
 		version: 'i',

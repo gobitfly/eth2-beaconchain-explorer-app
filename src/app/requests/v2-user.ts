@@ -31,17 +31,19 @@ export class V2Me extends APIRequest<UserInfo> {
 }
 
 export class V2RegisterPushNotificationToken extends APIRequest<NoContent> {
-	resource = 'mobile/notify/register'
-	method = Method.POST
+	resource = 'users/me/notifications/settings/paired-devices/{client_id}/token'
+	method = Method.PUT
 	ignoreFails = true
 
 	parse(response: Response): NoContent[] {
 		if (response && response.data) return response.data as NoContent[]
 		return null
 	}
+	
 	constructor(token: string, clientID: string) {
 		super()
-		this.postData = { token: token, client_id: clientID }
+		this.resource = this.resource.replace('{client_id}', clientID)
+		this.postData = { token: token }
 	}
 }
 

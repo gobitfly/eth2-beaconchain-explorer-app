@@ -94,9 +94,9 @@ export class ValidatordetailPage implements OnInit {
 	async updateDetails(item: Validator) {
 		this.name = getDisplayName(item)
 
-		const epoch = await this.validatorUtils.getRemoteCurrentEpoch()
-		const overviewController = new OverviewController(null, await this.merchant.getCurrentPlanMaxValidator(), this.unit)
-		this.data = overviewController.processDetail([item], epoch, this.api.getNetwork())
+		//const epoch = await this.validatorUtils.getRemoteCurrentEpoch()
+		//const overviewController = new OverviewController(null, await this.merchant.getCurrentPlanMaxValidator(), this.unit)
+		//this.data = overviewController.processDetail([item], epoch, this.api.getNetwork())
 	}
 
 	tag() {

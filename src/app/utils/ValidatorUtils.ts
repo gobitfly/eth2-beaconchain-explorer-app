@@ -22,7 +22,6 @@ import { ApiService } from '../services/api.service'
 import { StorageService, StoredShare, StoredTimestamp } from '../services/storage.service'
 import { Injectable } from '@angular/core'
 import {
-	EpochResponse,
 	RemoveMyValidatorsRequest,
 	AttestationPerformanceResponse,
 	ValidatorRequest,
@@ -69,7 +68,8 @@ export interface Validator {
 	name: string
 	storage: typeof SAVED | typeof MEMORY
 	synced: boolean
-	version: number
+	version: number 
+	//
 	data: ValidatorResponse
 	state: ValidatorState
 	attrEffectiveness: number
@@ -88,8 +88,6 @@ export interface Validator {
 export class ValidatorUtils {
 	private listeners: (() => void)[] = []
 
-	private currentEpoch: EpochResponse
-	private olderEpoch: EpochResponse
 	rocketpoolStats: RocketPoolNetworkStats
 	syncCommitteesStatsResponse: SyncCommitteesStatisticsResponse
 	proposalLuckResponse: ProposalLuckResponse
@@ -110,6 +108,7 @@ export class ValidatorUtils {
 	}
 
 	async hasLocalValdiators() {
+		return true // todo remove
 		return (await this.getMap(this.getStorageKey())).size > 0
 	}
 
@@ -134,12 +133,18 @@ export class ValidatorUtils {
 		}
 	}
 
+	/**
+	 * @deprecated replaced in v2 with new v2 storage object
+	 */
 	public async getMap(storageKey: string): Promise<Map<string, Validator>> {
 		const erg = await this.storage.getObject(storageKey)
 		if (erg && erg instanceof Map) return erg
 		return new Map<string, Validator>()
 	}
 
+	/**
+	 * @deprecated with v2 we don't need complex syncing logic any more
+	 */
 	private async getMapWithoutDeleted(storageKey): Promise<Map<string, Validator>> {
 		const local = await this.getMap(storageKey)
 		const deleted = await this.getDeletedSet(storageKey)
@@ -365,17 +370,6 @@ export class ValidatorUtils {
 			return []
 		}
 
-		if (result.currentEpoch && result.currentEpoch.length > 0) {
-			this.currentEpoch = result.currentEpoch[0]
-		} else {
-			console.warn('no current epoch information!', result)
-		}
-		if (result.olderEpoch && result.olderEpoch.length > 0) {
-			this.olderEpoch = result.olderEpoch[0]
-		} else {
-			console.warn('no older epoch information!', result)
-		}
-
 		if (result.rocketpool_network_stats && result.rocketpool_network_stats.length > 0) {
 			this.rocketpoolStats = result.rocketpool_network_stats[0]
 		}
@@ -386,15 +380,6 @@ export class ValidatorUtils {
 		this.proposalLuckResponse = result.proposal_luck_stats
 
 		this.updateRplAndRethPrice()
-
-		if (response.cached != true) {
-			await this.storage.setLastEpochRequestTime(Date.now())
-		} else {
-			const lastCachedTime = await this.storage.getLastEpochRequestTime()
-			if (this.currentEpoch) {
-				this.currentEpoch.lastCachedTimestamp = lastCachedTime
-			}
-		}
 
 		let local = null
 		if (storage == SAVED) {
@@ -470,20 +455,6 @@ export class ValidatorUtils {
 			}
 		}
 		return -1
-	}
-
-	getOlderEpoch(): EpochResponse {
-		return this.olderEpoch
-	}
-
-	async getRemoteCurrentEpoch(): Promise<EpochResponse> {
-		const result = this.currentEpoch
-		if (result == null) {
-			await this.getAllMyValidators()
-			return this.currentEpoch
-		}
-
-		return result
 	}
 
 	async getRemoteValidatorInfo(...args: number[]): Promise<ValidatorResponse[]> {
