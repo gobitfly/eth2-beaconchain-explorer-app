@@ -68,7 +68,7 @@ export abstract class APIRequest<T> {
 
 		return {
 			data: null,
-			error: response.data?.error || "HTTP status code: " + response.status,
+			error: response.data?.error || 'HTTP status code: ' + response.status,
 			cached: response.cached,
 		}
 	}
@@ -116,7 +116,7 @@ export abstract class APIRequest<T> {
 
 	/** @deprecated can be removed in v2 */
 	requiresAuth = false
-	
+
 	updatesLastRefreshState = false
 	ignoreFails = false
 	maxCacheAge = 6 * 60 * 1000

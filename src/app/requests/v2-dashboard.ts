@@ -28,9 +28,6 @@ export enum Period {
 	Last30d = "last_30d"
 }
 
-
-
-
 export class V2DashboardOverview extends APIRequest<VDBOverviewData> {
 	resource = 'validator-dashboards/{id}'
 	method = Method.GET
