@@ -48,10 +48,10 @@ export class TabsPage {
 		this.firebaseUtils.registerPush() // just initialize the firebaseutils service
 
 		// lazy sync & notification token update
-		setTimeout(async () => {
+		setTimeout(() => {
 			this.firebaseUtils.pushLastTokenUpstream(false)
-			await this.sync.mightSyncUpAndSyncDelete()
-			await this.sync.syncAllSettings()
+			// await this.sync.mightSyncUpAndSyncDelete()
+			// await this.sync.syncAllSettings()
 		}, 5000)
 
 		// lazy ionic speed optimizations

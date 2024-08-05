@@ -19,6 +19,6 @@ import { APIRequest, Method } from './requests'
 import { LatestStateData } from './types/latest_state'
 
 export class V2LatestState extends APIRequest<LatestStateData> {
-	resource = 'validator-dashboards/{id}/groups/{group_id}/summary'
+	resource = 'latest-state'
 	method = Method.GET
 }

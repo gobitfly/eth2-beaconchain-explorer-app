@@ -48,8 +48,8 @@
 
 	<div class="grid-cell left" (click)="unit.switchCurrencyPipe()">
 		<div>
-			<ion-label class="value left" [class]="performanceData.performance31d | valuestyle : 0">
-				{{ performanceData.performance31d | mcurrency : currency : targetCurrency }}
+			<ion-label class="value left" [class]="performanceData.performance30d | valuestyle : 0">
+				{{ performanceData.performance30d | mcurrency : currency : targetCurrency }}
 			</ion-label>
 		</div>
 		<div>
@@ -76,7 +76,7 @@
 
 	<div class="grid-cell left">
 		<div>
-			<ion-label class="value left" [class]="performanceData.apr31d | valuestyle : 0"> {{ performanceData.apr31d }} % </ion-label>
+			<ion-label class="value left" [class]="performanceData.apr30d | valuestyle : 0"> {{ performanceData.apr30d | number: '1.0-2'}} % </ion-label>
 		</div>
 		<div>
 			<ion-label class="income-title">

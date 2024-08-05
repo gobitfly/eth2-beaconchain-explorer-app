@@ -25,7 +25,7 @@ import { DashboardDataRequest, SyncCommitteeResponse } from '../../requests/requ
 import * as HighCharts from 'highcharts'
 import * as Highstock from 'highcharts/highstock'
 import BigNumber from 'bignumber.js'
-import { OverviewData, Rocketpool } from '../../controllers/OverviewController'
+import { OverviewData, OverviewData2, Rocketpool } from '../../controllers/OverviewController'
 import { Release } from '../../utils/ClientUpdateUtils'
 import ThemeUtils from 'src/app/utils/ThemeUtils'
 import { highChartOptions } from 'src/app/utils/HighchartOptions'
@@ -48,7 +48,7 @@ import { slotToEpoch } from 'src/app/utils/MathUtils'
 export class DashboardComponent implements OnInit {
 	public classReference = UnitconvService
 
-	@Input() data?: OverviewData
+	@Input() data?: OverviewData2
 	@Input() updates?: Release[]
 	@Input() currentY: number
 	@Input() scrolling: boolean
@@ -137,7 +137,7 @@ export class DashboardComponent implements OnInit {
 	}
 
 	async ngOnChanges(event) {
-		console.log("event data", event.data)
+		console.log('event data', event.data)
 		if (event.data && event.data instanceof SimpleChange) {
 			if (event.data.currentValue) {
 				this.chartError = false
@@ -159,25 +159,26 @@ export class DashboardComponent implements OnInit {
 				}
 
 				setTimeout(() => {
-					this.drawBalanceChart()
-					this.drawProposalChart()
+					// this.drawBalanceChart()
+					// this.drawProposalChart()
 				}, 500)
 
 				this.beaconChainUrl = this.api.getBaseUrl()
 
-				await Promise.all([
-					this.updateRplDisplay(),
-					this.updateNextRewardRound(),
-					this.updateRplCommission(),
-					this.updateRplApr(),
-					this.updateRplProjectedClaim(),
-					this.updateSmoothingPool(),
-					this.updateActiveSyncCommitteeMessage(this.data.currentSyncCommittee),
-					this.updateNextSyncCommitteeMessage(this.data.nextSyncCommittee),
-					this.updateDepositCreditText(),
-					this.updateVacantMinipoolText(),
-					this.updateWithdrawalInfo(),
-				])
+				// todo
+				// await Promise.all([
+				// 	this.updateRplDisplay(),
+				// 	this.updateNextRewardRound(),
+				// 	this.updateRplCommission(),
+				// 	this.updateRplApr(),
+				// 	this.updateRplProjectedClaim(),
+				// 	this.updateSmoothingPool(),
+				// 	this.updateActiveSyncCommitteeMessage(this.data.currentSyncCommittee),
+				// 	this.updateNextSyncCommitteeMessage(this.data.nextSyncCommittee),
+				// 	this.updateDepositCreditText(),
+				// 	this.updateVacantMinipoolText(),
+				// 	this.updateWithdrawalInfo(),
+				// ])
 
 				if (!this.data.foreignValidator) {
 					await Promise.all([this.checkForFinalization(), this.checkForGenesisOccurred()])
@@ -188,34 +189,34 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	updateWithdrawalInfo() {
-		this.storage.getBooleanSetting('withdrawal_info_dismissed', false).then((result) => {
-			this.showWithdrawalInfo = !this.data.withdrawalsEnabledForAll && !result
-		})
-	}
+	// updateWithdrawalInfo() {
+	// 	this.storage.getBooleanSetting('withdrawal_info_dismissed', false).then((result) => {
+	// 		this.showWithdrawalInfo = !this.data.withdrawalsEnabledForAll && !result
+	// 	})
+	// }
 
-	updateDepositCreditText() {
-		if (this.data.rocketpool.depositCredit && this.data.rocketpool.depositCredit.gt(0)) {
-			this.depositCreditText = `You have ${this.unit.convertNonFiat(
-				this.data.rocketpool.depositCredit,
-				'WEI',
-				'ETHER',
-				true
-			)} in unused Rocketpool deposit credit.<br/><br/>You can use this credit to spin up more minipools. Be aware that you can not withdraw your deposit credit.`
-		}
-	}
+	// updateDepositCreditText() {
+	// 	if (this.data.rocketpool.depositCredit && this.data.rocketpool.depositCredit.gt(0)) {
+	// 		this.depositCreditText = `You have ${this.unit.convertNonFiat(
+	// 			this.data.rocketpool.depositCredit,
+	// 			'WEI',
+	// 			'ETHER',
+	// 			true
+	// 		)} in unused Rocketpool deposit credit.<br/><br/>You can use this credit to spin up more minipools. Be aware that you can not withdraw your deposit credit.`
+	// 	}
+	// }
 
-	updateVacantMinipoolText() {
-		if (this.data.rocketpool.vacantPools && this.data.rocketpool.vacantPools > 0) {
-			this.vacantMinipoolText = `${this.data.rocketpool.vacantPools} of your ${
-				this.data.rocketpool.vacantPools == 1 ? 'minipool is' : 'minipools are'
-			}
-			currently vacant. Head over to the validators tab to see which one has a vacant label.<br/><br/>
-			If you recently converted a validator to a minipool please make sure you did change the 0x0 withdrawal credentials to the new vacant minipool address (0x01) to fix this warning.<br/><br/>
-			If you already changed the withdrawal credentials this warning will disappear on it's own within 24h.
-			`
-		}
-	}
+	// updateVacantMinipoolText() {
+	// 	if (this.data.rocketpool.vacantPools && this.data.rocketpool.vacantPools > 0) {
+	// 		this.vacantMinipoolText = `${this.data.rocketpool.vacantPools} of your ${
+	// 			this.data.rocketpool.vacantPools == 1 ? 'minipool is' : 'minipools are'
+	// 		}
+	// 		currently vacant. Head over to the validators tab to see which one has a vacant label.<br/><br/>
+	// 		If you recently converted a validator to a minipool please make sure you did change the 0x0 withdrawal credentials to the new vacant minipool address (0x01) to fix this warning.<br/><br/>
+	// 		If you already changed the withdrawal credentials this warning will disappear on it's own within 24h.
+	// 		`
+	// 	}
+	// }
 
 	epochToTimestamp(epoch: number) {
 		const network = this.api.getNetwork()
@@ -260,40 +261,40 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	updateSmoothingPool() {
-		try {
-			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
-			this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
-			this.displaySmoothingPool = this.data.rocketpool.smoothingPool
-			this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed
-			this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed
-			this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
-			this.totalRplEarned = this.data.rocketpool.totalClaims.plus(this.data.rocketpool.rplUnclaimed)
-		} catch (e) {
-			console.warn('cannot update smoothing pool', e)
-		}
-	}
+	// updateSmoothingPool() {
+	// 	try {
+	// 		if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
+	// 		this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
+	// 		this.displaySmoothingPool = this.data.rocketpool.smoothingPool
+	// 		this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed
+	// 		this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed
+	// 		this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
+	// 		this.totalRplEarned = this.data.rocketpool.totalClaims.plus(this.data.rocketpool.rplUnclaimed)
+	// 	} catch (e) {
+	// 		console.warn('cannot update smoothing pool', e)
+	// 	}
+	// }
 
-	updateRplProjectedClaim() {
-		try {
-			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
-			if (this.data.rocketpool.currentRpl.isLessThanOrEqualTo(this.data.rocketpool.minRpl)) {
-				this.rplProjectedClaim = 0
-				return
-			}
+	// updateRplProjectedClaim() {
+	// 	try {
+	// 		if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
+	// 		if (this.data.rocketpool.currentRpl.isLessThanOrEqualTo(this.data.rocketpool.minRpl)) {
+	// 			this.rplProjectedClaim = 0
+	// 			return
+	// 		}
 
-			const temp = this.getEffectiveRplStake(this.data.rocketpool)
-				.dividedBy(new BigNumber(this.validatorUtils.rocketpoolStats.effective_rpl_staked))
-				.multipliedBy(new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards))
+	// 		const temp = this.getEffectiveRplStake(this.data.rocketpool)
+	// 			.dividedBy(new BigNumber(this.validatorUtils.rocketpoolStats.effective_rpl_staked))
+	// 			.multipliedBy(new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards))
 
-			this.rplProjectedClaim = temp
-			if (temp.isLessThanOrEqualTo(new BigNumber('0'))) {
-				this.rplProjectedClaim = null
-			}
-		} catch (e) {
-			console.warn('cannot updateRplProjectedClaim', e)
-		}
-	}
+	// 		this.rplProjectedClaim = temp
+	// 		if (temp.isLessThanOrEqualTo(new BigNumber('0'))) {
+	// 			this.rplProjectedClaim = null
+	// 		}
+	// 	} catch (e) {
+	// 		console.warn('cannot updateRplProjectedClaim', e)
+	// 	}
+	// }
 
 	getEffectiveRplStake(data: Rocketpool): BigNumber {
 		if (data.currentRpl.isGreaterThanOrEqualTo(data.maxRpl)) return data.maxRpl
@@ -368,22 +369,23 @@ export class DashboardComponent implements OnInit {
 		const latestState = await this.api.getLatestState()
 		if (!this.data || !latestState.state) return
 		const epochsToWaitBeforeFinalizationIssue = 4 // 2 normal delay + 2 extra
-		this.finalizationIssue = slotToEpoch(latestState.state.finalized_epoch) - epochsToWaitBeforeFinalizationIssue > latestState.state.finalized_epoch 
+		this.finalizationIssue = slotToEpoch(latestState.state.finalized_epoch) - epochsToWaitBeforeFinalizationIssue > latestState.state.finalized_epoch
 		this.storage.setObject('finalization_issues', { ts: Date.now(), value: this.finalizationIssue } as FinalizationIssue)
 	}
 
-	async getChartData(data: 'allbalances' | 'proposals') {
-		if (!this.data || !this.data.lazyChartValidators) return null
-		const chartReq = new DashboardDataRequest(data, this.data.lazyChartValidators)
-		const response = await this.api.execute(chartReq).catch(() => {
-			return null
-		})
-		if (!response) {
-			this.chartError = true
-			return null
-		}
-		return chartReq.parse(response)
-	}
+	// TODO
+	// async getChartData(data: 'allbalances' | 'proposals') {
+	// 	if (!this.data || !this.data.lazyChartValidators) return null
+	// 	const chartReq = new DashboardDataRequest(data, this.data.lazyChartValidators)
+	// 	const response = await this.api.execute(chartReq).catch(() => {
+	// 		return null
+	// 	})
+	// 	if (!response) {
+	// 		this.chartError = true
+	// 		return null
+	// 	}
+	// 	return chartReq.parse(response)
+	// }
 
 	async upgrade() {
 		const modal = await this.modalController.create({
@@ -400,61 +402,60 @@ export class DashboardComponent implements OnInit {
 		if (this.rplState == 'rpl' && canPercent) {
 			// next %
 			this.rplState = '%'
-			this.updateRplDisplay()
 			this.storage.setItem('rpl_pdisplay_mode', this.rplState)
 			return
 		} else if ((this.rplState == 'rpl' && !canPercent) || this.rplState == '%') {
 			// next %
 			this.rplState = 'conv'
-			this.updateRplDisplay()
 			this.storage.setItem('rpl_pdisplay_mode', this.rplState)
 			return
 		} else {
 			this.rplState = 'rpl'
-			this.updateRplDisplay()
 			this.storage.setItem('rpl_pdisplay_mode', this.rplState)
 			return
 		}
 	}
 
-	updateRplDisplay() {
-		if (this.rplState == '%') {
-			const rplPrice = this.unit.getRPLPrice()
-			const currentETH = this.data.rocketpool.currentRpl.multipliedBy(rplPrice)
-			const minETH = this.data.rocketpool.minRpl.multipliedBy(rplPrice).multipliedBy(10) // since collateral is 10% of borrowed eth, multiply by 10 to get to the borrowed eth amount
+	// TODO
+	// updateRplDisplay() {
+	// 	if (this.rplState == '%') {
+	// 		const rplPrice = this.unit.getRPLPrice()
+	// 		const currentETH = this.data.rocketpool.currentRpl.multipliedBy(rplPrice)
+	// 		const minETH = this.data.rocketpool.minRpl.multipliedBy(rplPrice).multipliedBy(10) // since collateral is 10% of borrowed eth, multiply by 10 to get to the borrowed eth amount
 
-			this.rplDisplay = currentETH.dividedBy(minETH).multipliedBy(100).decimalPlaces(1).toNumber()
-		} else {
-			this.rplDisplay = this.data.rocketpool.currentRpl
-		}
-	}
+	// 		this.rplDisplay = currentETH.dividedBy(minETH).multipliedBy(100).decimalPlaces(1).toNumber()
+	// 	} else {
+	// 		this.rplDisplay = this.data.rocketpool.currentRpl
+	// 	}
+	// }
 
-	async drawProposalChart() {
-		this.chartDataProposals = await this.getChartData('proposals')
+	// TODO
+	// async drawProposalChart() {
+	// 	this.chartDataProposals = await this.getChartData('proposals')
 
-		if (!this.chartDataProposals || this.chartDataProposals.length < 1) {
-			this.chartDataProposals = false
-			return
-		}
+	// 	if (!this.chartDataProposals || this.chartDataProposals.length < 1) {
+	// 		this.chartDataProposals = false
+	// 		return
+	// 	}
 
-		const proposed = []
-		const missed = []
-		const orphaned = []
-		this.chartDataProposals.map((d) => {
-			if (d[1] == 1) proposed.push([d[0] * 1000, 1])
-			else if (d[1] == 2) missed.push([d[0] * 1000, 1])
-			else if (d[1] == 3) orphaned.push([d[0] * 1000, 1])
-		})
+	// 	const proposed = []
+	// 	const missed = []
+	// 	const orphaned = []
+	// 	this.chartDataProposals.map((d) => {
+	// 		if (d[1] == 1) proposed.push([d[0] * 1000, 1])
+	// 		else if (d[1] == 2) missed.push([d[0] * 1000, 1])
+	// 		else if (d[1] == 3) orphaned.push([d[0] * 1000, 1])
+	// 	})
 
-		this.proposals = {
-			good: proposed.length,
-			bad: missed.length + orphaned.length,
-		}
+	// 	this.proposals = {
+	// 		good: proposed.length,
+	// 		bad: missed.length + orphaned.length,
+	// 	}
 
-		this.checkForFirstProposal(proposed)
+	// 	this.checkForFirstProposal(proposed)
 
-		this.createProposedChart(proposed, missed, orphaned)
-	}
+	// 	this.createProposedChart(proposed, missed, orphaned)
+	// }
 
 	private async checkForFirstProposal(chartData) {
 		if (this.data.foreignValidator) return
@@ -476,43 +477,44 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	async drawBalanceChart() {
-		this.chartData = await this.getChartData('allbalances')
+	// todo
+	// async drawBalanceChart() {
+	// 	this.chartData = await this.getChartData('allbalances')
 
-		if (!this.chartData || this.chartData.length < 3) {
-			this.chartError = true
-			return
-		}
+	// 	if (!this.chartData || this.chartData.length < 3) {
+	// 		this.chartError = true
+	// 		return
+	// 	}
 
-		this.chartError = false
+	// 	this.chartError = false
 
-		const setTimestampToMidnight = (ts: number): number => {
-			const d = new Date(ts)
-			d.setHours(0)
-			d.setMinutes(0)
-			d.setSeconds(0)
-			d.setMilliseconds(0)
-			return d.getTime()
-		}
+	// 	const setTimestampToMidnight = (ts: number): number => {
+	// 		const d = new Date(ts)
+	// 		d.setHours(0)
+	// 		d.setMinutes(0)
+	// 		d.setSeconds(0)
+	// 		d.setMilliseconds(0)
+	// 		return d.getTime()
+	// 	}
 
-		// force timestamp to be at 00:00AM for the day to keep columns centered on ticks
-		for (let i = 0; i < this.chartData.consensusChartData.length; i++) {
-			this.chartData.consensusChartData[i].x = setTimestampToMidnight(this.chartData.consensusChartData[i].x)
-		}
-		for (let i = 0; i < this.chartData.executionChartData.length; i++) {
-			this.chartData.executionChartData[i].x = setTimestampToMidnight(this.chartData.executionChartData[i].x)
-		}
+	// 	// force timestamp to be at 00:00AM for the day to keep columns centered on ticks
+	// 	for (let i = 0; i < this.chartData.consensusChartData.length; i++) {
+	// 		this.chartData.consensusChartData[i].x = setTimestampToMidnight(this.chartData.consensusChartData[i].x)
+	// 	}
+	// 	for (let i = 0; i < this.chartData.executionChartData.length; i++) {
+	// 		this.chartData.executionChartData[i].x = setTimestampToMidnight(this.chartData.executionChartData[i].x)
+	// 	}
 
-		// accumulate all execution income entries per day into a single entry
-		for (let i = this.chartData.executionChartData.length - 1; i > 0; i--) {
-			if (this.chartData.executionChartData[i].x == this.chartData.executionChartData[i - 1].x) {
-				this.chartData.executionChartData[i - 1].y += this.chartData.executionChartData[i].y
-				this.chartData.executionChartData.splice(i, 1)
-			}
-		}
+	// 	// accumulate all execution income entries per day into a single entry
+	// 	for (let i = this.chartData.executionChartData.length - 1; i > 0; i--) {
+	// 		if (this.chartData.executionChartData[i].x == this.chartData.executionChartData[i - 1].x) {
+	// 			this.chartData.executionChartData[i - 1].y += this.chartData.executionChartData[i].y
+	// 			this.chartData.executionChartData.splice(i, 1)
+	// 		}
+	// 	}
 
-		this.createBalanceChart(this.chartData.consensusChartData, this.chartData.executionChartData)
-	}
+	// 	this.createBalanceChart(this.chartData.consensusChartData, this.chartData.executionChartData)
+	// }
 
 	switchRank() {
 		this.rankPercentMode = !this.rankPercentMode
@@ -873,16 +875,17 @@ export class DashboardComponent implements OnInit {
 	}
 
 	async openBrowser() {
-		await Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
+		// todo
+		//await Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
 	}
 
-	getBrowserURL(): string {
-		if (this.data.foreignValidator) {
-			return this.api.getBaseUrl() + '/validator/' + this.data.foreignValidatorItem.pubkey
-		} else {
-			return this.api.getBaseUrl() + '/dashboard?validators=' + this.data.lazyChartValidators
-		}
-	}
+	// getBrowserURL(): string {
+	// 	if (this.data.foreignValidator) {
+	// 		return this.api.getBaseUrl() + '/validator/' + this.data.foreignValidatorItem.pubkey
+	// 	} else {
+	// 		return this.api.getBaseUrl() + '/dashboard?validators=' + this.data.lazyChartValidators
+	// 	}
+	// }
 }
 
 function getRandomInt(max) {

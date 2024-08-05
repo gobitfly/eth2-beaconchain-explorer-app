@@ -29,6 +29,7 @@ import { Capacitor, HttpOptions } from '@capacitor/core'
 import { CapacitorCookies } from '@capacitor/core'
 import { LatestStateData } from '../requests/types/latest_state'
 import { V2LatestState } from '../requests/network'
+import { V2DashboardOverview } from '../requests/v2-dashboard'
 
 
 const LOGTAG = '[ApiService]'
@@ -81,6 +82,14 @@ export class ApiService extends CacheModule {
 			this.invalidateAllCache()
 			this.storage.invalidateAllCache()
 		}
+	}
+
+	storeInHardCache(cacheKey: string): boolean {
+		return (
+			cacheKey.indexOf('validator-dashboards') >= 0 ||
+			cacheKey.indexOf('produced?offset=0') >= 0 || // first page of blocks page // todo v2
+			(cacheKey.indexOf('beaconcha.in') < 0 && cacheKey.indexOf('gnosischa.in') < 0 && cacheKey.indexOf('ads.bitfly') < 0)
+		)
 	}
 
 	async initialize() {

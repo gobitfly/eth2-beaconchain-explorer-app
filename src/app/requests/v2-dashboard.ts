@@ -17,7 +17,7 @@
 
 import { encodeDashboardID } from "../utils/DashboardHelper"
 import { APIRequest, Method, NoContent } from "./requests"
-import { InternalGetValidatorDashboardValidatorsResponse, VDBGroupSummaryData, VDBOverviewData, VDBPostCreateGroupData, VDBPostReturnData, VDBPostValidatorsData, VDBSummaryTableRow
+import { InternalGetValidatorDashboardValidatorsResponse, VDBGroupSummaryData, VDBOverviewData, VDBPostCreateGroupData, VDBPostReturnData, VDBPostValidatorsData, VDBRocketPoolTableRow, VDBSummaryTableRow
  } from "./types/validator_dashboard"
 
 export type dashboardID = string | number | number[]
@@ -28,19 +28,23 @@ export enum Period {
 	Last30d = "last_30d"
 }
 
+
 export class V2DashboardOverview extends APIRequest<VDBOverviewData> {
 	resource = 'validator-dashboards/{id}'
 	method = Method.GET
+	updatesLastRefreshState = true
 
 	constructor(id: dashboardID) {
 		super()
-		this.resource = setID(this.resource, id) 
+		this.resource = setID(this.resource, id)
 	}
 }
 
 export class V2DashboardSummaryTable extends APIRequest<VDBSummaryTableRow> {
 	resource = 'validator-dashboards/{id}/summary'
 	method = Method.GET
+	updatesLastRefreshState = true
+
 	sortResultFn = function (a: VDBSummaryTableRow, b: VDBSummaryTableRow) {
 		// sort by group_id asc
 		if (a.group_id < b.group_id) return -1
@@ -188,6 +192,20 @@ export class V2UpdateDashboardGroup extends APIRequest<VDBPostCreateGroupData> {
 		this.postData = { name: name }
 	}
 }
+
+// Rocket Pool
+
+export class V2DashboardRocketPool extends APIRequest<VDBRocketPoolTableRow> {
+	resource = 'validator-dashboards/{id}/rocket-pool'
+	method = Method.GET
+
+	constructor(id: dashboardID) {
+		super()
+		this.resource = setID(this.resource, id)
+	}
+}
+
+
 
 function setID(resource: string, id: dashboardID): string {
 	if (typeof id === 'string') {

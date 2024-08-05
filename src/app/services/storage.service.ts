@@ -50,6 +50,10 @@ export class StorageService extends CacheModule {
 		this.reflectiOSStorage()
 	}
 
+	storeInHardCache(): boolean {
+		return false
+	}
+
 	// --- upper level helper ---
 
 	async getDeviceID() {

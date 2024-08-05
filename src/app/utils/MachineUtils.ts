@@ -37,6 +37,10 @@ export default class MachineUtils extends CacheModule {
 		super('machine', 4 * 60 * 1000)
 	}
 
+	storeInHardCache(): boolean {
+		return false
+	}
+
 	/*
         2 Listen
             -) Alle machine names

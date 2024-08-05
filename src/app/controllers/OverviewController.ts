@@ -18,7 +18,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ProposalLuckResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
+import { APIRequest, ProposalLuckResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
 import { sumBigInt, slotToEpoch } from '../utils/MathUtils'
 import BigNumber from 'bignumber.js'
 import { ValidatorState, Validator } from '../utils/ValidatorUtils'
@@ -26,16 +26,78 @@ import { formatDate } from '@angular/common'
 import { SyncCommitteesStatistics, SyncCommitteesStatisticsResponse } from '../requests/requests'
 import { UnitconvService } from '../services/unitconv.service'
 import { ApiNetwork } from '../models/StorageTypes'
-import { dashboardID, Period, V2DashboardOverview, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
+import { dashboardID, Period, V2DashboardOverview, V2DashboardRocketPool, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
 import { ApiService, LatestStateWithTime } from '../services/api.service'
-import { VDBGroupSummaryData, VDBOverviewData, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
+import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
+import { computed, signal, Signal, WritableSignal } from '@angular/core'
 
-export type OverviewData2 = {
-	overviewData: VDBOverviewData
-	summaryTableData: VDBSummaryTableRow[]
-	summaryGroupTableData: VDBGroupSummaryData
-	latestState: LatestStateWithTime
+export class OverviewData2 {
+	overviewData: WritableSignal<VDBOverviewData> = signal(null)
+	summary: WritableSignal<VDBSummaryTableRow[]> = signal(null)
+	summaryGroup: WritableSignal<VDBGroupSummaryData> = signal(null)
+	latestState: WritableSignal<LatestStateWithTime> = signal(null)
+	rocketpool: WritableSignal<VDBRocketPoolTableRow> = signal(null)
+
 	network: ApiNetwork
+	foreignValidator: boolean
+
+	constructor(network: ApiNetwork, foreignValidator: boolean) {
+		this.network = network
+		this.foreignValidator = foreignValidator
+	}
+
+	validatorCount: Signal<number> = computed(() => {
+		if (!this.overviewData()) return 0
+		return (
+			this.overviewData().validators.exited +
+			this.overviewData().validators.offline +
+			this.overviewData().validators.online +
+			this.overviewData().validators.slashed +
+			this.overviewData().validators.pending
+		)
+	})
+
+	dashboardState: Signal<DashboardStatus> = computed(() => {
+		return getDashboardState(this.overviewData(), this.validatorCount(), this.foreignValidator)
+	})
+
+	consensusPerformance: Signal<Performance> = computed(() => {
+		return getConsensusPerformance(this.overviewData())
+	})
+
+	executionPerformance: Signal<Performance> = computed(() => {
+		return getExecutionPerformance(this.overviewData())
+	})
+
+	combinedPerformance: Signal<Performance> = computed(() => {
+		return getCombinedPerformance(this.consensusPerformance(), this.executionPerformance())
+	})
+
+	showSyncStats: Signal<boolean> = computed(() => {
+		if (this.summaryGroup() == null) return false
+		return (
+			this.summaryGroup().sync_count.current_validators > 0 ||
+			this.summaryGroup().sync_count.past_periods > 0 ||
+			this.summaryGroup().sync_count.upcoming_validators > 0
+		)
+	})
+
+	syncEfficiency: Signal<number> = computed(() => {
+		if (this.summaryGroup() == null) return 0
+		const total = this.summaryGroup().sync.status_count.success + this.summaryGroup().sync.status_count.failed
+		if (total == 0) return 0
+		return this.summaryGroup().sync.status_count.success / total
+	})
+
+	isReadyToDisplay: Signal<boolean> = computed(() => {
+		// todo, we can prob show before waiting on all the data
+		return this.overviewData() != null && this.summary() != null && this.summaryGroup() != null
+	})
+
+	rpTotalRPLClaimed: Signal<BigNumber> = computed(() => {
+		if (this.rocketpool() == null) return new BigNumber(0)
+		return new BigNumber(this.rocketpool().rpl.claimed).plus(new BigNumber(this.rocketpool().rpl.unclaimed))
+	})
 }
 
 export type OverviewData = {
@@ -75,13 +137,12 @@ export type OverviewData = {
 
 export type Performance = {
 	performance1d: BigNumber
-	performance31d: BigNumber
+	performance30d: BigNumber
 	performance7d: BigNumber
-	performance365d: BigNumber
 	total: BigNumber
 	apr7d: number
-	apr31d: number
-	apr365d: number
+	apr30d: number
+	aprTotal: number
 }
 
 export type Rocketpool = {
@@ -136,27 +197,38 @@ export type Description = {
 
 const VALIDATOR_32ETH = new BigNumber(32000000000)
 
-export async function getValidatorData(api: ApiService, id: dashboardID): Promise<OverviewData2> {
-	const results = await Promise.all([
-		api.execute2(new V2DashboardOverview(id)),
-		api.execute2(new V2DashboardSummaryTable(id, Period.AllTime, null)),
-		api.execute2(new V2DashboardSummaryGroupTable(id, 0, Period.AllTime, null)), // hardcode group 0 for now // TODO
-		api.getLatestState()
-	])
-
-	console.log("results", results)
-	const overviewData = results[0].data[0]
-	const summaryTableData = results[1].data
-	const summaryGroupTableData = results[2].data[0]
-	const latestState = results[3]
-
-	return {
-		overviewData: overviewData,
-		summaryTableData: summaryTableData,
-		summaryGroupTableData: summaryGroupTableData,
-		latestState: latestState,
-		network: api.getNetwork()
+export function getValidatorData(api: ApiService, id: dashboardID, ): OverviewData2 {
+	function set<T>(request: APIRequest<T>, s: WritableSignal<T>, errHandler: (err: string) => void = null) {
+		api.execute2(request).then((data) => {
+			if (data.error) {
+				if (errHandler) errHandler(data.error)
+				return
+			}
+			s.set(data.data[0])
+		})
 	}
+	function setArray<T>(request: APIRequest<T>, s: WritableSignal<T[]>, errHandler: (err: string) => void = null) {
+		api.execute2(request).then((data) => {
+			if (data.error) {
+				if (errHandler) errHandler(data.error)
+				return
+			}
+			s.set(data.data)
+		})
+	}
+
+	const temp = new OverviewData2(api.getNetwork(), false)
+
+	set(new V2DashboardOverview(id), temp.overviewData)
+	setArray(new V2DashboardSummaryTable(id, Period.AllTime, null), temp.summary)
+	set(new V2DashboardSummaryGroupTable(id, 0, Period.AllTime, null), temp.summaryGroup)
+	set(new V2DashboardRocketPool(id), temp.rocketpool)
+
+	api.getLatestState().then((latestState) => {
+		temp.latestState.set(latestState)
+	})
+
+	return temp
 }
 
 export default class OverviewController {
@@ -380,44 +452,6 @@ export default class OverviewController {
 	// 	} as OverviewData
 	// }
 
-	private getExecutionPerformance(validators: Validator[], validatorDepositActive: BigNumber) {
-		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance1d.toString()).multipliedBy(
-				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
-			)
-		)
-		const performance31d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance31d.toString()).multipliedBy(
-				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
-			)
-		)
-		const performance7d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance7d.toString()).multipliedBy(
-				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
-			)
-		)
-		const performance365d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance365d.toString()).multipliedBy(
-				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
-			)
-		)
-		const total = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performanceTotal.toString()).multipliedBy(
-				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
-			)
-		)
-
-		return {
-			performance1d: performance1d,
-			performance31d: performance31d,
-			performance7d: performance7d,
-			performance365d: performance365d,
-			apr31d: this.getAPRFrom(31, validatorDepositActive, performance31d),
-			apr7d: this.getAPRFrom(7, validatorDepositActive, performance7d),
-			apr365d: this.getAPRFrom(365, validatorDepositActive, performance365d),
-			total: total,
-		}
-	}
 
 	private sumExcludeSmoothingPool(cur: Validator, field: (cur: Validator) => string) {
 		// Exclude rocketpool minipool from execution rewards collection
@@ -425,39 +459,6 @@ export default class OverviewController {
 			return cur.execution ? new BigNumber(field(cur)).dividedBy(new BigNumber('1e9')) : new BigNumber(0)
 		}
 		return new BigNumber(0)
-	}
-
-	private getConsensusPerformance(validators: Validator[], validatorDepositActive: BigNumber): Performance {
-		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		)
-		const performance31d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		)
-		const performance7d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.performance7d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		)
-		const performance365d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		)
-		const total = this.sumBigIntPerformanceRP(validators, (cur) => {
-			if (cur.data.performancetotal !== undefined) {
-				return new BigNumber(cur.data.performancetotal).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-			} else {
-				return new BigNumber(0)
-			}
-		})
-
-		return {
-			performance1d: performance1d,
-			performance31d: performance31d,
-			performance7d: performance7d,
-			performance365d: performance365d,
-			apr31d: this.getAPRFrom(31, validatorDepositActive, performance31d),
-			apr7d: this.getAPRFrom(7, validatorDepositActive, performance7d),
-			apr365d: this.getAPRFrom(365, validatorDepositActive, performance365d),
-			total: total,
-		}
 	}
 
 	private getRocketpoolCheatingStatus(validators: Validator[]): RocketpoolCheatingStatus {
@@ -625,334 +626,6 @@ export default class OverviewController {
 			.toNumber()
 	}
 
-	private getDashboardState(validators: Validator[], latestState: LatestStateWithTime, foreignValidator, network: ApiNetwork): DashboardStatus {
-		// collect data
-		const validatorCount = validators.length
-		const activeValidators = this.getActiveValidators(validators)
-		const activeValidatorCount = activeValidators.length
-		const slashedValidators = this.getSlashedValidators(validators)
-		const slashedCount = slashedValidators.length
-		const exitedValidators = this.getExitedValidators(validators)
-		const exitedValidatorsCount = exitedValidators.length
-		const awaitingActivation = this.getWaitingForActivationValidators(validators)
-		const awaitingCount = awaitingActivation.length
-		const activationEligibility = this.getEligableValidators(validators)
-		const eligibilityCount = activationEligibility.length
-
-		// create status object with some default values
-		const dashboardStatus: DashboardStatus = {
-			state: StateType.none,
-			title: `${activeValidatorCount} / ${validatorCount}`,
-			iconCss: 'ok',
-			icon: 'checkmark-circle-outline',
-			description: [],
-			extendedDescription: '',
-			extendedDescriptionPre: '',
-		}
-
-		////
-		// Attention: The order of all the updateStateX functions matters!
-		// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
-
-		// handle slashed validators
-		this.updateStateSlashed(dashboardStatus, slashedCount, validatorCount, foreignValidator, slashedValidators[0]?.data, latestState, network)
-
-		// handle offline validators
-		const offlineCount = validatorCount - activeValidatorCount - exitedValidatorsCount - slashedCount - awaitingCount - eligibilityCount
-		this.updateStateOffline(dashboardStatus, validatorCount, offlineCount, foreignValidator)
-
-		// handle awaiting activation validators
-		if (awaitingCount > 0) {
-			this.updateStateAwaiting(dashboardStatus, awaitingCount, validatorCount, foreignValidator, awaitingActivation[0].data, latestState, network)
-		}
-
-		// handle eligable validators
-		if (eligibilityCount > 0) {
-			this.updateStateEligibility(
-				dashboardStatus,
-				eligibilityCount,
-				validatorCount,
-				foreignValidator,
-				activationEligibility[0].data,
-				latestState,
-				network
-			)
-		}
-
-		// handle exited validators
-		this.updateExitedState(dashboardStatus, exitedValidatorsCount, validatorCount, foreignValidator)
-
-		// handle ok state, always call last
-		this.updateStateOk(dashboardStatus, activeValidatorCount, validatorCount, foreignValidator, activeValidators[0]?.data, latestState, network)
-
-		if (dashboardStatus.state == StateType.mixed) {
-			// remove extended description if more than one state is shown
-			dashboardStatus.extendedDescription = ''
-			dashboardStatus.extendedDescriptionPre = ''
-		}
-
-		return dashboardStatus
-	}
-
-	private descriptionSwitch(myText, foreignText, foreignValidator) {
-		return foreignValidator ? foreignText : myText
-	}
-
-	private getExitingDescription(validatorResp: ValidatorResponse, latestState: LatestStateWithTime, network: ApiNetwork): Description {
-		if (!validatorResp.exitepoch) return { extendedDescriptionPre: null, extendedDescription: null }
-
-		const exitDiff = validatorResp.exitepoch - slotToEpoch(latestState.state.current_slot)
-		const isExiting = exitDiff >= 0 && exitDiff < 6480 // ~ 1 month
-		const exitingDate = isExiting ? this.getEpochDate(validatorResp.exitepoch, latestState, network) : null
-
-		return {
-			extendedDescriptionPre: isExiting ? 'Exiting on ' : null,
-			extendedDescription: exitingDate,
-		}
-	}
-
-	private singularPluralSwitch(totalValidatorCount: number, validatorCount: number, verbSingular: string, verbPlural: string): string {
-		if (totalValidatorCount != validatorCount && validatorCount == 1) {
-			return ` ${verbSingular}`
-		} else {
-			return ` ${verbPlural}`
-		}
-	}
-
-	private updateStateSlashed(
-		dashboardStatus: DashboardStatus,
-		slashedCount: number,
-		validatorCount: number,
-		foreignValidator: boolean,
-		validatorResp: ValidatorResponse,
-		latestState: LatestStateWithTime,
-		network: ApiNetwork
-	) {
-		if (slashedCount == 0) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			dashboardStatus.icon = 'alert-circle-outline'
-			dashboardStatus.iconCss = 'err'
-			const exitingDescription = this.getExitingDescription(validatorResp, latestState, network)
-			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
-			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
-			dashboardStatus.state = StateType.slashed
-		} else {
-			dashboardStatus.state = StateType.mixed
-		}
-
-		const pre = validatorCount == slashedCount ? 'All' : `${slashedCount}`
-		const helpingVerb = this.singularPluralSwitch(validatorCount, slashedCount, 'was', 'were')
-		dashboardStatus.description.push({
-			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' slashed', 'This validator was slashed', foreignValidator),
-			highlight: true,
-		})
-	}
-
-	private updateStateAwaiting(
-		dashboardStatus: DashboardStatus,
-		awaitingCount: number,
-		validatorCount: number,
-		foreignValidator: boolean,
-		awaitingActivation: ValidatorResponse,
-		latestState: LatestStateWithTime,
-		network: ApiNetwork
-	) {
-		if (awaitingCount == 0) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, latestState, network)
-
-			dashboardStatus.icon = 'timer-outline'
-			dashboardStatus.iconCss = 'waiting'
-			dashboardStatus.state = StateType.activation
-			dashboardStatus.extendedDescriptionPre = estEta ? 'Estimated on ' : null
-			dashboardStatus.extendedDescription = estEta ? estEta : null
-		}
-
-		const pre = validatorCount == awaitingCount ? 'All' : `${awaitingCount}`
-		const helpingVerb = this.singularPluralSwitch(validatorCount, awaitingCount, 'is', 'are')
-		dashboardStatus.description.push({
-			text: this.descriptionSwitch(
-				pre + ' of your validators' + helpingVerb + ' waiting for activation',
-				'This validator is waiting for activation',
-				foreignValidator
-			),
-			highlight: true,
-		})
-	}
-
-	private updateStateEligibility(
-		dashboardStatus: DashboardStatus,
-		eligibilityCount: number,
-		validatorCount: number,
-		foreignValidator: boolean,
-		eligbleState: ValidatorResponse,
-		latestState: LatestStateWithTime,
-		network: ApiNetwork
-	) {
-		if (eligibilityCount == 0) {
-			return
-		}
-
-		const estEta = this.getEpochDate(eligbleState.activationeligibilityepoch, latestState, network)
-
-		if (dashboardStatus.state == StateType.none) {
-			dashboardStatus.icon = 'timer-outline'
-			dashboardStatus.iconCss = 'waiting'
-			dashboardStatus.state = StateType.eligibility
-			dashboardStatus.extendedDescriptionPre = estEta ? 'Estimated on ' : null
-			dashboardStatus.extendedDescription = estEta ? estEta : null
-		}
-
-		const pre = validatorCount == eligibilityCount ? 'All' : `${eligibilityCount}`
-		const helpingVerb = this.singularPluralSwitch(validatorCount, eligibilityCount, 'is', 'are')
-		dashboardStatus.description.push({
-			text: this.descriptionSwitch(
-				pre + " of your validators' deposits" + helpingVerb + ' being processed',
-				"This validator's deposit is being processed",
-				foreignValidator
-			),
-			highlight: true,
-		})
-	}
-
-	private updateExitedState(dashboardStatus: DashboardStatus, exitedCount: number, validatorCount: number, foreignValidator: boolean) {
-		if (exitedCount == 0) {
-			return
-		}
-
-		const allValidatorsExited = validatorCount == exitedCount
-		if (dashboardStatus.state == StateType.none && allValidatorsExited) {
-			dashboardStatus.icon = this.descriptionSwitch('ribbon-outline', 'home-outline', foreignValidator)
-			dashboardStatus.iconCss = 'ok'
-			dashboardStatus.state = StateType.exited
-			dashboardStatus.extendedDescription = this.descriptionSwitch('Thank you for your service', null, foreignValidator)
-		} else {
-			dashboardStatus.state = StateType.mixed
-		}
-
-		const pre = allValidatorsExited ? 'All' : `${exitedCount}`
-		const helpingVerb = this.singularPluralSwitch(validatorCount, exitedCount, 'has', 'have')
-		// exit message is only highlighted if it is about foreign validators or if all validators are exited
-		const highlight = foreignValidator || allValidatorsExited
-		dashboardStatus.description.push({
-			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' exited', 'This validator has exited', foreignValidator),
-			highlight: highlight,
-		})
-	}
-
-	private updateStateOffline(dashboardStatus: DashboardStatus, validatorCount: number, offlineCount: number, foreignValidator: boolean) {
-		if (offlineCount == 0) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			dashboardStatus.icon = 'alert-circle-outline'
-			dashboardStatus.iconCss = 'warn'
-			dashboardStatus.state = StateType.offline
-		} else {
-			dashboardStatus.state = StateType.mixed
-		}
-
-		const pre = validatorCount == offlineCount ? 'All' : `${offlineCount}`
-		const helpingVerb = this.singularPluralSwitch(validatorCount, offlineCount, 'is', 'are')
-		dashboardStatus.description.push({
-			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' offline', 'This validator is offline', foreignValidator),
-			highlight: true,
-		})
-	}
-
-	private updateStateOk(
-		dashboardStatus: DashboardStatus,
-		activeCount: number,
-		validatorCount: number,
-		foreignValidator: boolean,
-		validatorResp: ValidatorResponse,
-		latestState: LatestStateWithTime,
-		network: ApiNetwork
-	) {
-		if (dashboardStatus.state != StateType.mixed && dashboardStatus.state != StateType.none) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			const pre = validatorCount == activeCount ? 'All' : `${activeCount}`
-			const helpingVerb = this.singularPluralSwitch(validatorCount, activeCount, 'is', 'are')
-			dashboardStatus.description.push({
-				text: this.descriptionSwitch(pre + ' of your validators ' + helpingVerb + ' active', 'This validator is active', foreignValidator),
-				highlight: true,
-			})
-
-			const exitingDescription = this.getExitingDescription(validatorResp, latestState, network)
-			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
-			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
-			dashboardStatus.state = StateType.online
-		}
-	}
-
-	private getEpochDate(activationEpoch: number, latestState: LatestStateWithTime, network: ApiNetwork) {
-		try {
-			const diff = activationEpoch - slotToEpoch(latestState.state.current_slot)
-			if (diff <= 0) {
-				if (this.refreshCallback) this.refreshCallback()
-				return null
-			}
-
-			const date = new Date(latestState.ts)
-
-			const scheduledBlocks = network.slotPerEpoch - (latestState.state.current_slot % network.slotPerEpoch)
-			const inEpochOffset = (network.slotPerEpoch - scheduledBlocks) * network.slotsTime
-
-			date.setSeconds(diff * 6.4 * 60 - inEpochOffset)
-
-			const timeString = formatDate(date, 'medium', 'en-US')
-			return timeString
-		} catch (e) {
-			console.warn('could not get activation time', e)
-			return null
-		}
-	}
-
-	private getActiveValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.ACTIVE
-		})
-	}
-
-	private getOfflineValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.OFFLINE
-		})
-	}
-
-	private getSlashedValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.SLASHED
-		})
-	}
-
-	private getExitedValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.EXITED
-		})
-	}
-
-	private getWaitingForActivationValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.WAITING
-		})
-	}
-
-	private getEligableValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.ELIGABLE
-		})
-	}
 
 	private calculateSyncCommitteeStats(stats: SyncCommitteesStatisticsResponse, network: ApiNetwork): SyncCommitteesStatistics {
 		if (stats) {
@@ -979,6 +652,245 @@ export default class OverviewController {
 			}
 		}
 		return null
+	}
+}
+
+	function getDashboardState(overviewData: VDBOverviewData, validatorCount: number, foreignValidator): DashboardStatus {
+		if (!overviewData) return null
+		// create status object with some default values
+		const dashboardStatus: DashboardStatus = {
+			state: StateType.none,
+			title: `${overviewData.validators.online} / ${validatorCount}`,
+			iconCss: 'ok',
+			icon: 'checkmark-circle-outline',
+			description: [],
+			extendedDescription: '',
+			extendedDescriptionPre: '',
+		}
+
+		////
+		// Attention: The order of all the updateStateX functions matters!
+		// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
+
+		// handle slashed validators
+		updateStateSlashed(
+			dashboardStatus,
+			overviewData.validators.slashed,
+			validatorCount,
+			foreignValidator
+		)
+
+		// handle offline validators
+		updateStateOffline(dashboardStatus, validatorCount, overviewData.validators.offline, foreignValidator)
+
+		// handle awaiting activation validators
+		if (overviewData.validators.pending > 0) {
+			updateStateAwaiting(
+				dashboardStatus,
+				overviewData.validators.pending,
+				validatorCount,
+				foreignValidator
+			)
+		}
+
+		// handle exited validators
+		updateExitedState(dashboardStatus, overviewData.validators.exited, validatorCount, foreignValidator)
+
+		// handle ok state, always call last
+		updateStateOk(dashboardStatus, overviewData.validators.online, validatorCount, foreignValidator)
+
+		if (dashboardStatus.state == StateType.mixed) {
+			// remove extended description if more than one state is shown
+			dashboardStatus.extendedDescription = ''
+			dashboardStatus.extendedDescriptionPre = ''
+		}
+
+		return dashboardStatus
+	}
+
+	function descriptionSwitch(myText, foreignText, foreignValidator) {
+		return foreignValidator ? foreignText : myText
+	}
+
+	function singularPluralSwitch(totalValidatorCount: number, validatorCount: number, verbSingular: string, verbPlural: string): string {
+		if (totalValidatorCount != validatorCount && validatorCount == 1) {
+			return ` ${verbSingular}`
+		} else {
+			return ` ${verbPlural}`
+		}
+	}
+
+	function updateStateSlashed(
+		dashboardStatus: DashboardStatus,
+		slashedCount: number,
+		validatorCount: number,
+		foreignValidator: boolean,
+	) {
+		if (slashedCount == 0) {
+			return
+		}
+
+		if (dashboardStatus.state == StateType.none) {
+			dashboardStatus.icon = 'alert-circle-outline'
+			dashboardStatus.iconCss = 'err'
+			dashboardStatus.state = StateType.slashed
+		} else {
+			dashboardStatus.state = StateType.mixed
+		}
+
+		const pre = validatorCount == slashedCount ? 'All' : `${slashedCount}`
+		const helpingVerb = singularPluralSwitch(validatorCount, slashedCount, 'was', 'were')
+		dashboardStatus.description.push({
+			text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' slashed', 'This validator was slashed', foreignValidator),
+			highlight: true,
+		})
+	}
+
+	function updateStateAwaiting(
+		dashboardStatus: DashboardStatus,
+		awaitingCount: number,
+		validatorCount: number,
+		foreignValidator: boolean
+	) {
+		if (awaitingCount == 0) {
+			return
+		}
+
+		if (dashboardStatus.state == StateType.none) {
+			dashboardStatus.icon = 'timer-outline'
+			dashboardStatus.iconCss = 'waiting'
+			dashboardStatus.state = StateType.activation
+		}
+
+		const pre = validatorCount == awaitingCount ? 'All' : `${awaitingCount}`
+		const helpingVerb = singularPluralSwitch(validatorCount, awaitingCount, 'is', 'are')
+		dashboardStatus.description.push({
+			text: descriptionSwitch(
+				pre + ' of your validators' + helpingVerb + ' waiting for activation',
+				'This validator is waiting for activation',
+				foreignValidator
+			),
+			highlight: true,
+		})
+	}
+
+	function updateExitedState(dashboardStatus: DashboardStatus, exitedCount: number, validatorCount: number, foreignValidator: boolean) {
+		if (exitedCount == 0) {
+			return
+		}
+
+		const allValidatorsExited = validatorCount == exitedCount
+		if (dashboardStatus.state == StateType.none && allValidatorsExited) {
+			dashboardStatus.icon = descriptionSwitch('ribbon-outline', 'home-outline', foreignValidator)
+			dashboardStatus.iconCss = 'ok'
+			dashboardStatus.state = StateType.exited
+			dashboardStatus.extendedDescription = descriptionSwitch('Thank you for your service', null, foreignValidator)
+		} else {
+			dashboardStatus.state = StateType.mixed
+		}
+
+		const pre = allValidatorsExited ? 'All' : `${exitedCount}`
+		const helpingVerb = singularPluralSwitch(validatorCount, exitedCount, 'has', 'have')
+		// exit message is only highlighted if it is about foreign validators or if all validators are exited
+		const highlight = foreignValidator || allValidatorsExited
+		dashboardStatus.description.push({
+			text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' exited', 'This validator has exited', foreignValidator),
+			highlight: highlight,
+		})
+	}
+
+	function updateStateOffline(dashboardStatus: DashboardStatus, validatorCount: number, offlineCount: number, foreignValidator: boolean) {
+		if (offlineCount == 0) {
+			return
+		}
+
+		if (dashboardStatus.state == StateType.none) {
+			dashboardStatus.icon = 'alert-circle-outline'
+			dashboardStatus.iconCss = 'warn'
+			dashboardStatus.state = StateType.offline
+		} else {
+			dashboardStatus.state = StateType.mixed
+		}
+
+		const pre = validatorCount == offlineCount ? 'All' : `${offlineCount}`
+		const helpingVerb = singularPluralSwitch(validatorCount, offlineCount, 'is', 'are')
+		dashboardStatus.description.push({
+			text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' offline', 'This validator is offline', foreignValidator),
+			highlight: true,
+		})
+	}
+
+	function updateStateOk(
+		dashboardStatus: DashboardStatus,
+		activeCount: number,
+		validatorCount: number,
+		foreignValidator: boolean
+	) {
+		if (dashboardStatus.state != StateType.mixed && dashboardStatus.state != StateType.none) {
+			return
+		}
+
+		if (dashboardStatus.state == StateType.none) {
+			const pre = validatorCount == activeCount ? 'All' : `${activeCount}`
+			const helpingVerb = singularPluralSwitch(validatorCount, activeCount, 'is', 'are')
+			dashboardStatus.description.push({
+				text: descriptionSwitch(pre + ' of your validators ' + helpingVerb + ' active', 'This validator is active', foreignValidator),
+				highlight: true,
+			})
+
+			dashboardStatus.state = StateType.online
+		}
+	}
+
+function emptyPerformance(): Performance {
+	return {
+		performance1d: new BigNumber(0),
+		performance30d: new BigNumber(0),
+		performance7d: new BigNumber(0),
+		total: new BigNumber(0),
+		apr7d: 0,
+		apr30d: 0,
+		aprTotal: 0,
+	}
+}
+
+	function getExecutionPerformance(
+		overviewData: VDBOverviewData,
+	): Performance {
+		if (!overviewData) return emptyPerformance()
+		return {
+			performance1d: new BigNumber(overviewData.rewards.last_24h.el),
+			performance30d: new BigNumber(overviewData.rewards.last_30d.el),
+			performance7d: new BigNumber(overviewData.rewards.last_7d.el),
+			total: new BigNumber(overviewData.rewards.all_time.el),
+			apr30d: overviewData.apr.last_30d.el,
+			apr7d: overviewData.apr.last_7d.el,
+			aprTotal: overviewData.apr.all_time.el,
+		}
+	}
+
+function getConsensusPerformance(overviewData: VDBOverviewData): Performance {
+		if (!overviewData) return emptyPerformance()
+		return {
+			performance1d: new BigNumber(overviewData.rewards.last_24h.cl),
+			performance30d: new BigNumber(overviewData.rewards.last_30d.cl),
+			performance7d: new BigNumber(overviewData.rewards.last_7d.cl),
+			total: new BigNumber(overviewData.rewards.all_time.cl),
+			apr30d: overviewData.apr.last_30d.cl,
+			apr7d: overviewData.apr.last_7d.cl,
+			aprTotal: overviewData.apr.all_time.cl,
+		}
+	}
+
+function getCombinedPerformance(cons: Performance, exec: Performance): Performance {
+	return {
+		performance1d: cons.performance1d.plus(exec.performance1d),
+		performance30d: cons.performance30d.plus(exec.performance30d),
+		performance7d: cons.performance7d.plus(exec.performance7d),
+		total: cons.total.plus(exec.total),
+		apr30d: cons.apr30d + exec.apr30d,
+		apr7d: cons.apr7d + exec.apr7d,
+		aprTotal: cons.aprTotal + exec.aprTotal,
 	}
 }
 

@@ -29,7 +29,7 @@ interface CachedData {
 	data: unknown
 }
 
-export class CacheModule {
+export abstract class CacheModule {
 	private staleTime
 
 	private keyPrefix = ''
@@ -98,12 +98,11 @@ export class CacheModule {
 
 	private getStoreForCacheKey(cacheKey: string): Map<string, CachedData> {
 		// rationale: don't store big data objects in hardStorage due to severe performance impacts
-		const storeHard =
-			cacheKey.indexOf('app/dashboard') >= 0 ||
-			cacheKey.indexOf('produced?offset=0') >= 0 || // first page of blocks page
-			(cacheKey.indexOf('beaconcha.in') < 0 && cacheKey.indexOf('gnosischa.in') < 0 && cacheKey.indexOf('ads.bitfly') < 0)
+		const storeHard = this.storeInHardCache(cacheKey)
 		return storeHard ? this.cache : this.hotOnly
 	}
+
+	abstract storeInHardCache(cachekey: string): boolean
 
 	public async deleteAllHardStorageCacheKeyContains(search: string) {
 		if (!this.hardStorage) {
