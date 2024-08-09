@@ -17,19 +17,23 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import '../../../theme/variables.scss';
+import { Component, Input } from '@angular/core'
+import { Performance } from 'src/app/controllers/OverviewController'
+import { Currency, UnitconvService } from 'src/app/services/unitconv.service'
 
-.grid-cell {
-	width: 50%;
-	float: left;
-	margin-bottom: 7px;
-	margin-top: 7px;
-}
-
-.left {
-	text-align: start !important;
-}
-
-.right {
-	text-align: end !important;
+@Component({
+	selector: 'app-performance-item',
+	templateUrl: './performance-item.component.html',
+	styleUrls: ['./performance-item.component.scss'],
+})
+export class PerformanceItemComponent {
+	@Input() performanceData: Performance
+	@Input() unit: UnitconvService
+	@Input() targetCurrency: Currency
+	@Input() currency: string
+	@Input() todayTooltip: string
+	@Input() last7DaysTooltip: string
+	@Input() last30DaysTooltip: string
+	@Input() totalTooltip: string
+	@Input() aprTooltip: string
 }

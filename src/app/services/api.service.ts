@@ -29,8 +29,6 @@ import { Capacitor, HttpOptions } from '@capacitor/core'
 import { CapacitorCookies } from '@capacitor/core'
 import { LatestStateData } from '../requests/types/latest_state'
 import { V2LatestState } from '../requests/network'
-import { V2DashboardOverview } from '../requests/v2-dashboard'
-
 
 const LOGTAG = '[ApiService]'
 
@@ -241,6 +239,9 @@ export class ApiService extends CacheModule {
 
 	private getCacheKey(request: APIRequest<unknown>): string {
 		if (request.method == Method.GET) {
+			if (request.customCacheKey) {
+				return request.customCacheKey
+			}
 			return request.method + this.getResourceUrl(request.resource, request.endPoint)
 		} else if (request.cacheablePOST) {
 			return request.method + this.getResourceUrl(request.resource, request.endPoint) + JSON.stringify(request.postData)

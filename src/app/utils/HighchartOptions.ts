@@ -18,6 +18,10 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * 
+ * @param where @deprecated replaced by echarts
+ */
 export function highChartOptions(where, hostName) {
 	where.setOptions({
 		time: {

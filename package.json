@@ -1,7 +1,7 @@
 {
 	"name": "beaconchain-dashboard",
 	"version": "2.0.0",
-	"author": "Bitfly GmbH",
+	"author": "bitfly explorer GmbH",
 	"homepage": "https://beaconcha.in",
 	"scripts": {
 		"test": "ng test",
@@ -51,9 +51,12 @@
 		"cordova-res": "^0.15.2",
 		"ethereum-blockies": "^0.1.1",
 		"hammerjs": "^2.0.8",
-		"highcharts": "^11.1.0",
+		"highcharts": "^11.4.6",
+		"echarts": "^5.5.0",
+		"ngx-echarts": "^17.2.0",
 		"intl": "^1.2.5",
 		"jetifier": "^1.6.6",
+		"luxon": "^3.5.0",
 		"magic-snowflakes": "^4.1.6",
 		"ng2-tooltip-directive-major-angular-updates": "^2.11.0",
 		"ngx-timeago": "^3.0.0",

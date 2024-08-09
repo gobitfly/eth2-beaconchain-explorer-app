@@ -17,6 +17,7 @@
 
 import { encodeDashboardID } from "../utils/DashboardHelper"
 import { APIRequest, Method, NoContent } from "./requests"
+import { ChartData } from "./types/common"
 import { InternalGetValidatorDashboardValidatorsResponse, VDBGroupSummaryData, VDBOverviewData, VDBPostCreateGroupData, VDBPostReturnData, VDBPostValidatorsData, VDBRocketPoolTableRow, VDBSummaryTableRow
  } from "./types/validator_dashboard"
 
@@ -26,6 +27,20 @@ export enum Period {
 	Last24h = "last_24h",
 	Last7d = "last_7d",
 	Last30d = "last_30d"
+}
+
+export enum EfficiencyType {
+	All = "all",
+	Attestation = "attestation",
+	Sync = "sync",
+	Proposal = "proposal",
+}
+
+export enum Aggregation {
+	Epoch = "epoch",
+	Hourly = "hourly",
+	Daily = "daily",
+	Weekly = "weekly",
 }
 
 
@@ -67,6 +82,32 @@ export class V2DashboardSummaryGroupTable extends APIRequest<VDBGroupSummaryData
 		super()
 		this.resource = setID(this.resource, id).replace('{group_id}', groupID + '') + '?period=' + period
 		if (limit) this.resource += '&limit=' + limit
+	}
+}
+
+
+export class V2DashboardSummaryChart extends APIRequest<ChartData<number, number>> {
+	resource = 'validator-dashboards/{id}/summary-chart'
+	method = Method.GET
+
+	static SUMMARY_CHART_GROUP_TOTAL = -1
+	static SUMMARY_CHART_GROUP_NETWORK_AVERAGE = -2
+
+	constructor(
+		id: dashboardID,
+		efficiencyType: EfficiencyType,
+		aggregation: Aggregation,
+		afterTs: number,
+		beforeTs: number = Math.floor(Date.now() / 1000),
+		groupIds: number[] = [-1, -2]
+	) {
+		super()
+		this.resource = setID(this.resource, id)
+		this.resource = this.resource + '?group_ids=' + groupIds.join(',')
+		this.resource = this.resource + '&after_ts=' + afterTs
+		this.resource = this.resource + '&before_ts=' + beforeTs
+		this.resource = this.resource + '&efficiency_type=' + efficiencyType
+		this.resource = this.resource + '&aggregation=' + aggregation
 	}
 }
 
@@ -207,7 +248,7 @@ export class V2DashboardRocketPool extends APIRequest<VDBRocketPoolTableRow> {
 
 
 
-function setID(resource: string, id: dashboardID): string {
+export function setID(resource: string, id: dashboardID): string {
 	if (typeof id === 'string') {
 		return resource.replace('{id}', id)
 	}

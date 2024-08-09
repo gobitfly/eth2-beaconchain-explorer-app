@@ -30,20 +30,28 @@ import { ClientupdateComponentModule } from '../../components/clientupdate/clien
 import { MessageComponentModule } from '../../components/message/message.module'
 import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
 import { AdComponentModule } from '../ad/ad.module'
-import { PerformanceItemComponentModule } from '../dashboard/performance-item.module'
+import { PerformanceItemComponentModule } from './performance-item/performance-item.module'
+import { SummaryChartComponent } from "./summary-chart/summary-chart.component";
+import { SuccessFailViewComponent } from "./success-fail-view/success-fail-view.component";
+import { GridCellLeftComponent } from "./grid-cell-left/grid-cell-left.component";
+import { GridCellRightComponent } from "./grid-cell-right/grid-cell-right.component";
 
 @NgModule({
 	imports: [
-		CommonModule,
-		FormsModule,
-		IonicModule,
-		PipesModule,
-		ClientupdateComponentModule,
-		MessageComponentModule,
-		TooltipModule,
-		AdComponentModule,
-		PerformanceItemComponentModule,
-	],
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    PipesModule,
+    ClientupdateComponentModule,
+    MessageComponentModule,
+    TooltipModule,
+    AdComponentModule,
+    PerformanceItemComponentModule,
+    SummaryChartComponent,
+    SuccessFailViewComponent,
+    GridCellLeftComponent,
+    GridCellRightComponent
+],
 	declarations: [DashboardComponent],
 	exports: [DashboardComponent],
 })

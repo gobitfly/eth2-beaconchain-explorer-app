@@ -18,17 +18,15 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, Input, SimpleChange } from '@angular/core'
+import { Component, OnInit, Input, SimpleChange, signal, WritableSignal } from '@angular/core'
 import { RewardType, UnitconvService } from '../../services/unitconv.service'
 import { ApiService } from '../../services/api.service'
-import { DashboardDataRequest, SyncCommitteeResponse } from '../../requests/requests'
-import * as HighCharts from 'highcharts'
+import { SyncCommitteeResponse } from '../../requests/requests'
 import * as Highstock from 'highcharts/highstock'
 import BigNumber from 'bignumber.js'
-import { OverviewData, OverviewData2, Rocketpool } from '../../controllers/OverviewController'
+import { OverviewData2, Rocketpool } from '../../controllers/OverviewController'
 import { Release } from '../../utils/ClientUpdateUtils'
 import ThemeUtils from 'src/app/utils/ThemeUtils'
-import { highChartOptions } from 'src/app/utils/HighchartOptions'
 import { StorageService } from 'src/app/services/storage.service'
 import confetti from 'canvas-confetti'
 import { Browser } from '@capacitor/browser'
@@ -39,6 +37,9 @@ import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import FirebaseUtils from 'src/app/utils/FirebaseUtils'
 import { trigger, style, animate, transition } from '@angular/animations'
 import { slotToEpoch } from 'src/app/utils/MathUtils'
+import { epochToTimestamp} from 'src/app/utils/TimeUtils'
+import { setID } from 'src/app/requests/v2-dashboard'
+import { getSuccessFailMode, Mode } from './success-fail-view/success-fail-view.component'
 @Component({
 	selector: 'app-validator-dashboard',
 	templateUrl: './dashboard.component.html',
@@ -60,24 +61,16 @@ export class DashboardComponent implements OnInit {
 	utilizationAvg = -1
 
 	chartData
-	chartDataProposals
 	chartError = false
 
 	randomChartId
 
-	rankPercentMode = false
-
-	selectedChart = 'chartIncome'
+	selectedChart = 'chartSummary'
 
 	showFirstProposalMsg = false
 	showMergeChecklist = false
 	firstCelebrate = true
 
-	doneLoading = true // todo back to false
-	proposals: Proposals = {
-		good: 0,
-		bad: 0,
-	}
 	currentPackageMaxValidators = 100
 
 	rplState = 'rpl'
@@ -104,6 +97,10 @@ export class DashboardComponent implements OnInit {
 	showWithdrawalInfo = false
 
 	rewardTab: 'combined' | 'cons' | 'exec' = 'combined'
+
+	successFailMode: WritableSignal<Mode> = signal('absolute')
+
+	aggregationValue = 'hourly'
 
 	constructor(
 		public unit: UnitconvService,
@@ -152,9 +149,8 @@ export class DashboardComponent implements OnInit {
 					})
 				}
 
-				if (this.balanceChart && this.proposalChart) {
+				if (this.balanceChart) {
 					this.balanceChart.destroy()
-					this.proposalChart.destroy()
 					this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
 				}
 
@@ -184,7 +180,6 @@ export class DashboardComponent implements OnInit {
 					await Promise.all([this.checkForFinalization(), this.checkForGenesisOccurred()])
 				}
 
-				this.doneLoading = true
 			}
 		}
 	}
@@ -218,15 +213,10 @@ export class DashboardComponent implements OnInit {
 	// 	}
 	// }
 
-	epochToTimestamp(epoch: number) {
-		const network = this.api.getNetwork()
-		return (network.genesisTs + epoch * network.slotPerEpoch * network.slotsTime) * 1000
-	}
-
 	updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			const endTs = this.epochToTimestamp(committee.end_epoch + 1)
-			const startTs = this.epochToTimestamp(committee.start_epoch)
+			const endTs = epochToTimestamp(this.api, committee.end_epoch + 1)
+			const startTs = epochToTimestamp(this.api, committee.start_epoch)
 			this.currentSyncCommitteeMessage = {
 				title: 'Sync Committee',
 				text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${
@@ -244,8 +234,8 @@ export class DashboardComponent implements OnInit {
 
 	updateNextSyncCommitteeMessage(committee: SyncCommitteeResponse) {
 		if (committee) {
-			const endTs = this.epochToTimestamp(committee.end_epoch + 1)
-			const startTs = this.epochToTimestamp(committee.start_epoch)
+			const endTs = epochToTimestamp(this.api, committee.end_epoch + 1)
+			const startTs = epochToTimestamp(this.api, committee.start_epoch)
 			this.nextSyncCommitteeMessage = {
 				title: 'Sync Committee Soon',
 				text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${
@@ -338,11 +328,8 @@ export class DashboardComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		//this.doneLoading = false
-		this.storage.getBooleanSetting('rank_percent_mode', false).then((result) => (this.rankPercentMode = result))
+		getSuccessFailMode(this.storage).then((result) => { this.successFailMode.set(result) })
 		this.storage.getItem('rpl_pdisplay_mode').then((result) => (this.rplState = result ? result : 'rpl'))
-		highChartOptions(HighCharts, this.api.getHostName())
-		highChartOptions(Highstock, this.api.getHostName())
 		this.merchant.getCurrentPlanMaxValidator().then((result) => {
 			this.currentPackageMaxValidators = result
 		})
@@ -429,34 +416,6 @@ export class DashboardComponent implements OnInit {
 	// 	}
 	// }
 
-	// TODO
-	// async drawProposalChart() {
-	// 	this.chartDataProposals = await this.getChartData('proposals')
-
-	// 	if (!this.chartDataProposals || this.chartDataProposals.length < 1) {
-	// 		this.chartDataProposals = false
-	// 		return
-	// 	}
-
-	// 	const proposed = []
-	// 	const missed = []
-	// 	const orphaned = []
-	// 	this.chartDataProposals.map((d) => {
-	// 		if (d[1] == 1) proposed.push([d[0] * 1000, 1])
-	// 		else if (d[1] == 2) missed.push([d[0] * 1000, 1])
-	// 		else if (d[1] == 3) orphaned.push([d[0] * 1000, 1])
-	// 	})
-
-	// 	this.proposals = {
-	// 		good: proposed.length,
-	// 		bad: missed.length + orphaned.length,
-	// 	}
-
-	// 	this.checkForFirstProposal(proposed)
-
-	// 	this.createProposedChart(proposed, missed, orphaned)
-	// }
-
 	private async checkForFirstProposal(chartData) {
 		if (this.data.foreignValidator) return
 		const foundAtLeasOne = chartData.length >= 1 && chartData.length <= 2
@@ -516,11 +475,6 @@ export class DashboardComponent implements OnInit {
 	// 	this.createBalanceChart(this.chartData.consensusChartData, this.chartData.executionChartData)
 	// }
 
-	switchRank() {
-		this.rankPercentMode = !this.rankPercentMode
-		this.storage.setBooleanSetting('rank_percent_mode', this.rankPercentMode)
-	}
-
 	private getChartToolTipCaption(timestamp: number, genesisTs: number, slotTime: number, slotsPerEpoch: number, dataGroupLength: number) {
 		const dateToEpoch = (ts: number): number => {
 			const slot = Math.floor((ts / 1000 - genesisTs) / slotTime)
@@ -539,131 +493,6 @@ export class DashboardComponent implements OnInit {
 		} else {
 			return `${new Date(timestamp).toLocaleDateString()} - ${new Date(dateForNextDay).toLocaleDateString()} <br/>${epochText}`
 		}
-	}
-
-	private proposalChart = null
-	createProposedChart(proposed, missed, orphaned) {
-		const network = this.api.getNetwork()
-
-		this.proposalChart = Highstock.chart(
-			'highchartsBlocks' + this.randomChartId,
-			{
-				accessibility: {
-					enabled: false,
-				},
-				chart: {
-					type: 'column',
-					marginLeft: 0,
-					marginRight: 0,
-					spacingLeft: 0,
-					spacingRight: 0,
-					spacingTop: 12,
-				},
-				legend: {
-					enabled: true,
-				},
-				title: {
-					text: '',
-				},
-				colors: ['var(--chart-default)', '#ff835c', '#e4a354', '#2b908f', '#f45b5b', '#91e8e1'],
-				xAxis: {
-					lineWidth: 0,
-					tickColor: '#e5e1e1',
-					type: 'datetime',
-					range: 31 * 24 * 60 * 60 * 1000,
-				},
-				yAxis: [
-					{
-						title: {
-							text: '',
-						},
-						allowDecimals: false,
-						opposite: false,
-						labels: {
-							align: 'left',
-							x: 1,
-							y: -2,
-						},
-					},
-				],
-				tooltip: {
-					style: {
-						color: 'var(--text-color)',
-						display: `inline-block`,
-						width: 250,
-					},
-					shared: true,
-					formatter: (tooltip) => {
-						// date and epoch
-						let text = this.getChartToolTipCaption(
-							tooltip.chart.hoverPoints[0].x,
-							network.genesisTs,
-							network.slotsTime,
-							network.slotPerEpoch,
-							tooltip.chart.hoverPoints[0].dataGroup.length
-						)
-
-						// summary
-						for (let i = 0; i < tooltip.chart.hoverPoints.length; i++) {
-							text += `<b><span style="color:${tooltip.chart.hoverPoints[i].color}">●</span> ${tooltip.chart.hoverPoints[i].series.name}: ${tooltip.chart.hoverPoints[i].y}</b><br/>`
-						}
-
-						return text
-					},
-				},
-				plotOptions: {
-					series: {
-						dataGrouping: {
-							units: [
-								['day', [1, 2, 3]],
-								['week', [1, 2]],
-								['month', [1, 2, 3, 6]],
-							],
-							forced: true,
-							enabled: true,
-							groupAll: true,
-						},
-					},
-					column: {
-						borderWidth: 0,
-						centerInCategory: true,
-					},
-				},
-				series: [
-					{
-						name: 'Proposed',
-						color: 'var(--chart-default)',
-						data: proposed,
-						pointWidth: 5,
-						type: 'column',
-					},
-					{
-						name: 'Missed',
-						color: '#ff835c',
-						data: missed,
-						pointWidth: 5,
-						type: 'column',
-					},
-					{
-						name: 'Orphaned',
-						color: '#e4a354',
-						data: orphaned,
-						pointWidth: 5,
-						type: 'column',
-					},
-				],
-				rangeSelector: {
-					enabled: false,
-				},
-				scrollbar: {
-					enabled: false,
-				},
-				navigator: {
-					enabled: true,
-				},
-			},
-			null
-		)
 	}
 
 	private balanceChart = null
@@ -876,25 +705,21 @@ export class DashboardComponent implements OnInit {
 
 	async openBrowser() {
 		// todo
-		//await Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
+		await Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
 	}
 
-	// getBrowserURL(): string {
-	// 	if (this.data.foreignValidator) {
-	// 		return this.api.getBaseUrl() + '/validator/' + this.data.foreignValidatorItem.pubkey
-	// 	} else {
-	// 		return this.api.getBaseUrl() + '/dashboard?validators=' + this.data.lazyChartValidators
-	// 	}
-	// }
+	getBrowserURL(): string {
+		// todo foreign validator
+		// if (this.data.foreignValidator) {
+		// 	return this.api.getBaseUrl() + '/dashboard/' + this.data.foreignValidatorItem
+		// } else {
+		return setID(this.api.getBaseUrl() + '/dashboard/{id}', this.data.id)
+		//}
+	}
 }
 
 function getRandomInt(max) {
 	return Math.floor(Math.random() * Math.floor(max))
-}
-
-interface Proposals {
-	good: number
-	bad: number
 }
 
 interface SyncCommitteeMessage {
@@ -906,3 +731,4 @@ interface FinalizationIssue {
 	ts: number
 	value: boolean
 }
+

@@ -17,19 +17,4 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { NgModule } from '@angular/core'
-import { CommonModule } from '@angular/common'
-import { FormsModule } from '@angular/forms'
-
-import { IonicModule } from '@ionic/angular'
-
-import { PerformanceItemComponent } from './performance-item.component'
-import { PipesModule } from '../../pipes/pipes.module'
-import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
-
-@NgModule({
-	imports: [CommonModule, FormsModule, IonicModule, PipesModule, TooltipModule],
-	declarations: [PerformanceItemComponent],
-	exports: [PerformanceItemComponent],
-})
-export class PerformanceItemComponentModule {}
+@import '../../../../theme/variables.scss';

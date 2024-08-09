@@ -32,6 +32,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import 'hammerjs'
 import { ApiService } from './services/api.service'
 import { BootPreloadService } from './services/boot-preload.service'
+import { NgxEchartsModule, provideEcharts } from 'ngx-echarts'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let Hammer: any
@@ -54,6 +55,15 @@ export class MyHammerConfig extends HammerGestureConfig {
 		AppRoutingModule,
 		PipesModule,
 		HammerModule,
+
+		NgxEchartsModule.forRoot({
+			/**
+			 * This will import all modules from echarts.
+			 * If you only need custom modules,
+			 * please refer to [Custom Build] section.
+			 */
+			echarts: () => import('echarts'), // or import('./path-to-my-custom-echarts')
+		}),
 	],
 	providers: [
 		{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -68,6 +78,7 @@ export class MyHammerConfig extends HammerGestureConfig {
 			multi: true,
 			deps: [ApiService, BootPreloadService],
 		},
+		provideEcharts(),
 	],
 	bootstrap: [AppComponent],
 })

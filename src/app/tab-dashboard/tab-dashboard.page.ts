@@ -118,7 +118,7 @@ export class Tab1Page {
 		// })
 
 		
-		this.overallData = await getValidatorData(this.api, 5348) 
+		this.overallData = getValidatorData(this.api, 5348) 
 		console.log('overallData', this.overallData)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}

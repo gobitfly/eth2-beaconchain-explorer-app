@@ -17,23 +17,21 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input } from '@angular/core'
-import { Performance } from 'src/app/controllers/OverviewController'
-import { Currency, UnitconvService } from 'src/app/services/unitconv.service'
+import { NgModule } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
 
-@Component({
-	selector: 'app-performance-item',
-	templateUrl: './performance-item.component.html',
-	styleUrls: ['./performance-item.component.scss'],
+import { IonicModule } from '@ionic/angular'
+
+import { PerformanceItemComponent } from './performance-item.component'
+import { PipesModule } from '../../../pipes/pipes.module'
+import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
+import { GridCellLeftComponent } from "../grid-cell-left/grid-cell-left.component";
+import { GridCellRightComponent } from "../grid-cell-right/grid-cell-right.component";
+
+@NgModule({
+	imports: [CommonModule, FormsModule, IonicModule, PipesModule, TooltipModule, GridCellLeftComponent, GridCellRightComponent],
+	declarations: [PerformanceItemComponent],
+	exports: [PerformanceItemComponent],
 })
-export class PerformanceItemComponent {
-	@Input() performanceData: Performance
-	@Input() unit: UnitconvService
-	@Input() targetCurrency: Currency
-	@Input() currency: string
-	@Input() todayTooltip: string
-	@Input() last7DaysTooltip: string
-	@Input() last31DaysTooltip: string
-	@Input() totalTooltip: string
-	@Input() aprTooltip: string
-}
+export class PerformanceItemComponentModule {}

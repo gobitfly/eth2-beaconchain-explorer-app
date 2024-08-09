@@ -18,25 +18,28 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { APIRequest, ProposalLuckResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
-import { sumBigInt, slotToEpoch } from '../utils/MathUtils'
+import { APIRequest, ProposalLuckResponse, SyncCommitteeResponse } from '../requests/requests'
+import { sumBigInt } from '../utils/MathUtils'
 import BigNumber from 'bignumber.js'
-import { ValidatorState, Validator } from '../utils/ValidatorUtils'
-import { formatDate } from '@angular/common'
+import { Validator } from '../utils/ValidatorUtils'
 import { SyncCommitteesStatistics, SyncCommitteesStatisticsResponse } from '../requests/requests'
 import { UnitconvService } from '../services/unitconv.service'
 import { ApiNetwork } from '../models/StorageTypes'
-import { dashboardID, Period, V2DashboardOverview, V2DashboardRocketPool, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
+import { Aggregation, dashboardID, EfficiencyType, Period, V2DashboardOverview, V2DashboardRocketPool, V2DashboardSummaryChart, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
 import { ApiService, LatestStateWithTime } from '../services/api.service'
 import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
 import { computed, signal, Signal, WritableSignal } from '@angular/core'
+import { ChartData } from '../requests/types/common'
 
 export class OverviewData2 {
+	id: dashboardID
+
 	overviewData: WritableSignal<VDBOverviewData> = signal(null)
 	summary: WritableSignal<VDBSummaryTableRow[]> = signal(null)
 	summaryGroup: WritableSignal<VDBGroupSummaryData> = signal(null)
 	latestState: WritableSignal<LatestStateWithTime> = signal(null)
 	rocketpool: WritableSignal<VDBRocketPoolTableRow> = signal(null)
+	summaryChart: WritableSignal<ChartData<number, number>> = signal(null)
 
 	network: ApiNetwork
 	foreignValidator: boolean
@@ -97,6 +100,11 @@ export class OverviewData2 {
 	rpTotalRPLClaimed: Signal<BigNumber> = computed(() => {
 		if (this.rocketpool() == null) return new BigNumber(0)
 		return new BigNumber(this.rocketpool().rpl.claimed).plus(new BigNumber(this.rocketpool().rpl.unclaimed))
+	})
+
+	avgNetworkEfficiency: Signal<number> = computed(() => {
+		if (this.summary() == null) return 0
+		return this.summary()[0].average_network_efficiency 
 	})
 }
 
@@ -197,7 +205,7 @@ export type Description = {
 
 const VALIDATOR_32ETH = new BigNumber(32000000000)
 
-export function getValidatorData(api: ApiService, id: dashboardID, ): OverviewData2 {
+export function getValidatorData(api: ApiService, id: dashboardID): OverviewData2 {
 	function set<T>(request: APIRequest<T>, s: WritableSignal<T>, errHandler: (err: string) => void = null) {
 		api.execute2(request).then((data) => {
 			if (data.error) {
@@ -223,10 +231,16 @@ export function getValidatorData(api: ApiService, id: dashboardID, ): OverviewDa
 	setArray(new V2DashboardSummaryTable(id, Period.AllTime, null), temp.summary)
 	set(new V2DashboardSummaryGroupTable(id, 0, Period.AllTime, null), temp.summaryGroup)
 	set(new V2DashboardRocketPool(id), temp.rocketpool)
+	set(
+		new V2DashboardSummaryChart(id, EfficiencyType.All, Aggregation.Hourly, Math.floor(Date.now() / 1000 - 1 * 24 * 60 * 60)).withCustomCacheKey("summary-chart-initial"),
+		temp.summaryChart
+	)
 
 	api.getLatestState().then((latestState) => {
 		temp.latestState.set(latestState)
 	})
+
+	temp.id = id
 
 	return temp
 }

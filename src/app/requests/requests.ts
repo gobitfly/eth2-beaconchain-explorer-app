@@ -51,6 +51,13 @@ export abstract class APIRequest<T> {
 	endPoint = 'default'
 	postData?: unknown
 	expectedResponseStatus = 200
+	customCacheKey: string = null
+
+	withCustomCacheKey(key: string): this {
+		this.customCacheKey = key
+		return this
+	}
+
 	sortResultFn: (a: T, b: T) => number = null
 
 	parse(response: Response): T[] {
@@ -68,8 +75,8 @@ export abstract class APIRequest<T> {
 
 		return {
 			data: null,
-			error: response.data?.error || 'HTTP status code: ' + response.status,
-			cached: response.cached,
+			error: response?.data?.error || response ? 'HTTP status code: ' + response.status : 'No response error',
+			cached: response?.cached || false,
 		}
 	}
 

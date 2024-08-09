@@ -1,0 +1,51 @@
+<!-- 
+    Copyright (C) 2020 - 2023 Bitfly GmbH
+    
+    This file is part of Beaconchain Dashboard.
+
+    Beaconchain Dashboard is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Beaconchain Dashboard is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<div class="grid">
+	<app-grid-cell-left name="Last 24h" [tooltip]="todayTooltip">
+		<span [class]="performanceData.performance1d | valuestyle : 0">
+			{{ performanceData.performance1d | mcurrency : currency : targetCurrency }}
+		</span>
+	</app-grid-cell-left>
+
+	<app-grid-cell-right name="Last 7d" [tooltip]="last7DaysTooltip">
+		<span [class]="performanceData.performance7d | valuestyle : 0">
+			{{ performanceData.performance7d | mcurrency : currency : targetCurrency }}
+		</span>
+	</app-grid-cell-right>
+
+	<app-grid-cell-left name="Last 30d" [tooltip]="last30DaysTooltip">
+		<span [class]="performanceData.performance30d | valuestyle : 0">
+			{{ performanceData.performance30d | mcurrency : currency : targetCurrency }}
+		</span>
+	</app-grid-cell-left>
+	
+	<app-grid-cell-right name="Total" [tooltip]="totalTooltip">
+		<span [class]="performanceData.total | valuestyle : 0">
+			{{ performanceData.total | mcurrency : currency : targetCurrency }}
+		</span>
+	</app-grid-cell-right>
+	
+	<app-grid-cell-left name="APR 30d" [tooltip]="aprTooltip">
+		<span [class]="performanceData.apr30d | valuestyle : 0">
+			{{ performanceData.apr30d | number: '1.0-2'}} %
+		</span>
+	</app-grid-cell-left> 
+
+</div>
