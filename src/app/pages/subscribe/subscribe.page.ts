@@ -25,6 +25,7 @@ export class SubscribePage implements OnInit {
 	selectedPackage: Package
 
 	isiOS = false
+	renewalFrame: 'monthly' | 'yearly' = 'monthly'
 
 	constructor(
 		private modalCtrl: ModalController,
@@ -72,6 +73,50 @@ export class SubscribePage implements OnInit {
 
 	closeModal() {
 		this.modalCtrl.dismiss()
+	}
+
+	equalPackage(pkg: Package, pkg2: Package): boolean {
+		if (pkg == null || pkg2 == null) {
+			return false
+		}
+		if (pkg.purchaseKey == null || pkg2.purchaseKey == null) {
+			return pkg.purchaseKey == pkg2.purchaseKey
+		}
+		return pkg.purchaseKey.split('.')[0] === pkg2.purchaseKey.split('.')[0]
+	}
+
+	calculateMonthlyPrice(pkg: Package): string {
+		let monthlyPrice = Math.ceil((pkg.priceMicros / 1000000) / 12).toFixed(2)
+		if (Number.isInteger(Number(monthlyPrice)) && Number(monthlyPrice) > 0) {
+			monthlyPrice = (Number(monthlyPrice) - 0.01).toFixed(2);
+		}
+		return this.replaceNumberInString(pkg.price, monthlyPrice)
+	}
+
+	replaceNumberInString(inputString: string, newNumber: string): string {
+		const regex = /[0-9,.]+/g;
+		return inputString.replace(regex, newNumber);
+	}
+
+	calculateYearlyPrice(pkg: Package): string {
+		let yearlyPrice = Math.ceil((pkg.priceMicros / 1000000) * 12).toFixed(2)
+		if (Number.isInteger(Number(yearlyPrice)) && Number(yearlyPrice) > 0) {
+			yearlyPrice = (Number(yearlyPrice) - 0.01).toFixed(2);
+		}
+		return this.replaceNumberInString(pkg.price, yearlyPrice)
+	}
+
+	getFrameShort(pkg: Package): string {
+		return pkg.renewFrame === 'monthly' ? 'm' : 'y'
+	}
+
+	renewalTimeframeChange() {
+		if (this.selectedPackage == this.merchant.PACKAGES[0]) {
+			this.selectedPackage = this.merchant.PACKAGES[1]
+			this.selectedPackage = this.merchant.PACKAGES[0]
+			return
+		}
+		this.selectedPackage = this.merchant.PACKAGES.find((pkg) => pkg.renewFrame === this.renewalFrame && this.equalPackage(pkg, this.selectedPackage))
 	}
 
 	async continuePurchaseIntern() {

@@ -32,6 +32,26 @@ ion-content {
 	padding-bottom: 0px;
 }
 
+ion-segment-button {
+	color: var(--x-toolbar-title-color);
+
+	font-family: 'Varela';
+	font-size: 0.75em;
+	--indicator-height: 0px !important;
+	text-transform: none !important;
+	--ripple-color: transparent !important;
+	//transition: color 0.15s ease;
+	opacity: 0.65;
+}
+
+ion-segment {
+	background-color: var(--ion-toolbar-background);
+}
+
+.segment-button-checked {
+	opacity: 1;
+}
+
 .packages {
 }
 
@@ -49,7 +69,7 @@ h2 {
 }
 
 .status-icon {
-	margin-bottom: 12px;
+	margin-bottom: 8px;
 	font-size: 60px;
 	color: var(--x-toolbar-title-color);
 }
@@ -66,7 +86,7 @@ h2 {
 
 .slide-container {
 	display: block;
-	padding-bottom: 22px;
+	padding-bottom: 8px;
 }
 
 ion-label {
@@ -74,17 +94,17 @@ ion-label {
 }
 
 .package {
-	width: 33.33%;
+	width: 33.3%;
 	text-align: center;
 	display: inline-block;
 
 	background-color: var(--x-update-messages-background);
 
-	height: 74px;
+	height: 96px;
 }
 
 .package-inner {
-	margin-top: 0.68em;
+	margin-top: 0.3em;
 	height: 30px;
 }
 
@@ -92,9 +112,7 @@ ion-label {
 	font-size: 1.15em;
 }
 
-.slide-container {
-	margin-bottom: 6px;
-}
+
 .value {
 	text-align: end;
 	font-weight: bold !important;

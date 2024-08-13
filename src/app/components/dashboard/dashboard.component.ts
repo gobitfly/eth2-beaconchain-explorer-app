@@ -381,7 +381,7 @@ export class DashboardComponent implements OnInit {
 			component: SubscribePage,
 			cssClass: 'my-custom-class',
 			componentProps: {
-				tab: 'whale',
+				tab: 'dolphin',
 			},
 		})
 		return await modal.present()
