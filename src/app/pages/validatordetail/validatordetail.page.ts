@@ -20,7 +20,7 @@
 import { Component, OnInit, Input } from '@angular/core'
 import { ValidatorUtils, Validator, getDisplayName, SAVED } from '../../utils/ValidatorUtils'
 import { ModalController } from '@ionic/angular'
-import OverviewController, { OverviewData } from '../../controllers/OverviewController'
+import { OverviewData } from '../../controllers/OverviewController'
 import { fromEvent, Subscription } from 'rxjs'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { UnitconvService } from 'src/app/services/unitconv.service'
@@ -90,7 +90,7 @@ export class ValidatordetailPage implements OnInit {
 		this.modalCtrl.dismiss()
 	}
 
-	async updateDetails(item: Validator) {
+	updateDetails(item: Validator) {
 		this.name = getDisplayName(item)
 
 		//const epoch = await this.validatorUtils.getRemoteCurrentEpoch()

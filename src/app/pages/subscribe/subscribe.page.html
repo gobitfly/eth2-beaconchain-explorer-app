@@ -95,13 +95,13 @@
 	</ion-list>
 
 	<div class="detail-container" *ngIf="selectedPackage.purchaseKey != null">
-		<ion-label class="link" (click)="trial()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey">Start with a 14 day trial.</ion-label>
+		<ion-label class="link" (click)="trial()" *ngIf="this.merchant.getUsersSubscription()?.product_id != selectedPackage.purchaseKey">Start with a 14 day trial.</ion-label>
 
 		<div>
-			<ion-button class="purchase-btn" (click)="purchase()" *ngIf="activeUserPackageName != selectedPackage.purchaseKey"
+			<ion-button class="purchase-btn" (click)="purchase()" *ngIf="this.merchant.getUsersSubscription()?.product_id != selectedPackage.purchaseKey"
 				>Subscribe for {{ selectedPackage.price }} / month</ion-button
 			>
-			<ion-button class="purchase-btn" *ngIf="activeUserPackageName == selectedPackage.purchaseKey" disabled>You own this package </ion-button>
+			<ion-button class="purchase-btn" *ngIf="this.merchant.getUsersSubscription()?.product_id == selectedPackage.purchaseKey" disabled>You own this package </ion-button>
 		</div>
 
 		<ion-label class="grey-link" (click)="restore()">Restore purchase</ion-label>

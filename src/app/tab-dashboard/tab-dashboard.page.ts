@@ -49,7 +49,7 @@ export class Tab1Page {
 		private storage: StorageService,
 		private unitConv: UnitconvService,
 		private sync: SyncService,
-		private merchant: MerchantUtils
+		public merchant: MerchantUtils
 	) {
 		this.validatorUtils.registerListener(() => {
 			this.refresh()

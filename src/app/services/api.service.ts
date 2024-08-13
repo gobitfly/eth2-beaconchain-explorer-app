@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core'
+import { Injectable, WritableSignal } from '@angular/core'
 import { APIRequest, ApiResult, Method, RefreshTokenRequest } from '../requests/requests'
 import { StorageService } from './storage.service'
 import { ApiNetwork } from '../models/StorageTypes'
@@ -263,12 +263,14 @@ export class ApiService extends CacheModule {
 		await this.lockOrWait(request.resource)
 
 		try {
-			// If cached and not stale, return cache
-			const cached = (await this.getCache(this.getCacheKey(request))) as Response
-			if (cached) {
-				if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
-				cached.cached = true
-				return cached
+			if (request.allowCachedResponse) {
+				// If cached and not stale, return cache
+				const cached = (await this.getCache(this.getCacheKey(request))) as Response
+				if (cached) {
+					if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
+					cached.cached = true
+					return cached
+				}
 			}
 
 			const options = request.options
@@ -500,7 +502,28 @@ export class ApiService extends CacheModule {
 		}
 		return result
 	}
+
+	set<T>(request: APIRequest<T>, s: WritableSignal<T>, errHandler: (err: string) => void = null) {
+		return this.execute2(request).then((data) => {
+			if (data.error) {
+				if (errHandler) errHandler(data.error)
+				return
+			}
+			s.set(data.data[0])
+		})
+	}
+	setArray<T>(request: APIRequest<T>, s: WritableSignal<T[]>, errHandler: (err: string) => void = null) {
+		return this.execute2(request).then((data) => {
+			if (data.error) {
+				if (errHandler) errHandler(data.error)
+				return
+			}
+			s.set(data.data)
+		})
+	}
 }
+
+
 
 export interface LatestStateWithTime {
 	state: LatestStateData
@@ -514,3 +537,4 @@ export interface Response {
 	status: number
 	url: string
 }
+

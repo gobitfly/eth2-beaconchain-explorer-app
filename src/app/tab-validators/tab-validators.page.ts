@@ -60,8 +60,6 @@ export class Tab2Page {
 
 	initialized = false
 
-	currentPackageMaxValidators = 100
-
 	selectMode = false
 
 	selected = new Map<number, boolean>()
@@ -76,7 +74,7 @@ export class Tab2Page {
 		private storage: StorageService,
 		private alerts: AlertService,
 		private sync: SyncService,
-		private merchant: MerchantUtils,
+		public merchant: MerchantUtils,
 		private themeUtils: ThemeUtils,
 		private platform: Platform,
 		public unit: UnitconvService
@@ -87,9 +85,6 @@ export class Tab2Page {
 				this.searchbarRef.value = null
 			}
 			this.refresh()
-		})
-		this.merchant.getCurrentPlanMaxValidator().then((result) => {
-			this.currentPackageMaxValidators = result
 		})
 
 		this.dataSource = new InfiniteScrollDataSource<Validator>(InfiniteScrollDataSource.ALL_ITEMS_AT_ONCE, this.getDefaultDataRetriever())
@@ -286,7 +281,7 @@ export class Tab2Page {
 					if (error && error.message && error.message.indexOf('only a maximum of') > 0) {
 						console.log('SET reachedMaxValidators to true')
 						this.reachedMaxValidators = true
-						return this.validatorUtils.searchValidatorsViaETHAddress(target, this.currentPackageMaxValidators - 1)
+						return this.validatorUtils.searchValidatorsViaETHAddress(target, this.merchant.getCurrentPlanMaxValidator())
 					}
 					return []
 				})

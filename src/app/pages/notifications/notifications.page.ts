@@ -85,9 +85,9 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 
 		this.storage.getAuthUser().then((result) => (this.authUser = result))
 		this.network = this.api.capitalize(this.api.getNetworkName())
-		this.merchantUtils.hasCustomizableNotifications().then((result) => {
-			this.canCustomizeThresholds = result
-		})
+		// this.merchantUtils.hasCustomizableNotifications().then((result) => {
+		// 	this.canCustomizeThresholds = result
+		// })
 
 		await this.loadAllToggles()
 		setTimeout(() => {

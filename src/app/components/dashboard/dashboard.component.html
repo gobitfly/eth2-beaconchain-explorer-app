@@ -63,15 +63,7 @@
 			icon="alert-circle-outline"
 			iconStyle="alert"
 			[openUrl]="beaconChainUrl"
-			*ngIf="finalizationIssue"></app-message>
-
-		<app-message
-			title="Merge Checklist"
-			icon="clipboard-outline"
-			iconStyle="info"
-			mergeChecklist="true"
-			*ngIf="showMergeChecklist"
-			(onResult)="onDismissed()"></app-message>
+			*ngIf="finalizationIssue()"></app-message>
 
 		<app-message
 			title="Enable Withdrawals Guide"
@@ -104,14 +96,14 @@
 			icon="time-outline"
 			iconStyle="genesis"
 			[openUrl]="beaconChainUrl"
-			*ngIf="awaitGenesis"></app-message>
+			*ngIf="awaitGenesis()"></app-message>
 
 		<app-message
 			title="Happy Liftoff! Network is now live"
 			icon="rocket-outline"
 			iconStyle="genesis"
 			[openUrl]="beaconChainUrl"
-			*ngIf="earlyGenesis"></app-message>
+			*ngIf="earlyGenesis()"></app-message>
 
 		<app-message title="Happy Holidays!" icon="gift-outline" iconStyle="genesis" dismissAble="true" *ngIf="theme.isWinterSeason()"> </app-message>
 
@@ -119,18 +111,18 @@
 			title="Active Sync Committee"
 			icon="sync-outline"
 			iconStyle="sync-active"
-			*ngIf="currentSyncCommitteeMessage"
-			[msgTitle]="currentSyncCommitteeMessage.title"
-			[msgText]="currentSyncCommitteeMessage.text">
+			*ngIf="currentSyncCommitteeMessage()"
+			[msgTitle]="currentSyncCommitteeMessage().title"
+			[msgText]="currentSyncCommitteeMessage().text">
 		</app-message>
 
 		<app-message
 			title="Soon: Sync Committee"
 			icon="sync-outline"
 			iconStyle="genesis"
-			*ngIf="nextSyncCommitteeMessage"
-			[msgTitle]="nextSyncCommitteeMessage.title"
-			[msgText]="nextSyncCommitteeMessage.text">
+			*ngIf="nextSyncCommitteeMessage()"
+			[msgTitle]="nextSyncCommitteeMessage().title"
+			[msgText]="nextSyncCommitteeMessage().text">
 		</app-message>
 
 		<app-message
@@ -140,21 +132,21 @@
 			dismissAble="true"
 			dismissKey="first_proposal_executed"
 			confettiOnClick="true"
-			*ngIf="showFirstProposalMsg"></app-message>
+			*ngIf="showFirstProposalMsg() | async"></app-message>
 
 		<app-message
 			title="Limited to 100 validators."
 			icon="rocket-outline"
 			iconStyle="genesis"
 			(click)="upgrade()"
-			*ngIf="data.validatorCount() >= currentPackageMaxValidators && data.validatorCount() <= 100">
+			*ngIf="data.validatorCount() >= this.merchant.getCurrentPlanMaxValidator() && data.validatorCount() <= 100">
 		</app-message>
 
 		<app-message
 			title="Limited to 280 validators."
 			icon="rocket-outline"
 			iconStyle="genesis"
-			*ngIf="data.validatorCount() >= currentPackageMaxValidators && data.validatorCount() > 100">
+			*ngIf="data.validatorCount() >= this.merchant.getCurrentPlanMaxValidator() && data.validatorCount() > 100">
 		</app-message>
 
 		<app-ad location="info"></app-ad>
@@ -385,7 +377,7 @@
 		</ion-item>
 	</ion-list>
 
-	<ion-list class="performances" *ngIf="!chartError">
+	<ion-list class="performances">
 		<ion-list-header>
 			<ion-label>Charts & Stats</ion-label>
 		</ion-list-header>
@@ -398,31 +390,10 @@
 			</ion-segment-button>
 		</ion-segment>
 
-		<ion-list class="performances" *ngIf="selectedChart == 'chartIncome'">
-
-		</ion-list>
-
-		<!-- Efficiency -->
-		<ion-list class="performances" *ngIf="selectedChart == 'chartSummary'">
-			<app-success-fail-view [data]="this.data.summaryGroup().attestations_source" name="Source" [mode]="successFailMode"></app-success-fail-view>
-			<app-success-fail-view [data]="this.data.summaryGroup().attestations_target" name="Target" [mode]="successFailMode"></app-success-fail-view>
-			<app-success-fail-view [data]="this.data.summaryGroup().attestations_head" name="Head" [mode]="successFailMode"></app-success-fail-view>
-			
-			<ion-item lines="none">
-				<ion-label class="income-title">
-					Avg. Incl. Distance
-				</ion-label>
-				<ion-label class="value">
-					{{ this.data.summaryGroup().attestation_avg_incl_dist | number : '1.0-2' }}
-				</ion-label>
-			</ion-item>
-
-		</ion-list>
-
 		<div class="chartcontainer">
 			<div
 				class="stat-charts"
-				[attr.id]="'highcharts' + randomChartId"
+				[attr.id]="'highcharts'"
 				style="width: 100%; height: 380px"
 				[hidden]="!chartData || selectedChart != 'chartIncome'"></div>
 
@@ -430,6 +401,32 @@
 
 			
 		</div>
+
+				<ion-list class="performances" *ngIf="selectedChart == 'chartIncome'">
+				
+				</ion-list>
+				
+				<!-- Efficiency -->
+				<ion-list class="performances" *ngIf="selectedChart == 'chartSummary'">
+					<app-success-fail-view [data]="this.data.summary()[0].attestations" name="Attestations"
+						[mode]="successFailMode"></app-success-fail-view>
+					<app-success-fail-view [data]="this.data.summaryGroup().attestations_source" name="&nbsp;&nbsp;Source"
+						[mode]="successFailMode"></app-success-fail-view>
+					<app-success-fail-view [data]="this.data.summaryGroup().attestations_target" name="&nbsp;&nbsp;Target"
+						[mode]="successFailMode"></app-success-fail-view>
+					<app-success-fail-view [data]="this.data.summaryGroup().attestations_head" name="&nbsp;&nbsp;Head"
+						[mode]="successFailMode"></app-success-fail-view>
+				
+					<ion-item lines="none">
+						<ion-label class="income-title">
+							Avg. Incl. Distance
+						</ion-label>
+						<ion-label class="value">
+							{{ this.data.summaryGroup().attestation_avg_incl_dist | number : '1.0-2' }}
+						</ion-label>
+					</ion-item>
+				
+				</ion-list>
 	</ion-list>
 
 	<div *ngIf="this.data.summary()[0].proposals">
@@ -462,16 +459,16 @@
 				<span tooltip="Amount of sync committees all subcribed validators were part of" trigger="click" hideDelayAfterClick="5000">
 					<ion-label class="stat-title">Total Committees</ion-label>
 				</span>
-				<ion-label class="value">{{ data.summaryGroup()?.sync_count.past_periods }}</ion-label>
+				<ion-label class="value">{{ data.syncCount() }}</ion-label>
 			</ion-item>
 			<ion-item lines="none">
 				<ion-label class="stat-title">Participation</ion-label>
 				<span
-					[class]="data.syncEfficiency() / 100 | valuestyle : 0.9 : 0.6"
+					[class]="data.syncEfficiency() | valuestyle : 90 : 60"
 					tooltip="Slots participated: {{ data.summaryGroup()?.sync.status_count.success }}<br>Slots missed: {{data.summaryGroup()?.sync.status_count.failed }}"
 					trigger="click"
 					hideDelayAfterClick="5000">
-					<ion-label class="value">{{ data.syncEfficiency() }}%</ion-label>
+					<ion-label class="value">{{ data.syncEfficiency() | number : '1.0-1' }}%</ion-label>
 				</span>
 			</ion-item>
 			<!-- todo? -->

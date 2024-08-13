@@ -1,6 +1,5 @@
 /* 
  *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
  *  // 
  *  // This file is part of Beaconchain Dashboard.
  *  // 

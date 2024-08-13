@@ -35,7 +35,7 @@ export class SuccessFailViewComponent {
 }
 
 export async function getSuccessFailMode(storage: StorageService): Promise<Mode> {
-  return (await storage.getBooleanSetting('success_fail_mode_perc', false)) ? 'percentage' : 'absolute'
+  return (await storage.getBooleanSetting('success_fail_mode_perc', true)) ? 'percentage' : 'absolute'
 }
 
 export async function setSuccessFailMode(storage: StorageService, mode: Mode): Promise<void> {

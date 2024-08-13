@@ -1,5 +1,5 @@
 <div>
-    <div echarts [options]="summaryChart()" [hidden]="!this.data.summaryChart()"></div>
+    <div style="height: 360px;" echarts [options]="summaryChart()" [hidden]="!this.data.summaryChart()"></div>
     
     <div class="center" *ngIf="!this.data.summaryChart()">
         <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>

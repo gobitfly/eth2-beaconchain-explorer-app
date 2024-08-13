@@ -18,19 +18,15 @@ export class AdComponent implements OnInit {
 	adHtml: SafeHtml
 	openUpgradeToPremium = false
 
-	isAdFree = false
-
 	constructor(
 		private adUtils: AdUtils,
 		private sanitizer: DomSanitizer,
 		private modalController: ModalController,
-		private merchantUtils: MerchantUtils
+		public merchantUtils: MerchantUtils
 	) {}
 
 	ngOnInit() {
-		this.merchantUtils.hasAdFree().then((isAdFree) => {
-			this.isAdFree = isAdFree
-		})
+
 		this.adUtils.get(this.location).then((data) => {
 			if (data && data.html && data.html.length > 10) {
 				this.openUpgradeToPremium = data.html.indexOf('beaconchain_sample_ad') >= 0

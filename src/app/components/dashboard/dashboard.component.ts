@@ -17,10 +17,9 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, Input, SimpleChange, signal, WritableSignal } from '@angular/core'
+import { Component, OnInit, Input, SimpleChange, signal, WritableSignal, computed, Signal, effect } from '@angular/core'
 import { RewardType, UnitconvService } from '../../services/unitconv.service'
 import { ApiService } from '../../services/api.service'
-import { SyncCommitteeResponse } from '../../requests/requests'
 import * as Highstock from 'highcharts/highstock'
 import BigNumber from 'bignumber.js'
 import { OverviewData2, Rocketpool } from '../../controllers/OverviewController'
@@ -35,8 +34,8 @@ import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import FirebaseUtils from 'src/app/utils/FirebaseUtils'
 import { trigger, style, animate, transition } from '@angular/animations'
-import { slotToEpoch } from 'src/app/utils/MathUtils'
-import { epochToTimestamp} from 'src/app/utils/TimeUtils'
+import { endEpochSyncCommittee, slotToEpoch, startEpochSyncCommittee } from 'src/app/utils/MathUtils'
+import { epochToTimestamp, getLocale} from 'src/app/utils/TimeUtils'
 import { setID } from 'src/app/requests/v2-dashboard'
 import { getSuccessFailMode, Mode } from './success-fail-view/success-fail-view.component'
 @Component({
@@ -54,23 +53,12 @@ export class DashboardComponent implements OnInit {
 	@Input() scrolling: boolean
 
 	beaconChainUrl: string = null
-	finalizationIssue = false
-	awaitGenesis = false
-	earlyGenesis = false
+
 	utilizationAvg = -1
 
 	chartData
-	chartError = false
-
-	randomChartId
 
 	selectedChart = 'chartSummary'
-
-	showFirstProposalMsg = false
-	showMergeChecklist = false
-	firstCelebrate = true
-
-	currentPackageMaxValidators = 100
 
 	rplState = 'rpl'
 	rplDisplay
@@ -87,9 +75,6 @@ export class DashboardComponent implements OnInit {
 	totalRplEarned: BigNumber
 	hasNonSmoothingPoolAsWell: boolean
 
-	currentSyncCommitteeMessage: SyncCommitteeMessage = null
-	nextSyncCommitteeMessage: SyncCommitteeMessage = null
-
 	notificationPermissionPending = false
 	depositCreditText = null
 	vacantMinipoolText = null
@@ -97,9 +82,11 @@ export class DashboardComponent implements OnInit {
 
 	rewardTab: 'combined' | 'cons' | 'exec' = 'combined'
 
-	successFailMode: WritableSignal<Mode> = signal('absolute')
+	successFailMode: WritableSignal<Mode> = signal('percentage')
 
 	aggregationValue = 'hourly'
+
+	ignoreConfetti = false
 
 	constructor(
 		public unit: UnitconvService,
@@ -107,23 +94,110 @@ export class DashboardComponent implements OnInit {
 		public theme: ThemeUtils,
 		private storage: StorageService,
 		private modalController: ModalController,
-		private merchant: MerchantUtils,
+		public merchant: MerchantUtils,
 		public validatorUtils: ValidatorUtils,
 		private firebaseUtils: FirebaseUtils,
 		private platform: Platform
 	) {
-		this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
-		this.updateMergeListDismissed()
-	}
-
-	updateMergeListDismissed() {
-		this.storage.getBooleanSetting('merge_list_dismissed', false).then((result) => {
-			if (this.isAfterPotentialMergeTarget()) {
-				this.showMergeChecklist = false
-			} else {
-				this.showMergeChecklist = !result
+		effect(async () => {
+			if ((await this.showFirstProposalMsg()) && !this.ignoreConfetti) {
+				this.ignoreConfetti = true
+				setTimeout(() => {
+					confetti({
+						particleCount: 30,
+						spread: 50,
+						origin: { y: 0.41 },
+					})
+				}, 800)
 			}
 		})
+	}
+
+	showFirstProposalMsg = computed(async () => {
+		if (!this.data || this.data.foreignValidator) return
+		const foundAtLeasOne = this.data.summary()[0].proposals.success === 1
+		const noPreviousFirstProposal = await this.storage.getBooleanSetting('first_proposal_executed', false)
+		if (foundAtLeasOne && !noPreviousFirstProposal) {
+			return true
+		}
+	})
+
+	finalizationIssue: Signal<boolean> = computed(() => {
+		if (!this.data || !this.data.latestState()?.state) return false
+		const epochsToWaitBeforeFinalizationIssue = 4 // 2 normal delay + 2 extra
+		return (
+			slotToEpoch(this.data.latestState().state.finalized_epoch) - epochsToWaitBeforeFinalizationIssue > this.data.latestState().state.finalized_epoch
+		)
+	})
+
+	awaitGenesis = computed(() => {
+		if (!this.data || !this.data.latestState()?.state) return false
+		const currentEpoch = slotToEpoch(this.data.latestState().state.current_slot)
+		return currentEpoch == 0 && this.data.latestState().state.current_slot <= 0
+	})
+
+	earlyGenesis = computed(() => {
+		if (!this.data || !this.data.latestState()?.state) return false
+		const currentEpoch = slotToEpoch(this.data.latestState().state.current_slot)
+		return !this.awaitGenesis() && !this.finalizationIssue() && currentEpoch <= 7
+	})
+
+	currentSyncCommitteeMessage: Signal<SyncCommitteeMessage> = computed(() => {
+		if (this.data && this.data.summaryGroup().sync_count.current_validators > 0 && this.data.latestState()?.state) {
+			const startEpoch = startEpochSyncCommittee(this.api, this.data.latestState().state.current_slot)
+			const startTs = epochToTimestamp(this.api, startEpoch)
+
+			const endEpoch = endEpochSyncCommittee(this.api, this.data.latestState().state.current_slot)
+			const endTs = epochToTimestamp(this.api, endEpoch)
+
+			const plural = this.data.summaryGroup().sync_count.current_validators > 1
+			const options = this.syncDateFormatOptions()
+			return {
+				title: 'Sync Committee',
+				text: `${this.data.summaryGroup().sync_count.current_validators} of your validator${plural ? 's' : ''} ${
+					plural ? 'are' : 'is'
+				} currently part of the active sync committee.
+					<br/><br/>This duty started at ${new Date(startTs).toLocaleString(getLocale(), options)} (Epoch ${startEpoch}) and 
+					will end at ${new Date(endTs).toLocaleString(getLocale(), options)} (Epoch ${endEpoch - 1}). 
+					<br/><br/>You'll earn extra rewards during this period if you are online and attesting.
+      			`,
+			} as SyncCommitteeMessage
+		}
+		return null
+	})
+
+	nextSyncCommitteeMessage: Signal<SyncCommitteeMessage> = computed(() => {
+		if (this.data && this.data.summaryGroup().sync_count.upcoming_validators > 0 && this.data.latestState()?.state) {
+			const startEpoch = endEpochSyncCommittee(this.api, this.data.latestState().state.current_slot) // end of current is start of next
+			const startTs = epochToTimestamp(this.api, startEpoch)
+
+			const endEpoch = endEpochSyncCommittee(this.api, startEpoch * this.api.networkConfig.slotPerEpoch) // end of next
+			const endTs = epochToTimestamp(this.api, endEpoch)
+
+			const plural = this.data.summaryGroup().sync_count.upcoming_validators > 1
+			const options = this.syncDateFormatOptions()
+			return {
+				title: 'Sync Committee Soon',
+				text: `${this.data.summaryGroup().sync_count.upcoming_validators} of your validator${plural ? 's' : ''}  ${
+					plural ? 'are' : 'is'
+				} part of the <strong>next</strong> sync committee.
+					<br/><br/>This duty starts at ${new Date(startTs).toLocaleString(getLocale(), options)} (Epoch ${startEpoch}) and 
+					will end at ${new Date(endTs).toLocaleString(getLocale(), options)} (Epoch ${endEpoch - 1}). 
+					<br/><br/>You'll earn extra rewards during this period if you are online and attesting.
+      			`,
+			} as SyncCommitteeMessage
+		}
+		return null
+	})
+
+	syncDateFormatOptions(): Intl.DateTimeFormatOptions {
+		return {
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit',
+		}
 	}
 
 	isAfterPotentialMergeTarget() {
@@ -132,11 +206,10 @@ export class DashboardComponent implements OnInit {
 		return now >= target
 	}
 
-	async ngOnChanges(event) {
+	ngOnChanges(event) {
 		console.log('event data', event.data)
 		if (event.data && event.data instanceof SimpleChange) {
 			if (event.data.currentValue) {
-				this.chartError = false
 				this.chartData = null
 
 				if (this.platform.is('ios') || this.platform.is('android')) {
@@ -150,7 +223,6 @@ export class DashboardComponent implements OnInit {
 
 				if (this.balanceChart) {
 					this.balanceChart.destroy()
-					this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
 				}
 
 				setTimeout(() => {
@@ -174,11 +246,6 @@ export class DashboardComponent implements OnInit {
 				// 	this.updateVacantMinipoolText(),
 				// 	this.updateWithdrawalInfo(),
 				// ])
-
-				if (!this.data.foreignValidator) {
-					await Promise.all([this.checkForFinalization(), this.checkForGenesisOccurred()])
-				}
-
 			}
 		}
 	}
@@ -211,44 +278,6 @@ export class DashboardComponent implements OnInit {
 	// 		`
 	// 	}
 	// }
-
-	updateActiveSyncCommitteeMessage(committee: SyncCommitteeResponse) {
-		if (committee) {
-			const endTs = epochToTimestamp(this.api, committee.end_epoch + 1)
-			const startTs = epochToTimestamp(this.api, committee.start_epoch)
-			this.currentSyncCommitteeMessage = {
-				title: 'Sync Committee',
-				text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${
-					committee.validators.length > 1 ? 'are' : 'is'
-				} currently part of the active sync committee.
-      <br/><br/>This duty started at epoch ${committee.start_epoch} at ${new Date(startTs).toLocaleString()} and 
-      will end after epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
-      <br/><br/>You'll earn extra rewards during this period.
-      `,
-			} as SyncCommitteeMessage
-		} else {
-			this.currentSyncCommitteeMessage = null
-		}
-	}
-
-	updateNextSyncCommitteeMessage(committee: SyncCommitteeResponse) {
-		if (committee) {
-			const endTs = epochToTimestamp(this.api, committee.end_epoch + 1)
-			const startTs = epochToTimestamp(this.api, committee.start_epoch)
-			this.nextSyncCommitteeMessage = {
-				title: 'Sync Committee Soon',
-				text: `Your validator${committee.validators.length > 1 ? 's' : ''} ${committee.validators.toString()} ${
-					committee.validators.length > 1 ? 'are' : 'is'
-				} part of the <strong>next</strong> sync committee.
-      <br/><br/>This duty starts at epoch ${committee.start_epoch} at ${new Date(startTs).toLocaleString()} and 
-      will end after epoch ${committee.end_epoch} at ${new Date(endTs).toLocaleString()}. 
-      <br/><br/>You'll earn extra rewards during this period.
-      `,
-			} as SyncCommitteeMessage
-		} else {
-			this.nextSyncCommitteeMessage = null
-		}
-	}
 
 	// updateSmoothingPool() {
 	// 	try {
@@ -327,36 +356,10 @@ export class DashboardComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		getSuccessFailMode(this.storage).then((result) => { this.successFailMode.set(result) })
-		this.storage.getItem('rpl_pdisplay_mode').then((result) => (this.rplState = result ? result : 'rpl'))
-		this.merchant.getCurrentPlanMaxValidator().then((result) => {
-			this.currentPackageMaxValidators = result
+		getSuccessFailMode(this.storage).then((result) => {
+			this.successFailMode.set(result)
 		})
-	}
-
-	private async checkForGenesisOccurred() {
-		const latestState = await this.api.getLatestState()
-		if (!this.data || !latestState.state) return
-		const currentEpoch = slotToEpoch(latestState.state.current_slot)
-		this.awaitGenesis = currentEpoch == 0 && latestState.state.current_slot <= 0
-		this.earlyGenesis = !this.awaitGenesis && !this.finalizationIssue && currentEpoch <= 7
-	}
-
-	async checkForFinalization() {
-		const cachedFinalizationIssue = (await this.storage.getObject('finalization_issues')) as FinalizationIssue
-		if (cachedFinalizationIssue) {
-			if (cachedFinalizationIssue.ts && cachedFinalizationIssue.ts + 4 * 60 * 60 * 1000 > Date.now()) {
-				console.log('returning cached finalization issue state', cachedFinalizationIssue)
-				this.finalizationIssue = cachedFinalizationIssue.value
-				return
-			}
-		}
-
-		const latestState = await this.api.getLatestState()
-		if (!this.data || !latestState.state) return
-		const epochsToWaitBeforeFinalizationIssue = 4 // 2 normal delay + 2 extra
-		this.finalizationIssue = slotToEpoch(latestState.state.finalized_epoch) - epochsToWaitBeforeFinalizationIssue > latestState.state.finalized_epoch
-		this.storage.setObject('finalization_issues', { ts: Date.now(), value: this.finalizationIssue } as FinalizationIssue)
+		this.storage.getItem('rpl_pdisplay_mode').then((result) => (this.rplState = result ? result : 'rpl'))
 	}
 
 	// TODO
@@ -414,26 +417,6 @@ export class DashboardComponent implements OnInit {
 	// 		this.rplDisplay = this.data.rocketpool.currentRpl
 	// 	}
 	// }
-
-	private async checkForFirstProposal(chartData) {
-		if (this.data.foreignValidator) return
-		const foundAtLeasOne = chartData.length >= 1 && chartData.length <= 2
-		const noPreviousFirstProposal = await this.storage.getBooleanSetting('first_proposal_executed', false)
-		if (foundAtLeasOne && !noPreviousFirstProposal) {
-			this.showFirstProposalMsg = true
-
-			if (this.firstCelebrate) {
-				setTimeout(() => {
-					confetti({
-						particleCount: 30,
-						spread: 50,
-						origin: { y: 0.41 },
-					})
-				}, 800)
-			}
-			this.firstCelebrate = false
-		}
-	}
 
 	// todo
 	// async drawBalanceChart() {
@@ -520,7 +503,7 @@ export class DashboardComponent implements OnInit {
 		}
 
 		this.balanceChart = Highstock.chart(
-			'highcharts' + this.randomChartId,
+			'highcharts',
 			{
 				accessibility: {
 					enabled: false,
@@ -698,10 +681,6 @@ export class DashboardComponent implements OnInit {
 		)
 	}
 
-	onDismissed() {
-		this.updateMergeListDismissed()
-	}
-
 	async openBrowser() {
 		// todo
 		await Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
@@ -717,17 +696,9 @@ export class DashboardComponent implements OnInit {
 	}
 }
 
-function getRandomInt(max) {
-	return Math.floor(Math.random() * Math.floor(max))
-}
-
 interface SyncCommitteeMessage {
 	title: string
 	text: string
 }
 
-interface FinalizationIssue {
-	ts: number
-	value: boolean
-}
 

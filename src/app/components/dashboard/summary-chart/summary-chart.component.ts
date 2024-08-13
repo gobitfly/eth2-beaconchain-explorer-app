@@ -105,7 +105,8 @@ export class SummaryChartComponent {
 				containLabel: true,
 				top: 0,
 				left: '3%',
-				right: '3%',
+        right: '3%',
+        bottom: 35,
 			},
 			xAxis: [
 				{
@@ -157,8 +158,8 @@ export class SummaryChartComponent {
 			color: [chartDefaultColor, '#ff835c', '#e4a354', '#2b908f', '#f45b5b', '#91e8e1'],
 			legend: {
 				type: 'scroll',
-				orient: 'horizontal',
-				bottom: 40,
+        orient: 'horizontal',
+				bottom: 0,
 				textStyle: {
 					//color: colors.value.label,
 					fontSize: this.fontSize,

@@ -94,7 +94,7 @@
 		icon="rocket-outline"
 		iconStyle="genesis"
 		(click)="upgrade()"
-		*ngIf="((dataSource && dataSource.length() >= currentPackageMaxValidators) || reachedMaxValidators) && currentPackageMaxValidators < 280">
+		*ngIf="((dataSource && dataSource.length() >= this.merchant.getCurrentPlanMaxValidator()) || reachedMaxValidators) && this.merchant.getCurrentPlanMaxValidator() < 280">
 	</app-message>
 
 	<app-ad @fadeIn location="validator" *ngIf="dataSource && dataSource.hasItems() && !loading"></app-ad>

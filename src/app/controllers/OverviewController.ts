@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { APIRequest, ProposalLuckResponse, SyncCommitteeResponse } from '../requests/requests'
+import { ProposalLuckResponse, SyncCommitteeResponse } from '../requests/requests'
 import { sumBigInt } from '../utils/MathUtils'
 import BigNumber from 'bignumber.js'
 import { Validator } from '../utils/ValidatorUtils'
@@ -88,7 +88,12 @@ export class OverviewData2 {
 		if (this.summaryGroup() == null) return 0
 		const total = this.summaryGroup().sync.status_count.success + this.summaryGroup().sync.status_count.failed
 		if (total == 0) return 0
-		return this.summaryGroup().sync.status_count.success / total
+		return this.summaryGroup().sync.status_count.success * 100 / total
+	})
+
+	syncCount: Signal<number> = computed(() => {
+		if (this.summaryGroup() == null) return 0
+		return this.summaryGroup().sync_count.past_periods + this.summaryGroup().sync_count.current_validators > 0 ? 1 : 0
 	})
 
 	isReadyToDisplay: Signal<boolean> = computed(() => {
@@ -205,33 +210,16 @@ export type Description = {
 const VALIDATOR_32ETH = new BigNumber(32000000000)
 
 export function getValidatorData(api: ApiService, id: dashboardID): OverviewData2 {
-	function set<T>(request: APIRequest<T>, s: WritableSignal<T>, errHandler: (err: string) => void = null) {
-		api.execute2(request).then((data) => {
-			if (data.error) {
-				if (errHandler) errHandler(data.error)
-				return
-			}
-			s.set(data.data[0])
-		})
-	}
-	function setArray<T>(request: APIRequest<T>, s: WritableSignal<T[]>, errHandler: (err: string) => void = null) {
-		api.execute2(request).then((data) => {
-			if (data.error) {
-				if (errHandler) errHandler(data.error)
-				return
-			}
-			s.set(data.data)
-		})
-	}
-
 	const temp = new OverviewData2(api.getNetwork(), false)
 
-	set(new V2DashboardOverview(id), temp.overviewData)
-	setArray(new V2DashboardSummaryTable(id, Period.AllTime, null), temp.summary)
-	set(new V2DashboardSummaryGroupTable(id, 0, Period.AllTime, null), temp.summaryGroup)
-	set(new V2DashboardRocketPool(id), temp.rocketpool)
-	set(
-		new V2DashboardSummaryChart(id, EfficiencyType.All, Aggregation.Hourly, Math.floor(Date.now() / 1000 - 1 * 24 * 60 * 60)).withCustomCacheKey("summary-chart-initial"),
+	this.api.set(new V2DashboardOverview(id), temp.overviewData)
+	this.api.setArray(new V2DashboardSummaryTable(id, Period.AllTime, null), temp.summary)
+	this.api.set(new V2DashboardSummaryGroupTable(id, 0, Period.AllTime, null), temp.summaryGroup)
+	this.api.set(new V2DashboardRocketPool(id), temp.rocketpool)
+	this.api.set(
+		new V2DashboardSummaryChart(id, EfficiencyType.All, Aggregation.Hourly, Math.floor(Date.now() / 1000 - 1 * 24 * 60 * 60)).withCustomCacheKey(
+			'summary-chart-initial'
+		),
 		temp.summaryChart
 	)
 

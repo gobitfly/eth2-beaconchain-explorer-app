@@ -25,7 +25,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" @fadeIn>
-	<ion-list (click)="openUpgrades()" *ngIf="currentPlan == 'standard'">
+	<ion-list (click)="openUpgrades()" *ngIf="this.merchant.getUsersSubscription() == null">
 		<ion-item lines="none" class="premium">
 			<ion-icon slot="start" name="rocket-outline" class="opacity-icon"></ion-icon>
 			<ion-label>Upgrade to Premium</ion-label>
@@ -72,7 +72,7 @@
 	<ion-list>
 		<ion-item lines="none">
 			<ion-icon slot="start" name="color-palette-outline" class="opacity-icon"></ion-icon>
-			<ion-label *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'"> Theme Color </ion-label>
+			<ion-label *ngIf="this.merchant.getUsersSubscription() == null"> Theme Color </ion-label>
 			<ion-select
 				label="Theme Color"
 				value=""
@@ -80,7 +80,7 @@
 				(ionChange)="changeThemeColor()"
 				interface="popover"
 				[disabled]="themeColorLock"
-				*ngIf="currentPlan != 'standard' && currentPlan != 'plankton'">
+				*ngIf="this.merchant.getUsersSubscription()">
 				<ion-select-option value=""> Default </ion-select-option>
 				<ion-select-option value="ethpool"> Ethpool </ion-select-option>
 				<ion-select-option value="rocketpool"> Rocketpool </ion-select-option>
@@ -102,7 +102,7 @@
 				slot="end"
 				class="opacity-icon"
 				name="lock-closed-outline"
-				*ngIf="currentPlan == 'standard' || currentPlan == 'plankton'"
+				*ngIf="this.merchant.getUsersSubscription() == null"
 				(click)="openUpgrades()">
 			</ion-icon>
 		</ion-item>
@@ -110,15 +110,15 @@
 		<ion-item lines="none" (click)="widgetSetupInfo()">
 			<ion-icon class="opacity-icon" slot="start" name="shapes-outline"> </ion-icon>
 			<ion-label>Widgets</ion-label>
-			<ion-icon slot="end" class="opacity-icon" name="lock-closed-outline" *ngIf="currentPlan == 'standard' || currentPlan == 'plankton'"></ion-icon>
+			<ion-icon slot="end" class="opacity-icon" name="lock-closed-outline" *ngIf="this.merchant.getUsersSubscription() == null"></ion-icon>
 			<ion-icon
 				slot="end"
 				class="opacity-icon"
 				name="information-circle-outline"
-				*ngIf="currentPlan != 'standard' && currentPlan != 'plankton'"></ion-icon>
+				*ngIf="this.merchant.getUsersSubscription()"></ion-icon>
 		</ion-item>
 
-		<ion-list (click)="openUpgrades()" *ngIf="currentPlan != 'standard'">
+		<ion-list (click)="openUpgrades()" *ngIf="this.merchant.getUsersSubscription()">
 			<ion-item lines="none" class="premium">
 				<ion-icon slot="start" name="rocket-outline" class="opacity-icon"></ion-icon>
 				<ion-label>Manage Premium</ion-label>

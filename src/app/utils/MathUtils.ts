@@ -18,6 +18,7 @@
  */
 
 import BigNumber from 'bignumber.js'
+import { ApiService } from '../services/api.service'
 
 export function sumBigInt<T>(validators: T[], field: (cur: T) => BigNumber) {
 	let sum = new BigNumber('0')
@@ -53,4 +54,21 @@ export function slotToEpoch(slot: number): number {
 	return Math.floor(slot / 32)
 }
 
+/**
+ * @returns the epoch at which the sync committee started, inclusive
+ */
+export function startEpochSyncCommittee(api: ApiService, currentSlot: number): number {
+	const period = Math.floor(slotToEpoch(currentSlot) / api.networkConfig.epochsPerSyncPeriod)
+	return period * api.networkConfig.epochsPerSyncPeriod
+}
+
+/**
+ * @returns the epoch at which the sync committee ended, exclusive
+ */
+export function endEpochSyncCommittee(api: ApiService, currentSlot: number): number {
+	return startEpochSyncCommittee(api, currentSlot) + api.networkConfig.epochsPerSyncPeriod
+}
+
 export default class {}
+
+

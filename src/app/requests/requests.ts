@@ -51,9 +51,15 @@ export abstract class APIRequest<T> {
 	postData?: unknown
 	expectedResponseStatus = 200
 	customCacheKey: string = null
+	allowCachedResponse = true
 
 	withCustomCacheKey(key: string): this {
 		this.customCacheKey = key
+		return this
+	}
+
+	withAllowedCacheResponse(cached: boolean): this {
+		this.allowCachedResponse = cached
 		return this
 	}
 

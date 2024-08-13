@@ -47,7 +47,7 @@
 			</ion-card-content>
 		</ion-card>
 
-		<div @fadeIn style="margin-top: 0px; margin-bottom: 10px" *ngIf="!hasHistoryPremium">
+		<div @fadeIn style="margin-top: 0px; margin-bottom: 10px" *ngIf="!this.merchant.hasMachineMonitoringPremium()">
 			<app-ad location="machines"></app-ad>
 		</div>
 

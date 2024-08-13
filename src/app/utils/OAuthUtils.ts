@@ -101,7 +101,10 @@ export class OAuthUtils {
 				await this.firebaseUtils.pushLastTokenUpstream(true)
 				await this.sync.fullSync()
 
-				const isPremium = await this.merchantUtils.hasMachineHistoryPremium()
+				await this.merchantUtils.getUserInfo(true, () => {
+					console.warn("can not get user info")
+				})
+				const isPremium = this.merchantUtils.isPremium()
 
 				loadingScreen.dismiss()
 				if (isPremium) {

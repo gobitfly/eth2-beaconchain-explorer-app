@@ -26,7 +26,6 @@ export class MachinesPage extends MachineController implements OnInit {
 	showData = true
 	selectedTimeFrame = '3h'
 
-	hasHistoryPremium = false
 	loggedIn = false
 
 	orderedKeys: string[] = []
@@ -56,7 +55,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	constructor(
 		private modalController: ModalController,
 		private alertService: AlertService,
-		private merchant: MerchantUtils,
+		public merchant: MerchantUtils,
 		private validatorUtils: ValidatorUtils,
 		private storage: StorageService,
 		private oauthUtils: OAuthUtils,
@@ -70,10 +69,6 @@ export class MachinesPage extends MachineController implements OnInit {
 	ngOnInit() {
 		this.validatorUtils.registerListener(() => {
 			this.getAndProcessData()
-		})
-
-		this.merchant.hasMachineHistoryPremium().then((result) => {
-			this.hasHistoryPremium = result
 		})
 	}
 
@@ -115,7 +110,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	}
 
 	openTimeSelection() {
-		if (!this.hasHistoryPremium) {
+		if (this.merchant.hasMachineMonitoringPremium()) {
 			this.alertService.showInfo('Premium Feature', 'For more machine history upgrade to a premium version.')
 			return
 		}

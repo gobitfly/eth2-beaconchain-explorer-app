@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from '@angular/core'
+import { Component, computed } from '@angular/core'
 import { ApiService } from '../services/api.service'
 import { StorageService } from '../services/storage.service'
 import { UnitconvService } from '../services/unitconv.service'
@@ -37,7 +37,7 @@ import { AlertService } from '../services/alert.service'
 import { SyncService } from '../services/sync.service'
 import { LicencesPage } from '../pages/licences/licences.page'
 import { SubscribePage } from '../pages/subscribe/subscribe.page'
-import { MerchantUtils, PRODUCT_STANDARD } from '../utils/MerchantUtils'
+import { MerchantUtils } from '../utils/MerchantUtils'
 import { NotificationBase } from './notification-base'
 import { Router } from '@angular/router'
 
@@ -76,9 +76,12 @@ export class Tab3Page {
 	snowing: boolean
 
 	themeColor: string
-	currentPlan: string
 
-	premiumLabel = ''
+	premiumLabel = computed(() => {
+		if (this.merchant.getUsersSubscription()?.product_id != null) {
+			return ' - ' + this.api.capitalize(this.merchant.getUsersSubscription().product_name)
+		}
+	})
 
 	protected package = ''
 	protected currentFiatCurrency
@@ -149,12 +152,6 @@ export class Tab3Page {
 			}
 		})
 
-		this.merchant.getCurrentPlanConfirmed().then((result) => {
-			this.currentPlan = result
-			if (this.currentPlan != PRODUCT_STANDARD) {
-				this.premiumLabel = ' - ' + this.api.capitalize(this.currentPlan)
-			}
-		})
 		this.notificationBase.disableToggleLock()
 
 		this.updateUtils.convertOldToNewClientSettings()
@@ -193,7 +190,7 @@ export class Tab3Page {
 	}
 
 	widgetSetupInfo() {
-		if (this.currentPlan == 'standard' || this.currentPlan == 'plankton') {
+		if (this.merchant.getUsersSubscription() == null) {
 			this.openUpgrades()
 			return
 		}
@@ -482,7 +479,7 @@ export async function changeNetwork(
 			theme.toggle(darkTheme, true, api.isGnosis() ? 'gnosis' : ''), 50
 		})
 	} else {
-		const hasTheming = await merchant.hasPremiumTheming()
+		const hasTheming = merchant.userInfo()?.premium_perks.mobile_app_custom_themes == true
 		if (hasTheming) return
 		if (currentTheme == '' && !api.isGnosis()) return
 		if (currentTheme == 'gnosis' && api.isGnosis()) return

@@ -266,7 +266,7 @@ export class ValidatorUtils {
 		const local = await this.getMapWithoutDeleted(storageKey)
 		if (local.size == 0) return []
 
-		const validatorString = getValidatorQueryString([...local.values()], 2000, (await this.merchantUtils.getCurrentPlanMaxValidator()) - 1)
+		const validatorString = getValidatorQueryString([...local.values()], 2000, this.merchantUtils.getCurrentPlanMaxValidator())
 
 		const remoteUpdatesPromise = this.getDashboardDataValidators(SAVED, validatorString).catch((err) => {
 			console.warn('error getAllMyValidators getDashboardDataValidators', err)

@@ -23,7 +23,7 @@ export class SubscribePage implements OnInit {
 
 	private backbuttonSubscription: Subscription
 	selectedPackage: Package
-	activeUserPackageName = 'standard'
+
 	isiOS = false
 
 	constructor(
@@ -40,21 +40,24 @@ export class SubscribePage implements OnInit {
 	}
 
 	ngOnInit() {
+		
 		const event = fromEvent(document, 'backbutton')
 		this.backbuttonSubscription = event.subscribe(() => {
 			this.modalCtrl.dismiss()
 		})
 
-		this.merchant.getCurrentPlanConfirmed().then((result) => {
-			this.activeUserPackageName = result
-			if (this.tab) {
-				result = this.tab
-			}
-			const pkg = this.merchant.findProduct(result)
-			if (pkg) {
-				this.selectedPackage = pkg
-			}
-		})
+		this.selectedPackage = this.merchant.findProduct(this.merchant.getUsersSubscription().product_id)
+
+		// this.merchant.getCurrentPlanConfirmed().then((result) => {
+		// 	//this.activeUserPackageName = result
+		// 	if (this.tab) {
+		// 		result = this.tab
+		// 	}
+		// 	const pkg = this.merchant.findProduct(result)
+		// 	if (pkg) {
+		// 		this.selectedPackage = pkg
+		// 	}
+		// })
 
 		this.isiOS = this.platform.is('ios')
 	}
@@ -72,10 +75,10 @@ export class SubscribePage implements OnInit {
 	}
 
 	async continuePurchaseIntern() {
-		const isPremium = await this.merchant.hasMachineHistoryPremium()
+		const isPremium = this.merchant.hasMachineMonitoringPremium()
 		const isNoGoogle = await this.flavor.isNoGoogleFlavor()
 		if (isPremium) {
-			const packageName = capitalize(await this.merchant.getCurrentPlanConfirmed())
+			const packageName = capitalize(this.merchant.getUsersSubscription().product_name)
 			this.alertService.confirmDialog(
 				'Already Premium',
 				'You already own the ' + packageName + ' package, are you sure that you want to continue with your purchase?',
@@ -136,9 +139,13 @@ export class SubscribePage implements OnInit {
 		if (!loggedIn) {
 			await this.oauth.login()
 		} else {
-			await this.merchant.refreshToken()
-			const currentPackage = await this.merchant.getCurrentPlanConfirmed()
-			if (currentPackage != 'standard') {
+			// try refreshing user info first
+			await this.merchant.getUserInfo(true, () => {
+				Toast.show({
+					text: 'Error restoring purchase',
+				})
+			})
+			if (this.merchant.isPremium()) {
 				Toast.show({
 					text: 'Purchase restored',
 				})
@@ -146,11 +153,11 @@ export class SubscribePage implements OnInit {
 				return
 			}
 
-			await this.merchant.restore(this.selectedPackage.purchaseKey)
+			// if not successfull try registering native purchases again if there are any
+			await this.merchant.restore(this.merchant.getUsersSubscription().product_id)
 		}
 
-		const currentPackage = await this.merchant.getCurrentPlanConfirmed()
-		if (currentPackage != 'standard') {
+		if (this.merchant.isPremium()) {
 			Toast.show({
 				text: 'Purchase restored',
 			})

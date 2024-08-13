@@ -17,15 +17,17 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core'
+import { computed, Injectable, Signal, signal, WritableSignal } from '@angular/core'
 import 'cordova-plugin-purchase/www/store.d'
 import { Platform } from '@ionic/angular'
-import { PostMobileSubscription, SubscriptionData } from '../requests/requests'
+import { SubscriptionData } from '../requests/requests'
 import { AlertService, PURCHASEUTILS } from '../services/alert.service'
 import { ApiService } from '../services/api.service'
-import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from '../services/storage.service'
+import { StorageService } from '../services/storage.service'
 
 import { SplashScreen } from '@capacitor/splash-screen'
+import { V2Me, V2PurchaseValidation } from '../requests/v2-user'
+import { UserInfo, UserSubscription } from '../requests/types/user'
 
 export const PRODUCT_STANDARD = 'standard'
 const MAX_PRODUCT = 'whale'
@@ -96,9 +98,11 @@ export class MerchantUtils {
 		},
 	]
 
-	currentPlan = PRODUCT_STANDARD // use getCurrentPlanConfirmed instead
+	//currentPlan = PRODUCT_STANDARD // use getCurrentPlanConfirmed instead
 
 	purchaseIntent = '' // temp workaround until new api is live
+
+	userInfo: WritableSignal<UserInfo | null> = signal(null)
 
 	constructor(private alertService: AlertService, private api: ApiService, private platform: Platform, private storage: StorageService) {
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
@@ -109,8 +113,23 @@ export class MerchantUtils {
 		this.init()
 	}
 
+	public async getUserInfo(forceRefresh: boolean = false, errHandler: (err) => void = () => {}) {
+		if (!forceRefresh) {
+			this.userInfo.set(await (this.storage.getObject('userInfo') as Promise<UserInfo | null>))
+		}
+
+		if (await this.storage.getAuthUserv2()) {
+			await this.api.set(new V2Me().withAllowedCacheResponse(!forceRefresh), this.userInfo, (err) => {
+				console.warn('failed to get user info', err)
+				errHandler(err)
+			})
+			this.storage.setObject('userInfo', this.userInfo())
+		}
+	}
+
 	private async init() {
 		try {
+			this.getUserInfo()
 			await this.initProducts()
 			this.initCustomValidator()
 			this.setupListeners()
@@ -151,27 +170,9 @@ export class MerchantUtils {
 		window.location.reload()
 	}
 
-	async refreshToken() {
-		let refreshSuccess = (await this.api.refreshToken()) != null
-		if (!refreshSuccess) {
-			console.log('refreshing token after purchase failed, scheduling retry')
-			const loading = await this.alertService.presentLoading('This can take a minute')
-			loading.present()
-			await this.sleep(35000)
-			refreshSuccess = (await this.api.refreshToken()) != null
-			if (!refreshSuccess) {
-				this.alertService.showError(
-					'Purchase Error',
-					'We could not confirm your purchase. Please try again later or contact us if this problem persists.',
-					PURCHASEUTILS + 2
-				)
-			}
-			loading.dismiss()
-		}
-	}
 
 	private async registerPurchaseOnRemote(data: SubscriptionData): Promise<boolean> {
-		const request = new PostMobileSubscription(data)
+		const request = new V2PurchaseValidation(data)
 		const response = await this.api.execute(request)
 		const result = request.wasSuccessful(response, false)
 
@@ -223,7 +224,7 @@ export class MerchantUtils {
 			.when()
 			.approved((p: CdvPurchase.Transaction) => {
 				// Handle the product deliverable
-				this.currentPlan = p.products[0].id
+				//this.currentPlan = p.products[0].id
 
 				//this.ref.detectChanges();
 				return p.verify()
@@ -264,7 +265,7 @@ export class MerchantUtils {
 				loading.dismiss()
 				this.alertService.showError('Purchase failed', `Failed to purchase: ${e}`, PURCHASEUTILS + 1)
 				console.warn('purchase error', e)
-				this.currentPlan = PRODUCT_STANDARD
+				//this.currentPlan = PRODUCT_STANDARD
 			}
 		)
 	}
@@ -307,7 +308,15 @@ export class MerchantUtils {
 			loading.dismiss()
 		}
 
-		if (result) await this.refreshToken()
+		if (result) {
+			await this.getUserInfo(true, () => {
+				this.alertService.showError(
+					'Purchase Error',
+					'We could not confirm your purchase. Please try again later or contact us if this problem persists.',
+					PURCHASEUTILS + 2
+				)
+			})
+		}
 
 		loading.dismiss()
 
@@ -333,23 +342,23 @@ export class MerchantUtils {
 		)
 	}
 
-	async getCurrentPlanConfirmed(): Promise<string> {
-		if (this.api.debug) {
-			const debugPackage = await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')
-			if (debugPackage != 'default') {
-				return debugPackage as string
-			}
-		}
+	// async getCurrentPlanConfirmed(): Promise<string> {
+	// 	if (this.api.debug) {
+	// 		const debugPackage = await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')
+	// 		if (debugPackage != 'default') {
+	// 			return debugPackage as string
+	// 		}
+	// 	}
 
-		const authUser = await this.storage.getAuthUser()
-		if (!authUser || !authUser.accessToken) return PRODUCT_STANDARD
-		const jwtParts = authUser.accessToken.split('.')
-		const claims: ClaimParts = JSON.parse(atob(jwtParts[1]))
-		if (claims && claims.package) {
-			return claims.package
-		}
-		return PRODUCT_STANDARD
-	}
+	// 	const authUser = await this.storage.getAuthUser()
+	// 	if (!authUser || !authUser.accessToken) return PRODUCT_STANDARD
+	// 	const jwtParts = authUser.accessToken.split('.')
+	// 	const claims: ClaimParts = JSON.parse(atob(jwtParts[1]))
+	// 	if (claims && claims.package) {
+	// 		return claims.package
+	// 	}
+	// 	return PRODUCT_STANDARD
+	// }
 
 	async getDefaultTheme(): Promise<string> {
 		const authUser = await this.storage.getAuthUser()
@@ -379,37 +388,35 @@ export class MerchantUtils {
 		return null
 	}
 
-	private async isNotFreeTier() {
-		const currentPlan = await this.getCurrentPlanConfirmed()
-		return currentPlan != PRODUCT_STANDARD && currentPlan != ''
-	}
+	isPremium = computed(() =>{
+		if(!this.userInfo()) return false
+		return this.userInfo().premium_perks.ad_free
+	})
 
-	async hasPremiumTheming() {
-		const currentPlan = await this.getCurrentPlanConfirmed()
-		return currentPlan != PRODUCT_STANDARD && currentPlan != '' && currentPlan != 'plankton'
-	}
+	getCurrentPlanMaxValidator = computed(() => {
+		if (!this.isPremium()) return 20
+		return this.userInfo().premium_perks.validators_per_dashboard
+	})
 
-	async hasCustomizableNotifications() {
-		return await this.isNotFreeTier()
-	}
+	hasMachineMonitoringPremium = computed(() => {
+		if (!this.isPremium()) return false
+		return this.userInfo().premium_perks.machine_monitoring_history_seconds > 10800
+	})
 
-	async hasAdFree() {
-		return await this.isNotFreeTier()
-	}
-
-	async hasMachineHistoryPremium() {
-		return await this.isNotFreeTier()
-	}
-
-	async getCurrentPlanMaxValidator(): Promise<number> {
-		const currentPlan = await this.getCurrentPlanConfirmed()
-		const currentProduct = this.findProduct(currentPlan)
-		if (currentProduct == null) return 100
-
-		const notMainnet = this.api.isNotEthereumMainnet()
-		if (notMainnet) return currentProduct.maxTestnetValidators
-		return currentProduct.maxValidators
-	}
+	getUsersSubscription: Signal<UserSubscription> = computed(() => {
+		const none = {
+			product_id: '',
+			product_name: '',
+			product_category: '',
+			product_store: '',
+			start: 0,
+			end: 0,
+		}
+		if (!this.userInfo()) return none
+		const appSubs = this.userInfo().subscriptions.filter((sub) => sub.product_category == 'premium')
+		if (appSubs.length == 0) return none
+		return appSubs[0]
+	})
 
 	getHighestPackageValidator(): number {
 		const currentProduct = this.findProduct(MAX_PRODUCT)
