@@ -54,7 +54,6 @@ export class MyHammerConfig extends HammerGestureConfig {
 		AppRoutingModule,
 		PipesModule,
 		HammerModule,
-
 		NgxEchartsModule.forRoot({
 			/**
 			 * This will import all modules from echarts.

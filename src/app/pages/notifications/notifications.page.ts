@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core'
 import { Router } from '@angular/router'
 import { ModalController, Platform } from '@ionic/angular'
 import { AlertService } from 'src/app/services/alert.service'
-import { ApiService } from 'src/app/services/api.service'
+import { ApiService, capitalize } from 'src/app/services/api.service'
 import { CPU_THRESHOLD, HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from 'src/app/services/storage.service'
 import { SyncService } from 'src/app/services/sync.service'
 import { NotificationBase } from 'src/app/tab-preferences/notification-base'
@@ -84,7 +84,7 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 		})
 
 		this.storage.getAuthUser().then((result) => (this.authUser = result))
-		this.network = this.api.capitalize(this.api.getNetworkName())
+		this.network = capitalize(this.api.getNetworkName())
 		// this.merchantUtils.hasCustomizableNotifications().then((result) => {
 		// 	this.canCustomizeThresholds = result
 		// })

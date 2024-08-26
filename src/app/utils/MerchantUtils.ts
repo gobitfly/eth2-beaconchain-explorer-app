@@ -28,9 +28,13 @@ import { StorageService } from '../services/storage.service'
 import { SplashScreen } from '@capacitor/splash-screen'
 import { V2Me, V2PurchaseValidation } from '../requests/v2-user'
 import { UserInfo, UserSubscription } from '../requests/types/user'
+import { Aggregation } from '../requests/v2-dashboard'
 
 export const PRODUCT_STANDARD = 'standard'
 const MAX_PRODUCT = 'dolphin'
+
+export const AggregationTimeframes: Aggregation[] = [Aggregation.Epoch, Aggregation.Hourly, Aggregation.Daily, Aggregation.Weekly]
+
 
 @Injectable({
 	providedIn: 'root',
@@ -142,6 +146,40 @@ export class MerchantUtils {
 			purchaseKey: 'dolphin.yearly',
 			renewFrame: 'yearly',
 		},
+		{
+			name: 'Orca',
+			price: '$29.99',
+			priceMicros: 29990000,
+			currency: 'USD',
+			maxValidators: 280,
+			maxTestnetValidators: 280,
+			maxBeaconNodes: 10,
+			deviceMonitoringHours: 30 * 24,
+			deviceMonitorAlerts: true,
+			noAds: true,
+			widgets: true,
+			customTheme: true,
+			supportUs: true,
+			purchaseKey: 'orca',
+			renewFrame: 'monthly',
+		},
+		{
+			name: 'Orca',
+			price: '$311.88',
+			priceMicros: 311880000,
+			currency: 'USD',
+			maxValidators: 280,
+			maxTestnetValidators: 280,
+			maxBeaconNodes: 10,
+			deviceMonitoringHours: 30 * 24,
+			deviceMonitorAlerts: true,
+			noAds: true,
+			widgets: true,
+			customTheme: true,
+			supportUs: true,
+			purchaseKey: 'orca.yearly',
+			renewFrame: 'yearly',
+		},
 	]
 
 	//currentPlan = PRODUCT_STANDARD // use getCurrentPlanConfirmed instead
@@ -150,16 +188,33 @@ export class MerchantUtils {
 
 	userInfo: WritableSignal<UserInfo | null> = signal(null)
 
+	userAllowedChartAggregations = computed(() => {
+		function add(list: Aggregation[], value: number, aggregation: Aggregation) {
+			if (value === 0) return
+			list.push(aggregation)
+		}
+
+		const result: Aggregation[] = []
+		add(result, this.userInfo().premium_perks?.chart_history_seconds?.epoch ?? 0, Aggregation.Epoch)
+		add(result, this.userInfo().premium_perks?.chart_history_seconds?.daily ?? 0, Aggregation.Daily)
+		add(result, this.userInfo().premium_perks?.chart_history_seconds?.hourly ?? 0, Aggregation.Hourly)
+		add(result, this.userInfo().premium_perks?.chart_history_seconds?.weekly ?? 0, Aggregation.Weekly)
+
+		return result
+	})
+
+	initialize: Promise<void>
+
 	constructor(private alertService: AlertService, private api: ApiService, private platform: Platform, private storage: StorageService) {
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
 			console.info('merchant is not supported on this platform')
 			return
 		}
 
-		this.init()
+		this.initialize = this.init()
 	}
 
-	public async getUserInfo(forceRefresh: boolean = false, errHandler: (err) => void = () => { }) {
+	public async getUserInfo(forceRefresh: boolean = false, errHandler: (err) => void = () => {}) {
 		if (!forceRefresh) {
 			this.userInfo.set(await (this.storage.getObject('userInfo') as Promise<UserInfo | null>))
 		}
@@ -170,6 +225,9 @@ export class MerchantUtils {
 				errHandler(err)
 			})
 			this.storage.setObject('userInfo', this.userInfo())
+			if (this.userInfo().api_keys && this.userInfo().api_keys.length > 0) {
+				this.api.setApiKey(this.userInfo().api_keys[0])
+			}
 		}
 	}
 
@@ -183,7 +241,7 @@ export class MerchantUtils {
 
 	private async init() {
 		try {
-			this.getUserInfo()
+			await this.getUserInfo()
 			await this.initProducts()
 			this.initCustomValidator()
 			this.setupListeners()
@@ -223,7 +281,6 @@ export class MerchantUtils {
 		SplashScreen.show()
 		window.location.reload()
 	}
-
 
 	private async registerPurchaseOnRemote(data: SubscriptionData): Promise<boolean> {
 		const request = new V2PurchaseValidation(data)
@@ -437,6 +494,7 @@ export class MerchantUtils {
 	}
 
 	findProduct(name: string): Package {
+		console.log('find product', name, this.PACKAGES)
 		for (let i = 0; i < this.PACKAGES.length; i++) {
 			const current = this.PACKAGES[i]
 			if (current.purchaseKey == name || this.mapv2Tov1(current.purchaseKey) == name) {
@@ -453,15 +511,18 @@ export class MerchantUtils {
 		return null
 	}
 
-
-	isPremium = computed(() =>{
-		if(!this.userInfo()) return false
+	isPremium = computed(() => {
+		if (!this.userInfo()) return false
 		return this.userInfo().premium_perks.ad_free
 	})
 
 	getCurrentPlanMaxValidator = computed(() => {
 		if (!this.isPremium()) return 20
 		return this.userInfo().premium_perks.validators_per_dashboard
+	})
+
+	highestPackageDashboardsAllowed = computed(() => {
+		return 2 // todo
 	})
 
 	mapv2Tov1(name: string): string {

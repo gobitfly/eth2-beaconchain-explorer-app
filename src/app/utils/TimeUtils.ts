@@ -47,6 +47,20 @@ export function getLocale() {
 	return navigator.languages && navigator.languages.length ? navigator.languages[0] : navigator.language
 }
 
+export function formatTsToDateTime(ts: number, locales: string): string {
+	const options: Intl.DateTimeFormatOptions = {
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric',
+		hour: 'numeric',
+		minute: 'numeric',
+	}
+
+	const date = new Date(ts * 1000)
+	return date.toLocaleDateString(locales, options)
+}
+
+
 export function formatTsToTime(ts: number, locales: string): string {
 	const options: Intl.DateTimeFormatOptions = {
 		hour: 'numeric',

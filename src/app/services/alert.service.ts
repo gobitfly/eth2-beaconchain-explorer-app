@@ -65,7 +65,7 @@ export class AlertService {
 		await alert.present()
 	}
 
-	async confirmDialog(title: string, message: string, confirmButton: string, confirmCallback: () => void) {
+	async confirmDialog(title: string, message: string, confirmButton: string, confirmCallback: () => void, customCSS: string = null) {
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
 			header: title,
@@ -81,7 +81,33 @@ export class AlertService {
 				},
 				{
 					text: confirmButton,
+					cssClass: customCSS,
 					handler: confirmCallback,
+				},
+			],
+		})
+
+		await alert.present()
+	}
+
+	async confirmDialogReverse(title: string, message: string, confirmButton: string, confirmCallback: () => void, customCSS: string = null) {
+		const alert = await this.alertController.create({
+			cssClass: 'my-custom-class',
+			header: title,
+			message: message,
+			buttons: [
+				{
+					text: confirmButton,
+					cssClass: customCSS,
+					handler: confirmCallback,
+				},
+				{
+					text: 'Cancel',
+					role: 'cancel',
+					cssClass: 'secondary',
+					handler: () => {
+						return
+					},
 				},
 			],
 		})

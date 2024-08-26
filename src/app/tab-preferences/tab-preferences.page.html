@@ -66,7 +66,7 @@
 	</ion-list>
 
 	<ion-list-header>
-		<ion-label>Premium {{ premiumLabel }}</ion-label>
+		<ion-label>Premium {{ premiumLabel() }}</ion-label>
 	</ion-list-header>
 
 	<ion-list>
@@ -284,6 +284,7 @@
 	<p class="heart">
 		<ion-icon name="heart" (click)="notAnEasterEgg()"></ion-icon>
 	</p>
+	<p class="company" style="opacity:0.7" *ngIf="this.merchant.userInfo()">Logged in as {{ this.merchant.userInfo().email }}</p>
 	<p class="company">2020 - {{ currentYear }} © bitfly explorer GmbH</p>
 	<p class="appversion" (click)="openLogSessionDialog()">Version {{ appVersion }}</p>
 	<p class="appversion">{{ package }}</p>

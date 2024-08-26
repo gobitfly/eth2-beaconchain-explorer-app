@@ -18,6 +18,7 @@
 import { APIRequest, Method, NoContent, SubscriptionData } from './requests'
 import { Response } from '../services/api.service'
 import { UserInfo } from './types/user'
+import { UserDashboardsData } from './types/dashboard'
 
 // export class V2GetDashboards extends APIRequest<V2GetDashboardResponse> {
 // 	resource = 'users/me/dashboards'
@@ -28,6 +29,12 @@ import { UserInfo } from './types/user'
 export class V2Me extends APIRequest<UserInfo> {
 	resource = 'users/me'
 	method = Method.GET
+}
+
+export class V2MyDashboards extends APIRequest<UserDashboardsData> {
+	resource = 'users/me/dashboards'
+	method = Method.GET
+	
 }
 
 export class V2RegisterPushNotificationToken extends APIRequest<NoContent> {

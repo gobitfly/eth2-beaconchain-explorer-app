@@ -76,15 +76,15 @@
 			*ngIf="showWithdrawalInfo"></app-message>
 
 		<app-message
-			title="Rocketpool Deposit Credit"
+			title="Rocket Pool Deposit Credit"
 			icon="cash-outline"
 			iconStyle="info"
-			msgTitle="Rocketpool Deposit Credit"
+			msgTitle="Rocket Pool Deposit Credit"
 			[msgText]="depositCreditText"
 			*ngIf="depositCreditText"></app-message>
 
 		<app-message
-			title="Rocketpool Vacant Minipool"
+			title="Rocket Pool Vacant Minipool"
 			icon="ellipse-outline"
 			iconStyle="warn"
 			msgTitle="Vacant Minipool"
@@ -159,10 +159,10 @@
 		<ion-item lines="none">
 			<div class="grid">
 				<app-grid-cell-left [name]="'Balance'" (valueClick)="unit.switchCurrencyPipe()">
-						0<!--{{ data.overallBalance | mcurrency : 'GWEI' : unit.pref.Cons }}--> <!-- TODO -->
+						{{ data.overviewData().balances.total | mcurrency : 'GWEI' : unit.pref.Cons }}
 				</app-grid-cell-left>
 
-				<app-grid-cell-right [name]="'Efficiency'" tooltip="The attestation inclusion efficiency should be 80% or higher to minimize reward penalties.">
+				<app-grid-cell-right [name]="'Efficiency '+data.timeframeDisplay" tooltip="The attestation inclusion efficiency should be 80% or higher to minimize reward penalties.">
 					<span [class]="data.summary()[0].efficiency | valuestyle : 95 : this.data.avgNetworkEfficiency()" *ngIf="data.summary()[0].efficiency">
 						{{ data.summary()[0].efficiency !== -1 ? (data.summary()[0].efficiency | number: '1.0-2') + ' %' : 'NaN' }}
 					</span>
@@ -238,148 +238,37 @@
 		</ion-item>
 	</ion-list>
 
-	<ion-list-header *ngIf="displaySmoothingPool">
-		<ion-label>Rocketpool Smoothing Pool</ion-label>
+	
+	<ion-list-header *ngIf="this.data?.rocketpool()?.smoothing_pool.is_opt_in">
+		<ion-label>Rocket Pool Smoothing Pool</ion-label>
 	</ion-list-header>
 
-	<ion-list class="performance" *ngIf="displaySmoothingPool">
+	<ion-list class="performance" *ngIf="this.data?.rocketpool()?.smoothing_pool.is_opt_in">
 		<ion-item lines="none">
 			<div class="grid">
-				<app-grid-cell-left [name]="'Total Earned'" (valueClick)="unit.switchCurrencyPipe()" tooltip="Total earned smoothing rewards (includes claimed and unclaimed smoothing pool rewards)" (valueClick)="unit.switchCurrencyPipe()">
-					<span [class]="smoothingClaimed.plus(smoothingUnclaimed) | valuestyle : 0"
-						>
-						{{ smoothingClaimed.plus(smoothingUnclaimed) | mcurrency : 'GWEI' : unit.pref.Exec }}
+				<app-grid-cell-left [name]="'Total Earned'" (valueClick)="unit.switchCurrencyPipe()"
+					tooltip="Total earned smoothing rewards (includes claimed and unclaimed smoothing pool rewards)"
+					(valueClick)="unit.switchCurrencyPipe()">
+					<span [class]="this.data.totalSmoothingPool() | valuestyle : 0">
+						{{ this.data.totalSmoothingPool() | mcurrency : 'GWEI' : unit.pref.Exec }}
 					</span>
 				</app-grid-cell-left>
 
-				<app-grid-cell-right [name]="'Unclaimed'" (valueClick)="unit.switchCurrencyPipe()" tooltip="All smoothing pool rewards that have accumulated for your node but have not been claimed yet." (valueClick)="unit.switchCurrencyPipe()">
-					<span [class]="smoothingUnclaimed | valuestyle : 0" >
-						{{ smoothingUnclaimed | mcurrency : 'GWEI' : unit.pref.Exec }}
+				<app-grid-cell-right [name]="'Unclaimed'" (valueClick)="unit.switchCurrencyPipe()"
+					tooltip="All smoothing pool rewards that have accumulated for your node but have not been claimed yet."
+					(valueClick)="unit.switchCurrencyPipe()">
+					<span [class]="this.data?.rocketpool()?.smoothing_pool.unclaimed | valuestyle : 0">
+						{{ this.data?.rocketpool()?.smoothing_pool.unclaimed | mcurrency : 'GWEI' : unit.pref.Exec }}
 					</span>
 				</app-grid-cell-right>
 			</div>
 		</ion-item>
 	</ion-list>
 
-	<!-- todo -->
-	<ion-list-header *ngIf="data.summaryGroup().rocket_pool.minipools > 0">
-		<ion-label>Rocketpool</ion-label>
-	</ion-list-header>
-
-	<ion-list class="performances" *ngIf="data.summaryGroup().rocket_pool.minipools > 0">
-		<ion-item lines="none">
-			<div class="grid">
-				<!-- todo -->
-
-				<!-- <app-grid-cell-left [name]="Next Claim" tooltip="Estimated claim amount based on current network state." (valueClick)="switchRplStake(true)">
-					<span *ngIf="rplState == 'rpl' || rplState == '%'" [class]="rplProjectedClaim | valuestyle : 0">
-						{{ rplProjectedClaim | mcurrency : 'WEI' : 'RPL_NAKED' }}
-					</span>
-					<span *ngIf="rplState == 'conv'" [class]="rplProjectedClaim | valuestyle : 0">
-						{{ rplProjectedClaim | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
-					</span>
-				</app-grid-cell-left> -->
-
-				<app-grid-cell-right name="Total Earned" tooltip="Total earned RPL rewards so far. Includes unclaimed and claimed RPL rewards" (valueClick)="switchRplStake(true)">
-					<span *ngIf="rplState == 'rpl' || rplState == '%'"
-						[class]="data.rpTotalRPLClaimed() | valuestyle : 0">
-						{{ data.rpTotalRPLClaimed() | mcurrency : 'WEI' : 'RPL_NAKED' }}
-					</span>
-					<span  *ngIf="rplState == 'conv'" [class]="data.rpTotalRPLClaimed() | valuestyle : 0">
-						{{ data.rpTotalRPLClaimed() | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
-					</span>
-				</app-grid-cell-right>
-
-				<app-grid-cell-left name="Unclaimed" tooltip="All RPL that have accumulated for your node but have not been claimed yet." (valueClick)="switchRplStake()">
-					<span *ngIf="rplState == 'rpl' || rplState == '%'"
-						[class]="unclaimedRpl | valuestyle : 0">
-						{{ unclaimedRpl | mcurrency : 'WEI' : 'RPL_NAKED' }}
-					</span>
-					<span *ngIf="rplState == 'conv'" [class]="unclaimedRpl | valuestyle : 0">
-						{{ unclaimedRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
-					</span>
-				</app-grid-cell-left>
-
-				<!-- <app-grid-cell-right name="Cheating" tooltip="Indicates how many strikes (first value) and penalties (second value) you got from cheating at the Rocketpool fee-recipient address. Three strikes and you'll be penalized and lose substantial amounts of staked ETH and RPL.">
-					<span [class]="data.rocketpool().p.strikes == 0 ? 'ok-proposals' : 'warn'">{{
-						data.rocketpool.cheatingStatus.strikes
-						}}</span>
-					/
-					<span [class]="data.rocketpool.cheatingStatus.penalties == 0 ? 'ok-proposals' : 'err-proposals'">{{
-						data.rocketpool.cheatingStatus.penalties
-						}}</span>
-				</app-grid-cell-right> -->
-
-				<app-grid-cell-left name="RPL Price">
-					{{ 1 | mcurrency : 'ETHER' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
-				</app-grid-cell-left>
-
-				<app-grid-cell-right name="RPL APR" tooltip="Estimated yearly RPL returns, based on the last 7 days">
-					<span [class]="data.rocketpool().rpl_apr | valuestyle : 0">{{ data.rocketpool().rpl_apr }} %</span>
-				</app-grid-cell-right>
-<!-- 
-				<app-grid-cell-left name="Collateral" tooltip="Your currently staked Rocketpool token collateral. It must be between max and min to earn interest.">
-					<span  *ngIf="rplState == 'rpl'"
-						[class]="data.rocketpool().rpl.currentRpl | valuestyle : data.rocketpool.minRpl : data.rocketpool.maxRpl : -1">
-						{{ data.rocketpool.currentRpl | mcurrency : 'WEI' : 'RPL_NAKED' }}
-				</span>
-					<span  *ngIf="rplState == 'conv'"
-						[class]="data.rocketpool.currentRpl | valuestyle : data.rocketpool.minRpl : data.rocketpool.maxRpl : -1">
-						{{ data.rocketpool.currentRpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
-					</span>
-					<span *ngIf="rplState == '%'"
-						[class]="data.rocketpool.currentRpl | valuestyle : data.rocketpool.minRpl : data.rocketpool.maxRpl : -1">
-						{{ rplDisplay }} %
-					</span>
-				</app-grid-cell-left> -->
-
-				<app-grid-cell-right name="Avg Fee"  tooltip="Average of all your minipool commission fees">
-					{{ data.rocketpool().avg_commission }} %
-				</app-grid-cell-right>
-
-				<app-grid-cell-left name="Coll. Range" (valueClick)="switchRplStake()" tooltip="Your nodes collateral must be between this range to be eligible for RPL claims.">
-					<span *ngIf="rplState == 'rpl'">
-						{{ data.rocketpool().collateral.min_value | mcurrency : 'WEI' : 'NO_CURRENCY' }} - {{
-						data.rocketpool().collateral.max_value | mcurrency : 'WEI' : 'NO_CURRENCY' }} RPL
-					</span>
-					<span *ngIf="rplState == '%'" >
-						{{ data.rocketpool().collateral.percentage }} %
-					</span>
-					<span *ngIf="rplState == 'conv'">
-						{{ data.rocketpool().collateral.min_value| mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL
-						}} -
-						{{ data.rocketpool().collateral.max_value | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL
-						}}
-					</span>
-				</app-grid-cell-left>
-
-				<app-grid-cell-right
-					name="Next RPL Round"
-					tooltip="With the start of a new rocketpool reward round, rewards from the previous round can be claimed.">
-					{{ nextRewardRound | date : 'MMM dd, h:mm a' }}
-				</app-grid-cell-right>
-
-				<!-- <app-grid-cell-left name="Deposit Type" *ngIf="data.rocketpool.depositType && data.foreignValidator">
-					{{ data.rocketpool.depositType }}
-				</app-grid-cell-left> -->
-
-				<!-- <app-grid-cell-right name="Deposit"  tooltip="Your deposited ETH amount." (click)="unit.switchCurrencyPipe()" *ngIf="
-						data.foreignValidator &&
-						data.foreignValidatorItem.rocketpool &&
-						data.foreignValidatorItem.rocketpool.node_deposit_balance &&
-						data.foreignValidator
-					">
-					{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref.Cons }}
-
-				</app-grid-cell-right> -->
-			
-			</div>
-		</ion-item>
-	</ion-list>
-
+	
 	<ion-list class="performances">
 		<ion-list-header>
-			<ion-label>Charts & Stats</ion-label>
+			<ion-label>{{ selectedChart == "chartIncome" ? "Income " + data.timeframeDisplay : selectedChart == "chartSummary" ? "Efficiency " + data.timeframeDisplay : "Rocket Pool"}}</ion-label>
 		</ion-list-header>
 		<ion-segment [(ngModel)]="selectedChart" mode="md">
 			<ion-segment-button value="chartIncome" [disabled]="scrolling">
@@ -388,33 +277,192 @@
 			<ion-segment-button value="chartSummary" *ngIf="this.data.summaryChart()" [disabled]="scrolling">
 				<ion-label>Efficiency</ion-label>
 			</ion-segment-button>
+			<ion-segment-button value="rocketPool" *ngIf="data.rocketpool()" [disabled]="scrolling">
+				<ion-label>Rocket Pool</ion-label>
+			</ion-segment-button>
 		</ion-segment>
 
 		<div class="chartcontainer">
-			<div
-				class="stat-charts"
-				[attr.id]="'highcharts'"
-				style="width: 100%; height: 380px"
-				[hidden]="!chartData || selectedChart != 'chartIncome'"></div>
 
-			<app-summary-chart [data]="this.data" [aggregationValue]="this.aggregationValue" [hidden]="selectedChart != 'chartSummary'"></app-summary-chart>
+			<app-reward-chart [data]="this.data" [hidden]="selectedChart != 'chartIncome'"></app-reward-chart>
 
+			<app-summary-chart [data]="this.data" [hidden]="selectedChart != 'chartSummary'"></app-summary-chart>
 			
 		</div>
+			<!-- Rocket Pool -->
+			
+			<ion-list class="performances" *ngIf="selectedChart == 'rocketPool'"><!-- todo --><!-- data.summaryGroup().rocket_pool.minipools > 0 -->
+						<ion-item lines="none">
+							<div class="grid">
+					
+								<app-grid-cell-left name="Next Claim" tooltip="Estimated claim amount based on current network state."
+									(valueClick)="switchRplStake(true)">
+									<span *ngIf="rplState == 'rpl' || rplState == '%'"
+										[class]=" data.rocketpool().rpl_estimate | valuestyle : 0">
+										{{ data.rocketpool().rpl_estimate | mcurrency : 'WEI' : 'RPL_NAKED' }}
+									</span>
+									<span *ngIf="rplState == 'conv'" [class]="rplProjectedClaim | valuestyle : 0">
+										{{ data.rocketpool().rpl_estimate | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' :
+										unit.pref.RPL }}
+									</span>
+								</app-grid-cell-left>
+					
+								<app-grid-cell-right name="Total Earned"
+									tooltip="Total earned RPL rewards so far. Includes unclaimed and claimed RPL rewards"
+									(valueClick)="switchRplStake(true)">
+									<span *ngIf="rplState == 'rpl' || rplState == '%'" [class]="data.totalRPL() | valuestyle : 0">
+										{{ data.totalRPL() | mcurrency : 'WEI' : 'RPL_NAKED' }}
+									</span>
+									<span *ngIf="rplState == 'conv'" [class]="data.rpTotalRPLClaimed() | valuestyle : 0">
+										{{ data.totalRPL() | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
+									</span>
+								</app-grid-cell-right>
+					
+								<app-grid-cell-left name="Unclaimed"
+									tooltip="All RPL that have accumulated for your node but have not been claimed yet."
+									(valueClick)="switchRplStake()">
+									<span *ngIf="rplState == 'rpl' || rplState == '%'" [class]="unclaimedRpl | valuestyle : 0">
+										{{ data.rocketpool().rpl.unclaimed | mcurrency : 'WEI' : 'RPL_NAKED' }}
+									</span>
+									<span *ngIf="rplState == 'conv'" [class]="unclaimedRpl | valuestyle : 0">
+										{{ data.rocketpool().rpl.unclaimed | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' :
+										unit.pref.RPL }}
+									</span>
+								</app-grid-cell-left>
+					
+								<app-grid-cell-right name="Cheating"
+									tooltip="Indicates how many strikes (first value) and penalties (second value) you got from cheating at the Rocket Pool fee-recipient address. Three strikes and you'll be penalized and lose substantial amounts of staked ETH and RPL.">
+									<span [class]="0 == 0 ? 'ok-proposals' : 'warn'">
+										<!--{{
+											 data.rocketpool.cheatingStatus.strikes
+											}} --> 0</span>
+									/
+									<span
+										[class]="0 == 0 ? 'ok-proposals' : 'err-proposals'"><!--data.rocketpool.cheatingStatus.penalties == 0 -->
+										<!--{{
+											data.rocketpool.cheatingStatus.penalties
+											}}--> 0
+									</span>
+								</app-grid-cell-right>
+					
+								<app-grid-cell-left name="RPL Price">
+									{{ 1 | mcurrency : 'ETHER' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
+								</app-grid-cell-left>
+					
+								<app-grid-cell-right name="RPL APR" tooltip="Estimated yearly RPL returns, based on the last 7 days">
+									<span [class]="data.rocketpool().rpl_apr | valuestyle : 0">{{ data.rocketpool().rpl_apr | number :
+										'1.0-2' }} %</span>
+								</app-grid-cell-right>
+					
+								<app-grid-cell-left name="Collateral"
+									tooltip="Your currently staked Rocket Pool token collateral. It must be between max and min to earn interest.">
+									<span *ngIf="rplState == 'rpl'"
+										[class]="data.rocketpool().staked.rpl | valuestyle : data.rocketpool().collateral.min_value : data.rocketpool().collateral.max_value : -1">
+										{{ data.rocketpool().staked.rpl | mcurrency : 'WEI' : 'RPL_NAKED' }}
+									</span>
+									<span *ngIf="rplState == 'conv'"
+										[class]="data.rocketpool().staked.rpl | valuestyle : data.rocketpool().collateral.min_value : data.rocketpool().collateral.max_value : -1">
+										{{ data.rocketpool().staked.rpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' :
+										unit.pref.RPL }}
+									</span>
+									<span *ngIf="rplState == '%'"
+										[class]="data.rocketpool().staked.rpl | valuestyle : data.rocketpool().collateral.min_value : data.rocketpool().collateral.max_value : -1">
+										{{ data.rocketpool().collateral.percentage | number : '1.0-2' }} %
+									</span>
+								</app-grid-cell-left>
+					
+								<app-grid-cell-right name="Avg Fee" tooltip="Average of all your minipool commission fees">
+									{{ data.rocketpool().avg_commission | number : '1.0-2' }} %
+								</app-grid-cell-right>
+					
+								<app-grid-cell-left name="Coll. Range" (valueClick)="switchRplStake()"
+									tooltip="Your nodes collateral must be between this range to be eligible for RPL claims.">
+									<span *ngIf="rplState == 'rpl' || rplState == '%'">
+										{{ data.rocketpool().collateral.min_value | mcurrency : 'WEI' : 'NO_CURRENCY' }} - {{
+										data.rocketpool().collateral.max_value | mcurrency : 'WEI' : 'NO_CURRENCY' }} RPL
+									</span>
+									<span *ngIf="rplState == 'conv'">
+										{{ data.rocketpool().collateral.min_value| mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' :
+										unit.pref.RPL
+										}} -
+										{{ data.rocketpool().collateral.max_value | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER'
+										: unit.pref.RPL
+										}}
+									</span>
+								</app-grid-cell-left>
+					
+								<app-grid-cell-right name="Next RPL Round"
+									tooltip="With the start of a new rocket Pool reward round, rewards from the previous round can be claimed.">
+									{{ nextRewardRound | date : 'MMM dd, h:mm a' }}
+								</app-grid-cell-right>
+					
+								<!-- <app-grid-cell-left name="Deposit Type" *ngIf="data.rocketpool.depositType && data.foreignValidator">
+										{{ data.rocketpool.depositType }}
+									</app-grid-cell-left> -->
+					
+								<!-- <app-grid-cell-right name="Deposit"  tooltip="Your deposited ETH amount." (click)="unit.switchCurrencyPipe()" *ngIf="
+											data.foreignValidator &&
+											data.foreignValidatorItem.rocketpool &&
+											data.foreignValidatorItem.rocketpool.node_deposit_balance &&
+											data.foreignValidator
+										">
+										{{ data.foreignValidatorItem.rocketpool.node_deposit_balance | mcurrency : 'WEI' : unit.pref.Cons }}
+					
+									</app-grid-cell-right> -->
+					
+							</div>
+						</ion-item>
+					</ion-list>
+				</ion-list>
 
+				<!-- Income -->
 				<ion-list class="performances" *ngIf="selectedChart == 'chartIncome'">
-				
+					<ion-item lines="none">
+						<ion-label class="stat-title">Missed Rewards</ion-label>
+						<span tooltip="Rewards missed by sub-optimal performance" trigger="click" hideDelayAfterClick="5000">
+							<ion-label class="value" style="color: var(--text-color)">
+								{{ data.getTotalMissedRewards() | mcurrency : 'GWEI' : unit.pref.Cons }}
+							</ion-label>
+						</span>
+					</ion-item>
+					<ion-item lines="none">
+						<ion-label class="stat-title">&nbsp;&nbsp;&nbsp;Attestations</ion-label>
+						<ion-label class="value" style="color: var(--text-color)">
+							{{ data.summaryGroup().missed_rewards.attestations| mcurrency : 'GWEI' : unit.pref.Cons }}
+						</ion-label>
+					</ion-item>
+					<ion-item lines="none">
+						<ion-label class="stat-title">&nbsp;&nbsp;&nbsp;Block Consensus</ion-label>
+						<ion-label class="value" style="color: var(--text-color)">
+							{{ data.summaryGroup().missed_rewards.proposer_rewards.cl| mcurrency : 'GWEI' : unit.pref.Cons }}
+						</ion-label>
+					</ion-item>
+					<ion-item lines="none">
+						<span tooltip="*Missed proposal execution rewards are calculated by taking the median reward from a 33-slot window around the missed block." trigger="click" hideDelayAfterClick="5000">
+							<ion-label class="stat-title">&nbsp;&nbsp;&nbsp;Block Execution*</ion-label>
+						</span>
+						<ion-label class="value" style="color: var(--text-color)">
+							{{ data.summaryGroup().missed_rewards.proposer_rewards.el| mcurrency : 'GWEI' : unit.pref.Cons }}
+						</ion-label>
+					</ion-item>
+					<ion-item lines="none">
+						<ion-label class="stat-title">&nbsp;&nbsp;&nbsp;Sync</ion-label>
+						<ion-label class="value" style="color: var(--text-color)">
+							{{ data.summaryGroup().missed_rewards.sync| mcurrency : 'GWEI' : unit.pref.Cons }}
+						</ion-label>
+					</ion-item>
+
 				</ion-list>
 				
 				<!-- Efficiency -->
 				<ion-list class="performances" *ngIf="selectedChart == 'chartSummary'">
 					<app-success-fail-view [data]="this.data.summary()[0].attestations" name="Attestations"
 						[mode]="successFailMode"></app-success-fail-view>
-					<app-success-fail-view [data]="this.data.summaryGroup().attestations_source" name="&nbsp;&nbsp;Source"
+					<app-success-fail-view [data]="this.data.summaryGroup().attestations_source" name="&nbsp;&nbsp;&nbsp;Source"
 						[mode]="successFailMode"></app-success-fail-view>
-					<app-success-fail-view [data]="this.data.summaryGroup().attestations_target" name="&nbsp;&nbsp;Target"
+					<app-success-fail-view [data]="this.data.summaryGroup().attestations_target" name="&nbsp;&nbsp;&nbsp;Target"
 						[mode]="successFailMode"></app-success-fail-view>
-					<app-success-fail-view [data]="this.data.summaryGroup().attestations_head" name="&nbsp;&nbsp;Head"
+					<app-success-fail-view [data]="this.data.summaryGroup().attestations_head" name="&nbsp;&nbsp;&nbsp;Head"
 						[mode]="successFailMode"></app-success-fail-view>
 				
 					<ion-item lines="none">
@@ -426,12 +474,11 @@
 						</ion-label>
 					</ion-item>
 				
-				</ion-list>
 	</ion-list>
 
 	<div *ngIf="this.data.summary()[0].proposals">
 		<ion-list-header>
-			<ion-label>Blocks</ion-label>
+			<ion-label>Blocks {{data.timeframeDisplay}}</ion-label>
 		</ion-list-header>
 		<ion-list class="performances">
 			<app-success-fail-view [data]="this.data.summary()[0].proposals" name="Proposals"
@@ -451,7 +498,7 @@
 
 	<div *ngIf="data.showSyncStats()">
 		<ion-list-header>
-			<ion-label>Sync Committees</ion-label>
+			<ion-label>Sync Committees {{data.timeframeDisplay}}</ion-label>
 		</ion-list-header>
 
 		<ion-list class="performances">
@@ -499,21 +546,9 @@
 	</ion-list-header>
 
 	<ion-list class="performances" *ngIf="!data.foreignValidator">
-		<ion-item lines="none" *ngIf="utilizationAvg != -1">
-			<ion-label class="stat-title">
-				<span
-					tooltip="Based on your earnings and effective balance, this value indicates how well your validators perform."
-					placement="right"
-					trigger="click"
-					hideDelayAfterClick="5000">
-					Effective Performance
-				</span>
-			</ion-label>
-			<ion-label class="value" [class]="utilizationAvg | valuestyle : 80"> {{ utilizationAvg }} % </ion-label>
-		</ion-item>
 
 		<!-- todo -->
-		<!-- <ion-item lines="none">
+		<ion-item lines="none">
 			<ion-label class="stat-title">
 				<span
 					tooltip="Used to calculate rewards and penalties. Also influences luck on block proposals. Maximum is 32 per validator."
@@ -524,9 +559,22 @@
 				</span>
 			</ion-label>
 			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
-				{{ data.effectiveBalance | mcurrency : 'GWEI' : unit.getNetworkDefaultCurrency('cons') }}
+				{{ data.overviewData().balances.effective| mcurrency : 'GWEI' : unit.getNetworkDefaultCurrency('cons') }}
 			</ion-label>
-		</ion-item> -->
+		</ion-item>
+
+		<ion-item lines="none">
+			<ion-label class="stat-title">
+				<span
+					tooltip="The amount deposited by you to become a validator."
+					placement="right" trigger="click" hideDelayAfterClick="5000">
+					Staked Balance
+				</span>
+			</ion-label>
+			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
+				{{ data.overviewData().balances.staked_eth | mcurrency : 'GWEI' : unit.getNetworkDefaultCurrency('cons') }}
+			</ion-label>
+		</ion-item>
 	</ion-list>
 
 	<ion-list class="performances">

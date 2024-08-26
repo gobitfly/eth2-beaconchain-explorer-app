@@ -50,6 +50,11 @@ export class ApiService extends CacheModule {
 	private lastCacheInvalidate = 0
 
 	private sessionCookie: string
+	private csrfCookie: string // only debug
+
+	private apiKey: string = null
+
+	lastCsrfHeader: string = null
 
 	constructor(private storage: StorageService) {
 		super('api', 6 * 60 * 1000, storage, 1000, false)
@@ -83,7 +88,7 @@ export class ApiService extends CacheModule {
 
 	storeInHardCache(cacheKey: string): boolean {
 		return (
-			cacheKey.indexOf('validator-dashboards') >= 0 ||
+			cacheKey.indexOf('dashboards') >= 0 ||
 			cacheKey.indexOf('produced?offset=0') >= 0 || // first page of blocks page // todo v2
 			(cacheKey.indexOf('beaconcha.in') < 0 && cacheKey.indexOf('gnosischa.in') < 0 && cacheKey.indexOf('ads.bitfly') < 0)
 		)
@@ -93,14 +98,15 @@ export class ApiService extends CacheModule {
 		await this.loadNetworkConfig()
 		await this.initV2Cookies()
 		await this.init()
-		console.log('API SERVICE INITIALISED')
+		this.apiKey = await this.getApiKey()
+		console.log('API SERVICE INITIALISED', this.apiKey)
 	}
 
 	async loadNetworkConfig() {
-		this.networkConfig = await this.storage.getNetworkPreferences().then(async (config) => {
+		async function getConfig(storage: StorageService, config: ApiNetwork){
 			const temp = findConfigForKey(config.key)
 			if (temp) {
-				if (temp.v2NetworkConfigKey && (await this.storage.isV2())) {
+				if (temp.v2NetworkConfigKey && (await storage.isV2())) {
 					const v2Config = findConfigForKey(config.v2NetworkConfigKey)
 					if (v2Config) {
 						return v2Config
@@ -109,7 +115,9 @@ export class ApiService extends CacheModule {
 				return temp
 			}
 			return config
-		})
+		}
+
+		this.networkConfig = this.networkConfig = await getConfig(this.storage, await this.storage.getNetworkPreferences())
 	}
 
 	networkName = null
@@ -283,16 +291,24 @@ export class ApiService extends CacheModule {
 			if (request.endPoint == 'default' || request.requiresAuth) {
 				if (await this.storage.isV2()) {
 					if (!this.sessionCookie) {
-						this.initV2Cookies()
+						await this.initV2Cookies()
 					}
 
+					if (request.method != Method.GET) {
+						options.headers = { ...options.headers, 'X-Csrf-Token': this.lastCsrfHeader }
+					}
+						
 					// DANGEROUS
 					// Strictly for development purposes. Intention is this to be used in local
 					// setup to develop in browser instead of native device. Since fetch does not allow
 					// setting cookies yourself, we can use the X-Cookie header with a reverse proxy to
 					// get sessions working in development environment.
 					if (this.networkConfig.passXCookieDANGEROUS) {
-						options.headers = { ...options.headers, 'X-Cookie': 'session_id=' + this.sessionCookie }
+						let csrfCookieExtra = ""
+						if (this.csrfCookie) {
+							csrfCookieExtra = '; _gorilla_csrf=' + this.csrfCookie + '; '
+						}
+						options.headers = { ...options.headers, 'X-Cookie': 'session_id=' + this.sessionCookie + csrfCookieExtra }
 					}
 				} else {
 					const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
@@ -319,6 +335,29 @@ export class ApiService extends CacheModule {
 
 			if ((request.method == Method.GET || request.cacheablePOST) && result && result.status == request.expectedResponseStatus && result.data) {
 				this.putCache(this.getCacheKey(request), result, request.maxCacheAge)
+			}
+
+			if (request.method == Method.GET) {
+				const temp = result.headers.get('x-csrf-token')
+				if (temp) {
+					this.lastCsrfHeader = temp
+				}
+
+				// workaround for non native development
+				if (this.networkConfig.passXCookieDANGEROUS) {
+					const setCookie = result.headers.get('x-set-cookie')
+					
+					if (setCookie) {
+						const keyAndValue = setCookie.split(';')[0]
+						if (keyAndValue) {
+							const split = keyAndValue.split('=')
+							if (split.length == 2) {
+								const value = split[1]
+								this.csrfCookie = value
+							}
+						}
+					}
+				}
 			}
 
 			if (request.updatesLastRefreshState) this.updateLastRefreshed(result)
@@ -349,6 +388,15 @@ export class ApiService extends CacheModule {
 				}
 			}
 			body = this.formatPostData(data, resource)
+		}
+
+		if (this.apiKey && endpoint == 'default') {
+			options.headers = {
+				...options.headers,
+				...{
+					Authorization: 'Bearer ' + this.apiKey,
+				},
+			}
 		}
 
 		const result = await fetch(this.getResourceUrl(resource, endpoint), {
@@ -446,13 +494,9 @@ export class ApiService extends CacheModule {
 			if (entry.key == 'gnosis') continue
 			if (!entry.active) continue
 			if (entry.onlyDebug && !debug) continue
-			re.push([this.capitalize(entry.key) + ' (Testnet)', entry.key])
+			re.push([capitalize(entry.key) + ' (Testnet)', entry.key])
 		}
 		return re
-	}
-
-	capitalize(text) {
-		return text.charAt(0).toUpperCase() + text.slice(1)
 	}
 
 	getHostName() {
@@ -521,6 +565,15 @@ export class ApiService extends CacheModule {
 			s.set(data.data)
 		})
 	}
+
+	setApiKey(apiKey: string) {
+		this.apiKey = apiKey
+		return this.storage.setItem('api_key', apiKey)
+	}
+
+	getApiKey(): Promise<string> {
+		return this.storage.getItem('api_key')
+	}
 }
 
 
@@ -538,3 +591,7 @@ export interface Response {
 	url: string
 }
 
+export function capitalize(text) {
+	if (typeof text !== 'string') return ''
+	return text.charAt(0).toUpperCase() + text.slice(1)
+}

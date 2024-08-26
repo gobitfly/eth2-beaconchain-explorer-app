@@ -130,7 +130,7 @@ export abstract class APIRequest<T> {
 	requiresAuth = false
 
 	updatesLastRefreshState = false
-	ignoreFails = false
+	ignoreFails = true
 	maxCacheAge = 6 * 60 * 1000
 }
 

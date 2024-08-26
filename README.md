@@ -20,7 +20,7 @@ Beaconchain Dashboard is an Angular app written in Typescript, HTML & CSS. It ut
 - Various notification alerts for your validators  
 - Execution block rewards overview
 - Machine monitoring (CPU usage, network usage and more)
-- Rocketpool support
+- Rocket Pool support
 - Customize stake share if you only partially own a validator
 - Combined dashboard view  
 - Support for up to 280 validators  

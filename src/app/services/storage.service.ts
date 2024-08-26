@@ -28,6 +28,7 @@ import { Platform } from '@ionic/angular'
 import { Preferences } from '@capacitor/preferences'
 import { LogviewPage } from '../pages/logview/logview.page'
 import { Device } from '@capacitor/device'
+import { Aggregation, dashboardID, Period } from '../requests/v2-dashboard'
 const { StorageMirror } = Plugins
 
 const AUTH_USER = 'auth_user'
@@ -88,11 +89,11 @@ export class StorageService extends CacheModule {
 	}
 
 	async isV2() {
-		return this.getBooleanSetting("use_v2_api", false)
+		return this.getBooleanSetting('use_v2_api', false)
 	}
 
 	setV2(value: boolean) {
-		return this.setBooleanSetting("use_v2_api", value)
+		return this.setBooleanSetting('use_v2_api', value)
 	}
 
 	async getDeviceName(): Promise<string> {
@@ -285,6 +286,42 @@ export class StorageService extends CacheModule {
 		await Preferences.clear()
 		this.reflectiOSStorage()
 	}
+
+	async getDashboardID(): Promise<dashboardID> {
+		const data = (await this.getObject('dashboard_id')) as DashboardSetting
+		if (!data) return null
+		return data.id as dashboardID
+	}
+
+	async setDashboardID(id: dashboardID): Promise<void> {
+		await this.setObject('dashboard_id', {
+			id: id,
+		} as DashboardSetting)
+	}
+
+	async getDashboardTimeframe(): Promise<Period> {
+		const data = (await this.getObject('dashboard_timeframe')) as Period
+		if (!data) return Period.AllTime
+		return data
+	}
+
+	async getDashboardSummaryAggregation(): Promise<Aggregation> {
+		const data = (await this.getObject('dashboard_summary_aggregation')) as Aggregation
+		if (!data) return Aggregation.Hourly
+		return data
+	}
+
+	async setDashboardSummaryAggregation(aggregation: Aggregation): Promise<void> {
+		await this.setObject('dashboard_summary_aggregation', aggregation)
+	}
+
+	async setDashboardTimeframe(timeframe: Period): Promise<void> {
+		await this.setObject('dashboard_timeframe', timeframe)
+	}
+}
+
+interface DashboardSetting {
+	id: dashboardID
 }
 
 export function replacer(key, value) {

@@ -20,11 +20,29 @@
 
 <ion-header [translucent]="true">
 	<ion-toolbar>
-		<ion-buttons slot="start">
-			<ion-menu-button auto-hide="false"></ion-menu-button>
+		<ion-buttons style="margin-left: 15px;" slot="start" (click)="openDashboardAndGroupSelect()">
+			<ion-icon slot="icon-only" ios="apps-outline" md="apps-outline"></ion-icon>
+		</ion-buttons>
+		<ion-buttons slot="primary" id="options-dashboard">
+			<ion-icon slot="icon-only" ios="ellipsis-horizontal-outline" md="ellipsis-vertical-outline"></ion-icon>
 		</ion-buttons>
 		<ion-title> Dashboard </ion-title>
 	</ion-toolbar>
+	<ion-popover trigger="options-dashboard" triggerAction="click" [dismissOnSelect]="true">
+		<ng-template>
+			<ion-content>
+				<ion-list>
+					<ion-item [button]="true" [detail]="false" (click)="changeTimeframe(Period.AllTime)">Data History</ion-item>
+					<ion-item [button]="true" [detail]="false" (click)="changeTimeframe(Period.AllTime)">Chart History</ion-item>
+
+					<ion-item [button]="true" [detail]="false" [class]="overallData.timeframe.value == Period.AllTime ? 'selected':''" (click)="changeTimeframe(Period.AllTime)">Show all time</ion-item>
+					<ion-item [button]="true" [detail]="false" [class]="overallData.timeframe.value == Period.Last24h ? 'selected':''" (click)="changeTimeframe(Period.Last24h)">Show last 24h</ion-item>
+					<ion-item [button]="true" [detail]="false" [class]="overallData.timeframe.value == Period.Last7d ? 'selected':''" (click)="changeTimeframe(Period.Last7d)">Show last 7d</ion-item>
+					<ion-item [button]="true" [detail]="false" [class]="overallData.timeframe.value == Period.Last30d ? 'selected':''" (click)="changeTimeframe(Period.Last30d)">Show last 30d</ion-item>
+				</ion-list>
+			</ion-content>
+		</ng-template>
+	</ion-popover>
 	<app-offline *ngIf="!api.connectionStateOK"></app-offline>
 </ion-header>
 
@@ -34,19 +52,19 @@
 	(ionScroll)="onScroll($event)"
 	(ionScrollStart)="onScrollStarted()"
 	(ionScrollEnd)="onScrollEnded()">
-	<div class="setup-head" *ngIf="!initialized">
+	<div class="setup-head" *ngIf="!overallData">
 		<div class="inner-setup-head">
 			<ion-icon class="setup-icon" name="color-wand-outline" [ngStyle]="{'opacity': currentY | fadeoutpipe: 100 }"> </ion-icon>
 			<h2 [ngStyle]="{'opacity': currentY | fadeoutpipe: 180 }">Let´s get started</h2>
 		</div>
 	</div>
 
-	<ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" [disabled]="!initialized">
+	<ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" [disabled]="!overallData">
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher>
 
-	<app-validator-dashboard [data]="overallData" [currentY]="currentY" [scrolling]="scrolling" [updates]="updates.updates" *ngIf="initialized">
+	<app-validator-dashboard [data]="overallData" [currentY]="currentY" [scrolling]="scrolling" [updates]="updates.updates" *ngIf="overallData">
 	</app-validator-dashboard>
 
-	<app-help *ngIf="!initialized"></app-help>
+	<app-help *ngIf="!overallData"></app-help>
 </ion-content>

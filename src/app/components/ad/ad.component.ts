@@ -25,8 +25,8 @@ export class AdComponent implements OnInit {
 		public merchantUtils: MerchantUtils
 	) {}
 
-	ngOnInit() {
-
+	async ngOnInit() {
+		await this.merchantUtils.getUserInfo() // waits for user info to be loaded
 		this.adUtils.get(this.location).then((data) => {
 			if (data && data.html && data.html.length > 10) {
 				this.openUpgradeToPremium = data.html.indexOf('beaconchain_sample_ad') >= 0

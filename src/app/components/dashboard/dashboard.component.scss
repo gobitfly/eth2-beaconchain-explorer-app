@@ -55,12 +55,6 @@ ion-segment {
 	padding-bottom: 12px;
 }
 
-.center {
-	width: 100%;
-	display: flex;
-	justify-content: center;
-	text-align: center;
-}
 
 .status {
 	text-align: center;
@@ -142,7 +136,7 @@ ion-list-header ion-label {
 }
 
 ion-item {
-	max-width: 92%;
+	//max-width: 92%;
 
 	margin: auto;
 }

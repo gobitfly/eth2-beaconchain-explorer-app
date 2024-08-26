@@ -1,0 +1,7 @@
+<div>
+    <div style="height: 360px;" echarts [options]="this.rewardChart()" [hidden]="!this.data.rewardChart()"></div>
+
+    <div class="center" *ngIf="!this.data.rewardChart()">
+        <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
+    </div>
+</div>

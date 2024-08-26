@@ -20,6 +20,8 @@
 // Ionic Variables and Theming. For more info, please see:
 // http://ionicframework.com/docs/theming/
 
+@import '@ionic/angular/css/core.css';
+
 /** Ionic CSS Variables **/
 @font-face {
 	font-family: 'Mukta';
@@ -36,6 +38,8 @@
 }
 
 :root {
+	--test-color: #ee7112;
+
 	--ion-font-family: 'Mukta';
 	/** primary **/
 	--ion-color-primary: #ee7112;
@@ -140,6 +144,7 @@ body {
 	--ion-item-background: #fff;
 
 	--ion-toolbar-background: #2f2e42; //2f2e42
+	--ion-toolbar-color: #fff;
 
 	--ion-tab-bar-background: #fff; // f8f8f8
 

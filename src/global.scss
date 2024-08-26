@@ -55,6 +55,10 @@ ion-button {
 	--box-shadow: none;
 }
 
+.error-btn span {
+	color: var(--ion-color-danger) !important;
+}
+
 .bigger-alert {
 	.alert-message.sc-ion-alert-md {
 		max-height: 335px !important;
@@ -138,6 +142,13 @@ h2,
 h3 {
 	font-family: 'Varela';
 	--font-family: 'Varela';
+}
+
+.center {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
 }
 
 ion-modal {

@@ -6,8 +6,7 @@ import { Toast } from '@capacitor/toast'
 import { Clients } from '../../utils/ClientUpdateUtils'
 import { DevModeEnabled } from 'src/app/services/storage.service'
 import { MigrateV1AuthToV2 } from 'src/app/requests/v2-auth'
-import { V2Me, V2RegisterPushNotificationToken } from 'src/app/requests/v2-user'
-import { getValidatorData } from 'src/app/controllers/OverviewController'
+import { V2Me, V2MyDashboards, V2RegisterPushNotificationToken } from 'src/app/requests/v2-user'
 
 @Component({
 	selector: 'app-dev',
@@ -154,6 +153,7 @@ export class DevPage extends Tab3Page implements OnInit {
 		})
 	}
 
+	// @deprecated replaced by changeSession
 	async changeAccessToken() {
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
@@ -200,6 +200,45 @@ export class DevPage extends Tab3Page implements OnInit {
 		await alert.present()
 	}
 
+	async changeSession() {
+		const alert = await this.alertController.create({
+			cssClass: 'my-custom-class',
+			header: 'Session ID',
+			inputs: [
+				{
+					name: 'session',
+					type: 'text',
+					placeholder: 'Session ID',
+				},
+			],
+			buttons: [
+				{
+					text: 'Cancel',
+					role: 'cancel',
+					cssClass: 'secondary',
+					handler: () => {
+						return
+					},
+				},
+				{
+					text: 'Ok',
+					handler: async (alertData) => {
+						this.storage.setAuthUserv2({
+							Session: alertData.session,
+						})
+						const myDashboards = await this.api.execute2(new V2MyDashboards())
+						if (myDashboards.data) {
+							this.storage.setDashboardID(myDashboards.data[0].validator_dashboards[0].id)
+						}
+						this.api.invalidateAllCache()
+					},
+				},
+			],
+		})
+
+		await alert.present()
+	}
+
 	async restoreAuthUser() {
 		await this.storage.restoreAuthUser()
 		this.alerts.confirmDialog('Success', 'Restart app with restored user?', 'OK', () => {
@@ -220,10 +259,6 @@ export class DevPage extends Tab3Page implements OnInit {
 	}
 
 	testv2() {
-		const dashboardID = 5348
-		getValidatorData(this.api, dashboardID)
-
-		
 
 		// const test = await this.api.execute2(new V2DashboardOverview(dashboardID))
 		// console.log("test", test)

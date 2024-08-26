@@ -91,9 +91,15 @@
 			<ion-label>Auth User</ion-label>
 		</ion-list-header>
 
-		<ion-item lines="none" (click)="changeAccessToken()">
+		
+		<ion-item lines="none" (click)="changeSession()">
 			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
-			<ion-label>Manually edit access token</ion-label>
+			<ion-label>Manually edit v2 session</ion-label>
+		</ion-item>
+
+		<ion-item style="opacity: 0.7" lines="none" (click)="changeAccessToken()">
+			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+			<ion-label>Manually edit access token (depr)</ion-label>
 		</ion-item>
 
 		<ion-item lines="none" (click)="backupAuthUser()">

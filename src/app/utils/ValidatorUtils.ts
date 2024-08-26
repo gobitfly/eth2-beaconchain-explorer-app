@@ -569,6 +569,8 @@ export class ValidatorUtils {
 			return validator.name
 		}
 	}
+
+	
 }
 
 export function getValidatorQueryString(validators: Validator[] | ETH1ValidatorResponse[], getParamMaxLimit: number, maxValLimit = -1) {

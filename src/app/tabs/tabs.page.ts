@@ -78,6 +78,7 @@ export class TabsPage {
 			}, 250)
 		}
 
+		await this.merchant.initialize
 		const hasTheming = this.merchant.userInfo()?.premium_perks?.mobile_app_custom_themes == true
 		if (!hasTheming && this.theme.currentThemeColor != 'gnosis') {
 			this.theme.resetTheming()

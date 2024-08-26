@@ -18,7 +18,7 @@
  */
 
 import { Component, computed } from '@angular/core'
-import { ApiService } from '../services/api.service'
+import { ApiService, capitalize } from '../services/api.service'
 import { StorageService } from '../services/storage.service'
 import { UnitconvService } from '../services/unitconv.service'
 import { OAuthUtils } from '../utils/OAuthUtils'
@@ -79,7 +79,7 @@ export class Tab3Page {
 
 	premiumLabel = computed(() => {
 		if (this.merchant.getUsersSubscription()?.product_id != null) {
-			return ' - ' + this.api.capitalize(this.merchant.getUsersSubscription().product_name)
+			return ' - ' + capitalize(this.merchant.getUsersSubscription().product_name)
 		}
 	})
 
@@ -218,7 +218,7 @@ export class Tab3Page {
 	}
 
 	ionViewWillEnter() {
-		this.storage.getAuthUser().then((result) => (this.authUser = result))
+		this.storage.getAuthUserv2().then((result) => (this.authUser = result))
 		this.debug = this.api.debug
 		this.network = this.api.getNetworkName()
 	}
@@ -258,7 +258,7 @@ export class Tab3Page {
 	openOAuth() {
 		this.oauth.login().then((success) => {
 			if (success) {
-				this.storage.getAuthUser().then((result) => (this.authUser = result))
+				this.storage.getAuthUserv2().then((result) => (this.authUser = result))
 			}
 		})
 	}
@@ -479,6 +479,7 @@ export async function changeNetwork(
 			theme.toggle(darkTheme, true, api.isGnosis() ? 'gnosis' : ''), 50
 		})
 	} else {
+		await merchant.initialize
 		const hasTheming = merchant.userInfo()?.premium_perks.mobile_app_custom_themes == true
 		if (hasTheming) return
 		if (currentTheme == '' && !api.isGnosis()) return

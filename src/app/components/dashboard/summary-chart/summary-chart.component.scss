@@ -18,3 +18,10 @@
  */
 
 @import '../../../../theme/variables.scss';
+
+.custom-chip-disabled {
+    opacity: 0.4;
+}
+ion-chip {
+    height: 18px;
+}

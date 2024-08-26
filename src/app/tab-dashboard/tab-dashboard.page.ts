@@ -20,13 +20,17 @@
 import { Component } from '@angular/core'
 import { ApiService } from '../services/api.service'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
-import { getValidatorData, OverviewData2 } from '../controllers/OverviewController'
+import { getValidatorData, OverviewData2, SummaryChartOptions } from '../controllers/OverviewController'
 import ClientUpdateUtils from '../utils/ClientUpdateUtils'
 import { StorageService } from '../services/storage.service'
 import { UnitconvService } from '../services/unitconv.service'
 import { App, AppState } from '@capacitor/app'
 import { SyncService } from '../services/sync.service'
 import { MerchantUtils } from '../utils/MerchantUtils'
+import { ModalController } from '@ionic/angular'
+import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
+import { Period } from '../requests/v2-dashboard'
+import { AlertService } from '../services/alert.service'
 
 export const REAPPLY_KEY = 'reapply_notification2'
 
@@ -36,9 +40,10 @@ export const REAPPLY_KEY = 'reapply_notification2'
 	styleUrls: ['tab-dashboard.page.scss'],
 })
 export class Tab1Page {
+	readonly Period = Period
+
 	lastRefreshTs = 0
 	overallData: OverviewData2
-	initialized = true
 	currentY = 0
 	scrolling = false
 
@@ -49,7 +54,9 @@ export class Tab1Page {
 		private storage: StorageService,
 		private unitConv: UnitconvService,
 		private sync: SyncService,
-		public merchant: MerchantUtils
+		public merchant: MerchantUtils,
+		private modalCtrl: ModalController,
+		private alert: AlertService
 	) {
 		this.validatorUtils.registerListener(() => {
 			this.refresh()
@@ -65,6 +72,18 @@ export class Tab1Page {
 		})
 
 		this.reApplyNotifications()
+	}
+
+	async changeTimeframe(period: Period) {
+		if (!this.overallData) {
+			return
+		}
+		this.storage.setDashboardTimeframe(period)
+
+		const loading = await this.alert.presentLoading('Loading...')
+		loading.present()
+		await this.overallData.setTimeframe(this.api, period)
+		loading.dismiss()
 	}
 
 	async reApplyNotifications() {
@@ -104,20 +123,36 @@ export class Tab1Page {
 		this.refresh()
 	}
 
-	async refresh() {
-		this.initialized = true
+	async openDashboardAndGroupSelect() {
+		const modal = await this.modalCtrl.create({
+			component: DashboardAndGroupSelectComponent,
+			componentProps: {
+				dashboardChangedCallback: () => {
+					this.overallData = null
+					this.refresh(false)
+				},
+			},
+		})
+		modal.present()
+
+		await modal.onWillDismiss()
+	}
+
+	async refresh(checkUpdates: boolean = true) {
 		if (!(await this.validatorUtils.hasLocalValdiators())) {
-			this.initialized = false
 			return
 		}
-		this.updates.checkAllUpdates()
+		if (checkUpdates) {
+			this.updates.checkAllUpdates()
+		}
 		// const validators = await this.validatorUtils.getAllMyValidators().catch((error) => {
 		// 	console.warn('error getAllMyValidators', error)
 		// 	return []
 		// })
 
-		
-		this.overallData = getValidatorData(this.api, 5348) 
+		this.overallData = getValidatorData(this.api, await this.storage.getDashboardID(), await this.storage.getDashboardTimeframe(), {
+			aggregation: await this.storage.getDashboardSummaryAggregation(),
+		} as SummaryChartOptions) 
 		console.log('overallData', this.overallData)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}

@@ -17,18 +17,26 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ProposalLuckResponse, SyncCommitteeResponse } from '../requests/requests'
-import { sumBigInt } from '../utils/MathUtils'
 import BigNumber from 'bignumber.js'
-import { Validator } from '../utils/ValidatorUtils'
-import { SyncCommitteesStatistics, SyncCommitteesStatisticsResponse } from '../requests/requests'
-import { UnitconvService } from '../services/unitconv.service'
 import { ApiNetwork } from '../models/StorageTypes'
-import { Aggregation, dashboardID, EfficiencyType, Period, V2DashboardOverview, V2DashboardRocketPool, V2DashboardSummaryChart, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
+import { Aggregation, dashboardID, EfficiencyType, Period, V2DashboardOverview, V2DashboardRewardChart, V2DashboardRocketPool, V2DashboardSummaryChart, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
 import { ApiService, LatestStateWithTime } from '../services/api.service'
 import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
 import { computed, signal, Signal, WritableSignal } from '@angular/core'
 import { ChartData } from '../requests/types/common'
+
+type Action = (self: OverviewData2, api: ApiService, force: boolean) => Promise<void>
+
+interface ActionHandler<T> {
+	value: T
+	action: Action
+}
+
+export interface SummaryChartOptions {
+	aggregation: Aggregation
+	startTime: number
+	endTime: number
+}
 
 export class OverviewData2 {
 	id: dashboardID
@@ -39,13 +47,46 @@ export class OverviewData2 {
 	latestState: WritableSignal<LatestStateWithTime> = signal(null)
 	rocketpool: WritableSignal<VDBRocketPoolTableRow> = signal(null)
 	summaryChart: WritableSignal<ChartData<number, number>> = signal(null)
+	rewardChart: WritableSignal<ChartData<number, string>> = signal(null)
 
 	network: ApiNetwork
 	foreignValidator: boolean
 
-	constructor(network: ApiNetwork, foreignValidator: boolean) {
+	timeframe: ActionHandler<Period>
+	timeframeDisplay: string
+
+	summaryChartOptions: ActionHandler<SummaryChartOptions>
+
+	constructor(
+		network: ApiNetwork,
+		foreignValidator: boolean,
+		timeframe: ActionHandler<Period>,
+		summaryChartOptions: ActionHandler<SummaryChartOptions>
+	) {
 		this.network = network
 		this.foreignValidator = foreignValidator
+		this.timeframe = timeframe
+		this.timeframeDisplay = getPeriodDisplayable(timeframe.value)
+		this.summaryChartOptions = summaryChartOptions
+	}
+
+	public async setSummaryChartAggregation(api: ApiService, aggregation: Aggregation) {
+		this.summaryChartOptions.value.aggregation = aggregation
+		await this.summaryChartOptions.action(this, api, false)
+	}
+
+	public async setSummaryChartTime(api: ApiService, startTime: number, endTime: number) {
+		this.summaryChartOptions.value.startTime = startTime
+		if (endTime) {
+			this.summaryChartOptions.value.endTime = endTime
+		}
+		await this.summaryChartOptions.action(this, api, true)
+	}
+
+	public async setTimeframe(api: ApiService, timeframe: Period) {
+		this.timeframe.value = timeframe
+		await this.timeframe.action(this, api, false)
+		this.timeframeDisplay = getPeriodDisplayable(timeframe)
 	}
 
 	validatorCount: Signal<number> = computed(() => {
@@ -88,7 +129,7 @@ export class OverviewData2 {
 		if (this.summaryGroup() == null) return 0
 		const total = this.summaryGroup().sync.status_count.success + this.summaryGroup().sync.status_count.failed
 		if (total == 0) return 0
-		return this.summaryGroup().sync.status_count.success * 100 / total
+		return (this.summaryGroup().sync.status_count.success * 100) / total
 	})
 
 	syncCount: Signal<number> = computed(() => {
@@ -108,43 +149,26 @@ export class OverviewData2 {
 
 	avgNetworkEfficiency: Signal<number> = computed(() => {
 		if (this.summary() == null) return 0
-		return this.summary()[0].average_network_efficiency 
+		return this.summary()[0].average_network_efficiency
 	})
-}
 
-export type OverviewData = {
-	overallBalance: BigNumber
-	validatorCount: number
-	requiredValidatorsForOKState: number
-	exitedValidatorsCount: number
-	activeValidatorCount: number
-	consensusPerformance: Performance
-	executionPerformance: Performance
-	combinedPerformance: Performance
-	slashedCount: number
-	awaitingActivationCount: number
-	activationeligibilityCount: number
-	bestRank: number
-	worstRank: number
-	bestTopPercentage: number
-	worstTopPercentage: number
-	displayAttrEffectiveness: boolean
-	attrEffectiveness: number
-	proposalLuckResponse: ProposalLuckResponse
-	dashboardState: DashboardStatus
-	lazyLoadChart: boolean
-	lazyChartValidators: string
-	foreignValidator: boolean
-	foreignValidatorItem?: Validator
-	foreignValidatorWithdrawalCredsAre0x01: boolean
-	effectiveBalance: BigNumber
-	latestState: LatestStateWithTime
-	rocketpool: Rocketpool
-	currentSyncCommittee: SyncCommitteeResponse
-	nextSyncCommittee: SyncCommitteeResponse
-	syncCommitteesStats: SyncCommitteesStatistics
-	proposalLuck: ProposalLuckResponse
-	withdrawalsEnabledForAll: boolean
+	getTotalMissedRewards: Signal<BigNumber> = computed(() => {
+		if (this.summaryGroup() == null) return new BigNumber(0)
+		return new BigNumber(this.summaryGroup().missed_rewards.attestations)
+			.plus(new BigNumber(this.summaryGroup().missed_rewards.proposer_rewards.cl))
+			.plus(new BigNumber(this.summaryGroup().missed_rewards.proposer_rewards.el))
+			.plus(new BigNumber(this.summaryGroup().missed_rewards.sync))
+	})
+
+	totalSmoothingPool: Signal<BigNumber> = computed(() => {
+		if (this.rocketpool() == null) return new BigNumber(0)
+		return new BigNumber(this.rocketpool().smoothing_pool.claimed).plus(new BigNumber(this.rocketpool().smoothing_pool.unclaimed))
+	})
+
+	totalRPL: Signal<BigNumber> = computed(() => {
+		if (this.rocketpool() == null) return new BigNumber(0)
+		return new BigNumber(this.rocketpool().rpl.unclaimed).plus(this.rocketpool().rpl.claimed)
+	})
 }
 
 export type Performance = {
@@ -207,454 +231,87 @@ export type Description = {
 	extendedDescriptionPre: string
 }
 
-const VALIDATOR_32ETH = new BigNumber(32000000000)
+export function getPeriodDisplayable(period: Period): string {
+	if (period == Period.AllTime) return 'Total'
+	if (period == Period.Last24h) return '24h'
+	if (period == Period.Last7d) return '7d'
+	if (period == Period.Last30d) return '30d'
+}
 
-export function getValidatorData(api: ApiService, id: dashboardID): OverviewData2 {
-	const temp = new OverviewData2(api.getNetwork(), false)
+export async function changeTimeframe(api: ApiService, data: OverviewData2) {
+	const period = data.timeframe.value
+	console.log("change timeframe", period)
+	
+	await Promise.all([
+		api.setArray(new V2DashboardSummaryTable(data.id, period, null), data.summary),
+		api.set(new V2DashboardSummaryGroupTable(data.id, 0, period, null), data.summaryGroup)
+	])
+	return null
+}
 
-	this.api.set(new V2DashboardOverview(id), temp.overviewData)
-	this.api.setArray(new V2DashboardSummaryTable(id, Period.AllTime, null), temp.summary)
-	this.api.set(new V2DashboardSummaryGroupTable(id, 0, Period.AllTime, null), temp.summaryGroup)
-	this.api.set(new V2DashboardRocketPool(id), temp.rocketpool)
-	this.api.set(
-		new V2DashboardSummaryChart(id, EfficiencyType.All, Aggregation.Hourly, Math.floor(Date.now() / 1000 - 1 * 24 * 60 * 60)).withCustomCacheKey(
-			'summary-chart-initial'
-		),
-		temp.summaryChart
+export async function changeSummaryChartOptions(api: ApiService, data: OverviewData2, force: boolean = false) {
+	const aggregation = data.summaryChartOptions.value.aggregation
+	
+	let startTime = data.summaryChartOptions.value.startTime
+	if (startTime == null) {
+		startTime = Date.now() / 1000 - 1 * 24 * 60 * 60
+		if (aggregation == Aggregation.Epoch) {
+			startTime = Date.now() / 1000 - 8 * 60 * 60
+		} else if (aggregation == Aggregation.Daily) {
+			startTime = Date.now() / 1000 - 21 * 24 * 60 * 60
+		} else if (aggregation == Aggregation.Weekly) {
+			startTime = Date.now() / 1000 - 8 * 7 * 24 * 60 * 60
+		}
+	}
+
+	console.log('change summary aggregation', aggregation, startTime, data.summaryChartOptions.value.endTime)
+
+	const request = new V2DashboardSummaryChart(data.id, EfficiencyType.All, aggregation, startTime, data.summaryChartOptions.value.endTime).withCustomCacheKey(
+		'summary-chart-initial-' + aggregation + data.id
 	)
+	if (force) {
+		request.withAllowedCacheResponse(false)
+	}
+	await api.set(request,data.summaryChart)
+	return null
+}
+
+export function getValidatorData(api: ApiService, id: dashboardID, timeframe: Period, summaryChartOptions: SummaryChartOptions): OverviewData2 {
+	if (!id) return null
+
+	const temp = new OverviewData2(
+		api.getNetwork(),
+		false,
+		{
+			value: timeframe,
+			action: async (self, _api) => {
+				await changeTimeframe(_api, self)
+			},
+		},
+		{
+			value: summaryChartOptions,
+			action: async (self, _api, force) => {
+				await changeSummaryChartOptions(_api, self, force)
+			},
+		}
+	)
+	temp.id = id
+	temp.summaryChartOptions.value.startTime = null // null = use default values
+
+	api.set(new V2DashboardOverview(id), temp.overviewData)
+	api.set(new V2DashboardRocketPool(id), temp.rocketpool)
+	api.set(new V2DashboardRewardChart(id).withCustomCacheKey('reward-chart-initial-' + id), temp.rewardChart)
+
+	temp.timeframe.action(temp, api, false)
+	temp.summaryChartOptions.action(temp, api, false)
 
 	api.getLatestState().then((latestState) => {
 		temp.latestState.set(latestState)
 	})
 
-	temp.id = id
-
 	return temp
 }
 
-export default class OverviewController {
-	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280, private unit: UnitconvService = null) {}
-
-	// public processDashboard(
-	// 	overviewData: VDBOverviewData,
-	// 	summaryTableData: VDBSummaryTableRow[],
-	// 	summaryGroupTableData: VDBGroupSummaryData,
-	// 	latestState: LatestStateWithTime,
-	// 	network: ApiNetwork
-	// ) {
-	// 	return this.process(
-	// 		overviewData,
-	// 		summaryTableData,
-	// 		summaryGroupTableData,
-	// 		latestState,
-	// 		false,
-	// 		network
-	// 	)
-	// }
-
-	// public processDetail(
-	// 	overviewData: VDBOverviewData,
-	// 	summaryTableData: VDBSummaryTableRow[],
-	// 	summaryGroupTableData: VDBGroupSummaryData,
-	// 	latestState: LatestStateWithTime,
-	// 	network: ApiNetwork
-	// ) {
-	// 	return this.process(overviewData, summaryTableData, summaryGroupTableData, latestState, true, network)
-	// }
-
-	// private process(
-	// 	overviewData: VDBOverviewData,
-	// 	summaryTableData: VDBSummaryTableRow[],
-	// 	summaryGroupTableData: VDBGroupSummaryData,
-	// 	latestState: LatestStateWithTime,
-	// 	foreignValidator = false, // whether it's part of the users validator set or not, might affect how certain warnings and tooltips behave
-	// 	network: ApiNetwork
-	// ): OverviewData {
-	// 	if (!validators || validators.length <= 0 || latestState.state == null) return null
-
-	// 	const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
-	// 	const validatorDepositActive = sumBigInt(validators, (cur) => {
-	// 		// todo use validator status
-	// 		if (cur.data.activationepoch <= slotToEpoch(latestState.state.current_slot)) {
-	// 			if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-
-	// 			let nodeDeposit
-	// 			if (cur.rocketpool.node_deposit_balance) {
-	// 				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
-	// 			} else {
-	// 				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
-	// 			}
-	// 			return nodeDeposit.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-	// 		} else {
-	// 			return new BigNumber(0)
-	// 		}
-	// 	})
-
-	// 	const overallBalance = this.sumBigIntBalanceRP(validators, (cur) => new BigNumber(cur.data.balance))
-	// 	const validatorCount = validators.length
-	// 	const activeValidators = this.getActiveValidators(validators)
-	// 	const offlineValidators = this.getOfflineValidators(validators)
-
-	// 	const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive)
-
-	// 	const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive)
-
-	// 	const smoothingPoolClaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
-	// 		true,
-	// 		validators,
-	// 		(cur) => cur.rocketpool.claimed_smoothing_pool,
-	// 		(cur) => cur.execshare
-	// 	).dividedBy(new BigNumber('1e9'))
-
-	// 	const smoothingPoolUnclaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
-	// 		true,
-	// 		validators,
-	// 		(cur) => cur.rocketpool.unclaimed_smoothing_pool,
-	// 		(cur) => cur.execshare
-	// 	).dividedBy(new BigNumber('1e9'))
-
-	// 	const combinedPerf = {
-	// 		performance1d: consensusPerf.performance1d.plus(this.unit.convertELtoCL(executionPerf.performance1d)),
-	// 		performance31d: consensusPerf.performance31d.plus(this.unit.convertELtoCL(executionPerf.performance31d)),
-	// 		performance7d: consensusPerf.performance7d.plus(this.unit.convertELtoCL(executionPerf.performance7d)),
-	// 		performance365d: consensusPerf.performance365d.plus(this.unit.convertELtoCL(executionPerf.performance365d)),
-	// 		apr31d: this.getAPRFrom(31, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance31d).plus(consensusPerf.performance31d)),
-	// 		apr7d: this.getAPRFrom(7, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance7d).plus(consensusPerf.performance7d)),
-	// 		apr365d: this.getAPRFrom(
-	// 			365,
-	// 			validatorDepositActive,
-	// 			this.unit.convertELtoCL(executionPerf.performance365d).plus(consensusPerf.performance365d)
-	// 		),
-	// 		total: consensusPerf.total.plus(this.unit.convertELtoCL(executionPerf.total)).plus(smoothingPoolClaimed).plus(smoothingPoolUnclaimed),
-	// 	} as Performance
-
-	// 	let attrEffectiveness = 0
-	// 	let displayAttrEffectiveness = false
-	// 	if (activeValidators.length > 0) {
-	// 		displayAttrEffectiveness = true
-
-	// 		attrEffectiveness = sumBigInt(activeValidators, (cur) =>
-	// 			cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()) : new BigNumber(0)
-	// 		)
-	// 			.dividedBy(activeValidators.length)
-	// 			.decimalPlaces(1)
-	// 			.toNumber()
-
-	// 		const attrChecked = Math.min(Math.max(attrEffectiveness, 0), 100)
-	// 		if (attrEffectiveness != attrChecked) {
-	// 			console.warn(`Effectiveness out of range: ${attrEffectiveness} (displaying "NaN")`)
-	// 			attrEffectiveness = -1 // display "NaN" if something went wrong
-	// 		}
-	// 	}
-
-	// 	let bestRank = 0
-	// 	let bestTopPercentage = 0
-	// 	let worstRank = 0
-	// 	let worstTopPercentage = 0
-	// 	const rankRelevantValidators = activeValidators.concat(offlineValidators)
-	// 	if (rankRelevantValidators.length > 0) {
-	// 		bestRank = findLowest(rankRelevantValidators, (cur) => cur.data.rank7d)
-	// 		bestTopPercentage = findLowest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
-	// 		worstRank = findHighest(rankRelevantValidators, (cur) => cur.data.rank7d)
-	// 		worstTopPercentage = findHighest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
-	// 	}
-
-	// 	const rocketpoolValiCount = sumBigInt(validators, (cur) => (cur.rocketpool ? new BigNumber(1) : new BigNumber(0)))
-	// 	const feeSum = sumBigInt(validators, (cur) =>
-	// 		cur.rocketpool ? new BigNumber(cur.rocketpool.minipool_node_fee).multipliedBy('100') : new BigNumber('0')
-	// 	)
-	// 	let feeAvg = 0
-	// 	if (feeSum.decimalPlaces(3).toNumber() != 0) {
-	// 		feeAvg = feeSum.dividedBy(rocketpoolValiCount).decimalPlaces(1).toNumber()
-	// 	}
-
-	// 	const currentSync = validators.find((cur) => !!cur.currentSyncCommittee)
-	// 	const nextSync = validators.find((cur) => !!cur.nextSyncCommittee)
-
-	// 	let foreignWCAre0x01 = false
-	// 	if (foreignValidator) {
-	// 		foreignWCAre0x01 = validators[0].data.withdrawalcredentials.startsWith('0x01')
-	// 	}
-
-	// 	return {
-	// 		overallBalance: overallBalance,
-	// 		validatorCount: validatorCount,
-	// 		bestRank: bestRank,
-	// 		bestTopPercentage: bestTopPercentage,
-	// 		worstRank: worstRank,
-	// 		worstTopPercentage: worstTopPercentage,
-	// 		attrEffectiveness: attrEffectiveness,
-	// 		displayAttrEffectiveness: displayAttrEffectiveness,
-	// 		consensusPerformance: consensusPerf,
-	// 		executionPerformance: executionPerf,
-	// 		combinedPerformance: combinedPerf,
-	// 		dashboardState: this.getDashboardState(validators, latestState, foreignValidator, network),
-	// 		lazyLoadChart: true,
-	// 		lazyChartValidators: getValidatorQueryString(validators, 2000, this.userMaxValidators - 1),
-	// 		foreignValidator: foreignValidator,
-	// 		foreignValidatorItem: foreignValidator ? validators[0] : null,
-	// 		foreignValidatorWithdrawalCredsAre0x01: foreignWCAre0x01,
-	// 		effectiveBalance: effectiveBalance,
-	// 		latestState: latestState,
-	// 		currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
-	// 		nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
-	// 		syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse, network),
-	// 		proposalLuckResponse: proposalLuckResponse,
-	// 		withdrawalsEnabledForAll:
-	// 			validators.filter((cur) => (cur.data.withdrawalcredentials.startsWith('0x01') ? true : false)).length == validatorCount,
-	// 		rocketpool: {
-	// 			minRpl: this.sumRocketpoolBigIntPerNodeAddress(
-	// 				true,
-	// 				validators,
-	// 				(cur) => cur.rocketpool.node_min_rpl_stake,
-	// 				(cur) => cur.rplshare
-	// 			),
-	// 			maxRpl: this.sumRocketpoolBigIntPerNodeAddress(
-	// 				true,
-	// 				validators,
-	// 				(cur) => cur.rocketpool.node_max_rpl_stake,
-	// 				(cur) => cur.rplshare
-	// 			),
-	// 			currentRpl: this.sumRocketpoolBigIntPerNodeAddress(
-	// 				true,
-	// 				validators,
-	// 				(cur) => cur.rocketpool.node_rpl_stake,
-	// 				(cur) => cur.rplshare
-	// 			),
-	// 			totalClaims: this.sumRocketpoolBigIntPerNodeAddress(
-	// 				true,
-	// 				validators,
-	// 				(cur) => cur.rocketpool.rpl_cumulative_rewards,
-	// 				(cur) => cur.rplshare
-	// 			),
-	// 			fee: feeAvg,
-	// 			status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
-	// 			depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
-	// 			smoothingPoolClaimed: smoothingPoolClaimed,
-	// 			smoothingPoolUnclaimed: smoothingPoolUnclaimed,
-	// 			rplUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(
-	// 				true,
-	// 				validators,
-	// 				(cur) => cur.rocketpool.unclaimed_rpl_rewards,
-	// 				(cur) => cur.rplshare
-	// 			),
-	// 			smoothingPool: validators.find((cur) => (cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == true : false)) != null ? true : false,
-	// 			hasNonSmoothingPoolAsWell:
-	// 				validators.find((cur) => (cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == false : true)) != null ? true : false,
-	// 			cheatingStatus: this.getRocketpoolCheatingStatus(validators),
-	// 			depositCredit: this.sumRocketpoolBigIntPerNodeAddress(
-	// 				false,
-	// 				validators,
-	// 				(cur) => (cur.rocketpool.node_deposit_credit ? cur.rocketpool.node_deposit_credit.toString() : '0'),
-	// 				() => 1
-	// 			),
-	// 			vacantPools: validators.filter((cur) => cur.rocketpool && cur.rocketpool.is_vacant).length,
-	// 		},
-	// 	} as OverviewData
-	// }
-
-
-	private sumExcludeSmoothingPool(cur: Validator, field: (cur: Validator) => string) {
-		// Exclude rocketpool minipool from execution rewards collection
-		if (!cur.rocketpool || !cur.rocketpool.smoothing_pool_opted_in) {
-			return cur.execution ? new BigNumber(field(cur)).dividedBy(new BigNumber('1e9')) : new BigNumber(0)
-		}
-		return new BigNumber(0)
-	}
-
-	private getRocketpoolCheatingStatus(validators: Validator[]): RocketpoolCheatingStatus {
-		let strikes = 0
-		let penalties = 0
-
-		validators.forEach((cur) => {
-			if (cur.rocketpool && cur.rocketpool.node_address) {
-				const penalty_count = cur.rocketpool.penalty_count
-				if (penalty_count >= 3) {
-					penalties += penalty_count
-				} else {
-					strikes += penalty_count
-				}
-			}
-		})
-
-		return {
-			strikes: strikes,
-			penalties: penalties,
-		}
-	}
-
-	public sumBigIntBalanceRP(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
-		return sumBigInt(validators, (cur) => {
-			const fieldVal = field(cur)
-			if (!cur.rocketpool) return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-			if (!cur.rocketpool.node_address) {
-				return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-			}
-
-			let nodeDeposit
-			if (cur.rocketpool.node_deposit_balance) {
-				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
-			} else {
-				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
-			}
-
-			const rewards = new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
-
-			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
-			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
-			const rewardNodeFromPool = new BigNumber(rewards)
-				.multipliedBy(new BigNumber(1 - nodeShare))
-				.multipliedBy(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))
-
-			// if negative, rocketpool reimburses the rETH holder by taking it from the node operator
-			let wholeBalance
-			if (rewards.isNegative()) {
-				wholeBalance = nodeDeposit.plus(rewards)
-				// if less than what the user deposited upfront, he lost everything and we put the balance to 0
-				// the validator can leak below that of course, but that's now at the expense of the rETH holders
-				if (wholeBalance.isNegative()) {
-					wholeBalance = new BigNumber(0)
-				}
-			} else {
-				wholeBalance = nodeDeposit.plus(rewardNode).plus(rewardNodeFromPool)
-			}
-
-			return wholeBalance.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		})
-	}
-
-	private sumBigIntPerformanceRP(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
-		return sumBigInt(validators, (cur) => {
-			if (!cur.rocketpool) return field(cur)
-			if (!cur.rocketpool.node_address) return field(cur)
-
-			let fieldResolved = field(cur)
-			if (fieldResolved.s == null && fieldResolved.e == null) {
-				fieldResolved = new BigNumber(0)
-			}
-
-			let nodeDeposit
-			if (cur.rocketpool.node_deposit_balance) {
-				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
-			} else {
-				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
-			}
-
-			const rewards = new BigNumber(fieldResolved.toString())
-
-			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
-
-			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
-			const rewardNodeFromPool = new BigNumber(rewards)
-				.multipliedBy(new BigNumber(1 - nodeShare))
-				.multipliedBy(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))
-
-			// if negative, rocketpool reimburses the rETH holder by taking it from the node operator
-			let resultReward
-			if (rewards.isNegative()) {
-				resultReward = rewards
-				const negativeDepositBalance = nodeDeposit.multipliedBy(-1)
-				if (resultReward.isLessThan(negativeDepositBalance)) {
-					resultReward = negativeDepositBalance
-				}
-			} else {
-				resultReward = rewardNode.plus(rewardNodeFromPool)
-			}
-
-			return resultReward
-		})
-	}
-
-	private sumRocketpoolBigIntPerNodeAddress(
-		applyShare: boolean,
-		validators: Validator[],
-		field: (cur: Validator) => string,
-		share: (cur: Validator) => number
-	): BigNumber {
-		const nodesAdded = new Set()
-		return sumBigInt(validators, (cur) => {
-			if (!cur.rocketpool) return new BigNumber(0)
-			if (!cur.rocketpool.node_address) return new BigNumber(0)
-			if (nodesAdded.has(cur.rocketpool.node_address)) return new BigNumber(0)
-			nodesAdded.add(cur.rocketpool.node_address)
-			const temp = new BigNumber(field(cur).toString())
-			if (applyShare) {
-				return temp.multipliedBy(share(cur) == null ? 1 : share(cur))
-			}
-			return temp
-		})
-	}
-
-	private sumRocketpoolSmoothingBigIntPerNodeAddress(
-		applyShare: boolean,
-		validators: Validator[],
-		field: (cur: Validator) => string,
-		share: (cur: Validator) => number
-	): BigNumber {
-		const totalMinipoolFeeForNodeCache = new Map<string, number>()
-
-		return sumBigInt(validators, (cur) => {
-			if (!cur.rocketpool) return new BigNumber(0)
-			if (!cur.rocketpool.node_address) return new BigNumber(0)
-
-			if (!totalMinipoolFeeForNodeCache.has(cur.rocketpool.node_address)) {
-				const totalMinipoolFeeForNode = validators
-					.filter((item) => {
-						if (!item.rocketpool) return false
-						if (!item.rocketpool.node_address) return false
-						return item.rocketpool.node_address == cur.rocketpool.node_address
-					})
-					.reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue.rocketpool.minipool_node_fee.toString()), 0)
-				totalMinipoolFeeForNodeCache.set(cur.rocketpool.node_address, totalMinipoolFeeForNode)
-			}
-
-			const nodeFeeShare =
-				parseFloat(cur.rocketpool.minipool_node_fee.toString()) / (totalMinipoolFeeForNodeCache.get(cur.rocketpool.node_address) || 1)
-			let temp = new BigNumber(field(cur).toString())
-			temp = temp.multipliedBy(nodeFeeShare)
-			if (applyShare) {
-				return temp.multipliedBy(share(cur) == null ? 1 : share(cur))
-			}
-			return temp
-		})
-	}
-
-	private getAPRFrom(days: number, validatorDepositActive: BigNumber, performance: BigNumber): number {
-		return new BigNumber(performance.toString())
-			.multipliedBy(36500 / days)
-			.dividedBy(validatorDepositActive)
-			.decimalPlaces(1)
-			.toNumber()
-	}
-
-
-	private calculateSyncCommitteeStats(stats: SyncCommitteesStatisticsResponse, network: ApiNetwork): SyncCommitteesStatistics {
-		if (stats) {
-			// if no slots where expected yet, don't show any statistic as either no validator is subscribed or they have not been active in the selected timeframe
-			if (stats.expectedSlots > 0) {
-				const slotsTotal = stats.participatedSlots + stats.missedSlots
-				const slotsPerSyncPeriod = network.slotPerEpoch * network.epochsPerSyncPeriod
-				const r: SyncCommitteesStatistics = {
-					committeesParticipated: Math.ceil(slotsTotal / network.slotPerEpoch / network.epochsPerSyncPeriod),
-					committeesExpected: Math.round((stats.expectedSlots * 100) / network.slotPerEpoch / network.epochsPerSyncPeriod) / 100,
-					slotsPerSyncCommittee: slotsPerSyncPeriod,
-					slotsLeftInSyncCommittee: slotsPerSyncPeriod - stats.scheduledSlots,
-					slotsParticipated: stats.participatedSlots,
-					slotsMissed: stats.missedSlots,
-					slotsScheduled: stats.scheduledSlots,
-					efficiency: 0,
-					luck: (slotsTotal * 100) / stats.expectedSlots,
-				}
-				if (slotsTotal > 0) {
-					r.efficiency = Math.round(((stats.participatedSlots * 100) / slotsTotal) * 100) / 100
-				}
-
-				return r
-			}
-		}
-		return null
-	}
-}
 
 	function getDashboardState(overviewData: VDBOverviewData, validatorCount: number, foreignValidator): DashboardStatus {
 		if (!overviewData) return null

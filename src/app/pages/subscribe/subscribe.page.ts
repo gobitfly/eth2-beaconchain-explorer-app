@@ -9,7 +9,7 @@ import { Toast } from '@capacitor/toast'
 import FlavorUtils from 'src/app/utils/FlavorUtils'
 
 import { Browser } from '@capacitor/browser'
-import { ApiService } from 'src/app/services/api.service'
+import { ApiService, capitalize } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-subscribe',
@@ -213,9 +213,4 @@ export class SubscribePage implements OnInit {
 			})
 		}
 	}
-}
-
-const capitalize = (s) => {
-	if (typeof s !== 'string') return ''
-	return s.charAt(0).toUpperCase() + s.slice(1)
 }

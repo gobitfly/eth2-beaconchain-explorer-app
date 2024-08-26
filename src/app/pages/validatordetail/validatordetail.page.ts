@@ -20,11 +20,11 @@
 import { Component, OnInit, Input } from '@angular/core'
 import { ValidatorUtils, Validator, getDisplayName, SAVED } from '../../utils/ValidatorUtils'
 import { ModalController } from '@ionic/angular'
-import { OverviewData } from '../../controllers/OverviewController'
 import { fromEvent, Subscription } from 'rxjs'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { UnitconvService } from 'src/app/services/unitconv.service'
 import { ApiService } from 'src/app/services/api.service'
+import { OverviewData2 } from 'src/app/controllers/OverviewController'
 
 @Component({
 	selector: 'app-validatordetail',
@@ -35,8 +35,6 @@ export class ValidatordetailPage implements OnInit {
 	@Input() item: Validator
 	name: string
 
-	data: OverviewData
-
 	tagged = false
 
 	currentY = 0
@@ -44,6 +42,8 @@ export class ValidatordetailPage implements OnInit {
 	private backbuttonSubscription: Subscription
 
 	scrolling = false
+
+	data: OverviewData2
 
 	constructor(
 		private validatorUtils: ValidatorUtils,

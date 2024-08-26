@@ -30,6 +30,7 @@ import { Toast } from '@capacitor/toast'
 import { Device } from '@capacitor/device'
 import { OAuth2AuthenticateOptions, OAuth2Client } from '@byteowls/capacitor-oauth2'
 import FlavorUtils from './FlavorUtils'
+import { V2MyDashboards } from '../requests/v2-user'
 
 @Injectable({
 	providedIn: 'root',
@@ -104,6 +105,12 @@ export class OAuthUtils {
 				await this.merchantUtils.getUserInfo(true, () => {
 					console.warn("can not get user info")
 				})
+
+				const myDashboards = await this.api.execute2(new V2MyDashboards())
+				if (myDashboards.data) {
+					this.storage.setDashboardID(myDashboards.data[0].validator_dashboards[0].id)
+				}
+
 				const isPremium = this.merchantUtils.isPremium()
 
 				loadingScreen.dismiss()

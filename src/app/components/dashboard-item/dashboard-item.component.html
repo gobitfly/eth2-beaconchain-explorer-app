@@ -1,0 +1,33 @@
+
+
+<div class="dashboard-card">
+<ion-item>
+    <ion-badge item-start (click)="setAsDefault()" slot="start" [class]="networkColor()">{{networkName()}}</ion-badge>
+    <ion-label (click)="setAsDefault()">
+        <div>
+        {{ data.name }}
+        </div>
+        <div>
+            <ion-label style="opacity: 0.6; font-size: 0.7rem;">Groups: {{ data.group_count }} | Validators: {{ data.validator_count
+                }} </ion-label>
+
+        </div>
+    </ion-label>
+    <ion-icon item-end (click)="setAsDefault()" aria-hidden="true" name="star" slot="end" [class]="selected ? 'star' : 'opac-star'"></ion-icon>
+    <ion-icon item-end aria-hidden="true" style="margin-left: 5px;" name="ellipsis-vertical-outline" slot="end" [id]="triggerID"></ion-icon>
+</ion-item>
+<!-- <ion-item >
+    <ion-badge (click)="setAsDefault()" style="opacity: 0;" slot="start" [class]="networkColor()">{{networkName()}}</ion-badge>
+    <ion-label style="opacity: 0.6; font-size: 12px;">Groups: {{ data.group_count }} | Validators: {{ data.validator_count }} </ion-label>
+</ion-item> -->
+
+<ion-popover [trigger]="triggerID" triggerAction="click" [dismissOnSelect]="true">
+    <ng-template>
+        <ion-content>
+            <ion-list>
+                <ion-item [button]="true" [detail]="false" (click)="rename()">Rename</ion-item>
+                <ion-item [button]="true" [detail]="false" (click)="remove()">Delete</ion-item>
+            </ion-list>
+        </ion-content>
+    </ng-template>
+</ion-popover>

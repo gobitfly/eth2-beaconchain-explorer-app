@@ -24,7 +24,6 @@ import { ValidatorUtils, getDisplayName, Validator, ValidatorState } from 'src/a
 import { UnitconvService } from '../../services/unitconv.service'
 import { AlertService } from 'src/app/services/alert.service'
 import BigNumber from 'bignumber.js'
-import OverviewController from 'src/app/controllers/OverviewController'
 
 @Component({
 	selector: 'app-validator',
@@ -48,13 +47,12 @@ export class ValidatorComponent implements OnInit {
 
 	balance = null
 
-	overviewController = new OverviewController()
 
 	constructor(private validatorUtils: ValidatorUtils, public unit: UnitconvService, private alerts: AlertService) {}
 
 	async ngOnChanges() {
 		this.data = this.validator.data
-		this.balance = this.calculateBalanceShare(this.validator)
+		//this.balance = this.calculateBalanceShare(this.validator)
 
 		this.name = getDisplayName(this.validator)
 		this.imgData = this.getBlockies()
@@ -66,12 +64,12 @@ export class ValidatorComponent implements OnInit {
 	setInput(validator: Validator) {
 		this.validator = validator
 		this.data = validator.data
-		this.balance = this.calculateBalanceShare(this.validator)
+		//this.balance = this.calculateBalanceShare(this.validator)
 	}
 
-	calculateBalanceShare(validator) {
-		return this.overviewController.sumBigIntBalanceRP([validator], (cur) => new BigNumber(cur.data.balance))
-	}
+	// calculateBalanceShare(validator) {
+	// 	return this.overviewController.sumBigIntBalanceRP([validator], (cur) => new BigNumber(cur.data.balance))
+	// }
 
 	ngOnInit() {
 		setTimeout(() => {

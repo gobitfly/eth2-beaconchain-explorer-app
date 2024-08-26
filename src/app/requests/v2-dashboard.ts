@@ -53,6 +53,8 @@ export class V2DashboardOverview extends APIRequest<VDBOverviewData> {
 		super()
 		this.resource = setID(this.resource, id)
 	}
+
+	ignoreFails = false
 }
 
 export class V2DashboardSummaryTable extends APIRequest<VDBSummaryTableRow> {
@@ -72,6 +74,8 @@ export class V2DashboardSummaryTable extends APIRequest<VDBSummaryTableRow> {
 		this.resource = setID(this.resource, id) + '?period=' + period
 		if (limit) this.resource += '&limit=' + limit
 	}
+
+	ignoreFails = false
 }
 
 export class V2DashboardSummaryGroupTable extends APIRequest<VDBGroupSummaryData> {
@@ -83,6 +87,8 @@ export class V2DashboardSummaryGroupTable extends APIRequest<VDBGroupSummaryData
 		this.resource = setID(this.resource, id).replace('{group_id}', groupID + '') + '?period=' + period
 		if (limit) this.resource += '&limit=' + limit
 	}
+
+	ignoreFails = false
 }
 
 
@@ -104,12 +110,23 @@ export class V2DashboardSummaryChart extends APIRequest<ChartData<number, number
 		super()
 		this.resource = setID(this.resource, id)
 		this.resource = this.resource + '?group_ids=' + groupIds.join(',')
-		this.resource = this.resource + '&after_ts=' + afterTs
-		this.resource = this.resource + '&before_ts=' + beforeTs
+		this.resource = this.resource + '&after_ts=' + Math.floor(afterTs)
+		this.resource = this.resource + '&before_ts=' + Math.floor(beforeTs),
 		this.resource = this.resource + '&efficiency_type=' + efficiencyType
 		this.resource = this.resource + '&aggregation=' + aggregation
 	}
 }
+
+export class V2DashboardRewardChart extends APIRequest<ChartData<number, string>> {
+	resource = 'validator-dashboards/{id}/rewards-chart'
+	method = Method.GET
+
+	constructor(id: dashboardID) {
+		super()
+		this.resource = setID(this.resource, id)
+	}
+}
+
 
 
 

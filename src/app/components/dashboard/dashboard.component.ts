@@ -36,7 +36,7 @@ import FirebaseUtils from 'src/app/utils/FirebaseUtils'
 import { trigger, style, animate, transition } from '@angular/animations'
 import { endEpochSyncCommittee, slotToEpoch, startEpochSyncCommittee } from 'src/app/utils/MathUtils'
 import { epochToTimestamp, getLocale} from 'src/app/utils/TimeUtils'
-import { setID } from 'src/app/requests/v2-dashboard'
+import { Period, setID } from 'src/app/requests/v2-dashboard'
 import { getSuccessFailMode, Mode } from './success-fail-view/success-fail-view.component'
 @Component({
 	selector: 'app-validator-dashboard',
@@ -54,11 +54,9 @@ export class DashboardComponent implements OnInit {
 
 	beaconChainUrl: string = null
 
-	utilizationAvg = -1
-
 	chartData
 
-	selectedChart = 'chartSummary'
+	selectedChart = 'chartIncome'
 
 	rplState = 'rpl'
 	rplDisplay
@@ -68,7 +66,6 @@ export class DashboardComponent implements OnInit {
 	rplApr = ''
 	rplProjectedClaim = null
 
-	displaySmoothingPool: boolean
 	smoothingClaimed: BigNumber
 	smoothingUnclaimed: BigNumber
 	unclaimedRpl: BigNumber
@@ -83,6 +80,7 @@ export class DashboardComponent implements OnInit {
 	rewardTab: 'combined' | 'cons' | 'exec' = 'combined'
 
 	successFailMode: WritableSignal<Mode> = signal('percentage')
+	
 
 	aggregationValue = 'hourly'
 
@@ -114,10 +112,10 @@ export class DashboardComponent implements OnInit {
 	}
 
 	showFirstProposalMsg = computed(async () => {
-		if (!this.data || this.data.foreignValidator) return
+		if (!this.data || this.data.foreignValidator || !this.data.summary() || this.data.summary().length == 0) return
 		const foundAtLeasOne = this.data.summary()[0].proposals.success === 1
 		const noPreviousFirstProposal = await this.storage.getBooleanSetting('first_proposal_executed', false)
-		if (foundAtLeasOne && !noPreviousFirstProposal) {
+		if (foundAtLeasOne && !noPreviousFirstProposal && this.data?.timeframe.value == Period.AllTime) {
 			return true
 		}
 	})
