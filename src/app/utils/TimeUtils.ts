@@ -137,7 +137,7 @@ export function formatTsToAbsolute(ts: number, locales: string, includeTime?: bo
 		? {
 				hour: 'numeric',
 				minute: 'numeric',
-		  }
+		}
 		: {}
 	const options: Intl.DateTimeFormatOptions = {
 		month: 'short',
