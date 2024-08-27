@@ -41,6 +41,7 @@ export class RewardChartComponent {
 		}
 	})
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	mapSeriesData = (data: RewardChartSeries, cur: Currency) => {
 		data.bigData.forEach((bigValue, index) => {
 			if (!bigValue.isZero()) {

@@ -53,7 +53,7 @@ export class OverviewData2 {
 	foreignValidator: boolean
 
 	timeframe: ActionHandler<Period>
-	timeframeDisplay: string
+	timeframeDisplay: WritableSignal<string>
 
 	summaryChartOptions: ActionHandler<SummaryChartOptions>
 
@@ -66,7 +66,7 @@ export class OverviewData2 {
 		this.network = network
 		this.foreignValidator = foreignValidator
 		this.timeframe = timeframe
-		this.timeframeDisplay = getPeriodDisplayable(timeframe.value)
+		this.timeframeDisplay = signal(getPeriodDisplayable(timeframe.value))
 		this.summaryChartOptions = summaryChartOptions
 	}
 
@@ -86,7 +86,7 @@ export class OverviewData2 {
 	public async setTimeframe(api: ApiService, timeframe: Period) {
 		this.timeframe.value = timeframe
 		await this.timeframe.action(this, api, false)
-		this.timeframeDisplay = getPeriodDisplayable(timeframe)
+		this.timeframeDisplay.set(getPeriodDisplayable(timeframe))
 	}
 
 	validatorCount: Signal<number> = computed(() => {

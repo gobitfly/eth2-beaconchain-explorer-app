@@ -50,7 +50,6 @@
 		"cordova-plugin-purchase": "^13.11.1",
 		"cordova-res": "^0.15.2",
 		"echarts": "^5.5.0",
-		"echarts-gl": "^2.0.9",
 		"ethereum-blockies": "^0.1.1",
 		"hammerjs": "^2.0.8",
 		"highcharts": "^11.4.6",

@@ -162,7 +162,7 @@
 						{{ data.overviewData().balances.total | mcurrency : 'GWEI' : unit.pref.Cons }}
 				</app-grid-cell-left>
 
-				<app-grid-cell-right [name]="'Efficiency '+data.timeframeDisplay" tooltip="The attestation inclusion efficiency should be 80% or higher to minimize reward penalties.">
+				<app-grid-cell-right [name]="'Efficiency '+data.timeframeDisplay()" tooltip="The attestation inclusion efficiency should be 80% or higher to minimize reward penalties.">
 					<span [class]="data.summary()[0].efficiency | valuestyle : 95 : this.data.avgNetworkEfficiency()" *ngIf="data.summary()[0].efficiency">
 						{{ data.summary()[0].efficiency !== -1 ? (data.summary()[0].efficiency | number: '1.0-2') + ' %' : 'NaN' }}
 					</span>
@@ -268,9 +268,9 @@
 	
 	<ion-list class="performances">
 		<ion-list-header>
-			<ion-label>{{ selectedChart == "chartIncome" ? "Income " + data.timeframeDisplay : selectedChart == "chartSummary" ? "Efficiency " + data.timeframeDisplay : "Rocket Pool"}}</ion-label>
+			<ion-label>{{ selectedExtraTabTitle() }} <span style="font-size:0.8rem; opacity:0.7;">{{ selectedExtraTabTimeframe() }}</span></ion-label>
 		</ion-list-header>
-		<ion-segment [(ngModel)]="selectedChart" mode="md">
+		<ion-segment [(ngModel)]="selectedExtraTab" mode="md">
 			<ion-segment-button value="chartIncome" [disabled]="scrolling">
 				<ion-label>Income</ion-label>
 			</ion-segment-button>
@@ -284,14 +284,14 @@
 
 		<div class="chartcontainer">
 
-			<app-reward-chart [data]="this.data" [hidden]="selectedChart != 'chartIncome'"></app-reward-chart>
+			<app-reward-chart [data]="this.data" [hidden]="selectedExtraTab() != 'chartIncome'"></app-reward-chart>
 
-			<app-summary-chart [data]="this.data" [hidden]="selectedChart != 'chartSummary'"></app-summary-chart>
+			<app-summary-chart [data]="this.data" [hidden]="selectedExtraTab() != 'chartSummary'"></app-summary-chart>
 			
 		</div>
 			<!-- Rocket Pool -->
 			
-			<ion-list class="performances" *ngIf="selectedChart == 'rocketPool'"><!-- todo --><!-- data.summaryGroup().rocket_pool.minipools > 0 -->
+			<ion-list class="performances" *ngIf="selectedExtraTab() == 'rocketPool'"><!-- todo --><!-- data.summaryGroup().rocket_pool.minipools > 0 -->
 						<ion-item lines="none">
 							<div class="grid">
 					
@@ -301,7 +301,7 @@
 										[class]=" data.rocketpool().rpl_estimate | valuestyle : 0">
 										{{ data.rocketpool().rpl_estimate | mcurrency : 'WEI' : 'RPL_NAKED' }}
 									</span>
-									<span *ngIf="rplState == 'conv'" [class]="rplProjectedClaim | valuestyle : 0">
+									<span *ngIf="rplState == 'conv'" [class]="data.rocketpool().rpl_estimate | valuestyle : 0">
 										{{ data.rocketpool().rpl_estimate | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' :
 										unit.pref.RPL }}
 									</span>
@@ -321,10 +321,10 @@
 								<app-grid-cell-left name="Unclaimed"
 									tooltip="All RPL that have accumulated for your node but have not been claimed yet."
 									(valueClick)="switchRplStake()">
-									<span *ngIf="rplState == 'rpl' || rplState == '%'" [class]="unclaimedRpl | valuestyle : 0">
+									<span *ngIf="rplState == 'rpl' || rplState == '%'" [class]="data.rocketpool().rpl.unclaimed | valuestyle : 0">
 										{{ data.rocketpool().rpl.unclaimed | mcurrency : 'WEI' : 'RPL_NAKED' }}
 									</span>
-									<span *ngIf="rplState == 'conv'" [class]="unclaimedRpl | valuestyle : 0">
+									<span *ngIf="rplState == 'conv'" [class]="data.rocketpool().rpl.unclaimed | valuestyle : 0">
 										{{ data.rocketpool().rpl.unclaimed | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' :
 										unit.pref.RPL }}
 									</span>
@@ -416,7 +416,7 @@
 				</ion-list>
 
 				<!-- Income -->
-				<ion-list class="performances" *ngIf="selectedChart == 'chartIncome'">
+				<ion-list class="performances" *ngIf="selectedExtraTab() == 'chartIncome'">
 					<ion-item lines="none">
 						<ion-label class="stat-title">Missed Rewards</ion-label>
 						<span tooltip="Rewards missed by sub-optimal performance" trigger="click" hideDelayAfterClick="5000">
@@ -455,7 +455,7 @@
 				</ion-list>
 				
 				<!-- Efficiency -->
-				<ion-list class="performances" *ngIf="selectedChart == 'chartSummary'">
+				<ion-list class="performances" *ngIf="selectedExtraTab() == 'chartSummary'">
 					<app-success-fail-view [data]="this.data.summary()[0].attestations" name="Attestations"
 						[mode]="successFailMode"></app-success-fail-view>
 					<app-success-fail-view [data]="this.data.summaryGroup().attestations_source" name="&nbsp;&nbsp;&nbsp;Source"
@@ -478,7 +478,7 @@
 
 	<div *ngIf="this.data.summary()[0].proposals">
 		<ion-list-header>
-			<ion-label>Blocks {{data.timeframeDisplay}}</ion-label>
+			<ion-label>Blocks {{data.timeframeDisplay()}}</ion-label>
 		</ion-list-header>
 		<ion-list class="performances">
 			<app-success-fail-view [data]="this.data.summary()[0].proposals" name="Proposals"
@@ -498,7 +498,7 @@
 
 	<div *ngIf="data.showSyncStats()">
 		<ion-list-header>
-			<ion-label>Sync Committees {{data.timeframeDisplay}}</ion-label>
+			<ion-label>Sync Committees {{data.timeframeDisplay()}}</ion-label>
 		</ion-list-header>
 
 		<ion-list class="performances">
