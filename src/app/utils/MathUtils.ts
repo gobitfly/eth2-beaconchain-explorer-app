@@ -70,5 +70,3 @@ export function endEpochSyncCommittee(api: ApiService, currentSlot: number): num
 }
 
 export default class {}
-
-

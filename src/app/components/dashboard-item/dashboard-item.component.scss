@@ -1,45 +1,43 @@
 @import '../../../theme/variables.scss';
 
-
 .dashboard-card {
-    margin-top: 10px;
-    background-color: var(--ion-item-background);
+	margin-top: 10px;
+	background-color: var(--ion-item-background);
 }
 
-.selected ion-label{
-    //color: var(--ion-color-primary);
+.selected ion-label {
+	//color: var(--ion-color-primary);
 }
 
 ion-badge {
-  --padding-end: 8px;
-  --padding-start: 8px;
-  --padding-top: 6px;
-  --padding-bottom: 6px;
+	--padding-end: 8px;
+	--padding-start: 8px;
+	--padding-top: 6px;
+	--padding-bottom: 6px;
 }
 
 .ethereum {
-    --background: #497493;
+	--background: #497493;
 }
 
 .gnosis {
-    --background: #3e6957;
+	--background: #3e6957;
 }
 
 .holesky {
-    --background: #8695a0;
+	--background: #8695a0;
 }
 
 .star {
-    color: var(--ion-color-primary);
-    height: 22px;
+	color: var(--ion-color-primary);
+	height: 22px;
 }
 
 .opac-star {
-    opacity: 0.35;
-    height: 22px;
+	opacity: 0.35;
+	height: 22px;
 }
 
 .network {
-    //font-size: small;
+	//font-size: small;
 }
-

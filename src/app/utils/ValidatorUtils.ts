@@ -67,7 +67,7 @@ export interface Validator {
 	name: string
 	storage: typeof SAVED | typeof MEMORY
 	synced: boolean
-	version: number 
+	version: number
 	//
 	data: ValidatorResponse
 	state: ValidatorState
@@ -569,8 +569,6 @@ export class ValidatorUtils {
 			return validator.name
 		}
 	}
-
-	
 }
 
 export function getValidatorQueryString(validators: Validator[] | ETH1ValidatorResponse[], getParamMaxLimit: number, maxValLimit = -1) {

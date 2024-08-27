@@ -1,15 +1,12 @@
-<ion-item lines="none" (click)="switchMode()" >
-    <ion-label class="income-title">
-        {{ name }}
-    </ion-label>
-    <ion-label class="value" >
-        <span *ngIf="this.mode() == 'absolute'">
-            <span class="ok-proposals">{{ this.data.success }}</span> /
-            <span [class]="this.data.failed == 0 ? '' : 'err-proposals'">{{
-                this.data.failed }}</span>
-        </span>
-        <span *ngIf="this.mode() == 'percentage'" [class]="this.percent() | valuestyle : 95 : 80">
-            {{ this.percent() | number : '1.0-2' }}%
-        </span>
-    </ion-label>
+<ion-item lines="none" (click)="switchMode()">
+	<ion-label class="income-title">
+		{{ name }}
+	</ion-label>
+	<ion-label class="value">
+		<span *ngIf="this.mode() == 'absolute'">
+			<span class="ok-proposals">{{ this.data.success }}</span> /
+			<span [class]="this.data.failed == 0 ? '' : 'err-proposals'">{{ this.data.failed }}</span>
+		</span>
+		<span *ngIf="this.mode() == 'percentage'" [class]="this.percent() | valuestyle : 95 : 80"> {{ this.percent() | number : '1.0-2' }}% </span>
+	</ion-label>
 </ion-item>

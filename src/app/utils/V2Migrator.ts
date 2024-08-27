@@ -22,7 +22,6 @@ import { StorageService } from '../services/storage.service'
 import { MigrateV1AuthToV2 } from '../requests/v2-auth'
 import * as StorageTypes from '../models/StorageTypes'
 
-
 const SETTING_MIGRATION_COMPLETED = 'migration_completed'
 
 @Injectable({
@@ -35,11 +34,11 @@ export default class V2Migrator {
 		await this.storage.setV2(useV2)
 		await this.api.loadNetworkConfig()
 	}
-	
+
 	async migrate() {
 		// todo update in progress dialog?
 
-		if (!await this.storage.isV2()) {
+		if (!(await this.storage.isV2())) {
 			return // v2 api usage need to be enabled to start migration
 		}
 
@@ -47,23 +46,20 @@ export default class V2Migrator {
 			return // migration already completed (non user accs)
 		}
 
-
-		if((await this.storage.getAuthUserv2()).Session) {
+		if ((await this.storage.getAuthUserv2()).Session) {
 			return // already migrated (user accs)
 			// weird, migration not done but v2 session? todo
 		}
-
 
 		if ((await this.storage.getAuthUser()).accessToken) {
 			// user has v1 access token, migrate session
 			const sessionMigrated = await this.v1SessionToV2()
 			if (!sessionMigrated) {
-				console.error("session could not be migrated to v2")
+				console.error('session could not be migrated to v2')
 				return // todo?
 			}
 		} else {
 			// todo migrate non user acc users to v2
-
 			// Free validator limit changed from 100 to 20(? reconfirm to be sure) so we need to check if user has more than 20 validators
 			// and provide a ui for them to select which 20 validators they want to keep
 		}
@@ -99,9 +95,9 @@ export default class V2Migrator {
 			console.warn('No session found', response)
 			return false
 		}
-		
+
 		await this.storage.setAuthUserv2({
-			Session: result[0].session
+			Session: result[0].session,
 		} as StorageTypes.AuthUserv2)
 		await this.api.initialize()
 

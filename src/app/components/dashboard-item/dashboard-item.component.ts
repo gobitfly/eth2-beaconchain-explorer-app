@@ -1,12 +1,12 @@
-import { CommonModule } from '@angular/common';
-import { Component, computed, effect, EventEmitter, Input, Output, WritableSignal } from '@angular/core';
+import { CommonModule } from '@angular/common'
+import { Component, computed, effect, EventEmitter, Input, Output, WritableSignal } from '@angular/core'
 import { Toast } from '@capacitor/toast'
-import { AlertController, IonicModule } from '@ionic/angular';
-import { ValidatorDashboard } from 'src/app/requests/types/dashboard';
-import { dashboardID, V2ChangeDashboardName, V2DeleteDashboard } from 'src/app/requests/v2-dashboard';
-import { AlertService } from 'src/app/services/alert.service';
-import { ApiService } from 'src/app/services/api.service';
-import { StorageService } from 'src/app/services/storage.service';
+import { AlertController, IonicModule } from '@ionic/angular'
+import { ValidatorDashboard } from 'src/app/requests/types/dashboard'
+import { dashboardID, V2ChangeDashboardName, V2DeleteDashboard } from 'src/app/requests/v2-dashboard'
+import { AlertService } from 'src/app/services/alert.service'
+import { ApiService } from 'src/app/services/api.service'
+import { StorageService } from 'src/app/services/storage.service'
 
 @Component({
 	selector: 'app-dashboard-item',
@@ -18,32 +18,31 @@ import { StorageService } from 'src/app/services/storage.service';
 export class DashboardItemComponent {
 	@Input() data: ValidatorDashboard
 	@Input() defaultDashboard: WritableSignal<dashboardID>
-  @Output() refresh = new EventEmitter<void>()
-  triggerID: string
-  
-  selected: boolean
+	@Output() refresh = new EventEmitter<void>()
+	triggerID: string
 
-  networkName = computed(() => {
-    return "HOL"
-    //return capitalize(this.data.network) // todo
-  })
+	selected: boolean
 
-  networkColor = computed(() => {
-    return "holesky"
-    //return this.data.network
-  })
+	networkName = computed(() => {
+		return 'HOL'
+		//return capitalize(this.data.network) // todo
+	})
+
+	networkColor = computed(() => {
+		return 'holesky'
+		//return this.data.network
+	})
 
 	constructor(private alertController: AlertController, private api: ApiService, private alert: AlertService, private storage: StorageService) {
-    effect(() => {
-      this.selected = this.defaultDashboard() === this.data.id
-      this.triggerID = 'click-trigger-' + this.data.id
-    })
+		effect(() => {
+			this.selected = this.defaultDashboard() === this.data.id
+			this.triggerID = 'click-trigger-' + this.data.id
+		})
 	}
 
-  setAsDefault() {
-    console.log("set as default", this.data.id)
-    this.defaultDashboard.set(this.data.id)
-    
+	setAsDefault() {
+		console.log('set as default', this.data.id)
+		this.defaultDashboard.set(this.data.id)
 	}
 
 	async rename() {

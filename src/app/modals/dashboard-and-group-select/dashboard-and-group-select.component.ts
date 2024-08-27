@@ -3,7 +3,7 @@ import { AlertController, IonicModule, ModalController } from '@ionic/angular'
 import { UserDashboardsData } from 'src/app/requests/types/dashboard'
 import { V2MyDashboards } from 'src/app/requests/v2-user'
 import { ApiService, capitalize } from 'src/app/services/api.service'
-import { DashboardItemComponent } from "../../components/dashboard-item/dashboard-item.component";
+import { DashboardItemComponent } from '../../components/dashboard-item/dashboard-item.component'
 import { CommonModule } from '@angular/common'
 import { dashboardID, V2CreateDashboard } from 'src/app/requests/v2-dashboard'
 import { AlertService } from 'src/app/services/alert.service'
@@ -19,9 +19,8 @@ import { StorageService } from 'src/app/services/storage.service'
 	styleUrl: './dashboard-and-group-select.component.scss',
 })
 export class DashboardAndGroupSelectComponent {
+	@Input() dashboardChangedCallback: () => void
 
-@Input() dashboardChangedCallback: () => void
-  
 	name: string
 
 	dashboards: WritableSignal<UserDashboardsData> = signal(null)
@@ -142,5 +141,4 @@ export class DashboardAndGroupSelectComponent {
 		}
 		return this.modalCtrl.dismiss(null, 'cancel')
 	}
-
 }

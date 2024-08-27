@@ -197,7 +197,7 @@ export default class FirebaseUtils {
 
 			console.log(LOGTAG + ' user is logged in, last local token was: ' + lastToken)
 			if (force || token != lastToken) {
-				let request: APIRequest<unknown> 
+				let request: APIRequest<unknown>
 				if (await this.storage.isV2()) {
 					request = new V2RegisterPushNotificationToken(token, await this.storage.getDeviceID())
 				} else {

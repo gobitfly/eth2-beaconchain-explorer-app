@@ -35,7 +35,6 @@ const MAX_PRODUCT = 'dolphin'
 
 export const AggregationTimeframes: Aggregation[] = [Aggregation.Epoch, Aggregation.Hourly, Aggregation.Daily, Aggregation.Weekly]
 
-
 @Injectable({
 	providedIn: 'root',
 })

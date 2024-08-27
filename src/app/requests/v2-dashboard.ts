@@ -1,48 +1,55 @@
 // Copyright (C) 2024 bitfly explorer GmbH
-// 
+//
 // This file is part of Beaconchain Dashboard.
-// 
+//
 // Beaconchain Dashboard is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Beaconchain Dashboard is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
-import { encodeDashboardID } from "../utils/DashboardHelper"
-import { APIRequest, Method, NoContent } from "./requests"
-import { ChartData } from "./types/common"
-import { InternalGetValidatorDashboardValidatorsResponse, VDBGroupSummaryData, VDBOverviewData, VDBPostCreateGroupData, VDBPostReturnData, VDBPostValidatorsData, VDBRocketPoolTableRow, VDBSummaryTableRow
- } from "./types/validator_dashboard"
+import { encodeDashboardID } from '../utils/DashboardHelper'
+import { APIRequest, Method, NoContent } from './requests'
+import { ChartData } from './types/common'
+import {
+	InternalGetValidatorDashboardValidatorsResponse,
+	VDBGroupSummaryData,
+	VDBOverviewData,
+	VDBPostCreateGroupData,
+	VDBPostReturnData,
+	VDBPostValidatorsData,
+	VDBRocketPoolTableRow,
+	VDBSummaryTableRow,
+} from './types/validator_dashboard'
 
 export type dashboardID = string | number | number[]
 export enum Period {
-	AllTime = "all_time",
-	Last24h = "last_24h",
-	Last7d = "last_7d",
-	Last30d = "last_30d"
+	AllTime = 'all_time',
+	Last24h = 'last_24h',
+	Last7d = 'last_7d',
+	Last30d = 'last_30d',
 }
 
 export enum EfficiencyType {
-	All = "all",
-	Attestation = "attestation",
-	Sync = "sync",
-	Proposal = "proposal",
+	All = 'all',
+	Attestation = 'attestation',
+	Sync = 'sync',
+	Proposal = 'proposal',
 }
 
 export enum Aggregation {
-	Epoch = "epoch",
-	Hourly = "hourly",
-	Daily = "daily",
-	Weekly = "weekly",
+	Epoch = 'epoch',
+	Hourly = 'hourly',
+	Daily = 'daily',
+	Weekly = 'weekly',
 }
-
 
 export class V2DashboardOverview extends APIRequest<VDBOverviewData> {
 	resource = 'validator-dashboards/{id}'
@@ -91,7 +98,6 @@ export class V2DashboardSummaryGroupTable extends APIRequest<VDBGroupSummaryData
 	ignoreFails = false
 }
 
-
 export class V2DashboardSummaryChart extends APIRequest<ChartData<number, number>> {
 	resource = 'validator-dashboards/{id}/summary-chart'
 	method = Method.GET
@@ -111,8 +117,7 @@ export class V2DashboardSummaryChart extends APIRequest<ChartData<number, number
 		this.resource = setID(this.resource, id)
 		this.resource = this.resource + '?group_ids=' + groupIds.join(',')
 		this.resource = this.resource + '&after_ts=' + Math.floor(afterTs)
-		this.resource = this.resource + '&before_ts=' + Math.floor(beforeTs),
-		this.resource = this.resource + '&efficiency_type=' + efficiencyType
+		;(this.resource = this.resource + '&before_ts=' + Math.floor(beforeTs)), (this.resource = this.resource + '&efficiency_type=' + efficiencyType)
 		this.resource = this.resource + '&aggregation=' + aggregation
 	}
 }
@@ -126,9 +131,6 @@ export class V2DashboardRewardChart extends APIRequest<ChartData<number, string>
 		this.resource = setID(this.resource, id)
 	}
 }
-
-
-
 
 // Validator management
 interface V2AddValidatorToDashboardData {
@@ -146,7 +148,7 @@ export class V2AddValidatorToDashboard extends APIRequest<VDBPostValidatorsData>
 
 	constructor(id: dashboardID, data: V2AddValidatorToDashboardData) {
 		super()
-		this.resource = setID(this.resource, id) 
+		this.resource = setID(this.resource, id)
 		this.postData = data
 	}
 }
@@ -157,7 +159,7 @@ export class V2GetValidatorFromDashboard extends APIRequest<InternalGetValidator
 
 	constructor(id: dashboardID) {
 		super()
-		this.resource = setID(this.resource, id) 
+		this.resource = setID(this.resource, id)
 	}
 }
 
@@ -168,10 +170,9 @@ export class V2DeleteValidatorFromDashboard extends APIRequest<NoContent> {
 
 	constructor(id: dashboardID) {
 		super()
-		this.resource = setID(this.resource, id) 
+		this.resource = setID(this.resource, id)
 	}
 }
-
 
 // -- Dashboard management
 
@@ -200,7 +201,7 @@ export class V2DeleteDashboard extends APIRequest<NoContent> {
 
 	constructor(id: dashboardID) {
 		super()
-		this.resource = setID(this.resource, id) 
+		this.resource = setID(this.resource, id)
 	}
 }
 
@@ -210,11 +211,10 @@ export class V2ChangeDashboardName extends APIRequest<VDBPostReturnData> {
 
 	constructor(id: dashboardID, name: string) {
 		super()
-		this.resource = setID(this.resource, id) 
+		this.resource = setID(this.resource, id)
 		this.postData = { name: name }
 	}
 }
-
 
 // -- Group management
 
@@ -224,7 +224,7 @@ export class V2AddDashboardGroup extends APIRequest<VDBPostCreateGroupData> {
 
 	constructor(id: dashboardID, name: string) {
 		super()
-		this.resource = setID(this.resource, id) 
+		this.resource = setID(this.resource, id)
 		this.postData = { name: name }
 	}
 }
@@ -262,8 +262,6 @@ export class V2DashboardRocketPool extends APIRequest<VDBRocketPoolTableRow> {
 		this.resource = setID(this.resource, id)
 	}
 }
-
-
 
 export function setID(resource: string, id: dashboardID): string {
 	if (typeof id === 'string') {

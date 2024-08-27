@@ -152,7 +152,7 @@ export class Tab1Page {
 
 		this.overallData = getValidatorData(this.api, await this.storage.getDashboardID(), await this.storage.getDashboardTimeframe(), {
 			aggregation: await this.storage.getDashboardSummaryAggregation(),
-		} as SummaryChartOptions) 
+		} as SummaryChartOptions)
 		console.log('overallData', this.overallData)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}

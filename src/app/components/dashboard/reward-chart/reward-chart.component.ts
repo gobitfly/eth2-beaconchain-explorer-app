@@ -1,15 +1,13 @@
-
-import { Component, computed, Input } from '@angular/core';
-import { OverviewData2 } from 'src/app/controllers/OverviewController';
-import { ChartSeries } from 'src/app/requests/types/common';
-import { ApiService } from 'src/app/services/api.service';
-import { epochToTimestamp, formatTsToAbsolute,  formatTsToDateTime,  getLocale } from 'src/app/utils/TimeUtils';
-import { fontSize, getTooltipHeader } from '../summary-chart/summary-chart.component';
-import BigNumber from 'bignumber.js';
-import { getChartTextColor, getChartTooltipBackgroundColor, getRewardChartColors, getRewardsChartLineColor } from 'src/app/utils/ColorUtils';
-import { Currency, UnitconvService } from 'src/app/services/unitconv.service';
-import { Aggregation } from 'src/app/requests/v2-dashboard';
-
+import { Component, computed, Input } from '@angular/core'
+import { OverviewData2 } from 'src/app/controllers/OverviewController'
+import { ChartSeries } from 'src/app/requests/types/common'
+import { ApiService } from 'src/app/services/api.service'
+import { epochToTimestamp, formatTsToAbsolute, formatTsToDateTime, getLocale } from 'src/app/utils/TimeUtils'
+import { fontSize, getTooltipHeader } from '../summary-chart/summary-chart.component'
+import BigNumber from 'bignumber.js'
+import { getChartTextColor, getChartTooltipBackgroundColor, getRewardChartColors, getRewardsChartLineColor } from 'src/app/utils/ColorUtils'
+import { Currency, UnitconvService } from 'src/app/services/unitconv.service'
+import { Aggregation } from 'src/app/requests/v2-dashboard'
 
 @Component({
 	selector: 'app-reward-chart',
@@ -226,7 +224,6 @@ export class RewardChartComponent {
 			},
 		}
 	}
-
 }
 
 interface RewardChartGroupData {

@@ -19,7 +19,18 @@
 
 import BigNumber from 'bignumber.js'
 import { ApiNetwork } from '../models/StorageTypes'
-import { Aggregation, dashboardID, EfficiencyType, Period, V2DashboardOverview, V2DashboardRewardChart, V2DashboardRocketPool, V2DashboardSummaryChart, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
+import {
+	Aggregation,
+	dashboardID,
+	EfficiencyType,
+	Period,
+	V2DashboardOverview,
+	V2DashboardRewardChart,
+	V2DashboardRocketPool,
+	V2DashboardSummaryChart,
+	V2DashboardSummaryGroupTable,
+	V2DashboardSummaryTable,
+} from '../requests/v2-dashboard'
 import { ApiService, LatestStateWithTime } from '../services/api.service'
 import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
 import { computed, signal, Signal, WritableSignal } from '@angular/core'
@@ -240,18 +251,18 @@ export function getPeriodDisplayable(period: Period): string {
 
 export async function changeTimeframe(api: ApiService, data: OverviewData2) {
 	const period = data.timeframe.value
-	console.log("change timeframe", period)
-	
+	console.log('change timeframe', period)
+
 	await Promise.all([
 		api.setArray(new V2DashboardSummaryTable(data.id, period, null), data.summary),
-		api.set(new V2DashboardSummaryGroupTable(data.id, 0, period, null), data.summaryGroup)
+		api.set(new V2DashboardSummaryGroupTable(data.id, 0, period, null), data.summaryGroup),
 	])
 	return null
 }
 
 export async function changeSummaryChartOptions(api: ApiService, data: OverviewData2, force: boolean = false) {
 	const aggregation = data.summaryChartOptions.value.aggregation
-	
+
 	let startTime = data.summaryChartOptions.value.startTime
 	if (startTime == null) {
 		startTime = Date.now() / 1000 - 1 * 24 * 60 * 60
@@ -266,13 +277,17 @@ export async function changeSummaryChartOptions(api: ApiService, data: OverviewD
 
 	console.log('change summary aggregation', aggregation, startTime, data.summaryChartOptions.value.endTime)
 
-	const request = new V2DashboardSummaryChart(data.id, EfficiencyType.All, aggregation, startTime, data.summaryChartOptions.value.endTime).withCustomCacheKey(
-		'summary-chart-initial-' + aggregation + data.id
-	)
+	const request = new V2DashboardSummaryChart(
+		data.id,
+		EfficiencyType.All,
+		aggregation,
+		startTime,
+		data.summaryChartOptions.value.endTime
+	).withCustomCacheKey('summary-chart-initial-' + aggregation + data.id)
 	if (force) {
 		request.withAllowedCacheResponse(false)
 	}
-	await api.set(request,data.summaryChart)
+	await api.set(request, data.summaryChart)
 	return null
 }
 
@@ -312,193 +327,167 @@ export function getValidatorData(api: ApiService, id: dashboardID, timeframe: Pe
 	return temp
 }
 
+function getDashboardState(overviewData: VDBOverviewData, validatorCount: number, foreignValidator): DashboardStatus {
+	if (!overviewData) return null
+	// create status object with some default values
+	const dashboardStatus: DashboardStatus = {
+		state: StateType.none,
+		title: `${overviewData.validators.online} / ${validatorCount}`,
+		iconCss: 'ok',
+		icon: 'checkmark-circle-outline',
+		description: [],
+		extendedDescription: '',
+		extendedDescriptionPre: '',
+	}
 
-	function getDashboardState(overviewData: VDBOverviewData, validatorCount: number, foreignValidator): DashboardStatus {
-		if (!overviewData) return null
-		// create status object with some default values
-		const dashboardStatus: DashboardStatus = {
-			state: StateType.none,
-			title: `${overviewData.validators.online} / ${validatorCount}`,
-			iconCss: 'ok',
-			icon: 'checkmark-circle-outline',
-			description: [],
-			extendedDescription: '',
-			extendedDescriptionPre: '',
-		}
+	////
+	// Attention: The order of all the updateStateX functions matters!
+	// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
 
-		////
-		// Attention: The order of all the updateStateX functions matters!
-		// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
+	// handle slashed validators
+	updateStateSlashed(dashboardStatus, overviewData.validators.slashed, validatorCount, foreignValidator)
 
-		// handle slashed validators
-		updateStateSlashed(
-			dashboardStatus,
-			overviewData.validators.slashed,
-			validatorCount,
+	// handle offline validators
+	updateStateOffline(dashboardStatus, validatorCount, overviewData.validators.offline, foreignValidator)
+
+	// handle awaiting activation validators
+	if (overviewData.validators.pending > 0) {
+		updateStateAwaiting(dashboardStatus, overviewData.validators.pending, validatorCount, foreignValidator)
+	}
+
+	// handle exited validators
+	updateExitedState(dashboardStatus, overviewData.validators.exited, validatorCount, foreignValidator)
+
+	// handle ok state, always call last
+	updateStateOk(dashboardStatus, overviewData.validators.online, validatorCount, foreignValidator)
+
+	if (dashboardStatus.state == StateType.mixed) {
+		// remove extended description if more than one state is shown
+		dashboardStatus.extendedDescription = ''
+		dashboardStatus.extendedDescriptionPre = ''
+	}
+
+	return dashboardStatus
+}
+
+function descriptionSwitch(myText, foreignText, foreignValidator) {
+	return foreignValidator ? foreignText : myText
+}
+
+function singularPluralSwitch(totalValidatorCount: number, validatorCount: number, verbSingular: string, verbPlural: string): string {
+	if (totalValidatorCount != validatorCount && validatorCount == 1) {
+		return ` ${verbSingular}`
+	} else {
+		return ` ${verbPlural}`
+	}
+}
+
+function updateStateSlashed(dashboardStatus: DashboardStatus, slashedCount: number, validatorCount: number, foreignValidator: boolean) {
+	if (slashedCount == 0) {
+		return
+	}
+
+	if (dashboardStatus.state == StateType.none) {
+		dashboardStatus.icon = 'alert-circle-outline'
+		dashboardStatus.iconCss = 'err'
+		dashboardStatus.state = StateType.slashed
+	} else {
+		dashboardStatus.state = StateType.mixed
+	}
+
+	const pre = validatorCount == slashedCount ? 'All' : `${slashedCount}`
+	const helpingVerb = singularPluralSwitch(validatorCount, slashedCount, 'was', 'were')
+	dashboardStatus.description.push({
+		text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' slashed', 'This validator was slashed', foreignValidator),
+		highlight: true,
+	})
+}
+
+function updateStateAwaiting(dashboardStatus: DashboardStatus, awaitingCount: number, validatorCount: number, foreignValidator: boolean) {
+	if (awaitingCount == 0) {
+		return
+	}
+
+	if (dashboardStatus.state == StateType.none) {
+		dashboardStatus.icon = 'timer-outline'
+		dashboardStatus.iconCss = 'waiting'
+		dashboardStatus.state = StateType.activation
+	}
+
+	const pre = validatorCount == awaitingCount ? 'All' : `${awaitingCount}`
+	const helpingVerb = singularPluralSwitch(validatorCount, awaitingCount, 'is', 'are')
+	dashboardStatus.description.push({
+		text: descriptionSwitch(
+			pre + ' of your validators' + helpingVerb + ' waiting for activation',
+			'This validator is waiting for activation',
 			foreignValidator
-		)
+		),
+		highlight: true,
+	})
+}
 
-		// handle offline validators
-		updateStateOffline(dashboardStatus, validatorCount, overviewData.validators.offline, foreignValidator)
-
-		// handle awaiting activation validators
-		if (overviewData.validators.pending > 0) {
-			updateStateAwaiting(
-				dashboardStatus,
-				overviewData.validators.pending,
-				validatorCount,
-				foreignValidator
-			)
-		}
-
-		// handle exited validators
-		updateExitedState(dashboardStatus, overviewData.validators.exited, validatorCount, foreignValidator)
-
-		// handle ok state, always call last
-		updateStateOk(dashboardStatus, overviewData.validators.online, validatorCount, foreignValidator)
-
-		if (dashboardStatus.state == StateType.mixed) {
-			// remove extended description if more than one state is shown
-			dashboardStatus.extendedDescription = ''
-			dashboardStatus.extendedDescriptionPre = ''
-		}
-
-		return dashboardStatus
+function updateExitedState(dashboardStatus: DashboardStatus, exitedCount: number, validatorCount: number, foreignValidator: boolean) {
+	if (exitedCount == 0) {
+		return
 	}
 
-	function descriptionSwitch(myText, foreignText, foreignValidator) {
-		return foreignValidator ? foreignText : myText
+	const allValidatorsExited = validatorCount == exitedCount
+	if (dashboardStatus.state == StateType.none && allValidatorsExited) {
+		dashboardStatus.icon = descriptionSwitch('ribbon-outline', 'home-outline', foreignValidator)
+		dashboardStatus.iconCss = 'ok'
+		dashboardStatus.state = StateType.exited
+		dashboardStatus.extendedDescription = descriptionSwitch('Thank you for your service', null, foreignValidator)
+	} else {
+		dashboardStatus.state = StateType.mixed
 	}
 
-	function singularPluralSwitch(totalValidatorCount: number, validatorCount: number, verbSingular: string, verbPlural: string): string {
-		if (totalValidatorCount != validatorCount && validatorCount == 1) {
-			return ` ${verbSingular}`
-		} else {
-			return ` ${verbPlural}`
-		}
+	const pre = allValidatorsExited ? 'All' : `${exitedCount}`
+	const helpingVerb = singularPluralSwitch(validatorCount, exitedCount, 'has', 'have')
+	// exit message is only highlighted if it is about foreign validators or if all validators are exited
+	const highlight = foreignValidator || allValidatorsExited
+	dashboardStatus.description.push({
+		text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' exited', 'This validator has exited', foreignValidator),
+		highlight: highlight,
+	})
+}
+
+function updateStateOffline(dashboardStatus: DashboardStatus, validatorCount: number, offlineCount: number, foreignValidator: boolean) {
+	if (offlineCount == 0) {
+		return
 	}
 
-	function updateStateSlashed(
-		dashboardStatus: DashboardStatus,
-		slashedCount: number,
-		validatorCount: number,
-		foreignValidator: boolean,
-	) {
-		if (slashedCount == 0) {
-			return
-		}
+	if (dashboardStatus.state == StateType.none) {
+		dashboardStatus.icon = 'alert-circle-outline'
+		dashboardStatus.iconCss = 'warn'
+		dashboardStatus.state = StateType.offline
+	} else {
+		dashboardStatus.state = StateType.mixed
+	}
 
-		if (dashboardStatus.state == StateType.none) {
-			dashboardStatus.icon = 'alert-circle-outline'
-			dashboardStatus.iconCss = 'err'
-			dashboardStatus.state = StateType.slashed
-		} else {
-			dashboardStatus.state = StateType.mixed
-		}
+	const pre = validatorCount == offlineCount ? 'All' : `${offlineCount}`
+	const helpingVerb = singularPluralSwitch(validatorCount, offlineCount, 'is', 'are')
+	dashboardStatus.description.push({
+		text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' offline', 'This validator is offline', foreignValidator),
+		highlight: true,
+	})
+}
 
-		const pre = validatorCount == slashedCount ? 'All' : `${slashedCount}`
-		const helpingVerb = singularPluralSwitch(validatorCount, slashedCount, 'was', 'were')
+function updateStateOk(dashboardStatus: DashboardStatus, activeCount: number, validatorCount: number, foreignValidator: boolean) {
+	if (dashboardStatus.state != StateType.mixed && dashboardStatus.state != StateType.none) {
+		return
+	}
+
+	if (dashboardStatus.state == StateType.none) {
+		const pre = validatorCount == activeCount ? 'All' : `${activeCount}`
+		const helpingVerb = singularPluralSwitch(validatorCount, activeCount, 'is', 'are')
 		dashboardStatus.description.push({
-			text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' slashed', 'This validator was slashed', foreignValidator),
+			text: descriptionSwitch(pre + ' of your validators ' + helpingVerb + ' active', 'This validator is active', foreignValidator),
 			highlight: true,
 		})
+
+		dashboardStatus.state = StateType.online
 	}
-
-	function updateStateAwaiting(
-		dashboardStatus: DashboardStatus,
-		awaitingCount: number,
-		validatorCount: number,
-		foreignValidator: boolean
-	) {
-		if (awaitingCount == 0) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			dashboardStatus.icon = 'timer-outline'
-			dashboardStatus.iconCss = 'waiting'
-			dashboardStatus.state = StateType.activation
-		}
-
-		const pre = validatorCount == awaitingCount ? 'All' : `${awaitingCount}`
-		const helpingVerb = singularPluralSwitch(validatorCount, awaitingCount, 'is', 'are')
-		dashboardStatus.description.push({
-			text: descriptionSwitch(
-				pre + ' of your validators' + helpingVerb + ' waiting for activation',
-				'This validator is waiting for activation',
-				foreignValidator
-			),
-			highlight: true,
-		})
-	}
-
-	function updateExitedState(dashboardStatus: DashboardStatus, exitedCount: number, validatorCount: number, foreignValidator: boolean) {
-		if (exitedCount == 0) {
-			return
-		}
-
-		const allValidatorsExited = validatorCount == exitedCount
-		if (dashboardStatus.state == StateType.none && allValidatorsExited) {
-			dashboardStatus.icon = descriptionSwitch('ribbon-outline', 'home-outline', foreignValidator)
-			dashboardStatus.iconCss = 'ok'
-			dashboardStatus.state = StateType.exited
-			dashboardStatus.extendedDescription = descriptionSwitch('Thank you for your service', null, foreignValidator)
-		} else {
-			dashboardStatus.state = StateType.mixed
-		}
-
-		const pre = allValidatorsExited ? 'All' : `${exitedCount}`
-		const helpingVerb = singularPluralSwitch(validatorCount, exitedCount, 'has', 'have')
-		// exit message is only highlighted if it is about foreign validators or if all validators are exited
-		const highlight = foreignValidator || allValidatorsExited
-		dashboardStatus.description.push({
-			text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' exited', 'This validator has exited', foreignValidator),
-			highlight: highlight,
-		})
-	}
-
-	function updateStateOffline(dashboardStatus: DashboardStatus, validatorCount: number, offlineCount: number, foreignValidator: boolean) {
-		if (offlineCount == 0) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			dashboardStatus.icon = 'alert-circle-outline'
-			dashboardStatus.iconCss = 'warn'
-			dashboardStatus.state = StateType.offline
-		} else {
-			dashboardStatus.state = StateType.mixed
-		}
-
-		const pre = validatorCount == offlineCount ? 'All' : `${offlineCount}`
-		const helpingVerb = singularPluralSwitch(validatorCount, offlineCount, 'is', 'are')
-		dashboardStatus.description.push({
-			text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' offline', 'This validator is offline', foreignValidator),
-			highlight: true,
-		})
-	}
-
-	function updateStateOk(
-		dashboardStatus: DashboardStatus,
-		activeCount: number,
-		validatorCount: number,
-		foreignValidator: boolean
-	) {
-		if (dashboardStatus.state != StateType.mixed && dashboardStatus.state != StateType.none) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			const pre = validatorCount == activeCount ? 'All' : `${activeCount}`
-			const helpingVerb = singularPluralSwitch(validatorCount, activeCount, 'is', 'are')
-			dashboardStatus.description.push({
-				text: descriptionSwitch(pre + ' of your validators ' + helpingVerb + ' active', 'This validator is active', foreignValidator),
-				highlight: true,
-			})
-
-			dashboardStatus.state = StateType.online
-		}
-	}
+}
 
 function emptyPerformance(): Performance {
 	return {
@@ -512,33 +501,31 @@ function emptyPerformance(): Performance {
 	}
 }
 
-	function getExecutionPerformance(
-		overviewData: VDBOverviewData,
-	): Performance {
-		if (!overviewData) return emptyPerformance()
-		return {
-			performance1d: new BigNumber(overviewData.rewards.last_24h.el),
-			performance30d: new BigNumber(overviewData.rewards.last_30d.el),
-			performance7d: new BigNumber(overviewData.rewards.last_7d.el),
-			total: new BigNumber(overviewData.rewards.all_time.el),
-			apr30d: overviewData.apr.last_30d.el,
-			apr7d: overviewData.apr.last_7d.el,
-			aprTotal: overviewData.apr.all_time.el,
-		}
+function getExecutionPerformance(overviewData: VDBOverviewData): Performance {
+	if (!overviewData) return emptyPerformance()
+	return {
+		performance1d: new BigNumber(overviewData.rewards.last_24h.el),
+		performance30d: new BigNumber(overviewData.rewards.last_30d.el),
+		performance7d: new BigNumber(overviewData.rewards.last_7d.el),
+		total: new BigNumber(overviewData.rewards.all_time.el),
+		apr30d: overviewData.apr.last_30d.el,
+		apr7d: overviewData.apr.last_7d.el,
+		aprTotal: overviewData.apr.all_time.el,
 	}
+}
 
 function getConsensusPerformance(overviewData: VDBOverviewData): Performance {
-		if (!overviewData) return emptyPerformance()
-		return {
-			performance1d: new BigNumber(overviewData.rewards.last_24h.cl),
-			performance30d: new BigNumber(overviewData.rewards.last_30d.cl),
-			performance7d: new BigNumber(overviewData.rewards.last_7d.cl),
-			total: new BigNumber(overviewData.rewards.all_time.cl),
-			apr30d: overviewData.apr.last_30d.cl,
-			apr7d: overviewData.apr.last_7d.cl,
-			aprTotal: overviewData.apr.all_time.cl,
-		}
+	if (!overviewData) return emptyPerformance()
+	return {
+		performance1d: new BigNumber(overviewData.rewards.last_24h.cl),
+		performance30d: new BigNumber(overviewData.rewards.last_30d.cl),
+		performance7d: new BigNumber(overviewData.rewards.last_7d.cl),
+		total: new BigNumber(overviewData.rewards.all_time.cl),
+		apr30d: overviewData.apr.last_30d.cl,
+		apr7d: overviewData.apr.last_7d.cl,
+		aprTotal: overviewData.apr.all_time.cl,
 	}
+}
 
 function getCombinedPerformance(cons: Performance, exec: Performance): Performance {
 	return {

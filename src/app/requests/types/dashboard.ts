@@ -6,20 +6,20 @@ import type { VDBPublicId, ApiDataResponse } from './common'
 // source: dashboard.go
 
 export interface AccountDashboard {
-  id: number /* uint64 */;
-  name: string;
+	id: number /* uint64 */
+	name: string
 }
 export interface ValidatorDashboard {
-  id: number /* uint64 */;
-  name: string;
-  public_ids?: VDBPublicId[];
-  is_archived: boolean;
-  archived_reason?: 'dashboard_limit' | 'validator_limit' | 'group_limit';
-  validator_count: number /* uint64 */;
-  group_count: number /* uint64 */;
+	id: number /* uint64 */
+	name: string
+	public_ids?: VDBPublicId[]
+	is_archived: boolean
+	archived_reason?: 'dashboard_limit' | 'validator_limit' | 'group_limit'
+	validator_count: number /* uint64 */
+	group_count: number /* uint64 */
 }
 export interface UserDashboardsData {
-  validator_dashboards: ValidatorDashboard[];
-  account_dashboards: AccountDashboard[];
+	validator_dashboards: ValidatorDashboard[]
+	account_dashboards: AccountDashboard[]
 }
-export type GetUserDashboardsResponse = ApiDataResponse<UserDashboardsData>;
+export type GetUserDashboardsResponse = ApiDataResponse<UserDashboardsData>

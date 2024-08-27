@@ -27,7 +27,7 @@ export enum Method {
 	GET,
 	POST,
 	DELETE,
-	PUT
+	PUT,
 }
 
 export interface APIResponse {
@@ -35,7 +35,7 @@ export interface APIResponse {
 	data: unknown
 }
 
-export interface NoContent { }
+export interface NoContent {}
 
 export interface ApiResult<T> {
 	data: T

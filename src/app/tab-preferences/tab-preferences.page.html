@@ -111,11 +111,7 @@
 			<ion-icon class="opacity-icon" slot="start" name="shapes-outline"> </ion-icon>
 			<ion-label>Widgets</ion-label>
 			<ion-icon slot="end" class="opacity-icon" name="lock-closed-outline" *ngIf="this.merchant.getUsersSubscription() == null"></ion-icon>
-			<ion-icon
-				slot="end"
-				class="opacity-icon"
-				name="information-circle-outline"
-				*ngIf="this.merchant.getUsersSubscription()"></ion-icon>
+			<ion-icon slot="end" class="opacity-icon" name="information-circle-outline" *ngIf="this.merchant.getUsersSubscription()"></ion-icon>
 		</ion-item>
 
 		<ion-list (click)="openUpgrades()" *ngIf="this.merchant.getUsersSubscription()">
@@ -284,7 +280,7 @@
 	<p class="heart">
 		<ion-icon name="heart" (click)="notAnEasterEgg()"></ion-icon>
 	</p>
-	<p class="company" style="opacity:0.7" *ngIf="this.merchant.userInfo()">Logged in as {{ this.merchant.userInfo().email }}</p>
+	<p class="company" style="opacity: 0.7" *ngIf="this.merchant.userInfo()">Logged in as {{ this.merchant.userInfo().email }}</p>
 	<p class="company">2020 - {{ currentYear }} © bitfly explorer GmbH</p>
 	<p class="appversion" (click)="openLogSessionDialog()">Version {{ appVersion }}</p>
 	<p class="appversion">{{ package }}</p>

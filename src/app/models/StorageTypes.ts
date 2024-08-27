@@ -19,9 +19,9 @@
 
 /**@deprecated */
 export interface AuthUser {
-	accessToken: string 
-	refreshToken: string 
-	expiresIn: number 
+	accessToken: string
+	refreshToken: string
+	expiresIn: number
 }
 
 export interface AuthUserv2 {

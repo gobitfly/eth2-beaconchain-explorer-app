@@ -41,7 +41,6 @@ export class SubscribePage implements OnInit {
 	}
 
 	ngOnInit() {
-		
 		const event = fromEvent(document, 'backbutton')
 		this.backbuttonSubscription = event.subscribe(() => {
 			this.modalCtrl.dismiss()
@@ -86,22 +85,22 @@ export class SubscribePage implements OnInit {
 	}
 
 	calculateMonthlyPrice(pkg: Package): string {
-		let monthlyPrice = Math.ceil((pkg.priceMicros / 1000000) / 12).toFixed(2)
+		let monthlyPrice = Math.ceil(pkg.priceMicros / 1000000 / 12).toFixed(2)
 		if (Number.isInteger(Number(monthlyPrice)) && Number(monthlyPrice) > 0) {
-			monthlyPrice = (Number(monthlyPrice) - 0.01).toFixed(2);
+			monthlyPrice = (Number(monthlyPrice) - 0.01).toFixed(2)
 		}
 		return this.replaceNumberInString(pkg.price, monthlyPrice)
 	}
 
 	replaceNumberInString(inputString: string, newNumber: string): string {
-		const regex = /[0-9,.]+/g;
-		return inputString.replace(regex, newNumber);
+		const regex = /[0-9,.]+/g
+		return inputString.replace(regex, newNumber)
 	}
 
 	calculateYearlyPrice(pkg: Package): string {
 		let yearlyPrice = Math.ceil((pkg.priceMicros / 1000000) * 12).toFixed(2)
 		if (Number.isInteger(Number(yearlyPrice)) && Number(yearlyPrice) > 0) {
-			yearlyPrice = (Number(yearlyPrice) - 0.01).toFixed(2);
+			yearlyPrice = (Number(yearlyPrice) - 0.01).toFixed(2)
 		}
 		return this.replaceNumberInString(pkg.price, yearlyPrice)
 	}

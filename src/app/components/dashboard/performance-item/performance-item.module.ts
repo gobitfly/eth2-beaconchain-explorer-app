@@ -26,8 +26,8 @@ import { IonicModule } from '@ionic/angular'
 import { PerformanceItemComponent } from './performance-item.component'
 import { PipesModule } from '../../../pipes/pipes.module'
 import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
-import { GridCellLeftComponent } from "../grid-cell-left/grid-cell-left.component";
-import { GridCellRightComponent } from "../grid-cell-right/grid-cell-right.component";
+import { GridCellLeftComponent } from '../grid-cell-left/grid-cell-left.component'
+import { GridCellRightComponent } from '../grid-cell-right/grid-cell-right.component'
 
 @NgModule({
 	imports: [CommonModule, FormsModule, IonicModule, PipesModule, TooltipModule, GridCellLeftComponent, GridCellRightComponent],

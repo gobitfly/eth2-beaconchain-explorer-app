@@ -96,14 +96,13 @@ export class OAuthUtils {
 						expiresIn: expiresIn,
 					})
 				}
-				
 
 				this.validatorUtils.clearDeletedSet()
 				await this.firebaseUtils.pushLastTokenUpstream(true)
 				await this.sync.fullSync()
 
 				await this.merchantUtils.getUserInfo(true, () => {
-					console.warn("can not get user info")
+					console.warn('can not get user info')
 				})
 
 				const myDashboards = await this.api.execute2(new V2MyDashboards())
@@ -213,7 +212,7 @@ export class OAuthUtils {
 		const oAuthURL = 'https://local.beaconcha.in:3000/login' // todo
 
 		const clientID = await this.storage.getDeviceID()
-		
+
 		return {
 			authorizationBaseUrl: oAuthURL,
 			web: {

@@ -1,7 +1,7 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
-import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates';
+import { CommonModule } from '@angular/common'
+import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { IonicModule } from '@ionic/angular'
+import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
 
 @Component({
 	selector: 'app-grid-cell-left',

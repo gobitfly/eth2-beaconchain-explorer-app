@@ -1,36 +1,32 @@
 <ion-header [translucent]="true">
-    <ion-toolbar>
-        <ion-buttons slot="start">
-            <ion-icon size="large" name="close-outline" (click)="cancel()"></ion-icon>
-        </ion-buttons>
-        <ion-title> Dashboard Options </ion-title>
-    </ion-toolbar>
+	<ion-toolbar>
+		<ion-buttons slot="start">
+			<ion-icon size="large" name="close-outline" (click)="cancel()"></ion-icon>
+		</ion-buttons>
+		<ion-title> Dashboard Options </ion-title>
+	</ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-    <ion-list>
-        <ion-item lines="none" class="premium" (click)="openUpgrades()">
-            <ion-icon slot="start" name="rocket-outline" class="opacity-icon"></ion-icon>
-            <ion-label>Upgrade to Premium</ion-label>
-            <ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon"></ion-icon>
-        </ion-item>
-        <span class="hint">Premium gives you access to your validators full history, additional dashboards, groups and much more.</span>
-    </ion-list>
+	<ion-list>
+		<ion-item lines="none" class="premium" (click)="openUpgrades()">
+			<ion-icon slot="start" name="rocket-outline" class="opacity-icon"></ion-icon>
+			<ion-label>Upgrade to Premium</ion-label>
+			<ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon"></ion-icon>
+		</ion-item>
+		<span class="hint">Premium gives you access to your validators full history, additional dashboards, groups and much more.</span>
+	</ion-list>
 
-    <ion-list-header>
-        <ion-label>History</ion-label>
-    </ion-list-header>
+	<ion-list-header>
+		<ion-label>History</ion-label>
+	</ion-list-header>
 
-    <ion-list>
-
-        <ion-item lines="none">
-            <ion-icon slot="start" name="wallet-outline" class="opacity-icon"></ion-icon>
-            <ion-select label="Display Currency" (ionChange)="changeTimeframe($event)" interface="popover">
-                <ion-select-option *ngFor="let item of allDataPeriods;" value="{{item.value}}"> {{ item.label }}
-                </ion-select-option>
-            </ion-select>
-        </ion-item>
-    </ion-list>
-
-
+	<ion-list>
+		<ion-item lines="none">
+			<ion-icon slot="start" name="wallet-outline" class="opacity-icon"></ion-icon>
+			<ion-select label="Display Currency" (ionChange)="changeTimeframe($event)" interface="popover">
+				<ion-select-option *ngFor="let item of allDataPeriods" value="{{ item.value }}"> {{ item.label }} </ion-select-option>
+			</ion-select>
+		</ion-item>
+	</ion-list>
 </ion-content>

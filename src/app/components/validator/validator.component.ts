@@ -47,7 +47,6 @@ export class ValidatorComponent implements OnInit {
 
 	balance = null
 
-
 	constructor(private validatorUtils: ValidatorUtils, public unit: UnitconvService, private alerts: AlertService) {}
 
 	async ngOnChanges() {

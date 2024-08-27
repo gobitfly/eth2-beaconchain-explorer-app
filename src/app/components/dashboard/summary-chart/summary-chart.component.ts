@@ -1,16 +1,27 @@
-import { Component, computed, Input } from '@angular/core';
-import { Toast } from '@capacitor/toast';
-import { OverviewData2 } from 'src/app/controllers/OverviewController';
-import { ChartData } from 'src/app/requests/types/common';
-import { Aggregation, V2DashboardSummaryChart } from 'src/app/requests/v2-dashboard';
-import { AlertService } from 'src/app/services/alert.service';
-import { ApiService } from 'src/app/services/api.service';
-import { getChartTextColor, getChartTooltipBackgroundColor, getSummaryChartGroupColors } from 'src/app/utils/ColorUtils';
-import { MerchantUtils } from 'src/app/utils/MerchantUtils';
-import { formatGoTimestamp, formatTsToDateTime, formatTsToTime, getEndTs, getLocale, ONE_DAY, ONE_HOUR, ONE_WEEK, slotToTimestamp, timestampToEpoch } from 'src/app/utils/TimeUtils';
+import { Component, computed, Input } from '@angular/core'
+import { Toast } from '@capacitor/toast'
+import { OverviewData2 } from 'src/app/controllers/OverviewController'
+import { ChartData } from 'src/app/requests/types/common'
+import { Aggregation, V2DashboardSummaryChart } from 'src/app/requests/v2-dashboard'
+import { AlertService } from 'src/app/services/alert.service'
+import { ApiService } from 'src/app/services/api.service'
+import { getChartTextColor, getChartTooltipBackgroundColor, getSummaryChartGroupColors } from 'src/app/utils/ColorUtils'
+import { MerchantUtils } from 'src/app/utils/MerchantUtils'
+import {
+	formatGoTimestamp,
+	formatTsToDateTime,
+	formatTsToTime,
+	getEndTs,
+	getLocale,
+	ONE_DAY,
+	ONE_HOUR,
+	ONE_WEEK,
+	slotToTimestamp,
+	timestampToEpoch,
+} from 'src/app/utils/TimeUtils'
 import { get } from 'lodash-es'
-import { ECharts } from 'echarts';
-import { StorageService } from 'src/app/services/storage.service';
+import { ECharts } from 'echarts'
+import { StorageService } from 'src/app/services/storage.service'
 
 const currentZoom = {
 	end: 100,
@@ -34,12 +45,7 @@ export class SummaryChartComponent {
 
 	chartInstance: ECharts = null
 
-	constructor(
-		private api: ApiService,
-		private merchant: MerchantUtils,
-		private alert: AlertService,
-		private storage: StorageService
-	) {
+	constructor(private api: ApiService, private merchant: MerchantUtils, private alert: AlertService, private storage: StorageService) {
 		this.merchant.getUserInfo(false).then(() => {
 			this.initChips()
 		})
@@ -299,7 +305,7 @@ export class SummaryChartComponent {
 		if (this.data.summaryChartOptions.value.aggregation === 'epoch') {
 			return formatTSToEpoch(parseInt(value) / 1000 + '', this.api)
 		}
-		return formatTSToDate((parseInt(value)/1000) + "")
+		return formatTSToDate(parseInt(value) / 1000 + '')
 	}
 
 	async loadData(startTime: number, endTime: number) {
@@ -344,7 +350,7 @@ export class SummaryChartComponent {
 
 	// get the from to values for the selected zoom settings
 	getZoomTimestamps = () => {
-		if(!this.data.summaryChart()) return undefined
+		if (!this.data.summaryChart()) return undefined
 		const max = this.data.summaryChart().categories.length - 1
 		if (max <= 0) {
 			return
@@ -482,41 +488,41 @@ export class SummaryChartComponent {
 export const fontSize = '12px'
 
 export function getTooltipHeader(ts: number, api: ApiService, aggregationValue: string, timeFormat: (number) => string): string {
-		let endDateFormatted = ""
-		let endEpochFormatted = ""
-		if (aggregationValue != 'epoch') {
-			endDateFormatted = ' - ' + timeFormat(getEndTs(aggregationValue, ts))
-			endEpochFormatted = ' - ' + timestampToEpoch(api, getEndTs(aggregationValue, ts) * 1000)
-		}
-		return (
-			'<span style="font-size: 12px;">' +
-			timeFormat(ts) +
-			endDateFormatted+
-			'<br>Epoch ' +
-			timestampToEpoch(api, ts * 1000) +
-			endEpochFormatted + 
-			'</span>'
-		)
+	let endDateFormatted = ''
+	let endEpochFormatted = ''
+	if (aggregationValue != 'epoch') {
+		endDateFormatted = ' - ' + timeFormat(getEndTs(aggregationValue, ts))
+		endEpochFormatted = ' - ' + timestampToEpoch(api, getEndTs(aggregationValue, ts) * 1000)
 	}
+	return (
+		'<span style="font-size: 12px;">' +
+		timeFormat(ts) +
+		endDateFormatted +
+		'<br>Epoch ' +
+		timestampToEpoch(api, ts * 1000) +
+		endEpochFormatted +
+		'</span>'
+	)
+}
 
-export function formatTSToDate (value: string) {
-		return formatGoTimestamp(Number(value), undefined, 'absolute', 'narrow', getLocale(), false)
-	}
+export function formatTSToDate(value: string) {
+	return formatGoTimestamp(Number(value), undefined, 'absolute', 'narrow', getLocale(), false)
+}
 export function formatTSToEpoch(value: string, api: ApiService) {
-	return `Epoch ${timestampToEpoch(api, parseInt(value)*1000)}`
+	return `Epoch ${timestampToEpoch(api, parseInt(value) * 1000)}`
 }
 
 export function formatTimestamp(value: string, api: ApiService, aggregationValue: string) {
-		const date = formatTSToDate(value)
-		switch (aggregationValue) {
-			case 'epoch':
-				return `${date}\n${timestampToEpoch(api, parseInt(value)*1000)}`
-			case 'hourly':
-				return `${date}\n${formatTsToTime(Number(value), getLocale())}`
-			default:
-				return date
-		}
+	const date = formatTSToDate(value)
+	switch (aggregationValue) {
+		case 'epoch':
+			return `${date}\n${timestampToEpoch(api, parseInt(value) * 1000)}`
+		case 'hourly':
+			return `${date}\n${formatTsToTime(Number(value), getLocale())}`
+		default:
+			return date
 	}
+}
 
 interface SeriesObject {
 	data: number[]
@@ -525,7 +531,6 @@ interface SeriesObject {
 	symbol: string
 	name: string
 }
-
 
 interface ChipsOptions {
 	name: string

@@ -35,17 +35,14 @@
 			{{ performanceData.performance30d | mcurrency : currency : targetCurrency }}
 		</span>
 	</app-grid-cell-left>
-	
+
 	<app-grid-cell-right name="Total" [tooltip]="totalTooltip">
 		<span [class]="performanceData.total | valuestyle : 0">
 			{{ performanceData.total | mcurrency : currency : targetCurrency }}
 		</span>
 	</app-grid-cell-right>
-	
-	<app-grid-cell-left name="APR 30d" [tooltip]="aprTooltip">
-		<span [class]="performanceData.apr30d | valuestyle : 0">
-			{{ performanceData.apr30d | number: '1.0-2'}} %
-		</span>
-	</app-grid-cell-left> 
 
+	<app-grid-cell-left name="APR 30d" [tooltip]="aprTooltip">
+		<span [class]="performanceData.apr30d | valuestyle : 0"> {{ performanceData.apr30d | number : '1.0-2' }} % </span>
+	</app-grid-cell-left>
 </div>

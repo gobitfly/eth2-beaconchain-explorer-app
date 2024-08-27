@@ -1,26 +1,24 @@
 <div>
-    <div style="height: 360px;" echarts 
-    [options]="summaryChart()" 
-    [hidden]="!this.data.summaryChart()"
-    (chartDataZoom)="onDataZoom()"
-	(chartInit)="onChartInit($event)"
-    ></div>
-    <div style="text-align: center; padding-top: 5px;">
-        <ion-chip 
-            *ngFor="let chip of chips;" 
-            outline="true" 
-            [class]="chip.disabled ? 'custom-chip-disabled': ''" 
-            [color]="data.summaryChartOptions.value.aggregation == chip.value ? 'primary' : ''"
-            (click)="changeAggregation(chip)"
-        >
-        <ion-icon style="margin: 0; height: 16px;" name="lock-closed-outline" *ngIf="chip.disabled"></ion-icon>
-            {{chip.name}}
-        </ion-chip>
+	<div
+		style="height: 360px"
+		echarts
+		[options]="summaryChart()"
+		[hidden]="!this.data.summaryChart()"
+		(chartDataZoom)="onDataZoom()"
+		(chartInit)="onChartInit($event)"></div>
+	<div style="text-align: center; padding-top: 5px">
+		<ion-chip
+			*ngFor="let chip of chips"
+			outline="true"
+			[class]="chip.disabled ? 'custom-chip-disabled' : ''"
+			[color]="data.summaryChartOptions.value.aggregation == chip.value ? 'primary' : ''"
+			(click)="changeAggregation(chip)">
+			<ion-icon style="margin: 0; height: 16px" name="lock-closed-outline" *ngIf="chip.disabled"></ion-icon>
+			{{ chip.name }}
+		</ion-chip>
+	</div>
 
-
-    </div>
-
-    <div class="center" *ngIf="!this.data.summaryChart()">
-        <ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
-    </div>
+	<div class="center" *ngIf="!this.data.summaryChart()">
+		<ion-skeleton-text animated style="width: 80%"></ion-skeleton-text>
+	</div>
 </div>

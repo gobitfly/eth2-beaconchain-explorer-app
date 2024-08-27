@@ -18,7 +18,7 @@
  */
 
 /**
- * 
+ *
  * @param where @deprecated replaced by echarts
  */
 export function highChartOptions(where, hostName) {

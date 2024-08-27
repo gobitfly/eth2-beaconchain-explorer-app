@@ -259,10 +259,8 @@ export class DevPage extends Tab3Page implements OnInit {
 	}
 
 	testv2() {
-
 		// const test = await this.api.execute2(new V2DashboardOverview(dashboardID))
 		// console.log("test", test)
-
 		// const loginRequest = new V2DashboardOverview(dashboardID) // encodeDashboardID([0,1,2,3,4])
 		// this.api.execute(loginRequest).then((response) => {
 		// 	const result = loginRequest.parse(response)

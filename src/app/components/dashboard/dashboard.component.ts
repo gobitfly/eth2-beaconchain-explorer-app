@@ -33,7 +33,7 @@ import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import FirebaseUtils from 'src/app/utils/FirebaseUtils'
 import { trigger, style, animate, transition } from '@angular/animations'
 import { endEpochSyncCommittee, slotToEpoch, startEpochSyncCommittee } from 'src/app/utils/MathUtils'
-import { epochToTimestamp, getLocale} from 'src/app/utils/TimeUtils'
+import { epochToTimestamp, getLocale } from 'src/app/utils/TimeUtils'
 import { Period, setID } from 'src/app/requests/v2-dashboard'
 import { getSuccessFailMode, Mode } from './success-fail-view/success-fail-view.component'
 
@@ -372,5 +372,3 @@ interface SyncCommitteeMessage {
 	title: string
 	text: string
 }
-
-

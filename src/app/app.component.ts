@@ -79,6 +79,4 @@ export class AppComponent {
 			})
 		}
 	}
-
-	
 }

@@ -103,7 +103,7 @@ export class ApiService extends CacheModule {
 	}
 
 	async loadNetworkConfig() {
-		async function getConfig(storage: StorageService, config: ApiNetwork){
+		async function getConfig(storage: StorageService, config: ApiNetwork) {
 			const temp = findConfigForKey(config.key)
 			if (temp) {
 				if (temp.v2NetworkConfigKey && (await storage.isV2())) {
@@ -297,14 +297,14 @@ export class ApiService extends CacheModule {
 					if (request.method != Method.GET) {
 						options.headers = { ...options.headers, 'X-Csrf-Token': this.lastCsrfHeader }
 					}
-						
+
 					// DANGEROUS
 					// Strictly for development purposes. Intention is this to be used in local
 					// setup to develop in browser instead of native device. Since fetch does not allow
 					// setting cookies yourself, we can use the X-Cookie header with a reverse proxy to
 					// get sessions working in development environment.
 					if (this.networkConfig.passXCookieDANGEROUS) {
-						let csrfCookieExtra = ""
+						let csrfCookieExtra = ''
 						if (this.csrfCookie) {
 							csrfCookieExtra = '; _gorilla_csrf=' + this.csrfCookie + '; '
 						}
@@ -346,7 +346,7 @@ export class ApiService extends CacheModule {
 				// workaround for non native development
 				if (this.networkConfig.passXCookieDANGEROUS) {
 					const setCookie = result.headers.get('x-set-cookie')
-					
+
 					if (setCookie) {
 						const keyAndValue = setCookie.split(';')[0]
 						if (keyAndValue) {
@@ -575,8 +575,6 @@ export class ApiService extends CacheModule {
 		return this.storage.getItem('api_key')
 	}
 }
-
-
 
 export interface LatestStateWithTime {
 	state: LatestStateData
