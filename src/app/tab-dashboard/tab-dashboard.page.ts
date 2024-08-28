@@ -20,7 +20,7 @@
 import { Component } from '@angular/core'
 import { ApiService } from '../services/api.service'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
-import { getValidatorData, OverviewData2, SummaryChartOptions } from '../controllers/OverviewController'
+import { OverviewData2, OverviewProvider, SummaryChartOptions } from '../controllers/OverviewController'
 import ClientUpdateUtils from '../utils/ClientUpdateUtils'
 import { StorageService } from '../services/storage.service'
 import { UnitconvService } from '../services/unitconv.service'
@@ -47,6 +47,8 @@ export class Tab1Page {
 	currentY = 0
 	scrolling = false
 
+	loading: HTMLIonLoadingElement
+
 	constructor(
 		private validatorUtils: ValidatorUtils,
 		public api: ApiService,
@@ -56,7 +58,8 @@ export class Tab1Page {
 		private sync: SyncService,
 		public merchant: MerchantUtils,
 		private modalCtrl: ModalController,
-		private alert: AlertService
+		private alert: AlertService,
+		private overviewProvider: OverviewProvider
 	) {
 		this.validatorUtils.registerListener(() => {
 			this.refresh()
@@ -82,7 +85,7 @@ export class Tab1Page {
 
 		const loading = await this.alert.presentLoading('Loading...')
 		loading.present()
-		await this.overallData.setTimeframe(this.api, period)
+		await this.overviewProvider.setTimeframe(this.overallData, period)
 		loading.dismiss()
 	}
 
@@ -150,9 +153,12 @@ export class Tab1Page {
 		// 	return []
 		// })
 
-		this.overallData = getValidatorData(this.api, await this.storage.getDashboardID(), await this.storage.getDashboardTimeframe(), {
+		this.overallData = this.overviewProvider.create(await this.storage.getDashboardID(), await this.storage.getDashboardTimeframe(), {
 			aggregation: await this.storage.getDashboardSummaryAggregation(),
+			startTime: null,
+			force: false,
 		} as SummaryChartOptions)
+		
 		console.log('overallData', this.overallData)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}

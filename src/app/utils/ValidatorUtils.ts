@@ -205,12 +205,6 @@ export class ValidatorUtils {
 		else this.deletedWithoutNotifying = true
 	}
 
-	notifyListenersIfDeletedWithoutNotifying() {
-		if (this.deletedWithoutNotifying) {
-			this.notifyListeners()
-			this.deletedWithoutNotifying = false
-		}
-	}
 
 	async saveValidatorsLocal(validators: Validator[]) {
 		const storageKey = this.getStorageKey()

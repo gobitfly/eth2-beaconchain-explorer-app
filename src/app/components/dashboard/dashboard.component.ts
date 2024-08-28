@@ -115,7 +115,7 @@ export class DashboardComponent implements OnInit {
 		if (!this.data || this.data.foreignValidator || !this.data.summary() || this.data.summary().length == 0) return
 		const foundAtLeasOne = this.data.summary()[0].proposals.success === 1
 		const noPreviousFirstProposal = await this.storage.getBooleanSetting('first_proposal_executed', false)
-		if (foundAtLeasOne && !noPreviousFirstProposal && this.data?.timeframe.value == Period.AllTime) {
+		if (foundAtLeasOne && !noPreviousFirstProposal && this.data?.timeframe() == Period.AllTime) {
 			return true
 		}
 	})

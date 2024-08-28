@@ -33,23 +33,96 @@ import {
 } from '../requests/v2-dashboard'
 import { ApiService, LatestStateWithTime } from '../services/api.service'
 import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
-import { computed, signal, Signal, WritableSignal } from '@angular/core'
+import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/core'
 import { ChartData } from '../requests/types/common'
-
-type Action = (self: OverviewData2, api: ApiService, force: boolean) => Promise<void>
-
-interface ActionHandler<T> {
-	value: T
-	action: Action
-}
 
 export interface SummaryChartOptions {
 	aggregation: Aggregation
 	startTime: number
 	endTime: number
+	force: boolean
+}
+
+@Injectable({ providedIn: 'root' })
+export class OverviewProvider {
+
+	constructor(private api: ApiService) {}
+
+	async setSummaryChartOptions(data: OverviewData2, options: SummaryChartOptions) {
+		data.summaryChartOptionsInternal.set(options)
+		const aggregation = options.aggregation
+
+		let startTime = options.startTime
+		if (startTime == null) {
+			startTime = Date.now() / 1000 - 1 * 24 * 60 * 60
+			if (aggregation == Aggregation.Epoch) {
+				startTime = Date.now() / 1000 - 8 * 60 * 60
+			} else if (aggregation == Aggregation.Daily) {
+				startTime = Date.now() / 1000 - 21 * 24 * 60 * 60
+			} else if (aggregation == Aggregation.Weekly) {
+				startTime = Date.now() / 1000 - 8 * 7 * 24 * 60 * 60
+			}
+		}
+
+		console.log('change summary aggregation', aggregation, startTime, options.endTime)
+
+		const request = new V2DashboardSummaryChart(data.id, EfficiencyType.All, aggregation, startTime, options.endTime).withCustomCacheKey(
+			'summary-chart-initial-' + aggregation + data.id
+		)
+		if (options.force) {
+			request.withAllowedCacheResponse(false)
+		}
+		await this.api.set(request, data.summaryChart)
+
+		return null
+	}
+
+	async setTimeframe(data: OverviewData2, timeframe: Period) {
+		data.timeframeInternal.set(timeframe)
+		const period = timeframe
+		console.log('change timeframe', period)
+
+		await Promise.all([
+			this.api.setArray(new V2DashboardSummaryTable(data.id, period, null), data.summary),
+			this.api.set(new V2DashboardSummaryGroupTable(data.id, 0, period, null), data.summaryGroup),
+		])
+
+		return null
+	}
+
+	create(id: dashboardID, timeframe: Period, summaryChartOptions: SummaryChartOptions): OverviewData2 {
+		if (!id) return null
+
+		const temp = new OverviewData2(id, this.api.getNetwork(), false)
+
+		this.api.set(new V2DashboardOverview(id), temp.overviewData)
+		this.api.set(new V2DashboardRocketPool(id), temp.rocketpool)
+		this.api.set(new V2DashboardRewardChart(id).withCustomCacheKey('reward-chart-initial-' + id), temp.rewardChart)
+
+		this.api.getLatestState().then((latestState) => {
+			temp.latestState.set(latestState)
+		})
+
+		this.setTimeframe(temp, timeframe)
+		temp.summaryChartOptionsInternal.set(summaryChartOptions)
+
+		// Summary Chart handles its own fetch logic, so below is not necessary
+		//this.setSummaryChartOptions(temp, summaryChartOptions)
+
+		return temp
+	}
+
+}
+
+function getPeriodDisplayable(period: Period): string {
+	if (period == Period.AllTime) return 'Total'
+	if (period == Period.Last24h) return '24h'
+	if (period == Period.Last7d) return '7d'
+	if (period == Period.Last30d) return '30d'
 }
 
 export class OverviewData2 {
+	loading: WritableSignal<boolean> = signal(false)
 	id: dashboardID
 
 	overviewData: WritableSignal<VDBOverviewData> = signal(null)
@@ -63,42 +136,19 @@ export class OverviewData2 {
 	network: ApiNetwork
 	foreignValidator: boolean
 
-	timeframe: ActionHandler<Period>
-	timeframeDisplay: WritableSignal<string>
+	timeframeInternal: WritableSignal<Period> = signal(null)
+	timeframe = computed(() => this.timeframeInternal())
+	timeframeDisplay = computed(() => getPeriodDisplayable(this.timeframe()))
 
-	summaryChartOptions: ActionHandler<SummaryChartOptions>
+	summaryChartOptionsInternal: WritableSignal<SummaryChartOptions> = signal(null)
+	summaryChartOptions = computed(() => this.summaryChartOptionsInternal())
 
-	constructor(
-		network: ApiNetwork,
-		foreignValidator: boolean,
-		timeframe: ActionHandler<Period>,
-		summaryChartOptions: ActionHandler<SummaryChartOptions>
-	) {
+	constructor(id: dashboardID, network: ApiNetwork, foreignValidator: boolean) {
+		this.id = id
 		this.network = network
 		this.foreignValidator = foreignValidator
-		this.timeframe = timeframe
-		this.timeframeDisplay = signal(getPeriodDisplayable(timeframe.value))
-		this.summaryChartOptions = summaryChartOptions
 	}
 
-	public async setSummaryChartAggregation(api: ApiService, aggregation: Aggregation) {
-		this.summaryChartOptions.value.aggregation = aggregation
-		await this.summaryChartOptions.action(this, api, false)
-	}
-
-	public async setSummaryChartTime(api: ApiService, startTime: number, endTime: number) {
-		this.summaryChartOptions.value.startTime = startTime
-		if (endTime) {
-			this.summaryChartOptions.value.endTime = endTime
-		}
-		await this.summaryChartOptions.action(this, api, true)
-	}
-
-	public async setTimeframe(api: ApiService, timeframe: Period) {
-		this.timeframe.value = timeframe
-		await this.timeframe.action(this, api, false)
-		this.timeframeDisplay.set(getPeriodDisplayable(timeframe))
-	}
 
 	validatorCount: Signal<number> = computed(() => {
 		if (!this.overviewData()) return 0
@@ -242,90 +292,6 @@ export type Description = {
 	extendedDescriptionPre: string
 }
 
-export function getPeriodDisplayable(period: Period): string {
-	if (period == Period.AllTime) return 'Total'
-	if (period == Period.Last24h) return '24h'
-	if (period == Period.Last7d) return '7d'
-	if (period == Period.Last30d) return '30d'
-}
-
-export async function changeTimeframe(api: ApiService, data: OverviewData2) {
-	const period = data.timeframe.value
-	console.log('change timeframe', period)
-
-	await Promise.all([
-		api.setArray(new V2DashboardSummaryTable(data.id, period, null), data.summary),
-		api.set(new V2DashboardSummaryGroupTable(data.id, 0, period, null), data.summaryGroup),
-	])
-	return null
-}
-
-export async function changeSummaryChartOptions(api: ApiService, data: OverviewData2, force: boolean = false) {
-	const aggregation = data.summaryChartOptions.value.aggregation
-
-	let startTime = data.summaryChartOptions.value.startTime
-	if (startTime == null) {
-		startTime = Date.now() / 1000 - 1 * 24 * 60 * 60
-		if (aggregation == Aggregation.Epoch) {
-			startTime = Date.now() / 1000 - 8 * 60 * 60
-		} else if (aggregation == Aggregation.Daily) {
-			startTime = Date.now() / 1000 - 21 * 24 * 60 * 60
-		} else if (aggregation == Aggregation.Weekly) {
-			startTime = Date.now() / 1000 - 8 * 7 * 24 * 60 * 60
-		}
-	}
-
-	console.log('change summary aggregation', aggregation, startTime, data.summaryChartOptions.value.endTime)
-
-	const request = new V2DashboardSummaryChart(
-		data.id,
-		EfficiencyType.All,
-		aggregation,
-		startTime,
-		data.summaryChartOptions.value.endTime
-	).withCustomCacheKey('summary-chart-initial-' + aggregation + data.id)
-	if (force) {
-		request.withAllowedCacheResponse(false)
-	}
-	await api.set(request, data.summaryChart)
-	return null
-}
-
-export function getValidatorData(api: ApiService, id: dashboardID, timeframe: Period, summaryChartOptions: SummaryChartOptions): OverviewData2 {
-	if (!id) return null
-
-	const temp = new OverviewData2(
-		api.getNetwork(),
-		false,
-		{
-			value: timeframe,
-			action: async (self, _api) => {
-				await changeTimeframe(_api, self)
-			},
-		},
-		{
-			value: summaryChartOptions,
-			action: async (self, _api, force) => {
-				await changeSummaryChartOptions(_api, self, force)
-			},
-		}
-	)
-	temp.id = id
-	temp.summaryChartOptions.value.startTime = null // null = use default values
-
-	api.set(new V2DashboardOverview(id), temp.overviewData)
-	api.set(new V2DashboardRocketPool(id), temp.rocketpool)
-	api.set(new V2DashboardRewardChart(id).withCustomCacheKey('reward-chart-initial-' + id), temp.rewardChart)
-
-	temp.timeframe.action(temp, api, false)
-	temp.summaryChartOptions.action(temp, api, false)
-
-	api.getLatestState().then((latestState) => {
-		temp.latestState.set(latestState)
-	})
-
-	return temp
-}
 
 function getDashboardState(overviewData: VDBOverviewData, validatorCount: number, foreignValidator): DashboardStatus {
 	if (!overviewData) return null

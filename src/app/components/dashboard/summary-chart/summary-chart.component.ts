@@ -1,6 +1,8 @@
-import { Component, computed, Input } from '@angular/core'
+import {
+	Component, computed, Input
+} from '@angular/core'
 import { Toast } from '@capacitor/toast'
-import { OverviewData2 } from 'src/app/controllers/OverviewController'
+import { OverviewData2, OverviewProvider } from 'src/app/controllers/OverviewController'
 import { ChartData } from 'src/app/requests/types/common'
 import { Aggregation, V2DashboardSummaryChart } from 'src/app/requests/v2-dashboard'
 import { AlertService } from 'src/app/services/alert.service'
@@ -16,7 +18,7 @@ import {
 	ONE_DAY,
 	ONE_HOUR,
 	ONE_WEEK,
-	slotToTimestamp,
+	slotToSecondsTimestamp,
 	timestampToEpoch,
 } from 'src/app/utils/TimeUtils'
 import { get } from 'lodash-es'
@@ -45,14 +47,47 @@ export class SummaryChartComponent {
 
 	chartInstance: ECharts = null
 
-	constructor(private api: ApiService, private merchant: MerchantUtils, private alert: AlertService, private storage: StorageService) {
+	selectedAggregation: Aggregation = Aggregation.Hourly
+
+	constructor(
+		private api: ApiService,
+		private merchant: MerchantUtils,
+		private alert: AlertService,
+		private storage: StorageService,
+		private overviewProvider: OverviewProvider
+	) {
 		this.merchant.getUserInfo(false).then(() => {
 			this.initChips()
 		})
+		
 	}
 
 	onChartInit(ec) {
 		this.chartInstance = ec
+		this.initLoad()
+	}
+
+	async initLoad() {
+		console.log("INIT LOAD")
+		this.validateDataZoom(true, true, true)
+		const options = Object.assign({}, this.data.summaryChartOptions())
+		if (options) {
+			options.aggregation = await this.storage.getDashboardSummaryAggregation()
+			options.force = true
+			options.endTime = this.timeFrames.to
+			options.startTime = this.timeFrames.from
+		} else {
+			console.warn('No options found')
+		}
+
+		await this.overviewProvider.setSummaryChartOptions(this.data, options)
+		//this.validateDataZoom(undefined, true, true)
+		// this.overviewProvider.setSummaryChartOptions(this.data, {
+		// 	aggregation: await this.storage.getDashboardSummaryAggregation(),
+		// 	startTime: null,
+		// 	endTime: null,
+		// 	force: false,
+		// } as SummaryChartOptions)
 	}
 
 	initChips() {
@@ -84,7 +119,7 @@ export class SummaryChartComponent {
 
 			// handle special case where user has select a premium aggregator but does not extend premium after it expired
 			// reset to default (hourly)
-			if (item.value === this.data.summaryChartOptions.value.aggregation && item.disabled) {
+			if (item.value === this.data.summaryChartOptions().aggregation && item.disabled) {
 				this.changeAggregation(temp[1]) // hourly
 			}
 
@@ -92,7 +127,7 @@ export class SummaryChartComponent {
 		})
 	}
 
-	async changeAggregation(chip: ChipsOptions) {
+	changeAggregation(chip: ChipsOptions) {
 		if (chip.disabled) {
 			Toast.show({
 				text: 'This feature is available with a premium subscription',
@@ -101,64 +136,94 @@ export class SummaryChartComponent {
 			return
 		}
 
-		const loading = await this.alert.presentLoading('Loading...')
-		loading.present()
 		this.storage.setDashboardSummaryAggregation(chip.value)
-		await this.data?.setSummaryChartAggregation(this.api, chip.value)
-		this.validateDataZoom(undefined, true, true)
-		loading.dismiss()
+
+		// const tsData = this.getTimestamps(chip.value, true)
+		// if (!this.data) {
+		// 	return
+		// }
+
+		const options = Object.assign({}, this.data.summaryChartOptions())
+		if (options) {
+			options.aggregation = chip.value
+			options.force = true
+		} else {
+			console.warn('No options found')
+		} 
+		this.data.summaryChartOptionsInternal.set(options)
+		this.changeZoom(true)
+		
+		// 
+		// if (options) {
+		// 	options.aggregation = chip.value
+		// 	options.force = true
+		// 	options.endTime = Math.floor(Date.now() / 1000) // tsData.newTimeFrames.to
+		// 	options.startTime = null //tsData.newTimeFrames.from
+		// } else {
+		// 	console.warn('No options found')
+		// }
+
+		// await this.overviewProvider.setSummaryChartOptions(this.data, options)
+		//this.validateDataZoom(undefined, true, true)
+		
 		//this.data. = chip.value
 	}
 
 	summaryChart = computed(() => {
 		const temp = this.createSummaryChart(this.data.summaryChart(), this.categories())
-		this.validateDataZoom(undefined, undefined, true)
+		//this.validateDataZoom(undefined, undefined, true)
+		//this.initZoom()
 		return temp
 	})
 
 	categories = computed<number[]>(() => {
-		if (!this.data || !this.data.latestState()) {
+		if (!this.data || !this.data.latestState() || !this.data.summaryChartOptions()) {
 			return []
 		}
 		// charts have 5 slots delay
-		if (this.data.latestState().state.current_slot <= 5 || !this.data.summaryChartOptions.value.aggregation) {
+		if (this.data.latestState().state.current_slot <= 5 || !this.data.summaryChartOptions().aggregation) {
 			return []
 		}
-		const maxSeconds = this.data.overviewData().chart_history_seconds?.[this.data.summaryChartOptions.value.aggregation] ?? 0
+		const maxSeconds = this.data.overviewData().chart_history_seconds?.[this.data.summaryChartOptions().aggregation] ?? 0
 		if (!maxSeconds) {
 			return []
 		}
 		const list: number[] = []
-		let latestTs = slotToTimestamp(this.api, this.data.latestState().state.current_slot - 5) || 0
+		let latestTs = slotToSecondsTimestamp(this.api, this.data.latestState().state.current_slot - 5) || 0
+
 		let step = 0
-		switch (this.data.summaryChartOptions.value.aggregation) {
-			case 'epoch':
+		switch (this.data.summaryChartOptions().aggregation) {
+			case Aggregation.Epoch:
 				step = this.api.getNetwork().slotsTime * this.api.getNetwork().slotPerEpoch
 				break
-			case 'daily':
+			case Aggregation.Daily:
 				step = ONE_DAY
 				break
-			case 'hourly':
+			case Aggregation.Hourly:
 				step = ONE_HOUR
 				break
-			case 'weekly':
+			case Aggregation.Weekly:
 				step = ONE_WEEK
 				break
 		}
 		if (!step) {
 			return []
 		}
-		const minTs = Math.max(slotToTimestamp(this.api, 0) || 0, latestTs - maxSeconds)
+		const minTs = Math.max(slotToSecondsTimestamp(this.api, 0) || 0, latestTs - maxSeconds)
 		while (latestTs >= minTs) {
 			list.splice(0, 0, latestTs)
 
 			latestTs -= step
 		}
+		console.log('latestTS', latestTs, maxSeconds, minTs)
 
 		return list
 	})
 
 	rawDataToSeries(data: ChartData<number, number>) {
+		if (!data || !data.series) {
+			return []
+		}
 		const newSeries: SeriesObject[] = []
 		data.series.forEach((element) => {
 			let name: string
@@ -183,14 +248,15 @@ export class SummaryChartComponent {
 	}
 
 	createSummaryChart(data: ChartData<number, number>, categories: number[]) {
-		if (!data || !categories || data.series.length < 1) {
-			return
-		}
+		// if (!data || !categories || data.series.length < 1) {
+		// 	return
+		// }
 
 		const root = document.body
 		const chartDefaultColor = getComputedStyle(root).getPropertyValue('--chart-default').trim()
 
 		const newSeries: SeriesObject[] = this.rawDataToSeries(data)
+		const dataCategories = data ? data.categories ?? [] : []
 
 		return {
 			grid: {
@@ -204,13 +270,13 @@ export class SummaryChartComponent {
 				{
 					// xAxis of the chart
 					type: 'category',
-					data: data.categories,
+					data: dataCategories,
 					boundaryGap: false,
 					axisLabel: {
 						fontSize: fontSize,
 						lineHeight: 20,
 						formatter: (value) => {
-							return formatTimestamp(value, this.api, this.data.summaryChartOptions.value.aggregation)
+							return formatTimestamp(value, this.api, this.data.summaryChartOptions().aggregation)
 						},
 					},
 				},
@@ -268,7 +334,7 @@ export class SummaryChartComponent {
 				formatter: (params) => {
 					const ts = parseInt(params[0].axisValue)
 					return (
-						getTooltipHeader(ts, this.api, this.data.summaryChartOptions.value.aggregation, (val) => formatTsToDateTime(val, getLocale())) +
+						getTooltipHeader(ts, this.api, this.data.summaryChartOptions().aggregation, (val) => formatTsToDateTime(val, getLocale())) +
 						'<br/>' +
 						params.map((d) => `<span style="color: ${d.color};">●</span> ${d.seriesName}: ${d.value.toFixed(2)} % `).join('<br/>')
 					)
@@ -302,37 +368,41 @@ export class SummaryChartComponent {
 	})
 
 	formatToDateOrEpoch = (value: string) => {
-		if (this.data.summaryChartOptions.value.aggregation === 'epoch') {
-			return formatTSToEpoch(parseInt(value) / 1000 + '', this.api)
+		if (this.data.summaryChartOptions().aggregation === 'epoch') {
+			return formatTSToEpoch(value + '', this.api)
 		}
-		return formatTSToDate(parseInt(value) / 1000 + '')
+		return formatTSToDate(value + '')
 	}
 
 	async loadData(startTime: number, endTime: number) {
-		// reloadCounter++
-		// const currentCounter = reloadCounter
-		//let newCategories: number[] = []
 		if (!this.data || (!startTime && !endTime)) {
 			return
 		}
-		//isLoading.value = true
-		//const newSeries: SeriesObject[] = []
+
 		const loading = await this.alert.presentLoading('Loading...')
 		loading.present()
 
+		console.log('load data', startTime, endTime)
 		try {
-			await this.data.setSummaryChartTime(this.api, startTime, endTime)
+			const options = Object.assign({}, this.data.summaryChartOptions())
+			options.startTime = startTime
+			options.endTime = endTime
+			options.force = true
+			await this.overviewProvider.setSummaryChartOptions(this.data, options)
 			loading.dismiss()
 		} catch (e) {
 			loading.dismiss()
+			console.log('err', e)
 			// TODO: Maybe we want to show an error here (either a toast or inline centred in the chart space)
 		}
-		//isLoading.value = false
-		// chartCategories.value = newCategories
-		// series.value = newSeries
 	}
 
+	private preventOnZoomHandling = false
 	onDataZoom() {
+		if (this.preventOnZoomHandling) {
+			this.preventOnZoomHandling = false
+			return
+		}
 		//this.updateTimestamp()
 		this.validateDataZoom()
 	}
@@ -350,8 +420,8 @@ export class SummaryChartComponent {
 
 	// get the from to values for the selected zoom settings
 	getZoomTimestamps = () => {
-		if (!this.data.summaryChart()) return undefined
-		const max = this.data.summaryChart().categories.length - 1
+		if (!this.data.summaryChartOptions()) return undefined
+		const max = this.categories().length - 1
 		if (max <= 0) {
 			return
 		}
@@ -361,14 +431,13 @@ export class SummaryChartComponent {
 		return {
 			...zoomValues,
 			fromIndex,
-			fromTs: this.data.summaryChart().categories[fromIndex],
+			fromTs: this.categories()[fromIndex],
 			toIndex,
-			toTs: this.data.summaryChart().categories[toIndex],
+			toTs: this.categories()[toIndex],
 		}
 	}
 
-	// validate and adjust zoom settings
-	validateDataZoom(instant?: boolean, categoryChanged?: boolean, doNotLoad: boolean = false) {
+	getTimestamps(aggregation: Aggregation, categoryChanged: boolean) {
 		if (!this.chartInstance) {
 			return
 		}
@@ -376,23 +445,26 @@ export class SummaryChartComponent {
 		if (!timestamps) {
 			return
 		}
-		const firstTime = false //!this.data.summaryChartOptions.value.endTime
 
-		const max = this.data.summaryChart().categories.length - 1
+		const firstTime = categoryChanged //!this.data.summaryChartOptions.value.endTime
 
-		const useDefault = categoryChanged || firstTime
+		const max = this.categories().length - 1
+
+		const useDefault = categoryChanged
 		let dataPointsChanged = false
 		if (useDefault) {
 			dataPointsChanged = true
 			let targetPoints = 6
-			switch (this.data.summaryChartOptions.value.aggregation) {
-				case 'epoch':
+			switch (
+				aggregation // this.data.summaryChartOptions().aggregation
+			) {
+				case Aggregation.Epoch:
 					targetPoints = 12
 					break
-				case 'daily':
+				case Aggregation.Daily:
 					targetPoints = 7
 					break
-				case 'weekly':
+				case Aggregation.Weekly:
 					targetPoints = 8
 					break
 			}
@@ -400,6 +472,7 @@ export class SummaryChartComponent {
 			targetPoints = Math.max(targetPoints, Math.ceil(max * 0.03))
 			timestamps.toIndex = firstTime ? max : Math.max(Math.ceil((max / 100) * timestamps.end), targetPoints)
 			timestamps.fromIndex = timestamps.toIndex - targetPoints
+			console.log("fresh timestamps", aggregation, timestamps)
 		} else if (timestamps.toIndex - timestamps.fromIndex > MAX_DATA_POINTS) {
 			dataPointsChanged = true
 			if (timestamps.start !== currentZoom.start) {
@@ -409,7 +482,7 @@ export class SummaryChartComponent {
 			}
 		} else {
 			let minDataPoints = 3
-			if (this.data.summaryChartOptions.value.aggregation === 'epoch') {
+			if (aggregation === 'epoch') {
 				minDataPoints = 6
 			}
 			if (timestamps.toIndex - timestamps.fromIndex < minDataPoints) {
@@ -426,14 +499,14 @@ export class SummaryChartComponent {
 
 		if (dataPointsChanged) {
 			timestamps.end = (timestamps.toIndex * 100) / max
-			timestamps.toTs = this.data.summaryChart().categories[timestamps.toIndex]
+			timestamps.toTs = this.categories()[timestamps.toIndex]
 			timestamps.start = (timestamps.fromIndex * 100) / max
-			timestamps.fromTs = this.data.summaryChart().categories[timestamps.fromIndex]
+			timestamps.fromTs = this.categories()[timestamps.fromIndex]
 		}
 
 		let fromTs: number | undefined = timestamps.fromTs
 		let toTs: number | undefined = timestamps.toTs
-		const bufferSteps = this.data.summaryChartOptions.value.aggregation === 'epoch' ? 0 : 5
+		const bufferSteps = aggregation === Aggregation.Epoch ? 0 : 5
 		// if we are on the far left/right we omit the from/to timestamp
 		// to prevent webservice errors if we get slight over the limit
 		// when we omit one of the time stamps the backend will use the max secons of the dashboard settings
@@ -448,41 +521,98 @@ export class SummaryChartComponent {
 			lastUpdate: Date.now(),
 		}
 
+		return {
+			timestamps: timestamps,
+			newTimeFrames: newTimeFrames,
+		}
+	}
+
+	// validate and adjust zoom settings
+	async validateDataZoom(instant?: boolean, categoryChanged?: boolean, doNotLoad: boolean = false) {
+		const { timestamps, newTimeFrames } = this.getTimestamps(this.data.summaryChartOptions().aggregation, categoryChanged)
+
 		// when the timeframes of the slider change we bounce the new timeframe for the chart
-		if (this.data.summaryChartOptions.value.endTime !== newTimeFrames.to || this.data.summaryChartOptions.value.startTime !== newTimeFrames.from) {
+		if (this.data.summaryChartOptions().endTime !== newTimeFrames.to || this.data.summaryChartOptions().startTime !== newTimeFrames.from) {
 			if (instant) {
 				this.timeFrames = newTimeFrames
+				if (!doNotLoad) {
+					if (this.timeFrames.lastUpdate + bounceTime <= Date.now()) {
+						await this.loadData(this.timeFrames.from, this.timeFrames.to)
+						console.log('CHART DATA UPDATE', newTimeFrames)
+					}
+				}
 			} else {
 				this.timeFrames = newTimeFrames
 				if (!doNotLoad) {
-					setTimeout(() => {
+					await debounce(() => {
 						if (this.timeFrames.lastUpdate + bounceTime <= Date.now()) {
-							this.loadData(this.timeFrames.from, this.timeFrames.to)
 							console.log('CHART DATA UPDATE', newTimeFrames)
+							return this.loadData(this.timeFrames.from, this.timeFrames.to)
 						}
 					}, bounceTime)
 				}
 			}
 		}
+
 		// if we had to fix the slider ranges we need to update the zoom settings
 		if (timestamps.start !== currentZoom.start || timestamps.end !== currentZoom.end) {
 			currentZoom.end = timestamps.end
 			currentZoom.start = timestamps.start
-
-			this.chartInstance.setOption({
-				dataZoom: {
-					...(get(this.chartInstance, 'xAxis[1]') || {}),
-					...currentZoom,
-				},
-			})
-			if (get(this.chartInstance.getOption(), 'dataZoom[0]')) {
-				this.chartInstance.dispatchAction({
-					type: 'dataZoom',
-					...currentZoom,
-				})
-			}
+			this.changeZoom()
 		}
 	}
+
+	changeZoom(triggerZoomHandling = false) {
+		if (!triggerZoomHandling) {
+			this.preventOnZoomHandling = true
+		}
+
+		this.chartInstance.setOption({
+			dataZoom: {
+				...(get(this.chartInstance, 'xAxis[1]') || {}),
+				...currentZoom,
+			},
+		})
+		if (get(this.chartInstance.getOption(), 'dataZoom[0]')) {
+			this.chartInstance.dispatchAction({
+				type: 'dataZoom',
+				...currentZoom,
+			})
+		}
+	}
+
+	// initZoom() {
+	// 	if (!this.chartInstance) {
+	// 		return
+	// 	}
+	// 	const timestamps = this.getZoomTimestamps()
+	// 	if (!timestamps) {
+	// 		return
+	// 	}
+	// 	currentZoom.end = timestamps.end
+	// 	currentZoom.start = timestamps.start
+	// 	this.chartInstance.setOption({
+	// 		dataZoom: {
+	// 			...(get(this.chartInstance, 'xAxis[1]') || {}),
+	// 			...currentZoom,
+	// 		},
+	// 	})
+	// 	if (get(this.chartInstance.getOption(), 'dataZoom[0]')) {
+	// 		this.chartInstance.dispatchAction({
+	// 			type: 'dataZoom',
+	// 			...currentZoom,
+	// 		})
+	// 	}
+	// }
+}
+
+function debounce(callback: () => Promise<void>, wait: number): Promise<void> {
+	return new Promise<void>((resolve) =>
+		setTimeout(async () => {
+			await callback()
+			resolve()
+		}, wait)
+	)
 }
 
 export const fontSize = '12px'

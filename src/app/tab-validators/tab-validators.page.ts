@@ -27,19 +27,17 @@ import { ValidatorResponse } from '../requests/requests'
 import { StorageService } from '../services/storage.service'
 import { AlertService } from '../services/alert.service'
 import { SyncService } from '../services/sync.service'
-import BigNumber from 'bignumber.js'
 import { SubscribePage } from '../pages/subscribe/subscribe.page'
 import { MerchantUtils } from '../utils/MerchantUtils'
 
 import { Keyboard } from '@capacitor/keyboard'
 
-import { Toast } from '@capacitor/toast'
 import ThemeUtils from '../utils/ThemeUtils'
 
-import { Haptics } from '@capacitor/haptics'
 import { UnitconvService } from '../services/unitconv.service'
 import { InfiniteScrollDataSource } from '../utils/InfiniteScrollDataSource'
 import { trigger, style, animate, transition } from '@angular/animations'
+import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
 @Component({
 	selector: 'app-tab2',
 	templateUrl: 'tab-validators.page.html',
@@ -60,10 +58,6 @@ export class Tab2Page {
 
 	initialized = false
 
-	selectMode = false
-
-	selected = new Map<number, boolean>()
-
 	@ViewChild('searchbarRef', { static: true }) searchbarRef: IonSearchbar
 
 	constructor(
@@ -77,7 +71,8 @@ export class Tab2Page {
 		public merchant: MerchantUtils,
 		private themeUtils: ThemeUtils,
 		private platform: Platform,
-		public unit: UnitconvService
+		public unit: UnitconvService,
+		private modalCtrl: ModalController
 	) {
 		this.validatorUtils.registerListener(() => {
 			if (this.searchResultMode && this.searchbarRef) {
@@ -92,6 +87,20 @@ export class Tab2Page {
 
 	ngOnInit() {
 		this.refresh()
+	}
+
+	async openDashboardAndGroupSelect() {
+		const modal = await this.modalCtrl.create({
+			component: DashboardAndGroupSelectComponent,
+			componentProps: {
+				dashboardChangedCallback: () => {
+					// todo
+				},
+			},
+		})
+		modal.present()
+
+		await modal.onWillDismiss()
 	}
 
 	private async refresh() {
@@ -319,11 +328,6 @@ export class Tab2Page {
 		return await modal.present()
 	}
 
-	ionViewDidLeave() {
-		this.validatorUtils.notifyListenersIfDeletedWithoutNotifying()
-		this.sync.mightSyncUpAndSyncDelete()
-	}
-
 	async upgrade() {
 		const modal = await this.modalController.create({
 			component: SubscribePage,
@@ -335,287 +339,20 @@ export class Tab2Page {
 		return await modal.present()
 	}
 
-	private clickBlocked = false
-	blockClick(forTime) {
-		this.clickBlocked = true
-		setTimeout(() => {
-			this.clickBlocked = false
-		}, forTime)
-	}
-
-	selectValidator(item: Validator) {
-		this.selectMode = !this.selectMode
-		if (!this.selectMode) {
-			this.cancelSelect()
-		} else {
-			this.blockClick(250)
-			const color = getComputedStyle(document.body).getPropertyValue('--ion-color-primary')
-			this.themeUtils.setStatusBarColor(color)
-			Haptics.selectionStart()
-
-			if (item) {
-				this.selected.set(item.index, true)
-				Haptics.selectionChanged()
-			}
-		}
-	}
-
 	clickValidator(item: Validator) {
-		if (this.clickBlocked) return
-		if (this.selectMode) {
-			if (this.selected.get(item.index)) {
-				this.selected.delete(item.index)
-			} else {
-				this.selected.set(item.index, true)
-			}
-			Haptics.selectionChanged()
-		} else {
-			this.presentModal(item)
-		}
+		this.presentModal(item)
 	}
 
-	cancelSelect() {
-		this.selectMode = false
-		this.selected = new Map<number, boolean>()
-		this.themeUtils.revertStatusBarColor()
-		Haptics.selectionEnd()
-	}
-
-	getValidatorsByIndex(indexMap): Validator[] {
-		const result = []
-		indexMap.forEach((value, key) => {
-			const temp = this.dataSource.getItems().find((item) => {
-				return item.index == key
-			})
-			if (temp) {
-				result.push(temp)
-			}
-		})
-		return result
-	}
-
-	/**
-	 * Returns the current stake share for the provided validator set. Returns the stake share if all share the same or null otherwise.
-	 * @param subArray
-	 */
-	getCurrentShare(subArray: Validator[]): number {
-		if (subArray.length <= 0) return null
-		const lastShare = subArray[0].share
-		for (let i = 1; i < subArray.length; i++) {
-			if (lastShare != subArray[i].share) return null
-		}
-		return lastShare
-	}
-
-	getCurrentELShare(subArray: Validator[]): number {
-		if (subArray.length <= 0) return null
-		const lastShare = subArray[0].execshare
-		for (let i = 1; i < subArray.length; i++) {
-			if (lastShare != subArray[i].execshare) return null
-		}
-		return lastShare
-	}
-
-	async setRPLShares() {
-		if (this.selected.size <= 0) {
-			Toast.show({
-				text: 'Select the validators you want to apply this setting to.',
-			})
-			return
-		}
-
-		const validatorSubArray = this.getValidatorsByIndex(this.selected).filter((item) => {
-			return item.rocketpool != null
-		})
-
-		if (validatorSubArray.length <= 0) {
-			console.log('You did not select any Rocketpool validator.')
-			Toast.show({
-				text: 'You did not select any Rocketpool validator.',
-			})
-			return
-		}
-
-		const onlyOneNodeAddress = validatorSubArray.reduce((prev, cur) => {
-			return prev && prev.rocketpool.node_address == cur.rocketpool.node_address ? cur : null
-		})
-		if (!onlyOneNodeAddress) {
-			console.log('You selected validators belonging to multiple node addresses. Currently only one at a time can be edited.')
-			Toast.show({
-				text: 'You selected validators belonging to multiple node addresses. Currently only one at a time can be edited.',
-			})
-			return
-		}
-
-		const minShareStake = 0
-		const maxStakeShare = new BigNumber(onlyOneNodeAddress.rocketpool.node_rpl_stake).dividedBy(new BigNumber(1e18)).decimalPlaces(2)
-
-		const currentShares = await this.validatorUtils.getRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address)
-		let current = null
-		if (currentShares) {
-			current = new BigNumber(currentShares).multipliedBy(new BigNumber(maxStakeShare)).decimalPlaces(4)
-		}
-
-		console.log('change RPL', onlyOneNodeAddress, current, maxStakeShare)
-
-		const alert = await this.alertController.create({
-			cssClass: 'my-custom-class',
-			header: 'Define RPL share',
-			message:
-				'If you own partial amounts of the collateral of the selected Rocketpool node address (' +
-				onlyOneNodeAddress.rocketpool.node_address.substring(0, 8) +
-				'), specify the amount of RPL for a custom dashboard.',
-			inputs: [
-				{
-					name: 'share',
-					type: 'number',
-					placeholder: minShareStake + ' - ' + maxStakeShare + ' RPL',
-					value: current,
-				},
-			],
-			buttons: [
-				{
-					text: 'Remove',
-					handler: () => {
-						this.validatorUtils.saveRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address, null)
-						this.cancelSelect()
-						this.validatorUtils.notifyListeners()
-					},
-				},
-				{
-					text: 'Save',
-					handler: (alertData) => {
-						const shares = alertData.share
-						if (shares < minShareStake) {
-							Toast.show({
-								text: 'Share must be at least ' + minShareStake + ' RPL or more.',
-							})
-							return
-						}
-
-						if (shares > maxStakeShare.toNumber()) {
-							Toast.show({
-								text: 'Share amount is higher than your RPL collateral.',
-							})
-							return
-						}
-
-						const share = new BigNumber(alertData.share).div(new BigNumber(maxStakeShare))
-						this.validatorUtils.saveRocketpoolCollateralShare(onlyOneNodeAddress.rocketpool.node_address, share.toNumber())
-
-						this.cancelSelect()
-						this.validatorUtils.notifyListeners()
-					},
-				},
-			],
-		})
-
-		await alert.present()
-	}
-
-	async setShares() {
-		if (this.selected.size <= 0) {
-			Toast.show({
-				text: 'Select the validators you want to apply this setting to.',
-			})
-			return
-		}
-
-		const validatorSubArray = this.getValidatorsByIndex(this.selected)
-		console.log('selected', this.selected, validatorSubArray)
-
-		let sum = new BigNumber('0')
-		for (const val of validatorSubArray) {
-			let temp = new BigNumber(val.data.effectivebalance)
-			if (val.rocketpool) {
-				const nodeBalance = new BigNumber(val.rocketpool.node_deposit_balance).dividedBy(1e9)
-				const partRatio = nodeBalance.dividedBy(temp)
-				temp = temp.multipliedBy(partRatio)
-			}
-			sum = sum.plus(temp)
-		}
-
-		const minShareStake = 0
-		const maxStakeShare = sum.dividedBy(1e9).decimalPlaces(0).toNumber()
-
-		const current = new BigNumber(this.getCurrentShare(validatorSubArray)).multipliedBy(new BigNumber(maxStakeShare)).decimalPlaces(4)
-
-		const currentEL = new BigNumber(this.getCurrentELShare(validatorSubArray)).multipliedBy(new BigNumber(maxStakeShare)).decimalPlaces(4)
-
-		const alert = await this.alertController.create({
-			cssClass: 'my-custom-class',
-			header: 'Define stake share',
-			message:
-				'If you own partial amounts of these validators, specify the amount of ' +
-				this.api.getCurrenciesFormatted() +
-				' for a custom dashboard. First value defines your consensus share, second value your execution share.',
-			inputs: [
-				{
-					name: 'share',
-					type: 'number',
-					placeholder: 'Consensus Share (' + minShareStake + ' - ' + maxStakeShare + ' ETH)',
-					value: current,
-				},
-				{
-					name: 'execshare',
-					type: 'number',
-					placeholder: 'Execution Share (' + minShareStake + ' - ' + maxStakeShare + ' ETH)',
-					value: currentEL,
-				},
-			],
-			buttons: [
-				{
-					text: 'Remove',
-					handler: () => {
-						for (let i = 0; i < validatorSubArray.length; i++) {
-							validatorSubArray[i].share = null
-							validatorSubArray[i].execshare = null
-						}
-						this.validatorUtils.saveValidatorsLocal(validatorSubArray)
-						this.cancelSelect()
-						this.validatorUtils.notifyListeners()
-					},
-				},
-				{
-					text: 'Save',
-					handler: (alertData) => {
-						const shares = alertData.share
-						const sharesEL = alertData.execshare
-						if ((shares && shares < minShareStake) || (sharesEL && sharesEL < minShareStake)) {
-							Toast.show({
-								text: 'Share must be at least ' + minShareStake + ' ETH or more',
-							})
-							return
-						}
-
-						if ((shares && shares > maxStakeShare) || (sharesEL && shares > maxStakeShare)) {
-							Toast.show({
-								text: 'Share amount is higher than all of your added validators.',
-							})
-							return
-						}
-
-						const share = new BigNumber(alertData.share).div(new BigNumber(maxStakeShare))
-						const shareEL = new BigNumber(alertData.execshare).div(new BigNumber(maxStakeShare))
-
-						for (let i = 0; i < validatorSubArray.length; i++) {
-							if (shares && !share.isNaN()) {
-								validatorSubArray[i].share = share.toNumber()
-							}
-							if (shareEL && !shareEL.isNaN()) {
-								validatorSubArray[i].execshare = shareEL.toNumber()
-							}
-						}
-
-						this.validatorUtils.saveValidatorsLocal(validatorSubArray)
-
-						this.cancelSelect()
-						this.validatorUtils.notifyListeners()
-					},
-				},
-			],
-		})
-
-		await alert.present()
-	}
+	// getValidatorsByIndex(indexMap): Validator[] {
+	// 	const result = []
+	// 	indexMap.forEach((value, key) => {
+	// 		const temp = this.dataSource.getItems().find((item) => {
+	// 			return item.index == key
+	// 		})
+	// 		if (temp) {
+	// 			result.push(temp)
+	// 		}
+	// 	})
+	// 	return result
+	// }
 }

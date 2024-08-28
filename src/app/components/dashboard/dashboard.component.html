@@ -280,7 +280,7 @@
 			<ion-segment-button value="chartIncome" [disabled]="scrolling">
 				<ion-label>Income</ion-label>
 			</ion-segment-button>
-			<ion-segment-button value="chartSummary" *ngIf="this.data.summaryChart()" [disabled]="scrolling">
+			<ion-segment-button value="chartSummary" *ngIf="data && data.latestState() && data.summaryChartOptions()" [disabled]="scrolling">
 				<ion-label>Efficiency</ion-label>
 			</ion-segment-button>
 			<ion-segment-button value="rocketPool" *ngIf="data.rocketpool()" [disabled]="scrolling">

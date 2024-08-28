@@ -36,9 +36,9 @@ export function timestampToEpoch(api: ApiService, ts: number) {
 	return Math.floor((ts / 1000 - network.genesisTs) / network.slotPerEpoch / network.slotsTime)
 }
 
-export function slotToTimestamp(api: ApiService, slot: number) {
+export function slotToSecondsTimestamp(api: ApiService, slot: number) {
 	const network = api.getNetwork()
-	return (network.genesisTs + slot * network.slotsTime) * 1000
+	return (network.genesisTs + slot * network.slotsTime)
 }
 
 export function getLocale() {

@@ -21,7 +21,7 @@
 <ion-header [translucent]="true">
 	<ion-toolbar>
 		<ion-buttons style="margin-left: 15px" slot="start" (click)="openDashboardAndGroupSelect()">
-			<ion-icon slot="icon-only" ios="apps-outline" md="apps-outline"></ion-icon>
+			<ion-icon slot="icon-only" ios="apps-outline" md="apps-outline" id="network-icon"></ion-icon>
 		</ion-buttons>
 		<ion-buttons slot="primary" id="options-dashboard">
 			<ion-icon slot="icon-only" ios="ellipsis-horizontal-outline" md="ellipsis-vertical-outline"></ion-icon>
@@ -35,28 +35,28 @@
 					<ion-item
 						[button]="true"
 						[detail]="false"
-						[class]="overallData.timeframe.value == Period.AllTime ? 'selected':''"
+						[class]="overallData.timeframe() == Period.AllTime ? 'selected':''"
 						(click)="changeTimeframe(Period.AllTime)"
 						>Show all time</ion-item
 					>
 					<ion-item
 						[button]="true"
 						[detail]="false"
-						[class]="overallData.timeframe.value == Period.Last24h ? 'selected':''"
+						[class]="overallData.timeframe() == Period.Last24h ? 'selected':''"
 						(click)="changeTimeframe(Period.Last24h)"
 						>Show last 24h</ion-item
 					>
 					<ion-item
 						[button]="true"
 						[detail]="false"
-						[class]="overallData.timeframe.value == Period.Last7d ? 'selected':''"
+						[class]="overallData.timeframe() == Period.Last7d ? 'selected':''"
 						(click)="changeTimeframe(Period.Last7d)"
 						>Show last 7d</ion-item
 					>
 					<ion-item
 						[button]="true"
 						[detail]="false"
-						[class]="overallData.timeframe.value == Period.Last30d ? 'selected':''"
+						[class]="overallData.timeframe() == Period.Last30d ? 'selected':''"
 						(click)="changeTimeframe(Period.Last30d)"
 						>Show last 30d</ion-item
 					>
