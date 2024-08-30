@@ -65,7 +65,7 @@ export class AlertService {
 		await alert.present()
 	}
 
-	async confirmDialog(title: string, message: string, confirmButton: string, confirmCallback: () => void, customCSS: string = null) {
+	async confirmDialog(title: string, message: string, confirmButton: string, confirmCallback: () => void, customCSS: string = undefined) {
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
 			header: title,

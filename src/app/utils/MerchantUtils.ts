@@ -219,13 +219,17 @@ export class MerchantUtils {
 		}
 
 		if (await this.storage.getAuthUserv2()) {
-			await this.api.set(new V2Me().withAllowedCacheResponse(!forceRefresh), this.userInfo, (err) => {
-				console.warn('failed to get user info', err)
-				errHandler(err)
-			})
-			this.storage.setObject('userInfo', this.userInfo())
-			if (this.userInfo().api_keys && this.userInfo().api_keys.length > 0) {
-				this.api.setApiKey(this.userInfo().api_keys[0])
+			const result = await this.api.set(new V2Me().withAllowedCacheResponse(!forceRefresh), this.userInfo)
+			if (result.error) {
+				console.warn('failed to get user info', result.error)
+				errHandler(result.error)
+				return 
+			}
+			if (this.userInfo()) {
+				this.storage.setObject('userInfo', this.userInfo())
+				if (this.userInfo().api_keys && this.userInfo().api_keys.length > 0) {
+					this.api.setApiKey(this.userInfo().api_keys[0])
+				}
 			}
 		}
 	}
@@ -522,6 +526,10 @@ export class MerchantUtils {
 
 	highestPackageDashboardsAllowed = computed(() => {
 		return 2 // todo
+	})
+
+	highestPackageGroupsPerDashboardAllowed = computed(() => {
+		return 30 // todo
 	})
 
 	mapv2Tov1(name: string): string {

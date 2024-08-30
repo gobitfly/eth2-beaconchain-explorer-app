@@ -99,3 +99,19 @@ cdk-virtual-scroll-viewport {
 	overflow: hidden;
 	visibility: hidden;
 }
+
+.search-result-container {
+	padding: 10px 0px 8px 0px;
+}
+.search-result-title {
+	font-size: 16px;
+	font-weight: bold;
+}
+.search-result-icon {
+	height:30px; 
+	width: 30px;
+}
+.search-result-icon-container {
+	width: 43px; 
+	margin-left:7px;
+}

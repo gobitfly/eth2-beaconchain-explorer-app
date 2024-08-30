@@ -18,13 +18,14 @@
  */
 
 import { Component, OnInit, Input } from '@angular/core'
-import { ValidatorUtils, Validator, getDisplayName, SAVED } from '../../utils/ValidatorUtils'
+import { ValidatorUtils, getDisplayName } from '../../utils/ValidatorUtils'
 import { ModalController } from '@ionic/angular'
 import { fromEvent, Subscription } from 'rxjs'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { UnitconvService } from 'src/app/services/unitconv.service'
 import { ApiService } from 'src/app/services/api.service'
 import { OverviewData2 } from 'src/app/controllers/OverviewController'
+import { VDBManageValidatorsTableRow } from 'src/app/requests/types/validator_dashboard'
 
 @Component({
 	selector: 'app-validatordetail',
@@ -32,7 +33,7 @@ import { OverviewData2 } from 'src/app/controllers/OverviewController'
 	styleUrls: ['./validatordetail.page.scss'],
 })
 export class ValidatordetailPage implements OnInit {
-	@Input() item: Validator
+	@Input() item: VDBManageValidatorsTableRow
 	name: string
 
 	tagged = false
@@ -53,7 +54,7 @@ export class ValidatordetailPage implements OnInit {
 		private api: ApiService
 	) {}
 
-	setInput(validator: Validator) {
+	setInput(validator: VDBManageValidatorsTableRow) {
 		this.item = validator
 	}
 
@@ -63,7 +64,7 @@ export class ValidatordetailPage implements OnInit {
 			this.modalCtrl.dismiss()
 		})
 		this.updateDetails(this.item)
-		this.tagged = this.item.storage == SAVED
+		//this.tagged = this.item.storage == SAVED
 	}
 
 	ngOnChanges() {
@@ -90,7 +91,7 @@ export class ValidatordetailPage implements OnInit {
 		this.modalCtrl.dismiss()
 	}
 
-	updateDetails(item: Validator) {
+	updateDetails(item: VDBManageValidatorsTableRow) {
 		this.name = getDisplayName(item)
 
 		//const epoch = await this.validatorUtils.getRemoteCurrentEpoch()
@@ -99,12 +100,12 @@ export class ValidatordetailPage implements OnInit {
 	}
 
 	tag() {
-		this.validatorUtils.convertToValidatorModelAndSaveValidatorLocal(false, this.item.data)
+		//this.validatorUtils.convertToValidatorModelAndSaveValidatorLocal(false, this.item.data)
 		this.tagged = true
 	}
 
 	untag() {
-		this.validatorUtils.deleteValidatorLocal(this.item.data)
+		//this.validatorUtils.deleteValidatorLocal(this.item.data)
 		this.tagged = false
 	}
 }

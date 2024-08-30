@@ -24,6 +24,7 @@ import FirebaseUtils from '../utils/FirebaseUtils'
 import { MerchantUtils } from '../utils/MerchantUtils'
 import ThemeUtils from '../utils/ThemeUtils'
 import { Toast } from '@capacitor/toast'
+
 @Component({
 	selector: 'app-tabs',
 	templateUrl: 'tabs.page.html',

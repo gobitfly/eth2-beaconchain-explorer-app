@@ -112,6 +112,7 @@ export class StorageService extends CacheModule {
 
 	// todo also support v2
 	async removeAuthUser() {
+		this.remove(AUTH_USER_V2)
 		return this.remove(AUTH_USER)
 	}
 

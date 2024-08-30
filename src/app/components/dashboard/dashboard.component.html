@@ -159,7 +159,7 @@
 		<ion-item lines="none">
 			<div class="grid">
 				<app-grid-cell-left [name]="'Balance'" (valueClick)="unit.switchCurrencyPipe()">
-					{{ data.overviewData().balances.total | mcurrency : 'GWEI' : unit.pref.Cons }}
+					{{ data.overviewData().balances.total | mcurrency : 'WEI' : unit.pref.Cons }}
 				</app-grid-cell-left>
 
 				<app-grid-cell-right
@@ -253,7 +253,7 @@
 					tooltip="Total earned smoothing rewards (includes claimed and unclaimed smoothing pool rewards)"
 					(valueClick)="unit.switchCurrencyPipe()">
 					<span [class]="this.data.totalSmoothingPool() | valuestyle : 0">
-						{{ this.data.totalSmoothingPool() | mcurrency : 'GWEI' : unit.pref.Exec }}
+						{{ this.data.totalSmoothingPool() | mcurrency : 'WEI' : unit.pref.Exec }}
 					</span>
 				</app-grid-cell-left>
 
@@ -263,7 +263,7 @@
 					tooltip="All smoothing pool rewards that have accumulated for your node but have not been claimed yet."
 					(valueClick)="unit.switchCurrencyPipe()">
 					<span [class]="this.data?.rocketpool()?.smoothing_pool.unclaimed | valuestyle : 0">
-						{{ this.data?.rocketpool()?.smoothing_pool.unclaimed | mcurrency : 'GWEI' : unit.pref.Exec }}
+						{{ this.data?.rocketpool()?.smoothing_pool.unclaimed | mcurrency : 'WEI' : unit.pref.Exec }}
 					</span>
 				</app-grid-cell-right>
 			</div>
@@ -433,20 +433,20 @@
 			<ion-label class="stat-title">Missed Rewards</ion-label>
 			<span tooltip="Rewards missed by sub-optimal performance" trigger="click" hideDelayAfterClick="5000">
 				<ion-label class="value" style="color: var(--text-color)">
-					{{ data.getTotalMissedRewards() | mcurrency : 'GWEI' : unit.pref.Cons }}
+					{{ data.getTotalMissedRewards() | mcurrency : 'WEI' : unit.pref.Cons }}
 				</ion-label>
 			</span>
 		</ion-item>
 		<ion-item lines="none">
 			<ion-label class="stat-title">&nbsp;&nbsp;&nbsp;Attestations</ion-label>
 			<ion-label class="value" style="color: var(--text-color)">
-				{{ data.summaryGroup().missed_rewards.attestations | mcurrency : 'GWEI' : unit.pref.Cons }}
+				{{ data.summaryGroup().missed_rewards.attestations | mcurrency : 'WEI' : unit.pref.Cons }}
 			</ion-label>
 		</ion-item>
 		<ion-item lines="none">
 			<ion-label class="stat-title">&nbsp;&nbsp;&nbsp;Block Consensus</ion-label>
 			<ion-label class="value" style="color: var(--text-color)">
-				{{ data.summaryGroup().missed_rewards.proposer_rewards.cl | mcurrency : 'GWEI' : unit.pref.Cons }}
+				{{ data.summaryGroup().missed_rewards.proposer_rewards.cl | mcurrency : 'WEI' : unit.pref.Cons }}
 			</ion-label>
 		</ion-item>
 		<ion-item lines="none">
@@ -457,13 +457,13 @@
 				<ion-label class="stat-title">&nbsp;&nbsp;&nbsp;Block Execution*</ion-label>
 			</span>
 			<ion-label class="value" style="color: var(--text-color)">
-				{{ data.summaryGroup().missed_rewards.proposer_rewards.el | mcurrency : 'GWEI' : unit.pref.Cons }}
+				{{ data.summaryGroup().missed_rewards.proposer_rewards.el | mcurrency : 'WEI' : unit.pref.Cons }}
 			</ion-label>
 		</ion-item>
 		<ion-item lines="none">
 			<ion-label class="stat-title">&nbsp;&nbsp;&nbsp;Sync</ion-label>
 			<ion-label class="value" style="color: var(--text-color)">
-				{{ data.summaryGroup().missed_rewards.sync | mcurrency : 'GWEI' : unit.pref.Cons }}
+				{{ data.summaryGroup().missed_rewards.sync | mcurrency : 'WEI' : unit.pref.Cons }}
 			</ion-label>
 		</ion-item>
 	</ion-list>
@@ -577,7 +577,7 @@
 				</span>
 			</ion-label>
 			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
-				{{ data.overviewData().balances.effective | mcurrency : 'GWEI' : unit.getNetworkDefaultCurrency('cons') }}
+				{{ data.overviewData().balances.effective | mcurrency : 'WEI' : unit.getNetworkDefaultCurrency('cons') }}
 			</ion-label>
 		</ion-item>
 
@@ -588,7 +588,7 @@
 				</span>
 			</ion-label>
 			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
-				{{ data.overviewData().balances.staked_eth | mcurrency : 'GWEI' : unit.getNetworkDefaultCurrency('cons') }}
+				{{ data.overviewData().balances.staked_eth | mcurrency : 'WEI' : unit.getNetworkDefaultCurrency('cons') }}
 			</ion-label>
 		</ion-item>
 	</ion-list>
@@ -622,7 +622,7 @@
 		<ion-item lines="none" *ngIf="data.foreignValidator">
 			<ion-label class="stat-title"> Effective Balance </ion-label>
 			<ion-label class="value" (click)="unit.switchCurrencyPipe()">
-				{{ data.effectiveBalance | mcurrency : 'GWEI' : unit.getNetworkDefaultCurrency('cons') }}
+				{{ data.effectiveBalance | mcurrency : 'WEI' : unit.getNetworkDefaultCurrency('cons') }}
 			</ion-label>
 		</ion-item> -->
 

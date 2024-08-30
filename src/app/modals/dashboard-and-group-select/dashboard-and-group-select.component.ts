@@ -28,6 +28,8 @@ export class DashboardAndGroupSelectComponent {
 
 	dashboardIDWhenEntered: dashboardID = null
 
+	isLoggedIn = true
+
 	constructor(
 		private modalCtrl: ModalController,
 		private api: ApiService,
@@ -55,10 +57,19 @@ export class DashboardAndGroupSelectComponent {
 	})
 
 	async init(allowCached = true) {
-		await this.api.set(new V2MyDashboards().withAllowedCacheResponse(allowCached), this.dashboards, (err) => {
-			console.warn('dashboards can not be loaded', err)
-			// todo
-		})
+		this.isLoggedIn = await this.storage.isLoggedIn()
+		if (!this.isLoggedIn) {
+			return
+		}
+
+		const result = await this.api.set(new V2MyDashboards().withAllowedCacheResponse(allowCached), this.dashboards)
+		if (result.error) {
+			console.warn('dashboards can not be loaded', result.error)
+			Toast.show({
+				text: 'Error loading dashboards',
+			})
+			return
+		}
 
 		this.merchant.getUserInfo(false)
 	}

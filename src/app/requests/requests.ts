@@ -35,13 +35,19 @@ export interface APIResponse {
 	data: unknown
 }
 
-export interface NoContent {}
+export interface NoContent { }
+
+interface Paging {
+	next_cursor: string
+}
 
 export interface ApiResult<T> {
 	data: T
 	error: string | null
 	cached: boolean
+	paging: Paging | null
 }
+
 
 export abstract class APIRequest<T> {
 	abstract resource: string
@@ -75,6 +81,7 @@ export abstract class APIRequest<T> {
 				data: this.parse(response),
 				error: null,
 				cached: response.cached,
+				paging: response?.data?.paging ?? null,
 			}
 		}
 
@@ -82,6 +89,7 @@ export abstract class APIRequest<T> {
 			data: null,
 			error: response?.data?.error || response ? 'HTTP status code: ' + response.status : 'No response error',
 			cached: response?.cached || false,
+			paging: null,
 		}
 	}
 

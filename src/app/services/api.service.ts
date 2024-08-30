@@ -547,22 +547,22 @@ export class ApiService extends CacheModule {
 		return result
 	}
 
-	set<T>(request: APIRequest<T>, s: WritableSignal<T>, errHandler: (err: string) => void = null) {
+	set<T>(request: APIRequest<T>, s: WritableSignal<T>) {
 		return this.execute2(request).then((data) => {
 			if (data.error) {
-				if (errHandler) errHandler(data.error)
-				return
+				return data
 			}
 			s.set(data.data[0])
+			return data
 		})
 	}
-	setArray<T>(request: APIRequest<T>, s: WritableSignal<T[]>, errHandler: (err: string) => void = null) {
+	setArray<T>(request: APIRequest<T>, s: WritableSignal<T[]>) {
 		return this.execute2(request).then((data) => {
 			if (data.error) {
-				if (errHandler) errHandler(data.error)
-				return
+				return data
 			}
 			s.set(data.data)
+			return data
 		})
 	}
 

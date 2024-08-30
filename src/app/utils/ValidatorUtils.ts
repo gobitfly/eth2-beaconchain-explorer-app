@@ -41,6 +41,7 @@ import {
 import { MerchantUtils } from './MerchantUtils'
 import BigNumber from 'bignumber.js'
 import { UnitconvService } from '../services/unitconv.service'
+import { VDBManageValidatorsTableRow } from '../requests/types/validator_dashboard'
 
 export const SAVED = 0 // stored locally
 export const MEMORY = 1 // Search results etc
@@ -51,14 +52,18 @@ const KEYPREFIX = 'validators_'
 export const LAST_TIME_ADDED_KEY = 'last_time_added'
 export const LAST_TIME_REMOVED_KEY = 'last_time_removed'
 
+
 export enum ValidatorState {
-	ACTIVE,
-	OFFLINE,
-	SLASHED,
-	WAITING,
-	ELIGABLE,
-	EXITED,
-	UNKNOWN,
+	SLASHED = 'slashed',
+	EXITED = 'exited',
+	DEPOSITED = 'deposited',
+	PENDING = 'pending',
+	SLASHING_ONLINE = 'slashing_online',
+	SLASHING_OFFLINE = 'slashing_offline',
+	EXITING_ONLINE = 'exiting_online',
+	EXITING_OFFLINE = 'exiting_offline',
+	ACTIVE_ONLINE = 'active_online',
+	ACTIVE_OFFLINE = 'active_offline'
 }
 
 export interface Validator {
@@ -293,11 +298,6 @@ export class ValidatorUtils {
 		return false
 	}
 
-	updateValidatorStates(validators: Validator[]) {
-		validators.forEach((item) => {
-			item.state = this.getValidatorState(item)
-		})
-	}
 
 	// checks if remote validators are already known locally.
 	// If not, return all indizes of non locally known validators
@@ -315,18 +315,6 @@ export class ValidatorUtils {
 		return result
 	}
 
-	getValidatorState(item: Validator): ValidatorState {
-		if (item.data.slashed) return ValidatorState.SLASHED
-		if (item.data.status == 'exited') return ValidatorState.EXITED
-		if (item.data.status == 'deposited') return ValidatorState.ELIGABLE
-		if (item.data.status == 'pending') return ValidatorState.WAITING
-		if (item.data.slashed == false && item.data.status.indexOf('online') > 0) {
-			return ValidatorState.ACTIVE
-		}
-
-		// default case
-		return ValidatorState.OFFLINE
-	}
 
 	public async removeValidatorRemote(pubKey: string) {
 		const request = new RemoveMyValidatorsRequest(pubKey)
@@ -380,7 +368,7 @@ export class ValidatorUtils {
 		}
 
 		const temp = this.convertToValidatorModel({ synced: false, storage: storage, validatorResponse: validatorsResponse })
-		this.updateValidatorStates(temp)
+		//this.updateValidatorStates(temp)
 		for (const vali of temp) {
 			vali.attrEffectiveness = this.findAttributionEffectiveness(validatorEffectivenessResponse, vali.index)
 			vali.rocketpool = this.findRocketpoolResponse(result.rocketpool_validators, vali.index)
@@ -531,7 +519,7 @@ export class ValidatorUtils {
 				synced: synced,
 				version: VERSION,
 				data: validator,
-				state: ValidatorState.UNKNOWN,
+				state: ValidatorState.ACTIVE_OFFLINE,
 				share: null,
 				rplshare: null,
 			} as Validator
@@ -598,13 +586,6 @@ export function getValidatorQueryString(validators: Validator[] | ETH1ValidatorR
 	return erg
 }
 
-export function getDisplayName(validator: Validator): string {
-	if (validator.name && validator.name.length >= 0) {
-		return validator.name
-	}
-	if (validator.data.name.length <= 0) {
-		return 'Validator ' + validator.data.validatorindex
-	} else {
-		return validator.data.name
-	}
+export function getDisplayName(validator: VDBManageValidatorsTableRow): string {
+	return 'Validator ' + validator.index
 }

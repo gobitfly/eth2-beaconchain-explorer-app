@@ -35,6 +35,7 @@ import { ApiService, LatestStateWithTime } from '../services/api.service'
 import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
 import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/core'
 import { ChartData } from '../requests/types/common'
+import { Toast } from '@capacitor/toast'
 
 export interface SummaryChartOptions {
 	aggregation: Aggregation
@@ -72,7 +73,10 @@ export class OverviewProvider {
 		if (options.force) {
 			request.withAllowedCacheResponse(false)
 		}
-		await this.api.set(request, data.summaryChart)
+		const result = await this.api.set(request, data.summaryChart)
+		if (result.error) {
+			console.error('Error fetching summary chart', result.error)
+		}
 
 		return null
 	}
@@ -82,12 +86,10 @@ export class OverviewProvider {
 		const period = timeframe
 		console.log('change timeframe', period)
 
-		await Promise.all([
+		return Promise.all([
 			this.api.setArray(new V2DashboardSummaryTable(data.id, period, null), data.summary),
 			this.api.set(new V2DashboardSummaryGroupTable(data.id, 0, period, null), data.summaryGroup),
 		])
-
-		return null
 	}
 
 	create(id: dashboardID, timeframe: Period, summaryChartOptions: SummaryChartOptions): OverviewData2 {

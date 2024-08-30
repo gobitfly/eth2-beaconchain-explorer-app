@@ -19,8 +19,8 @@ import { encodeDashboardID } from '../utils/DashboardHelper'
 import { APIRequest, Method, NoContent } from './requests'
 import { ChartData } from './types/common'
 import {
-	InternalGetValidatorDashboardValidatorsResponse,
 	VDBGroupSummaryData,
+	VDBManageValidatorsTableRow,
 	VDBOverviewData,
 	VDBPostCreateGroupData,
 	VDBPostReturnData,
@@ -133,7 +133,7 @@ export class V2DashboardRewardChart extends APIRequest<ChartData<number, string>
 }
 
 // Validator management
-interface V2AddValidatorToDashboardData {
+export interface V2AddValidatorToDashboardData {
 	group_id: number // starts at 0
 	validators?: string[]
 	deposit_address?: string
@@ -153,13 +153,22 @@ export class V2AddValidatorToDashboard extends APIRequest<VDBPostValidatorsData>
 	}
 }
 
-export class V2GetValidatorFromDashboard extends APIRequest<InternalGetValidatorDashboardValidatorsResponse> {
+export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsTableRow> {
 	resource = 'validator-dashboards/{id}/validators'
 	method = Method.GET
 
-	constructor(id: dashboardID) {
+	constructor(id: dashboardID, groupID: number = undefined, cursor: string = undefined, sort: string = 'index:asc') {
 		super()
 		this.resource = setID(this.resource, id)
+		if (groupID !== undefined) {
+			this.resource += '?group_id=' + groupID
+		}
+		if (sort !== undefined) {
+			this.resource += '&sort=' + sort
+		}
+		if (cursor !== undefined) {
+			this.resource += '&cursor=' + cursor
+		}
 	}
 }
 
@@ -168,9 +177,10 @@ export class V2DeleteValidatorFromDashboard extends APIRequest<NoContent> {
 	method = Method.DELETE
 	expectedResponseStatus: number = 204 // no content
 
-	constructor(id: dashboardID) {
+	constructor(id: dashboardID, validators: number[]) {
 		super()
 		this.resource = setID(this.resource, id)
+		this.resource += "?validators="+validators.join()
 	}
 }
 
@@ -221,6 +231,7 @@ export class V2ChangeDashboardName extends APIRequest<VDBPostReturnData> {
 export class V2AddDashboardGroup extends APIRequest<VDBPostCreateGroupData> {
 	resource = 'validator-dashboards/{id}/groups'
 	method = Method.POST
+	expectedResponseStatus: number = 201 // created
 
 	constructor(id: dashboardID, name: string) {
 		super()

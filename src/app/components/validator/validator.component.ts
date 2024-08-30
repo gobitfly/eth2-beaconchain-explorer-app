@@ -18,12 +18,10 @@
  */
 
 import { Component, OnInit, Input } from '@angular/core'
-import { ValidatorResponse } from 'src/app/requests/requests'
 import * as blockies from 'ethereum-blockies'
-import { ValidatorUtils, getDisplayName, Validator, ValidatorState } from 'src/app/utils/ValidatorUtils'
+import { getDisplayName, ValidatorState } from 'src/app/utils/ValidatorUtils'
 import { UnitconvService } from '../../services/unitconv.service'
-import { AlertService } from 'src/app/services/alert.service'
-import BigNumber from 'bignumber.js'
+import { VDBManageValidatorsTableRow } from 'src/app/requests/types/validator_dashboard'
 
 @Component({
 	selector: 'app-validator',
@@ -33,42 +31,23 @@ import BigNumber from 'bignumber.js'
 export class ValidatorComponent implements OnInit {
 	fadeIn = 'fade-in'
 
-	@Input() validator: Validator
+	@Input() validator: VDBManageValidatorsTableRow
 
-	data: ValidatorResponse
 	name: string
 	imgData: string
-
-	tagged: boolean
 
 	state: string
 
 	stateCss: string
 
-	balance = null
+	constructor(public unit: UnitconvService) {}
 
-	constructor(private validatorUtils: ValidatorUtils, public unit: UnitconvService, private alerts: AlertService) {}
-
-	async ngOnChanges() {
-		this.data = this.validator.data
-		//this.balance = this.calculateBalanceShare(this.validator)
-
+	ngOnChanges() {
 		this.name = getDisplayName(this.validator)
 		this.imgData = this.getBlockies()
-		this.tagged = !!(await this.validatorUtils.getValidatorLocal(this.validator.pubkey))
 		this.state = this.interpretState(this.validator)
 		this.stateCss = this.interpretStateCss(this.validator)
 	}
-
-	setInput(validator: Validator) {
-		this.validator = validator
-		this.data = validator.data
-		//this.balance = this.calculateBalanceShare(this.validator)
-	}
-
-	// calculateBalanceShare(validator) {
-	// 	return this.overviewController.sumBigIntBalanceRP([validator], (cur) => new BigNumber(cur.data.balance))
-	// }
 
 	ngOnInit() {
 		setTimeout(() => {
@@ -76,64 +55,53 @@ export class ValidatorComponent implements OnInit {
 		}, 500)
 	}
 
-	tag(event) {
-		event.stopPropagation()
-		this.validatorUtils.convertToValidatorModelAndSaveValidatorLocal(false, this.data)
-		this.tagged = true
-	}
-
-	untag(event) {
-		event.stopPropagation()
-
-		this.alerts.confirmDialog('Remove validator', 'Do you want to remove this validator?', 'Delete', () => {
-			this.confirmUntag()
-		})
-	}
-
-	private confirmUntag() {
-		this.validatorUtils.deleteValidatorLocal(this.data, false)
-		this.tagged = false
-	}
-
 	private getBlockies() {
 		// TODO: figure out why the first blockie image is always black
-		blockies.create({ seed: this.data.pubkey }).toDataURL()
-		const dataurl = blockies.create({ seed: this.data.pubkey, size: 8, scale: 7 }).toDataURL()
+		blockies.create({ seed: this.validator.public_key }).toDataURL()
+		const dataurl = blockies.create({ seed: this.validator.public_key, size: 8, scale: 7 }).toDataURL()
 		return dataurl
 	}
 
-	interpretState(item: Validator) {
-		switch (item.state) {
-			case ValidatorState.ACTIVE:
+	interpretState(item: VDBManageValidatorsTableRow) {
+		switch (item.status) {
+			case ValidatorState.ACTIVE_ONLINE:
 				return 'Active'
-			case ValidatorState.OFFLINE:
+			case ValidatorState.ACTIVE_OFFLINE:
 				return 'Offline'
 			case ValidatorState.SLASHED:
 				return 'Slashed'
 			case ValidatorState.EXITED:
 				return 'Exited'
-			case ValidatorState.WAITING:
+			case ValidatorState.PENDING:
 				return 'Waiting for Activation'
-			case ValidatorState.ELIGABLE:
+			case ValidatorState.DEPOSITED:
 				return 'Waiting for deposit processing'
+			case ValidatorState.EXITING_ONLINE:
+				return 'Exiting (Active)'
+			case ValidatorState.EXITING_OFFLINE:
+				return 'Exiting (Offline)'
+			case ValidatorState.SLASHING_ONLINE:
+				return 'Slashing (Active)'
+			case ValidatorState.SLASHING_OFFLINE:
+				return 'Slashing (Offline)'
 			default:
 				return 'Unknown'
 		}
 	}
 
-	interpretStateCss(item: Validator) {
-		switch (item.state) {
-			case ValidatorState.ACTIVE:
+	interpretStateCss(item: VDBManageValidatorsTableRow) {
+		switch (item.status) {
+			case ValidatorState.ACTIVE_ONLINE || ValidatorState.EXITING_ONLINE || ValidatorState.SLASHING_ONLINE:
 				return 'online'
-			case ValidatorState.OFFLINE:
+			case ValidatorState.ACTIVE_OFFLINE || ValidatorState.EXITING_OFFLINE || ValidatorState.SLASHING_OFFLINE:
 				return 'offline'
 			case ValidatorState.SLASHED:
 				return 'slashed'
 			case ValidatorState.EXITED:
 				return 'exited'
-			case ValidatorState.WAITING:
+			case ValidatorState.DEPOSITED:
 				return 'waiting'
-			case ValidatorState.ELIGABLE:
+			case ValidatorState.PENDING:
 				return 'waiting'
 			default:
 				return ''

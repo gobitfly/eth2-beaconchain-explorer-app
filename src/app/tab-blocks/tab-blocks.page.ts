@@ -43,21 +43,21 @@ export class TabBlocksPage implements OnInit {
 			this.refresh()
 		})
 		this.validatorUtils.getAllValidatorsLocal().then((validators) => {
-			this.dataSource = new InfiniteScrollDataSource<BlockResponse>(this.blockUtils.getLimit(validators.length), async (offset: number) => {
-				if (offset > 0) {
-					let sleepTime = 1000
-					if (offset >= 50) {
-						sleepTime = 3500 // 20 req per minute => wait at least 3 seconds. Buffer for dashboard and sync stuff
-					} else if (offset >= 120) {
-						sleepTime = 4500
-					}
-					this.loadMore = true
-					await sleep(sleepTime) // handling rate limit of some sorts
-				}
-				const result = await this.blockUtils.getMyBlocks(offset)
-				this.loadMore = false
-				return result
-			})
+			// this.dataSource = new InfiniteScrollDataSource<BlockResponse>(this.blockUtils.getLimit(validators.length), async (offset: number) => {
+			// 	if (offset > 0) {
+			// 		let sleepTime = 1000
+			// 		if (offset >= 50) {
+			// 			sleepTime = 3500 // 20 req per minute => wait at least 3 seconds. Buffer for dashboard and sync stuff
+			// 		} else if (offset >= 120) {
+			// 			sleepTime = 4500
+			// 		}
+			// 		this.loadMore = true
+			// 		await sleep(sleepTime) // handling rate limit of some sorts
+			// 	}
+			// 	const result = await this.blockUtils.getMyBlocks(offset)
+			// 	this.loadMore = false
+			// 	return result
+			// })
 		})
 	}
 

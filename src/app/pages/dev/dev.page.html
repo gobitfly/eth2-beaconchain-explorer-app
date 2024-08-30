@@ -122,6 +122,11 @@
 			<ion-label>Toggle init</ion-label>
 		</ion-item>
 
+		<ion-item lines="none" (click)="toastTest()">
+			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+			<ion-label>Toast test</ion-label>
+		</ion-item>
+
 		<ion-item lines="none">
 			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
 			<ion-toggle [(ngModel)]="toggleTest" (ionChange)="toggleTestChange()" labelPlacement="start" justify="space-between">Toggle test</ion-toggle>

@@ -31,6 +31,7 @@ import { ModalController } from '@ionic/angular'
 import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
 import { Period } from '../requests/v2-dashboard'
 import { AlertService } from '../services/alert.service'
+import { Toast } from '@capacitor/toast'
 
 export const REAPPLY_KEY = 'reapply_notification2'
 
@@ -85,7 +86,19 @@ export class Tab1Page {
 
 		const loading = await this.alert.presentLoading('Loading...')
 		loading.present()
-		await this.overviewProvider.setTimeframe(this.overallData, period)
+		const result = await this.overviewProvider.setTimeframe(this.overallData, period)
+		if (result[0].error) {
+			console.error('Error fetching summary table', result[0].error)
+			Toast.show({
+				text: 'Error fetching summary table',
+			})
+		}
+		if (result[1].error) {
+			console.error('Error fetching summary group', result[1].error)
+			Toast.show({
+				text: 'Error fetching summary group',
+			})
+		}
 		loading.dismiss()
 	}
 

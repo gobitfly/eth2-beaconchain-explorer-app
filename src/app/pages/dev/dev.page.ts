@@ -50,6 +50,12 @@ export class DevPage extends Tab3Page implements OnInit {
 		})
 	}
 
+	toastTest() {
+		Toast.show({
+			text: 'Test toast',
+		})
+	}
+
 	// --- Development methods ---
 
 	async forceTokenRefresh() {
