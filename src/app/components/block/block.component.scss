@@ -21,49 +21,44 @@
 
 .blockie {
 	position: absolute;
-	top: 20px;
-	left: 22px;
+	left: 16px;
 	border-radius: 20%;
-	height: 59px;
-	width: 56px;
+	height: 45px;
+	width: 45px;
 	image-rendering: pixelated;
 }
 
 .container {
+	padding: 10px 0px 0px 0px;
 }
 
 .blocknr {
-	top: 83px;
 	text-align: center;
-	padding-top: 75px;
-	width: 66px;
-	font-size: 0.72rem;
+	padding-top: 48px;
+	width: 45px;
+	font-size: 0.75rem;
 }
 
 .inner {
-	padding-top: 0px;
-	padding-bottom: 0px;
 }
 
 ion-item {
 	background: var(--ion-card-background);
+	margin: auto;
 }
 
 ion-icon {
 	position: absolute !important;
-	top: 2px;
-	right: 20px;
+	top: 5px;
+	right: 5px;
 	margin-top: 0px !important;
 	padding-top: 0px !important;
 	margin-bottom: 29px;
-	height: 56px;
 }
 
 .info {
-	margin-top: 15px;
-	margin-left: 0px;
-	margin-right: 5px;
-	margin-bottom: 15px;
+	margin-left: 5px;
+	height: 77px;
 }
 
 .balance {
@@ -76,8 +71,19 @@ ion-icon {
 }
 
 .smaller-info {
-	font-size: 0.8rem;
+	font-size: 0.75rem;
 	color: var(--ion-text-color-secondary);
+}
+
+.smallest-info {
+	font-size: 0.65rem;
+	color: var(--ion-text-color-secondary);
+}
+
+.status-container {
+	height: 69px;
+
+	margin-left: 0px;
 }
 
 .smoothing {

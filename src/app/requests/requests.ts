@@ -35,7 +35,7 @@ export interface APIResponse {
 	data: unknown
 }
 
-export interface NoContent { }
+export interface NoContent {}
 
 interface Paging {
 	next_cursor: string
@@ -47,7 +47,6 @@ export interface ApiResult<T> {
 	cached: boolean
 	paging: Paging | null
 }
-
 
 export abstract class APIRequest<T> {
 	abstract resource: string

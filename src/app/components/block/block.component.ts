@@ -1,10 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core'
-import { BlockResponse } from 'src/app/requests/requests'
 import * as blockies from 'ethereum-blockies'
 import { UnitconvService } from 'src/app/services/unitconv.service'
-import { BlockUtils, ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from 'src/app/utils/BlockUtils'
+import { ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from 'src/app/utils/BlockUtils'
 import BigNumber from 'bignumber.js'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
+import { VDBBlocksTableRow } from 'src/app/requests/types/validator_dashboard'
+import { slotToSecondsTimestamp } from 'src/app/utils/TimeUtils'
+import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-block',
@@ -12,7 +14,7 @@ import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 	styleUrls: ['./block.component.scss'],
 })
 export class BlockComponent implements OnInit {
-	@Input() block: BlockResponse
+	@Input() block: VDBBlocksTableRow
 
 	fadeIn = 'fade-in'
 	imgData = null
@@ -22,32 +24,32 @@ export class BlockComponent implements OnInit {
 	resolvedName = null
 	resolvedClass = ''
 
-	constructor(public unit: UnitconvService, public blockUtils: BlockUtils, private validatorUtils: ValidatorUtils) {
+	constructor(public unit: UnitconvService, private validatorUtils: ValidatorUtils, private api: ApiService) {
 		this.validatorUtils.registerListener(() => {
 			this.ngOnChanges()
 		})
 	}
 
-	async ngOnChanges() {
+	ngOnChanges() {
 		this.imgData = this.getBlockies()
-		this.timestamp = this.block.timestamp * 1000
-		this.producerReward = await this.blockUtils.getBlockRewardWithShare(this.block)
+		this.timestamp = slotToSecondsTimestamp(this.api, this.block.slot) * 1000
+		this.producerReward = new BigNumber(this.block.reward.el).plus(new BigNumber(this.block.reward.cl))
 		this.resolvedName = null
 
-		this.feeRecipient = this.block.feeRecipient
-		if (this.block.relay) {
-			this.feeRecipient = this.block.relay.producerFeeRecipient
+		this.feeRecipient = this.block.reward_recipient.hash
+		if (this.block.reward_recipient.ens != null) {
+			this.resolvedName = this.block.reward_recipient.ens
 		}
-		if (this.feeRecipient.toLocaleLowerCase() == ROCKETPOOL_SMOOTHING_POOL) {
+		if (this.block.reward_recipient.hash.toLocaleLowerCase() == ROCKETPOOL_SMOOTHING_POOL) {
 			this.resolvedName = 'Smoothing Pool'
 			this.resolvedClass = 'smoothing'
-		} else if (this.feeRecipient.toLocaleLowerCase() == ETHPOOL) {
+		} else if (this.block.reward_recipient.hash.toLocaleLowerCase() == ETHPOOL) {
 			this.resolvedName = 'ethpool.eth'
 			this.resolvedClass = 'ethpool'
 		}
 	}
 
-	setInput(block: BlockResponse) {
+	setInput(block: VDBBlocksTableRow) {
 		this.block = block
 		this.ngOnChanges()
 	}
@@ -60,8 +62,8 @@ export class BlockComponent implements OnInit {
 
 	private getBlockies() {
 		// TODO: figure out why the first blockie image is always black
-		blockies.create({ seed: this.block.blockHash }).toDataURL()
-		const dataurl = blockies.create({ seed: this.block.blockHash, size: 8, scale: 7 }).toDataURL()
+		blockies.create({ seed: this.block.slot.toString() }).toDataURL()
+		const dataurl = blockies.create({ seed: this.block.slot.toString(), size: 8, scale: 7 }).toDataURL()
 		return dataurl
 	}
 }

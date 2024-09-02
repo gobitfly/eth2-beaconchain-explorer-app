@@ -1,6 +1,4 @@
-import {
-	Component, computed, Input
-} from '@angular/core'
+import { Component, computed, Input } from '@angular/core'
 import { Toast } from '@capacitor/toast'
 import { OverviewData2, OverviewProvider } from 'src/app/controllers/OverviewController'
 import { ChartData } from 'src/app/requests/types/common'
@@ -59,7 +57,6 @@ export class SummaryChartComponent {
 		this.merchant.getUserInfo(false).then(() => {
 			this.initChips()
 		})
-		
 	}
 
 	onChartInit(ec) {
@@ -68,7 +65,7 @@ export class SummaryChartComponent {
 	}
 
 	async initLoad() {
-		console.log("INIT LOAD")
+		console.log('INIT LOAD')
 		this.validateDataZoom(true, true, true)
 		const options = Object.assign({}, this.data.summaryChartOptions())
 		if (options) {
@@ -149,11 +146,11 @@ export class SummaryChartComponent {
 			options.force = true
 		} else {
 			console.warn('No options found')
-		} 
+		}
 		this.data.summaryChartOptionsInternal.set(options)
 		this.changeZoom(true)
-		
-		// 
+
+		//
 		// if (options) {
 		// 	options.aggregation = chip.value
 		// 	options.force = true
@@ -165,7 +162,7 @@ export class SummaryChartComponent {
 
 		// await this.overviewProvider.setSummaryChartOptions(this.data, options)
 		//this.validateDataZoom(undefined, true, true)
-		
+
 		//this.data. = chip.value
 	}
 
@@ -472,7 +469,7 @@ export class SummaryChartComponent {
 			targetPoints = Math.max(targetPoints, Math.ceil(max * 0.03))
 			timestamps.toIndex = firstTime ? max : Math.max(Math.ceil((max / 100) * timestamps.end), targetPoints)
 			timestamps.fromIndex = timestamps.toIndex - targetPoints
-			console.log("fresh timestamps", aggregation, timestamps)
+			console.log('fresh timestamps', aggregation, timestamps)
 		} else if (timestamps.toIndex - timestamps.fromIndex > MAX_DATA_POINTS) {
 			dataPointsChanged = true
 			if (timestamps.start !== currentZoom.start) {

@@ -1,12 +1,16 @@
-import { Component, OnInit, Input } from '@angular/core'
-import { BlockResponse } from 'src/app/requests/requests'
-import { BlockUtils, ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from 'src/app/utils/BlockUtils'
+import { Component, OnInit, Input, WritableSignal, signal, computed } from '@angular/core'
+import { ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from 'src/app/utils/BlockUtils'
 import * as blockies from 'ethereum-blockies'
 import BigNumber from 'bignumber.js'
 import { UnitconvService } from 'src/app/services/unitconv.service'
 import { ModalController } from '@ionic/angular'
 import { Browser } from '@capacitor/browser'
 import { ApiService } from 'src/app/services/api.service'
+import { VDBBlocksTableRow } from 'src/app/requests/types/validator_dashboard'
+import { slotToSecondsTimestamp } from 'src/app/utils/TimeUtils'
+import { BlockOverview } from 'src/app/requests/types/block'
+import { V2BlockOverview } from 'src/app/requests/v2-blocks'
+import { Toast } from '@capacitor/toast'
 
 @Component({
 	selector: 'app-block-detail',
@@ -14,40 +18,54 @@ import { ApiService } from 'src/app/services/api.service'
 	styleUrls: ['./block-detail.page.scss'],
 })
 export class BlockDetailPage implements OnInit {
-	@Input() block: BlockResponse
+	currentY = 0
+	scrolling = false
+
+	@Input() block: VDBBlocksTableRow
+
 	imgData = null
 	timestamp = 0
 	producerReward = new BigNumber(0)
 	feeRecipient = ''
-	baseFee = ''
-	gasUsedPercent = ''
-	burned = new BigNumber(0)
-
-	currentY = 0
-
-	scrolling = false
 
 	showGasUsedPercent = true
 	nameResolved = ''
 
-	constructor(private blockUtils: BlockUtils, public unit: UnitconvService, private modalCtrl: ModalController, private api: ApiService) {}
+	overview: WritableSignal<BlockOverview> = signal(null)
 
-	async ngOnInit() {
+	gasUsedPercent = computed(() => {
+		return ((parseInt(this.overview().gas_usage) * 100) / this.overview().gas_limit.value).toFixed(1)
+	})
+
+	constructor(public unit: UnitconvService, private modalCtrl: ModalController, private api: ApiService) {}
+
+	ngOnInit() {
+		this.getOverview()
 		this.imgData = this.getBlockies()
-		this.timestamp = this.block.timestamp * 1000
-		this.producerReward = await this.blockUtils.getBlockRewardWithShare(this.block)
-		this.feeRecipient = this.block.feeRecipient
-		if (this.block.relay) {
-			this.feeRecipient = this.block.relay.producerFeeRecipient
-		}
-		this.baseFee = new BigNumber(this.block.baseFee).dividedBy(1e9).toFixed(1) + ' Gwei'
-		this.gasUsedPercent = ((this.block.gasUsed * 100) / this.block.gasLimit).toFixed(1)
-		this.burned = new BigNumber(this.block.gasUsed).multipliedBy(new BigNumber(this.block.baseFee))
+		this.timestamp = slotToSecondsTimestamp(this.api, this.block.slot) * 1000
+		this.producerReward = new BigNumber(this.block.reward.el).plus(new BigNumber(this.block.reward.cl))
+		this.nameResolved = null
 
+		this.feeRecipient = this.block.reward_recipient.hash
+		if (this.block.reward_recipient.ens != null) {
+			this.nameResolved = this.block.reward_recipient.ens
+		}
 		if (this.feeRecipient.toLocaleLowerCase() == ROCKETPOOL_SMOOTHING_POOL) {
 			this.nameResolved = 'Went to Rocketpool Smoothing-Pool'
 		} else if (this.feeRecipient.toLocaleLowerCase() == ETHPOOL) {
 			this.nameResolved = 'Distributed via ethpool.eth'
+		}
+	}
+
+	async getOverview() {
+		// todo network
+		const result = await this.api.set(new V2BlockOverview('holesky', this.block.block), this.overview)
+		if (result.error) {
+			Toast.show({
+				text: 'Failed to fetch block overview',
+				duration: 'long',
+			})
+			console.error(result.error)
 		}
 	}
 
@@ -69,8 +87,8 @@ export class BlockDetailPage implements OnInit {
 
 	private getBlockies() {
 		// TODO: figure out why the first blockie image is always black
-		blockies.create({ seed: this.block.blockHash }).toDataURL()
-		const dataurl = blockies.create({ seed: this.block.blockHash, size: 8, scale: 7 }).toDataURL()
+		blockies.create({ seed: this.block.slot.toString() }).toDataURL()
+		const dataurl = blockies.create({ seed: this.block.slot.toString(), size: 8, scale: 7 }).toDataURL()
 		return dataurl
 	}
 
@@ -79,13 +97,15 @@ export class BlockDetailPage implements OnInit {
 	}
 
 	async openBlock() {
+		// todo new url
 		await Browser.open({
-			url: this.api.getBaseUrl() + '/block/' + this.block.blockNumber,
+			url: this.api.getBaseUrl() + '/block/' + this.block.slot,
 			toolbarColor: '#2f2e42',
 		})
 	}
 
 	async openFeeRecipient() {
+		// todo new url
 		await Browser.open({
 			url: this.api.getBaseUrl() + '/address/' + this.feeRecipient,
 			toolbarColor: '#2f2e42',

@@ -1,15 +1,22 @@
-import { Component, OnInit, ViewChild } from '@angular/core'
+import { Component, computed, OnInit, signal, ViewChild, WritableSignal } from '@angular/core'
 import { ModalController } from '@ionic/angular'
 import { BlockDetailPage } from '../pages/block-detail/block-detail.page'
 import { BlockResponse } from '../requests/requests'
 import { AlertService } from '../services/alert.service'
 import { ApiService } from '../services/api.service'
 import { UnitconvService } from '../services/unitconv.service'
-import { BlockUtils, Luck } from '../utils/BlockUtils'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
-import { InfiniteScrollDataSource, sleep } from '../utils/InfiniteScrollDataSource'
+import { InfiniteScrollDataSource, loadMoreType } from '../utils/InfiniteScrollDataSource'
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling'
 import { trigger, style, animate, transition } from '@angular/animations'
+import { VDBBlocksTableRow, VDBGroupSummaryData } from '../requests/types/validator_dashboard'
+import { StorageService } from '../services/storage.service'
+import { dashboardID, Period, V2DashboardSummaryGroupTable } from '../requests/v2-dashboard'
+import { Toast } from '@capacitor/toast'
+import { V2DashboardBlocks } from '../requests/v2-blocks'
+import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
+
+const PAGE_SIZE = 20
 @Component({
 	selector: 'app-tab-blocks',
 	templateUrl: './tab-blocks.page.html',
@@ -19,7 +26,7 @@ import { trigger, style, animate, transition } from '@angular/animations'
 export class TabBlocksPage implements OnInit {
 	public classReference = UnitconvService
 
-	dataSource: InfiniteScrollDataSource<BlockResponse>
+	dataSource: InfiniteScrollDataSource<VDBBlocksTableRow>
 	@ViewChild(CdkVirtualScrollViewport) virtualScroll: CdkVirtualScrollViewport
 
 	loading = false
@@ -27,55 +34,98 @@ export class TabBlocksPage implements OnInit {
 
 	initialized = false
 
-	luck: Luck = null
+	isLoggedIn = false
+	dashboardID: dashboardID
 
-	valis = null
+	summaryGroup: WritableSignal<VDBGroupSummaryData> = signal(null)
+
+	expectedNextBlockTs = computed(() => {
+		if (!this.summaryGroup()) {
+			return 0
+		}
+		return Date.parse(this.summaryGroup().luck.proposal.expected)
+	})
 
 	constructor(
 		public api: ApiService,
 		public unit: UnitconvService,
-		private blockUtils: BlockUtils,
 		public modalController: ModalController,
 		private validatorUtils: ValidatorUtils,
-		private alertService: AlertService
+		private alertService: AlertService,
+		private storage: StorageService,
+		private modalCtrl: ModalController,
+		private alerts: AlertService
 	) {
 		this.validatorUtils.registerListener(() => {
 			this.refresh()
 		})
-		this.validatorUtils.getAllValidatorsLocal().then((validators) => {
-			// this.dataSource = new InfiniteScrollDataSource<BlockResponse>(this.blockUtils.getLimit(validators.length), async (offset: number) => {
-			// 	if (offset > 0) {
-			// 		let sleepTime = 1000
-			// 		if (offset >= 50) {
-			// 			sleepTime = 3500 // 20 req per minute => wait at least 3 seconds. Buffer for dashboard and sync stuff
-			// 		} else if (offset >= 120) {
-			// 			sleepTime = 4500
-			// 		}
-			// 		this.loadMore = true
-			// 		await sleep(sleepTime) // handling rate limit of some sorts
-			// 	}
-			// 	const result = await this.blockUtils.getMyBlocks(offset)
-			// 	this.loadMore = false
-			// 	return result
-			// })
-		})
 	}
 
-	ngOnInit() {
-		this.refresh()
+	async ngOnInit() {
+		this.initialized = false
+		await this.init()
+		await this.refresh()
 	}
 
 	private async init() {
-		this.luck = await this.blockUtils.getProposalLuck()
-		this.valis = await this.validatorUtils.getAllValidatorsLocal()
-		this.virtualScroll.scrollToIndex(0)
-		await this.dataSource.reset()
-		this.initialized = true
+		this.dashboardID = await this.storage.getDashboardID()
+		this.isLoggedIn = await this.storage.isLoggedIn()
+		
+		await this.loadSummaryGroup()
+		this.dataSource = new InfiniteScrollDataSource<VDBBlocksTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
+	}
+
+	private async loadSummaryGroup() {
+		const result = await this.api.set(new V2DashboardSummaryGroupTable(this.dashboardID, 0, Period.AllTime, null), this.summaryGroup)
+		if (result.error) {
+			Toast.show({
+				text: 'Could not load summary group',
+				duration: 'long',
+			})
+			return
+		}
+	}
+
+	private getDefaultDataRetriever(): loadMoreType<VDBBlocksTableRow> {
+		return async (cursor) => {
+			// todo no account handling
+			if (!this.isLoggedIn) {
+				this.initialized = true
+				return {
+					data: [],
+					next_cursor: null,
+				}
+			}
+
+			this.loadMore = !!cursor
+			const result = await this.api.execute2(new V2DashboardBlocks(this.dashboardID, cursor, PAGE_SIZE))
+			if (result.error) {
+				Toast.show({
+					text: 'Could not load blocks',
+					duration: 'long',
+				})
+				console.error('Could not load blocks', result.error)
+				return {
+					data: undefined,
+					next_cursor: null,
+				}
+			}
+			this.loadMore = false
+
+			return {
+				data: result.data as VDBBlocksTableRow[],
+				next_cursor: result.paging?.next_cursor,
+			}
+		}
 	}
 
 	private async refresh() {
 		this.setLoading(true)
-		await this.init()
+
+		await this.dataSource.reset()
+		this.virtualScroll.scrollToIndex(0)
+		this.initialized = true
+
 		this.setLoading(false)
 	}
 
@@ -103,21 +153,56 @@ export class TabBlocksPage implements OnInit {
 	}
 
 	luckHelp() {
-		if (!this.luck) {
+		if (!this.summaryGroup()) {
 			this.alertService.showInfo(
 				'Proposal Luck',
-				`Compares the number of your actual proposed blocks to the expected average blocks per validator during the last month. 
-        You'll see your luck percentage once you have proposed a block.`
+				`Compares the number of your actual proposed blocks to the expected average blocks per validator during the last month.
+		You'll see your luck percentage once you have proposed a block.`
 			)
 		} else {
 			this.alertService.showInfo(
 				'Proposal Luck',
-				`Compares the number of your actual proposed blocks to the expected average blocks per validator during the last <strong>${
-					this.luck.timeFrameName ? this.luck.timeFrameName : 'month'
-				}</strong>. 
-        <br/><br/>Your ${this.luck.userValidators == 1 ? `validator is` : `<strong>${this.luck.userValidators}</strong> validators are`}
-				expected to produce <strong>${this.luck.expectedBlocksPerMonth.toFixed(2)}</strong> blocks per month on average with current network conditions.`
+				`With current network conditions, your validators are expected to produce a block every <strong>${this.relativeTs(
+					this.summaryGroup().luck.proposal.average
+				)}</strong> (on average).`
 			)
 		}
+	}
+
+	relativeTs(diff: number) {
+		const seconds = Math.floor(diff / 1000)
+		const minutes = Math.floor(seconds / 60)
+		const hours = Math.floor(minutes / 60)
+		const days = Math.floor(hours / 24)
+		const months = Math.floor(days / 30)
+
+		if (months > 0) {
+			return months > 1 ? `${months} months` : 'month'
+		} else if (days > 0) {
+			return days > 1 ? `${days} days` : 'day'
+		} else if (hours > 0) {
+			return hours > 1 ? `${hours} hours` : 'hour'
+		} else if (minutes > 0) {
+			return minutes > 1 ? `${minutes} minutes` : 'minute'
+		} else {
+			return seconds > 1 ? `${seconds} seconds` : 'second'
+		}
+	}
+
+	async openDashboardAndGroupSelect() {
+		const modal = await this.modalCtrl.create({
+			component: DashboardAndGroupSelectComponent,
+			componentProps: {
+				dashboardChangedCallback: async () => {
+					const loading = await this.alerts.presentLoading('Loading...')
+					loading.present()
+					await this.ngOnInit()
+					loading.dismiss()
+				},
+			},
+		})
+		modal.present()
+
+		await modal.onWillDismiss()
 	}
 }

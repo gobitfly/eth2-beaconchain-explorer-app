@@ -72,7 +72,7 @@ export const MAP: ApiNetwork[] = [
 		slotsTime: 12,
 		epochsPerSyncPeriod: 256,
 		name: 'Ethereum',
-		v2NetworkConfigKey: 'todo',
+		v2NetworkConfigKey: 'holesky_v2_prod',
 	},
 	{
 		key: 'holesky',
@@ -97,6 +97,24 @@ export const MAP: ApiNetwork[] = [
 		protocol: 'http',
 		host: 'local.beaconcha.in:8083',
 		passXCookieDANGEROUS: true, // DO NOT COMMIT!
+		net: '',
+		endpoint: '/api/',
+		version: 'i',
+		onlyDebug: true,
+		active: true,
+		genesisTs: 1695902400,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+		name: 'Ethereum',
+	},
+	{
+		key: 'holesky_v2_prod',
+		protocol: 'https',
+		host: 'jkihuwegfsgjkhsdgf.beaconcha.in',
+		passXCookieDANGEROUS: false, // DO NOT COMMIT!
 		net: '',
 		endpoint: '/api/',
 		version: 'i',

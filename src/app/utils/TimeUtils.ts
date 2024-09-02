@@ -38,7 +38,7 @@ export function timestampToEpoch(api: ApiService, ts: number) {
 
 export function slotToSecondsTimestamp(api: ApiService, slot: number) {
 	const network = api.getNetwork()
-	return (network.genesisTs + slot * network.slotsTime)
+	return network.genesisTs + slot * network.slotsTime
 }
 
 export function getLocale() {
@@ -137,7 +137,7 @@ export function formatTsToAbsolute(ts: number, locales: string, includeTime?: bo
 		? {
 				hour: 'numeric',
 				minute: 'numeric',
-		}
+		  }
 		: {}
 	const options: Intl.DateTimeFormatOptions = {
 		month: 'short',

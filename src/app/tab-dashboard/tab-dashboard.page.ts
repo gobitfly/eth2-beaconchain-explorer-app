@@ -171,7 +171,7 @@ export class Tab1Page {
 			startTime: null,
 			force: false,
 		} as SummaryChartOptions)
-		
+
 		console.log('overallData', this.overallData)
 		this.lastRefreshTs = this.getUnixSeconds()
 	}

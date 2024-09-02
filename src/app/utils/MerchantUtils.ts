@@ -223,7 +223,7 @@ export class MerchantUtils {
 			if (result.error) {
 				console.warn('failed to get user info', result.error)
 				errHandler(result.error)
-				return 
+				return
 			}
 			if (this.userInfo()) {
 				this.storage.setObject('userInfo', this.userInfo())

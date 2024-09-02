@@ -36,14 +36,24 @@ import { UnitconvService } from '../services/unitconv.service'
 import { InfiniteScrollDataSource, loadMoreType } from '../utils/InfiniteScrollDataSource'
 import { trigger, style, animate, transition } from '@angular/animations'
 import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
-import { dashboardID, V2AddDashboardGroup, V2AddValidatorToDashboard, V2AddValidatorToDashboardData, V2DashboardOverview, V2DeleteDashboardGroup, V2DeleteValidatorFromDashboard, V2GetValidatorFromDashboard, V2UpdateDashboardGroup } from '../requests/v2-dashboard'
+import {
+	dashboardID,
+	V2AddDashboardGroup,
+	V2AddValidatorToDashboard,
+	V2AddValidatorToDashboardData,
+	V2DashboardOverview,
+	V2DeleteDashboardGroup,
+	V2DeleteValidatorFromDashboard,
+	V2GetValidatorFromDashboard,
+	V2UpdateDashboardGroup,
+} from '../requests/v2-dashboard'
 import { VDBManageValidatorsTableRow, VDBOverviewData, VDBOverviewGroup } from '../requests/types/validator_dashboard'
 import { Toast } from '@capacitor/toast'
 import { Haptics } from '@capacitor/haptics'
 import { searchType, V2SearchValidators } from '../requests/search'
 import { SearchResult } from '../requests/types/common'
 
-const pageSize = 10
+const PAGE_SIZE = 20
 @Component({
 	selector: 'app-tab2',
 	templateUrl: 'tab-validators.page.html',
@@ -72,7 +82,7 @@ export class Tab2Page {
 
 	private dashboardID: dashboardID
 
-	selectedGroup: number 
+	selectedGroup: number
 
 	validatorLoader: ValidatorLoader = null
 
@@ -80,6 +90,8 @@ export class Tab2Page {
 	selected = new Map<number, boolean>()
 
 	searchResultHandler = new SeachResultHandler()
+
+	loadMore = false
 
 	constructor(
 		public modalController: ModalController,
@@ -122,7 +134,7 @@ export class Tab2Page {
 		if (!this.selectedGroup) {
 			this.selectedGroup = this.groups()?.[0]?.id ?? 0
 		}
-		
+
 		await this.refreshValidators(force)
 	}
 
@@ -153,8 +165,8 @@ export class Tab2Page {
 	private async refreshValidators(force: boolean = false) {
 		this.reachedMaxValidators = false
 		this.validatorLoader = new ValidatorLoader(this.api, this.dashboardID, this.selectedGroup, force)
-		this.dataSource = new InfiniteScrollDataSource<VDBManageValidatorsTableRow>(pageSize, this.getDefaultDataRetriever())
-		
+		this.dataSource = new InfiniteScrollDataSource<VDBManageValidatorsTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
+
 		await this.dataSource.reset()
 	}
 
@@ -168,29 +180,20 @@ export class Tab2Page {
 					next_cursor: null,
 				}
 			}
-
-			this.setLoading(true)
-			const result = await this.validatorLoader.getDefaultDataRetriever()(cursor)
-			this.setLoading(false)
-			return result
-		}
-	}
-
-	private setLoading(loading: boolean) {
-		if (loading) {
-			if (!this.dataSource || !this.dataSource.hasItems()) {
+			const firstRun = !cursor && this.initialized
+			if (firstRun) {
 				this.loading = true
 			}
-		} else {
-			if (this.loading) {
-				setTimeout(() => {
-					this.initialized = true
-					this.loading = false
-				}, 350)
-			} else {
-				this.initialized = true
+
+			this.loadMore = !!cursor
+			const result = await this.validatorLoader.getDefaultDataRetriever()(cursor)
+			this.loadMore = false
+
+			if (firstRun) {
 				this.loading = false
+				this.initialized = true
 			}
+			return result
 		}
 	}
 
@@ -276,7 +279,7 @@ export class Tab2Page {
 				validators: this.searchResultHandler.getAddByIndex(item),
 				deposit_address: this.searchResultHandler.getAddByDepositAddress(item),
 				withdrawal_address: this.searchResultHandler.getAddByWithdrawalAddress(item),
-				graffiti: undefined
+				graffiti: undefined,
 			} as V2AddValidatorToDashboardData)
 		)
 		if (result.error) {
@@ -289,8 +292,6 @@ export class Tab2Page {
 
 		loading.dismiss()
 	}
-
-
 
 	private clickBlocked = false
 	blockClick(forTime) {
@@ -552,7 +553,7 @@ export class Tab2Page {
 			Toast.show({
 				text: 'Group deleted',
 			})
-			
+
 			const refreshGroupsResult = await this.refreshGroups(true)
 			if (refreshGroupsResult.error) {
 				Toast.show({
@@ -665,7 +666,6 @@ export class Tab2Page {
 
 		await alert.present()
 	}
-
 }
 
 class SeachResultHandler {
@@ -726,14 +726,12 @@ class SeachResultHandler {
 }
 
 class ValidatorLoader {
-
 	constructor(private api: ApiService, private dashboard: dashboardID, private groupID: number, private force: boolean = false) {}
 
 	public getDefaultDataRetriever(): loadMoreType<VDBManageValidatorsTableRow> {
 		return async (cursor) => {
 			const result = await this.api.execute2(
-				new V2GetValidatorFromDashboard(this.dashboard, this.groupID, cursor)
-					.withAllowedCacheResponse(!this.force)
+				new V2GetValidatorFromDashboard(this.dashboard, this.groupID, cursor, PAGE_SIZE).withAllowedCacheResponse(!this.force)
 			)
 			if (result.error) {
 				Toast.show({

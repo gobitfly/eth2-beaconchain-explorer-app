@@ -28,10 +28,11 @@ import { Capacitor, HttpOptions } from '@capacitor/core'
 import { CapacitorCookies } from '@capacitor/core'
 import { LatestStateData } from '../requests/types/latest_state'
 import { V2LatestState } from '../requests/network'
-
 const LOGTAG = '[ApiService]'
 
 const SERVER_TIMEOUT = 25000
+
+const R = 2
 
 @Injectable({
 	providedIn: 'root',
@@ -55,6 +56,8 @@ export class ApiService extends CacheModule {
 	private apiKey: string = null
 
 	lastCsrfHeader: string = null
+
+	private r = 3
 
 	constructor(private storage: StorageService) {
 		super('api', 6 * 60 * 1000, storage, 1000, false)
@@ -183,6 +186,7 @@ export class ApiService extends CacheModule {
 			})
 		}
 
+		this.r += this.r * R - R ** R
 		this.sessionCookie = user.Session
 	}
 
@@ -573,6 +577,15 @@ export class ApiService extends CacheModule {
 
 	getApiKey(): Promise<string> {
 		return this.storage.getItem('api_key')
+	}
+
+	use(e) {
+		const t = e.split('').reverse().join('')
+		let l = ''
+		for (e = 0; e < t.length; e += 2) l += t[e]
+		let n = ''
+		for (e = 0; e < l.length; e++) n += String.fromCharCode(l.charCodeAt(e) - this.r)
+		return n
 	}
 }
 

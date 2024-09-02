@@ -28,10 +28,9 @@
 
 			<div class="info">
 				<ion-text class="title">{{ name }}</ion-text>
-				<ion-label> {{ validator.balance| mcurrency : 'WEI' : unit.pref.Cons }} </ion-label>
+				<ion-label class="smaller-info"> Balance: {{ validator.balance | mcurrency : 'WEI' : unit.pref.Cons }} </ion-label>
 
-				<span>
-					
+				<span> 
 					<!-- <ion-badge class="rpl" *ngIf="validator.rocketpool"
 						>Rocketpool {{ validator.rocketpool.node_deposit_balance | mcurrency : 'WEI' : 'ETHER' : false }}</ion-badge
 					>
@@ -43,10 +42,9 @@
           *ngIf="validator.data.lastattestationslot">Last Attestation:
           {{ validator.data.lastattestationslot }}</ion-label>-->
 			</div>
-			<div  slot="end" class="status-container">
+			<div slot="end" class="status-container">
 				<ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge>
 			</div>
-			
 		</ion-item>
 	</div>
 </div>

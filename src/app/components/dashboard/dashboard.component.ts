@@ -124,19 +124,20 @@ export class DashboardComponent implements OnInit {
 		if (!this.data || !this.data.latestState()?.state) return false
 		const epochsToWaitBeforeFinalizationIssue = 4 // 2 normal delay + 2 extra
 		return (
-			slotToEpoch(this.data.latestState().state.finalized_epoch) - epochsToWaitBeforeFinalizationIssue > this.data.latestState().state.finalized_epoch
+			slotToEpoch(this.api, this.data.latestState().state.finalized_epoch) - epochsToWaitBeforeFinalizationIssue >
+			this.data.latestState().state.finalized_epoch
 		)
 	})
 
 	awaitGenesis = computed(() => {
 		if (!this.data || !this.data.latestState()?.state) return false
-		const currentEpoch = slotToEpoch(this.data.latestState().state.current_slot)
+		const currentEpoch = slotToEpoch(this.api, this.data.latestState().state.current_slot)
 		return currentEpoch == 0 && this.data.latestState().state.current_slot <= 0
 	})
 
 	earlyGenesis = computed(() => {
 		if (!this.data || !this.data.latestState()?.state) return false
-		const currentEpoch = slotToEpoch(this.data.latestState().state.current_slot)
+		const currentEpoch = slotToEpoch(this.api, this.data.latestState().state.current_slot)
 		return !this.awaitGenesis() && !this.finalizationIssue() && currentEpoch <= 7
 	})
 

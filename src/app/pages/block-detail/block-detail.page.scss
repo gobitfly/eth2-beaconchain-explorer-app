@@ -220,3 +220,15 @@ ion-item {
 .grid {
 	width: 100%;
 }
+
+.proposed {
+}
+
+.orphaned {
+	opacity: 0.5;
+}
+
+ion-badge {
+	padding: 4px 5px 2px 5px;
+	margin: 5px;
+}

@@ -35,8 +35,6 @@ import { ApiService, LatestStateWithTime } from '../services/api.service'
 import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
 import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/core'
 import { ChartData } from '../requests/types/common'
-import { Toast } from '@capacitor/toast'
-
 export interface SummaryChartOptions {
 	aggregation: Aggregation
 	startTime: number
@@ -46,7 +44,6 @@ export interface SummaryChartOptions {
 
 @Injectable({ providedIn: 'root' })
 export class OverviewProvider {
-
 	constructor(private api: ApiService) {}
 
 	async setSummaryChartOptions(data: OverviewData2, options: SummaryChartOptions) {
@@ -113,7 +110,6 @@ export class OverviewProvider {
 
 		return temp
 	}
-
 }
 
 function getPeriodDisplayable(period: Period): string {
@@ -150,7 +146,6 @@ export class OverviewData2 {
 		this.network = network
 		this.foreignValidator = foreignValidator
 	}
-
 
 	validatorCount: Signal<number> = computed(() => {
 		if (!this.overviewData()) return 0
@@ -293,7 +288,6 @@ export type Description = {
 	extendedDescription: string
 	extendedDescriptionPre: string
 }
-
 
 function getDashboardState(overviewData: VDBOverviewData, validatorCount: number, foreignValidator): DashboardStatus {
 	if (!overviewData) return null

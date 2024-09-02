@@ -157,7 +157,7 @@ export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsT
 	resource = 'validator-dashboards/{id}/validators'
 	method = Method.GET
 
-	constructor(id: dashboardID, groupID: number = undefined, cursor: string = undefined, sort: string = 'index:asc') {
+	constructor(id: dashboardID, groupID: number = undefined, cursor: string = undefined, limit: number = 10, sort: string = 'index:asc') {
 		super()
 		this.resource = setID(this.resource, id)
 		if (groupID !== undefined) {
@@ -165,6 +165,9 @@ export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsT
 		}
 		if (sort !== undefined) {
 			this.resource += '&sort=' + sort
+		}
+		if (limit !== undefined) {
+			this.resource += '&limit=' + limit
 		}
 		if (cursor !== undefined) {
 			this.resource += '&cursor=' + cursor
@@ -180,7 +183,7 @@ export class V2DeleteValidatorFromDashboard extends APIRequest<NoContent> {
 	constructor(id: dashboardID, validators: number[]) {
 		super()
 		this.resource = setID(this.resource, id)
-		this.resource += "?validators="+validators.join()
+		this.resource += '?validators=' + validators.join()
 	}
 }
 

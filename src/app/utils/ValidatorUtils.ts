@@ -52,7 +52,6 @@ const KEYPREFIX = 'validators_'
 export const LAST_TIME_ADDED_KEY = 'last_time_added'
 export const LAST_TIME_REMOVED_KEY = 'last_time_removed'
 
-
 export enum ValidatorState {
 	SLASHED = 'slashed',
 	EXITED = 'exited',
@@ -63,7 +62,7 @@ export enum ValidatorState {
 	EXITING_ONLINE = 'exiting_online',
 	EXITING_OFFLINE = 'exiting_offline',
 	ACTIVE_ONLINE = 'active_online',
-	ACTIVE_OFFLINE = 'active_offline'
+	ACTIVE_OFFLINE = 'active_offline',
 }
 
 export interface Validator {
@@ -210,7 +209,6 @@ export class ValidatorUtils {
 		else this.deletedWithoutNotifying = true
 	}
 
-
 	async saveValidatorsLocal(validators: Validator[]) {
 		const storageKey = this.getStorageKey()
 
@@ -298,7 +296,6 @@ export class ValidatorUtils {
 		return false
 	}
 
-
 	// checks if remote validators are already known locally.
 	// If not, return all indizes of non locally known validators
 	public async getAllNewIndicesOnly(myRemotes: MyValidatorResponse[]): Promise<number[]> {
@@ -314,7 +311,6 @@ export class ValidatorUtils {
 
 		return result
 	}
-
 
 	public async removeValidatorRemote(pubKey: string) {
 		const request = new RemoveMyValidatorsRequest(pubKey)

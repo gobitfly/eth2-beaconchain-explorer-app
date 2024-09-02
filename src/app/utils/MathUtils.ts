@@ -50,15 +50,15 @@ export function findLowest<T>(validators: T[], field: (cur: T) => number): numbe
 	return lowest
 }
 
-export function slotToEpoch(slot: number): number {
-	return Math.floor(slot / 32)
+export function slotToEpoch(api: ApiService, slot: number): number {
+	return Math.floor(slot / api.networkConfig.slotPerEpoch)
 }
 
 /**
  * @returns the epoch at which the sync committee started, inclusive
  */
 export function startEpochSyncCommittee(api: ApiService, currentSlot: number): number {
-	const period = Math.floor(slotToEpoch(currentSlot) / api.networkConfig.epochsPerSyncPeriod)
+	const period = Math.floor(slotToEpoch(api, currentSlot) / api.networkConfig.epochsPerSyncPeriod)
 	return period * api.networkConfig.epochsPerSyncPeriod
 }
 
