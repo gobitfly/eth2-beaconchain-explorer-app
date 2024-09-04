@@ -38,3 +38,4 @@ npm-debug.log*
 /android/.idea
 android/.idea/jarRepositories.xml
 android/.idea/misc.xml
+/src/environments/environment.prod.ts
