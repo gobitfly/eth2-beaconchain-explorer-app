@@ -445,7 +445,6 @@ export class ApiService extends CacheModule {
 				credentials: 'include',
 			})
 			if (!result) return null
-			console.log('api result', result)
 			return await this.validateResponse(ignoreFails, result)
 		} catch (e) {
 			console.warn('fetch error', e)

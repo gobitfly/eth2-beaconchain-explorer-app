@@ -1,4 +1,4 @@
-import { Component, computed, Input } from '@angular/core'
+import { Component, computed, Input, OnInit } from '@angular/core'
 import { Toast } from '@capacitor/toast'
 import { OverviewData2, OverviewProvider } from 'src/app/controllers/OverviewController'
 import { ChartData } from 'src/app/requests/types/common'
@@ -36,7 +36,7 @@ const bounceTime = 450
 	templateUrl: './summary-chart.component.html',
 	styleUrl: './summary-chart.component.scss',
 })
-export class SummaryChartComponent {
+export class SummaryChartComponent implements OnInit {
 	@Input() data: OverviewData2
 
 	chips: ChipsOptions[] = null
@@ -53,7 +53,9 @@ export class SummaryChartComponent {
 		private alert: AlertService,
 		private storage: StorageService,
 		private overviewProvider: OverviewProvider
-	) {
+	) { }
+	
+	ngOnInit() {
 		this.merchant.getUserInfo(false).then(() => {
 			this.initChips()
 		})

@@ -39,7 +39,7 @@ export class BlockComponent implements OnInit {
 		this.resolvedName = null
 
 		this.feeRecipient = this.block.reward_recipient?.hash
-		if (this.block.reward_recipient.ens != null) {
+		if (this.block.reward_recipient?.ens != null) {
 			this.resolvedName = this.block.reward_recipient.ens
 		}
 		if (this.block.reward_recipient?.hash?.toLocaleLowerCase() == ROCKETPOOL_SMOOTHING_POOL) {
