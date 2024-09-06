@@ -29,14 +29,13 @@
 }
 
 .container {
-	padding: 10px 0px 0px 0px;
+	padding: 5px 0px 5px 0px;
 }
 
 .pubkey {
 	text-align: center;
 	padding-top: 48px;
 	width: 45px;
-	font-size: 0.77rem;
 }
 
 .bookmarked {
@@ -64,7 +63,7 @@ ion-icon {
 	//margin-top: 15px;
 	margin-left: 5px;
 	margin-right: 15px;
-	height: 77px;
+	height: 81px;
 	//margin-bottom: 15px;
 }
 
@@ -75,11 +74,6 @@ ion-icon {
 .title {
 	font-size: 16px;
 	font-weight: bold;
-}
-
-.smaller-info {
-	font-size: 0.75rem;
-	color: var(--ion-text-color-secondary);
 }
 
 .online {
@@ -131,7 +125,7 @@ ion-badge {
 }
 
 .status-container {
-	height: 69px;
+	height: 68px;
 
 	margin-left: 0px;
 }

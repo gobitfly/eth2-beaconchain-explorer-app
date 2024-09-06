@@ -21,8 +21,6 @@ import { Component, OnInit, Input } from '@angular/core'
 import { Router } from '@angular/router'
 import { StorageService } from 'src/app/services/storage.service'
 import { OAuthUtils } from 'src/app/utils/OAuthUtils'
-import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
-
 import { Browser } from '@capacitor/browser'
 import { ApiService } from 'src/app/services/api.service'
 import { changeNetwork } from 'src/app/tab-preferences/tab-preferences.page'
@@ -31,6 +29,7 @@ import { NotificationBase } from 'src/app/tab-preferences/notification-base'
 import ThemeUtils from 'src/app/utils/ThemeUtils'
 import { AlertService } from 'src/app/services/alert.service'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
+import { DashboardUtils } from 'src/app/utils/DashboardUtils'
 
 @Component({
 	selector: 'app-help',
@@ -47,11 +46,10 @@ export class HelpComponent implements OnInit {
 
 	constructor(
 		private oauthUtils: OAuthUtils,
-		private validator: ValidatorUtils,
 		private storage: StorageService,
 		private router: Router,
 		public api: ApiService,
-		private validatorUtils: ValidatorUtils,
+		private dashboardUtils: DashboardUtils,
 		private unit: UnitconvService,
 		private notificationBase: NotificationBase,
 		private theme: ThemeUtils,
@@ -80,7 +78,7 @@ export class HelpComponent implements OnInit {
 
 		if (loggedIn) {
 			this.isAlreadyLoggedIn = true
-			const hasValidators = await this.validator.hasLocalValdiators()
+			const hasValidators = !!(await this.storage.getDashboardID())
 			if (!hasValidators) this.router.navigate(['/tabs/validators'])
 		}
 	}
@@ -90,13 +88,13 @@ export class HelpComponent implements OnInit {
 			this.api.isGnosis() ? this.ethereumNetworkKey : 'gnosis',
 			this.storage,
 			this.api,
-			this.validatorUtils,
 			this.unit,
 			this.notificationBase,
 			this.theme,
 			this.alert,
 			this.merchant,
-			true
+			true,
+			this.dashboardUtils
 		)
 		this.isGnosis = this.api.isGnosis()
 	}

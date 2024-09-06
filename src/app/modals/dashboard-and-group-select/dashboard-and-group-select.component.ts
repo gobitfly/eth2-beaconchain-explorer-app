@@ -1,4 +1,4 @@
-import { Component, computed, effect, Input, signal, WritableSignal } from '@angular/core'
+import { Component, computed, effect, Input, OnInit, signal, WritableSignal } from '@angular/core'
 import { AlertController, IonicModule, ModalController } from '@ionic/angular'
 import { UserDashboardsData } from 'src/app/requests/types/dashboard'
 import { V2MyDashboards } from 'src/app/requests/v2-user'
@@ -10,6 +10,9 @@ import { AlertService } from 'src/app/services/alert.service'
 import { Toast } from '@capacitor/toast'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { StorageService } from 'src/app/services/storage.service'
+import { DashboardUtils } from 'src/app/utils/DashboardUtils'
+import { OAuthUtils } from 'src/app/utils/OAuthUtils'
+import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
 
 @Component({
 	selector: 'app-dashboard-and-group-select',
@@ -18,7 +21,7 @@ import { StorageService } from 'src/app/services/storage.service'
 	templateUrl: './dashboard-and-group-select.component.html',
 	styleUrl: './dashboard-and-group-select.component.scss',
 })
-export class DashboardAndGroupSelectComponent {
+export class DashboardAndGroupSelectComponent implements OnInit {
 	@Input() dashboardChangedCallback: () => void
 
 	name: string
@@ -29,14 +32,17 @@ export class DashboardAndGroupSelectComponent {
 	dashboardIDWhenEntered: dashboardID = null
 
 	isLoggedIn = true
+	infoDismissed = true
 
 	constructor(
 		private modalCtrl: ModalController,
 		private api: ApiService,
 		private alertController: AlertController,
 		private alert: AlertService,
-		private merchant: MerchantUtils,
-		private storage: StorageService
+		protected merchant: MerchantUtils,
+		private storage: StorageService,
+		private dashboardUtils: DashboardUtils,
+		private oauth: OAuthUtils
 	) {
 		this.storage.getDashboardID().then((id) => {
 			this.defaultDashboard.set(id)
@@ -45,9 +51,13 @@ export class DashboardAndGroupSelectComponent {
 		effect(() => {
 			if (this.defaultDashboard()) {
 				this.storage.setDashboardID(this.defaultDashboard())
+				this.dashboardUtils.dashboardAwareListener.notifyAll()
 			}
 		})
+	}
 
+	async ngOnInit() {
+		this.infoDismissed = await this.storage.getBooleanSetting('dashboardInfoDismissed', false)
 		this.init()
 	}
 
@@ -59,6 +69,17 @@ export class DashboardAndGroupSelectComponent {
 	async init(allowCached = true) {
 		this.isLoggedIn = await this.storage.isLoggedIn()
 		if (!this.isLoggedIn) {
+			this.dashboards.set({
+				validator_dashboards: [
+					{
+						id: null,
+						name: 'Default',
+						is_archived: false,
+						validator_count: await this.dashboardUtils.getLocalValidatorCount(),
+						group_count: 1,
+					},
+				],
+			} as UserDashboardsData)
 			return
 		}
 
@@ -75,6 +96,13 @@ export class DashboardAndGroupSelectComponent {
 	}
 
 	async addDashboard(network: string) {
+		if (!this.isLoggedIn) {
+			Toast.show({
+				text: 'Please log in to manage dashboards',
+			})
+			return
+		}
+
 		if (this.dashboards().validator_dashboards.length >= this.merchant.highestPackageDashboardsAllowed()) {
 			this.alert.showInfo(
 				'Maximum dashboards reached',
@@ -126,11 +154,11 @@ export class DashboardAndGroupSelectComponent {
 						const result = await this.api.execute2(new V2CreateDashboard(alertData.newName, network))
 						if (result.error) {
 							Toast.show({
-								text: 'Error renaming dashboard, please try again later',
+								text: 'Error creating dashboard, please try again later',
 							})
 						} else {
 							Toast.show({
-								text: 'Dashboard renamed',
+								text: 'Dashboard created',
 							})
 							await this.init(false)
 						}
@@ -151,5 +179,25 @@ export class DashboardAndGroupSelectComponent {
 			}
 		}
 		return this.modalCtrl.dismiss(null, 'cancel')
+	}
+
+	async signIn() {
+		const success = await this.oauth.login()
+		if (success) {
+			this.init()
+		}
+	}
+
+	async sellUp() {
+		const modal = await this.modalCtrl.create({
+			component: SubscribePage,
+			cssClass: 'my-custom-class',
+		})
+		return await modal.present()
+	}
+
+	dismissInfo() {
+		this.storage.setBooleanSetting('dashboardInfoDismissed', true)
+		this.infoDismissed = true
 	}
 }

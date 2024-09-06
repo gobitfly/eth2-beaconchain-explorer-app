@@ -17,20 +17,16 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, computed, signal, ViewChild, WritableSignal } from '@angular/core'
-import { Validator } from '../utils/ValidatorUtils'
-import { IonSearchbar, ModalController, Platform } from '@ionic/angular'
-import { ValidatordetailPage } from '../pages/validatordetail/validatordetail.page'
+import { Component, computed, OnInit, signal, ViewChild, WritableSignal } from '@angular/core'
+import { Validator }  from '../utils/ValidatorUtils'
+import { AlertController, IonSearchbar, ModalController, Platform } from '@ionic/angular'
 import { ApiService, capitalize } from '../services/api.service'
-import { AlertController } from '@ionic/angular'
 import { StorageService } from '../services/storage.service'
 import { AlertService } from '../services/alert.service'
 import { SubscribePage } from '../pages/subscribe/subscribe.page'
 import { MerchantUtils } from '../utils/MerchantUtils'
 
 import { Keyboard } from '@capacitor/keyboard'
-
-import ThemeUtils from '../utils/ThemeUtils'
 
 import { UnitconvService } from '../services/unitconv.service'
 import { InfiniteScrollDataSource, loadMoreType } from '../utils/InfiniteScrollDataSource'
@@ -39,11 +35,8 @@ import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-
 import {
 	dashboardID,
 	V2AddDashboardGroup,
-	V2AddValidatorToDashboard,
-	V2AddValidatorToDashboardData,
 	V2DashboardOverview,
 	V2DeleteDashboardGroup,
-	V2DeleteValidatorFromDashboard,
 	V2GetValidatorFromDashboard,
 	V2UpdateDashboardGroup,
 } from '../requests/v2-dashboard'
@@ -52,63 +45,83 @@ import { Toast } from '@capacitor/toast'
 import { Haptics } from '@capacitor/haptics'
 import { searchType, V2SearchValidators } from '../requests/search'
 import { SearchResult } from '../requests/types/common'
+import { DashboardError, DashboardNotFoundError, getDashboardError } from '../controllers/OverviewController'
+import { DashboardUtils } from '../utils/DashboardUtils'
+import ThemeUtils from '../utils/ThemeUtils'
 
 const PAGE_SIZE = 20
+const DASHBOARD_UPDATE = "validators_tab"
+const ASSOCIATED_CACHE_KEY = 'validators'
 @Component({
 	selector: 'app-tab2',
 	templateUrl: 'tab-validators.page.html',
 	styleUrls: ['tab-validators.page.scss'],
 	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))])])],
 })
-export class Tab2Page {
+export class Tab2Page implements OnInit {
+	public classReference = UnitconvService
+	@ViewChild('searchbarRef', { static: true }) searchbarRef: IonSearchbar
 	dataSource: InfiniteScrollDataSource<VDBManageValidatorsTableRow>
 
-	public classReference = UnitconvService
+	loading = false
+	reachedMaxValidators = false
+	isLoggedIn = false
+	initialized = false // when first data has been loaded and displayed
+	loadMore = false // infinite scroll load more text at bottom
+
+	dashboardID: dashboardID
+	private dashboardData: WritableSignal<VDBOverviewData> = signal(null)
+	private validatorLoader: ValidatorLoader = null
 
 	searchResultMode = false
 	searchResult: SearchResult[] = null
 
-	loading = false
-
-	reachedMaxValidators = false
-
-	isLoggedIn = false
-
-	initialized = false
-
-	@ViewChild('searchbarRef', { static: true }) searchbarRef: IonSearchbar
-
-	dashboardData: WritableSignal<VDBOverviewData> = signal(null)
-
-	private dashboardID: dashboardID
-
 	selectedGroup: number
-
-	validatorLoader: ValidatorLoader = null
 
 	selectMode: boolean = false
 	selected = new Map<number, boolean>()
 
-	searchResultHandler = new SeachResultHandler()
-
-	loadMore = false
+	private validatorSetAltered = false
 
 	constructor(
 		public modalController: ModalController,
 		public api: ApiService,
-		private alertController: AlertController,
 		private storage: StorageService,
 		private alerts: AlertService,
 		public merchant: MerchantUtils,
+		public unit: UnitconvService,
+		private modalCtrl: ModalController,
+		protected dashboardUtils: DashboardUtils,
 		private themeUtils: ThemeUtils,
 		private platform: Platform,
-		public unit: UnitconvService,
-		private modalCtrl: ModalController
+		private alertController: AlertController
 	) {
-		this.initForDashboard()
+		this.dashboardUtils.dashboardAwareListener.register(DASHBOARD_UPDATE)
 	}
 
-	async initForDashboard(force: boolean = false) {
+	ngOnInit() {
+		this.setup()
+	}
+
+	async ionViewWillEnter() {
+		if (this.dashboardUtils.dashboardAwareListener.hasAndConsume(DASHBOARD_UPDATE)) {
+			await this.clearRequestCache()
+			await this.setup()
+		}
+	}
+
+	clearRequestCache() {
+		return this.api.clearAllAssociatedCacheKeys(ASSOCIATED_CACHE_KEY)
+	}
+
+	ionViewWillLeave() {
+		if (this.validatorSetAltered) {
+			this.validatorSetAltered = false
+			this.dashboardUtils.dashboardAwareListener.notifyAll()
+		}
+	}
+
+	async setup() {
 		this.selectMode = false
 		this.selected = new Map<number, boolean>()
 		this.searchResult = null
@@ -120,11 +133,15 @@ export class Tab2Page {
 		this.isLoggedIn = await this.storage.isLoggedIn()
 
 		await this.merchant.getUserInfo(false)
-		const id = await this.storage.getDashboardID()
-		this.dashboardID = id
+		this.dashboardID = await this.dashboardUtils.initDashboard()
+		if (!this.dashboardID) {
+			this.initialized = true
+			return
+		}
+		console.log('dashboard id', this.dashboardID)
 
-		const refreshGroupsResult = await this.refreshGroups(force)
-		if (refreshGroupsResult.error) {
+		const updateGroupsResult = await this.updateGroups()
+		if (updateGroupsResult && updateGroupsResult.error) {
 			Toast.show({
 				text: 'Could not load groups',
 			})
@@ -135,7 +152,7 @@ export class Tab2Page {
 			this.selectedGroup = this.groups()?.[0]?.id ?? 0
 		}
 
-		await this.refreshValidators(force)
+		await this.updateValidators()
 	}
 
 	async openDashboardAndGroupSelect() {
@@ -145,7 +162,7 @@ export class Tab2Page {
 				dashboardChangedCallback: async () => {
 					const loading = await this.alerts.presentLoading('Loading...')
 					loading.present()
-					await this.initForDashboard()
+					await this.setup()
 					loading.dismiss()
 				},
 			},
@@ -155,16 +172,38 @@ export class Tab2Page {
 		await modal.onWillDismiss()
 	}
 
-	private refreshGroups(force: boolean = false) {
+	private async updateGroups(recursiveMax = false) {
 		if (!this.isLoggedIn) {
 			return
 		}
-		return this.api.set(new V2DashboardOverview(this.dashboardID).withAllowedCacheResponse(!force), this.dashboardData)
+		if (!this.dashboardID) {
+			return
+		}
+		const result = await this.api.set(new V2DashboardOverview(this.dashboardID), this.dashboardData, ASSOCIATED_CACHE_KEY)
+		const e = getDashboardError(result)
+		if (e) {
+			if (e instanceof DashboardNotFoundError) {
+				if (recursiveMax) {
+					Toast.show({
+						text: 'Dashboard not found',
+					})
+					return
+				}
+				// if dashboard is not available any more (maybe user deleted it) reinit and try again
+				this.dashboardID = await this.dashboardUtils.initDashboard()
+				return this.updateGroups(true)
+			} else if (e instanceof DashboardError) {
+				if (this.dashboardUtils.defaultDashboardErrorHandler(e)) {
+					result.error = null
+				}
+			}
+		}
+		return result
 	}
 
-	private async refreshValidators(force: boolean = false) {
+	private async updateValidators() {
 		this.reachedMaxValidators = false
-		this.validatorLoader = new ValidatorLoader(this.api, this.dashboardID, this.selectedGroup, force)
+		this.validatorLoader = new ValidatorLoader(this.api, this.dashboardID, this.selectedGroup)
 		this.dataSource = new InfiniteScrollDataSource<VDBManageValidatorsTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
 
 		await this.dataSource.reset()
@@ -172,15 +211,7 @@ export class Tab2Page {
 
 	private getDefaultDataRetriever(): loadMoreType<VDBManageValidatorsTableRow> {
 		return async (cursor) => {
-			// todo no account handling
-			if (!this.isLoggedIn) {
-				this.initialized = true
-				return {
-					data: [],
-					next_cursor: null,
-				}
-			}
-			const firstRun = !cursor && this.initialized
+			const firstRun = !cursor && !this.initialized
 			if (firstRun) {
 				this.loading = true
 			}
@@ -231,8 +262,10 @@ export class Tab2Page {
 		}
 
 		// todo network from dashboard
-		const result = await this.api.execute2(new V2SearchValidators(searchString, ['holesky'], searchTypes))
+		const result = await this.api.execute2(new V2SearchValidators(searchString, ['holesky'], searchTypes), ASSOCIATED_CACHE_KEY)
 		if (result.error) {
+			this.searchResultMode = false
+			this.api.connectionStateOK = false
 			Toast.show({
 				text: 'Could not search for validators',
 				duration: 'long',
@@ -243,10 +276,48 @@ export class Tab2Page {
 		this.searchResult = result.data
 	}
 
-	addSearchResult(item: SearchResult) {
+	async addSearchResult(item: SearchResult) {
+		if (!this.merchant.canBulkAdd() && this.dashboardUtils.searchResultHandler.requiresPremium(item)) {
+			this.premiumInfo()
+			return
+		}
+
+		const dashboardValidatorCount = this.isLoggedIn
+			? this.groups().reduce((acc, group) => acc + group.count, 0)
+			: await this.dashboardUtils.getLocalValidatorCount()
+
+		const resultValidatorCount = this.dashboardUtils.searchResultHandler.resultCount(item)
+		if (resultValidatorCount + dashboardValidatorCount > this.merchant.getCurrentPlanMaxValidator()) {
+			if (this.isLoggedIn) {
+				this.alerts.confirmDialog(
+					'Maximum validators reached',
+					'Some of your validators can not be added since it exceeds your current plans limit. <br/><br/>You can add more validators by upgrading to a higher plan.<br/><br/>Do you want to add the remaining validators?',
+					'Add',
+					() => {
+						this.addSearchResultRemoteDialog(item)
+					}
+				)
+				return
+			} else {
+				this.alerts.showInfo(
+					'Can not add validators',
+					'You reached the maximum number of validators for your plan. <br/><br/>You can add more validators by upgrading to a higher plan.'
+				)
+				return
+			}
+		}
+
+		if (this.isLoggedIn) {
+			this.addSearchResultRemoteDialog(item)
+		} else {
+			this.confirmAddSearchResult(item, 0)
+		}
+	}
+
+	addSearchResultRemoteDialog(item: SearchResult) {
 		let addInfo = ''
 		let title = 'Add validator'
-		if (this.searchResultHandler.searchNumFieldIsIndex(item)) {
+		if (this.dashboardUtils.searchResultHandler.searchNumFieldIsIndex(item)) {
 			addInfo = 'validator with index ' + item.num_value
 		} else if (item.num_value > 1) {
 			addInfo = item.num_value + ' validators'
@@ -273,22 +344,16 @@ export class Tab2Page {
 		const loading = await this.alerts.presentLoading('Adding validators...')
 		loading.present()
 
-		const result = await this.api.execute2(
-			new V2AddValidatorToDashboard(this.dashboardID, {
-				group_id: groupID,
-				validators: this.searchResultHandler.getAddByIndex(item),
-				deposit_address: this.searchResultHandler.getAddByDepositAddress(item),
-				withdrawal_address: this.searchResultHandler.getAddByWithdrawalAddress(item),
-				graffiti: undefined,
-			} as V2AddValidatorToDashboardData)
-		)
-		if (result.error) {
+		const ok = await this.dashboardUtils.addValidator(item, groupID)
+		if (!ok) {
 			Toast.show({
 				text: 'Could not add validator to dashboard',
 				duration: 'long',
 			})
 		}
-		await this.initForDashboard(true)
+		this.validatorSetAltered = true
+		await this.clearRequestCache()
+		await this.setup()
 
 		loading.dismiss()
 	}
@@ -321,7 +386,7 @@ export class Tab2Page {
 	deleteSelected() {
 		if (this.selected.size <= 0) {
 			Toast.show({
-				text: 'Select the validators you want to apply this setting to.',
+				text: 'Select the validators you want to delete first.',
 			})
 			return
 		}
@@ -346,20 +411,24 @@ export class Tab2Page {
 	async deleteConfirm(index: number[]) {
 		const loading = await this.alerts.presentLoading('Removing validators...')
 		loading.present()
-		const result = await this.api.execute2(new V2DeleteValidatorFromDashboard(this.dashboardID, index))
-		if (result.error) {
+
+		const ok = await this.dashboardUtils.deleteValidator(index)
+		if (!ok) {
 			Toast.show({
 				text: 'Could not remove validator from dashboard',
 				duration: 'long',
 			})
-		} else {
-			await this.initForDashboard(true)
-			loading.dismiss()
-			Toast.show({
-				text: 'Validators removed from dashboard',
-				duration: 'short',
-			})
+			return
 		}
+
+		this.validatorSetAltered = true
+		await this.clearRequestCache()
+		await this.setup()
+		loading.dismiss()
+		Toast.show({
+			text: 'Validators removed from dashboard',
+			duration: 'short',
+		})
 	}
 
 	moveSelected() {}
@@ -367,27 +436,17 @@ export class Tab2Page {
 	cancelSearch() {
 		if (this.searchResultMode) {
 			this.searchResultMode = false
-			this.refreshValidators()
+			this.updateValidators()
 		}
 	}
 
 	async doRefresh(event) {
-		await this.refreshValidators().catch(() => {
+		await this.clearRequestCache()
+		await this.updateValidators().catch(() => {
 			this.api.mayInvalidateOnFaultyConnectionState()
 			event.target.complete()
 		})
 		event.target.complete()
-	}
-
-	async presentModal(item: Validator) {
-		const modal = await this.modalController.create({
-			component: ValidatordetailPage,
-			cssClass: 'my-custom-class',
-			componentProps: {
-				item: item,
-			},
-		})
-		return await modal.present()
 	}
 
 	async upgrade() {
@@ -410,8 +469,6 @@ export class Tab2Page {
 				this.selected.set(item.index, true)
 			}
 			Haptics.selectionChanged()
-		} else {
-			//this.presentModal(item)
 		}
 	}
 
@@ -425,20 +482,29 @@ export class Tab2Page {
 	// ------------ GROUPS ------------
 
 	groups = computed(() => {
-		return this.dashboardData()
-			?.groups.sort((a, b) => a.id - b.id)
-			.map((group) => {
-				return {
-					id: group.id,
-					count: group.count,
-					name: group.name == 'default' && group.id == 0 ? 'Default Group' : capitalize(group.name),
-					realName: group.name,
-				}
-			})
+		return (
+			this.dashboardData()
+				?.groups.sort((a, b) => a.id - b.id)
+				.map((group) => {
+					return {
+						id: group.id,
+						count: group.count,
+						name: group.name == 'default' && group.id == 0 ? 'Default Group' : capitalize(group.name),
+						realName: group.name,
+					}
+				}) || [
+				{
+					id: null,
+					count: 0,
+					name: 'Default',
+					realName: 'default',
+				},
+			]
+		)
 	})
 
 	selectGroup() {
-		this.refreshValidators(false)
+		this.updateValidators()
 	}
 
 	findGroupById(id: number) {
@@ -493,8 +559,8 @@ export class Tab2Page {
 							Toast.show({
 								text: 'Group renamed',
 							})
-							const refreshGroupsResult = await this.refreshGroups(true)
-							if (refreshGroupsResult.error) {
+							const updateGroupsResult = await this.updateGroups(true)
+							if (updateGroupsResult.error) {
 								Toast.show({
 									text: 'Could not load groups',
 								})
@@ -554,8 +620,9 @@ export class Tab2Page {
 				text: 'Group deleted',
 			})
 
-			const refreshGroupsResult = await this.refreshGroups(true)
-			if (refreshGroupsResult.error) {
+			this.validatorSetAltered = true
+			const updateGroupsResult = await this.updateGroups(true)
+			if (updateGroupsResult.error) {
 				Toast.show({
 					text: 'Could not load groups',
 				})
@@ -563,7 +630,7 @@ export class Tab2Page {
 				return
 			}
 			this.selectedGroup = this.groups()?.[0]?.id ?? 0
-			this.refreshValidators()
+			this.updateValidators()
 		}
 
 		loading.dismiss()
@@ -573,7 +640,7 @@ export class Tab2Page {
 		if (!this.isLoggedIn) {
 			this.alerts.showInfo(
 				'Log in',
-				'Groups allow you to better manage your validators and get deep insight on how they perform against each other. You need a beaconcha.in account and a premium subscription to use groups.'
+				'Groups allow you to better manage your validators and get deep insight on how they perform against each other.<br/><br/> You need a beaconcha.in account and a premium subscription to use groups.'
 			)
 			return false
 		}
@@ -646,8 +713,9 @@ export class Tab2Page {
 							Toast.show({
 								text: 'Group created',
 							})
-							const refreshGroupsResult = await this.refreshGroups(true)
-							if (refreshGroupsResult.error) {
+							await this.clearRequestCache()
+							const updateGroupsResult = await this.updateGroups()
+							if (updateGroupsResult.error) {
 								Toast.show({
 									text: 'Could not load groups',
 								})
@@ -655,7 +723,8 @@ export class Tab2Page {
 								return
 							}
 							this.selectedGroup = result.data[0].id
-							this.refreshValidators(true)
+
+							this.updateValidators()
 						}
 
 						loading.dismiss()
@@ -666,72 +735,23 @@ export class Tab2Page {
 
 		await alert.present()
 	}
-}
 
-class SeachResultHandler {
-	formatSearchType(type: searchType) {
-		switch (type) {
-			case searchType.validatorByIndex:
-				return 'Validator Index'
-			case searchType.validatorsByDepositEnsName:
-				return 'Deposit ENS'
-			case searchType.validatorsByWithdrawalEns:
-				return 'Withdrawal ENS'
-			case searchType.validatorsByDepositAddress:
-				return 'Deposit Address'
-			case searchType.validatorsByWithdrawalAddress:
-				return 'Withdrawal Address'
-			case searchType.validatorsByWithdrawalCredential:
-				return 'Withdrawal Credential'
-			case searchType.validatorByPublicKey:
-				return 'Public Key'
-		}
-	}
-
-	searchNumFieldIsIndex(item: SearchResult) {
-		return item.type == searchType.validatorByIndex || item.type == searchType.validatorByPublicKey
-	}
-
-	getAddByIndex(searchResult: SearchResult) {
-		if (searchResult.type == searchType.validatorByIndex || searchResult.type == searchType.validatorByPublicKey) {
-			return [searchResult.num_value.toString()]
-		}
-		return undefined
-	}
-
-	getAddByDepositAddress(searchResult: SearchResult) {
-		if (searchResult.type == searchType.validatorsByDepositAddress || searchResult.type == searchType.validatorsByDepositEnsName) {
-			return searchResult.hash_value
-		}
-		return undefined
-	}
-
-	getAddByWithdrawalAddress(searchResult: SearchResult) {
-		if (
-			searchResult.type == searchType.validatorsByWithdrawalAddress ||
-			searchResult.type == searchType.validatorsByWithdrawalEns ||
-			searchResult.type == searchType.validatorsByWithdrawalCredential
-		) {
-			return searchResult.hash_value
-		}
-		return undefined
-	}
-
-	getAddByWithdrawalCredential(searchResult: SearchResult) {
-		if (searchResult.type == searchType.validatorsByWithdrawalCredential) {
-			return searchResult.hash_value
-		}
-		return undefined
+	premiumInfo() {
+		this.alerts.showInfo(
+			'Upgrade',
+			'Adding multiple validators at once via ENS, deposit address or withdrawal address/credential requires a premium subscription.'
+		)
 	}
 }
+
 
 class ValidatorLoader {
-	constructor(private api: ApiService, private dashboard: dashboardID, private groupID: number, private force: boolean = false) {}
+	constructor(private api: ApiService, private dashboard: dashboardID, private groupID: number) {}
 
 	public getDefaultDataRetriever(): loadMoreType<VDBManageValidatorsTableRow> {
 		return async (cursor) => {
 			const result = await this.api.execute2(
-				new V2GetValidatorFromDashboard(this.dashboard, this.groupID, cursor, PAGE_SIZE).withAllowedCacheResponse(!this.force)
+				new V2GetValidatorFromDashboard(this.dashboard, this.groupID, cursor, PAGE_SIZE), ASSOCIATED_CACHE_KEY
 			)
 			if (result.error) {
 				Toast.show({

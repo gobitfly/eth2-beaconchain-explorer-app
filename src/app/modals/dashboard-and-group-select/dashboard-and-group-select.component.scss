@@ -23,3 +23,19 @@ ion-list-header {
 	padding-bottom: 0px !important;
 	margin-bottom: 0px !important;
 }
+
+.hint {
+	display: inline-block;
+	color: var(--ion-text-color-secondary);
+	
+	margin-left: 72px;
+	font-size: 0.9em;
+	line-height: 1em !important;
+	margin-bottom: 10px;
+	margin-right: 45px;
+}
+
+
+.premium {
+	padding-bottom: 0px !important;
+}

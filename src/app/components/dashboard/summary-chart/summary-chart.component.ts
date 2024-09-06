@@ -364,6 +364,13 @@ export class SummaryChartComponent {
 		}
 	})
 
+	async ionViewWillEnter() {
+		if (this.data.id != (await this.storage.getDashboardID())) {
+			this.changeZoom(true)
+			return
+		}
+	}
+
 	formatToDateOrEpoch = (value: string) => {
 		if (this.data.summaryChartOptions().aggregation === 'epoch') {
 			return formatTSToEpoch(value + '', this.api)

@@ -23,12 +23,12 @@
 		<ion-item lines="none">
 			<div slot="start">
 				<img class="blockie" src="{{ imgData }}" />
-				<ion-label class="pubkey">{{ validator.public_key | slice : 0 : 5 }}</ion-label>
+				<ion-label class="pubkey smaller-info">{{ validator.public_key | slice : 0 : 5 }}</ion-label>
 			</div>
 
 			<div class="info">
 				<ion-text class="title">{{ name }}</ion-text>
-				<ion-label class="smaller-info"> Balance: {{ validator.balance | mcurrency : 'WEI' : unit.pref.Cons }} </ion-label>
+				<ion-label class="smaller-info smaller-pad"> Balance: {{ validator.balance | mcurrency : 'WEI' : unit.pref.Cons }} </ion-label>
 
 				<span> 
 					<!-- <ion-badge class="rpl" *ngIf="validator.rocketpool"

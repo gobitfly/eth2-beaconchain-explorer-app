@@ -5,7 +5,6 @@ import { BlockResponse } from '../requests/requests'
 import { AlertService } from '../services/alert.service'
 import { ApiService } from '../services/api.service'
 import { UnitconvService } from '../services/unitconv.service'
-import { ValidatorUtils } from '../utils/ValidatorUtils'
 import { InfiniteScrollDataSource, loadMoreType } from '../utils/InfiniteScrollDataSource'
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling'
 import { trigger, style, animate, transition } from '@angular/animations'
@@ -15,8 +14,13 @@ import { dashboardID, Period, V2DashboardSummaryGroupTable } from '../requests/v
 import { Toast } from '@capacitor/toast'
 import { V2DashboardBlocks } from '../requests/v2-blocks'
 import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
+import { DashboardError, DashboardNotFoundError, getDashboardError } from '../controllers/OverviewController'
+import { DashboardUtils } from '../utils/DashboardUtils'
+import { relativeTs } from '../utils/TimeUtils'
 
 const PAGE_SIZE = 20
+const DASHBOARD_UPDATE = 'blocks_update'
+const ASSOCIATED_CACHE_KEY = 'blocks'
 @Component({
 	selector: 'app-tab-blocks',
 	templateUrl: './tab-blocks.page.html',
@@ -39,66 +43,80 @@ export class TabBlocksPage implements OnInit {
 
 	summaryGroup: WritableSignal<VDBGroupSummaryData> = signal(null)
 
-	expectedNextBlockTs = computed(() => {
-		if (!this.summaryGroup()) {
-			return 0
-		}
-		return Date.parse(this.summaryGroup().luck.proposal.expected)
-	})
-
 	constructor(
 		public api: ApiService,
 		public unit: UnitconvService,
 		public modalController: ModalController,
-		private validatorUtils: ValidatorUtils,
 		private alertService: AlertService,
 		private storage: StorageService,
 		private modalCtrl: ModalController,
-		private alerts: AlertService
+		private alerts: AlertService,
+		private dashboardUtils: DashboardUtils
 	) {
-		this.validatorUtils.registerListener(() => {
-			this.refresh()
-		})
+		this.dashboardUtils.dashboardAwareListener.register(DASHBOARD_UPDATE)
 	}
 
-	async ngOnInit() {
-		this.initialized = false
-		await this.init()
-		await this.refresh()
-	}
-
-	private async init() {
-		this.dashboardID = await this.storage.getDashboardID()
-		this.isLoggedIn = await this.storage.isLoggedIn()
-		
-		await this.loadSummaryGroup()
-		this.dataSource = new InfiniteScrollDataSource<VDBBlocksTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
-	}
-
-	private async loadSummaryGroup() {
-		const result = await this.api.set(new V2DashboardSummaryGroupTable(this.dashboardID, 0, Period.AllTime, null), this.summaryGroup)
-		if (result.error) {
-			Toast.show({
-				text: 'Could not load summary group',
-				duration: 'long',
-			})
+	async ionViewWillEnter() {
+		if (this.dashboardUtils.dashboardAwareListener.hasAndConsume(DASHBOARD_UPDATE)) {
+			await this.clearRequestCache()
+			await this.setup()
+			await this.update()
 			return
 		}
 	}
 
+	async ngOnInit() {
+		this.initialized = false
+		await this.setup()
+		await this.update()
+	}
+
+	clearRequestCache() {
+		return this.api.clearAllAssociatedCacheKeys(ASSOCIATED_CACHE_KEY)
+	}
+
+	private async setup() {
+		this.dashboardID = await this.dashboardUtils.initDashboard()
+		this.isLoggedIn = await this.storage.isLoggedIn()
+
+		if (!this.dashboardID) {
+			this.initialized = true
+			return
+		}
+
+		await this.loadSummaryGroup()
+		this.dataSource = new InfiniteScrollDataSource<VDBBlocksTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
+	}
+
+	private async loadSummaryGroup(recursiveMax = false) {
+		const result = await this.api.set(
+			new V2DashboardSummaryGroupTable(this.dashboardID, 0, Period.AllTime, null),
+			this.summaryGroup,
+			ASSOCIATED_CACHE_KEY
+		)
+		const e = getDashboardError(result)
+		if (e) {
+			if (e instanceof DashboardNotFoundError) {
+				if (recursiveMax) {
+					Toast.show({
+						text: 'Dashboard not found',
+					})
+					return
+				}
+				// if dashboard is not available any more (maybe user deleted it) reinit and try again
+				this.dashboardID = await this.dashboardUtils.initDashboard()
+				return this.loadSummaryGroup(true)
+			} else if (e instanceof DashboardError) {
+				this.dashboardUtils.defaultDashboardErrorHandler(e)
+			}
+		}
+		return result
+	}
+
 	private getDefaultDataRetriever(): loadMoreType<VDBBlocksTableRow> {
 		return async (cursor) => {
-			// todo no account handling
-			if (!this.isLoggedIn) {
-				this.initialized = true
-				return {
-					data: [],
-					next_cursor: null,
-				}
-			}
-
 			this.loadMore = !!cursor
-			const result = await this.api.execute2(new V2DashboardBlocks(this.dashboardID, cursor, PAGE_SIZE))
+			const result = await this.api.execute2(new V2DashboardBlocks(this.dashboardID, cursor, PAGE_SIZE), ASSOCIATED_CACHE_KEY)
 			if (result.error) {
 				Toast.show({
 					text: 'Could not load blocks',
@@ -119,7 +137,17 @@ export class TabBlocksPage implements OnInit {
 		}
 	}
 
-	private async refresh() {
+	expectedNextBlockTs = computed(() => {
+		if (!this.summaryGroup()) {
+			return 0
+		}
+		return Date.parse(this.summaryGroup().luck.proposal.expected)
+	})
+
+	private async update() {
+		if (!this.dashboardID) {
+			return
+		}
 		this.setLoading(true)
 
 		await this.dataSource.reset()
@@ -146,6 +174,7 @@ export class TabBlocksPage implements OnInit {
 
 	doRefresh(event) {
 		setTimeout(async () => {
+			await this.clearRequestCache()
 			this.virtualScroll.scrollToIndex(0)
 			await this.dataSource.reset()
 			event.target.complete()
@@ -162,30 +191,10 @@ export class TabBlocksPage implements OnInit {
 		} else {
 			this.alertService.showInfo(
 				'Proposal Luck',
-				`With current network conditions, your validators are expected to produce a block every <strong>${this.relativeTs(
+				`With current network conditions, your validators are expected to produce a block every <strong>${relativeTs(
 					this.summaryGroup().luck.proposal.average
 				)}</strong> (on average).`
 			)
-		}
-	}
-
-	relativeTs(diff: number) {
-		const seconds = Math.floor(diff / 1000)
-		const minutes = Math.floor(seconds / 60)
-		const hours = Math.floor(minutes / 60)
-		const days = Math.floor(hours / 24)
-		const months = Math.floor(days / 30)
-
-		if (months > 0) {
-			return months > 1 ? `${months} months` : 'month'
-		} else if (days > 0) {
-			return days > 1 ? `${days} days` : 'day'
-		} else if (hours > 0) {
-			return hours > 1 ? `${hours} hours` : 'hour'
-		} else if (minutes > 0) {
-			return minutes > 1 ? `${minutes} minutes` : 'minute'
-		} else {
-			return seconds > 1 ? `${seconds} seconds` : 'second'
 		}
 	}
 

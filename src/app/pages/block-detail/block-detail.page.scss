@@ -225,10 +225,18 @@ ion-item {
 }
 
 .orphaned {
-	opacity: 0.5;
+	color: var(--ion-color-warning);
 }
 
 ion-badge {
 	padding: 4px 5px 2px 5px;
 	margin: 5px;
+}
+
+.missed {
+	color: var(--ion-color-danger);
+}
+
+.scheduled {
+	color: var(--ion-color-secondary);
 }

@@ -50,6 +50,20 @@
 // and the bottom bounce in main themes color
 ion-content {
 	--background: linear-gradient(0deg, var(--ion-background-color) 60%, var(--ion-toolbar-background) 40%);
+
+	--offset-bottom: auto !important;
+  --overflow: auto;
+  --background: #F7F7FA;
+  overflow: auto;
+
+  &::part(background) {
+    bottom: 0;
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
+    scrollbar-width: none;
+  }
 }
 
 ion-refresher-content {
@@ -59,4 +73,23 @@ ion-refresher-content {
 .selected {
 	font-weight: bold;
 	color: var(--ion-color-primary);
+}
+
+
+.ion-content-scroll-host::before,
+.ion-content-scroll-host::after {
+  position: absolute;
+  
+  width: 1px;
+  height: 1px;
+  
+  content: "";
+}
+
+.ion-content-scroll-host::before {
+  bottom: -1px;
+}
+
+.ion-content-scroll-host::after {
+  top: -1px;
 }

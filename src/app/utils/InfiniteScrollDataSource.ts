@@ -86,9 +86,9 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 		this.cachedData.splice(page * this.pageSize, deleteAmount, ...newEntries.data)
 		this.dataStream.next(this.cachedData)
 
-		if (newEntries.data.length < this.pageSize) {
-			this.reachedMax = true
-		}
+		// if (newEntries.data.length < this.pageSize) {
+		// 	this.reachedMax = true
+		// }
 		return Promise.resolve()
 	}
 

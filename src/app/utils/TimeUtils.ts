@@ -133,12 +133,7 @@ function formatTsToRelative(
 }
 
 export function formatTsToAbsolute(ts: number, locales: string, includeTime?: boolean): string {
-	const timeOptions: Intl.DateTimeFormatOptions = includeTime
-		? {
-				hour: 'numeric',
-				minute: 'numeric',
-		  }
-		: {}
+	const timeOptions: Intl.DateTimeFormatOptions = includeTime ? { hour: 'numeric', minute: 'numeric' } : {}
 	const options: Intl.DateTimeFormatOptions = {
 		month: 'short',
 		day: 'numeric',
@@ -148,3 +143,23 @@ export function formatTsToAbsolute(ts: number, locales: string, includeTime?: bo
 	const date = new Date(ts * 1000)
 	return includeTime ? date.toLocaleString(locales, options) : date.toLocaleDateString(locales, options)
 }
+
+export function relativeTs(diff: number) {
+		const seconds = Math.floor(diff / 1000)
+		const minutes = Math.floor(seconds / 60)
+		const hours = Math.floor(minutes / 60)
+		const days = Math.floor(hours / 24)
+		const months = Math.floor(days / 30)
+
+		if (months > 0) {
+			return months > 1 ? `${months} months` : 'month'
+		} else if (days > 0) {
+			return days > 1 ? `${days} days` : 'day'
+		} else if (hours > 0) {
+			return hours > 1 ? `${hours} hours` : 'hour'
+		} else if (minutes > 0) {
+			return minutes > 1 ? `${minutes} minutes` : 'minute'
+		} else {
+			return seconds > 1 ? `${seconds} seconds` : 'second'
+		}
+	}

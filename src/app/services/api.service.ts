@@ -28,6 +28,7 @@ import { Capacitor, HttpOptions } from '@capacitor/core'
 import { CapacitorCookies } from '@capacitor/core'
 import { LatestStateData } from '../requests/types/latest_state'
 import { V2LatestState } from '../requests/network'
+import { environment } from 'src/environments/environment'
 const LOGTAG = '[ApiService]'
 
 const SERVER_TIMEOUT = 25000
@@ -38,25 +39,27 @@ const R = 2
 	providedIn: 'root',
 })
 export class ApiService extends CacheModule {
-	networkConfig: ApiNetwork
+	networkConfig: ApiNetwork // todo signal?
 
 	public connectionStateOK = true
 
 	private awaitingResponses: Map<string, Mutex> = new Map()
-
-	debug = false
 
 	public lastRefreshed = 0 // only updated by calls that have the updatesLastRefreshState flag enabled
 
 	private lastCacheInvalidate = 0
 
 	private sessionCookie: string
+	private apiUserKey: string = null
+	private apiAccessKey: string = null
+
+	// holds all cache keys if executed via execute2 and provided with a cacheKey
+	private associatedCacheKeyMap: Map<string, Set<string>> = new Map()
+
+	// debug
+	debug = false
 	private csrfCookie: string // only debug
-
-	private apiKey: string = null
-
-	lastCsrfHeader: string = null
-
+	private lastCsrfHeader: string = null
 	private r = 3
 
 	constructor(private storage: StorageService) {
@@ -101,8 +104,9 @@ export class ApiService extends CacheModule {
 		await this.loadNetworkConfig()
 		await this.initV2Cookies()
 		await this.init()
-		this.apiKey = await this.getApiKey()
-		console.log('API SERVICE INITIALISED', this.apiKey)
+		this.apiUserKey = await this.getApiKey()
+		this.apiAccessKey = this.use(environment.API_ACCESS_KEY)
+		console.log('API SERVICE INITIALISED', this.apiAccessKey)
 	}
 
 	async loadNetworkConfig() {
@@ -248,7 +252,7 @@ export class ApiService extends CacheModule {
 		return !this.isNotEthereumMainnet()
 	}
 
-	private getCacheKey(request: APIRequest<unknown>): string {
+	getCacheKey(request: APIRequest<unknown>): string {
 		if (request.method == Method.GET) {
 			if (request.customCacheKey) {
 				return request.customCacheKey
@@ -260,9 +264,35 @@ export class ApiService extends CacheModule {
 		return null
 	}
 
-	async execute2<T>(request: APIRequest<T>): Promise<ApiResult<T[]>> {
+	async execute2<T>(request: APIRequest<T>, associatedCacheKey: string = null): Promise<ApiResult<T[]>> {
 		const response = await this.execute(request)
+		if (associatedCacheKey) {
+			if (this.associatedCacheKeyMap.has(associatedCacheKey)) {
+				this.associatedCacheKeyMap.get(associatedCacheKey).add(this.getCacheKey(request))
+			} else {
+				this.associatedCacheKeyMap.set(associatedCacheKey, new Set([this.getCacheKey(request)]))
+			}
+		}
 		return request.parse2(response)
+	}
+
+	async clearAllAssociatedCacheKeys(associatedCacheKey: string) {
+		const keys = this.associatedCacheKeyMap.get(associatedCacheKey)
+		if (keys) {
+			for (const key of keys) {
+				await this.putCache(key, null, 0)
+				this.findAndClearAssociatedKeyInOtherKeys(associatedCacheKey)
+			}
+			this.associatedCacheKeyMap.delete(associatedCacheKey)
+		}
+	}
+
+	private findAndClearAssociatedKeyInOtherKeys(associatedCacheKey: string) {
+		for (const [_, value] of this.associatedCacheKeyMap) {
+			if (value.has(associatedCacheKey)) {
+				value.delete(associatedCacheKey)
+			}
+		}
 	}
 
 	async execute(request: APIRequest<unknown>): Promise<Response> {
@@ -313,6 +343,10 @@ export class ApiService extends CacheModule {
 							csrfCookieExtra = '; _gorilla_csrf=' + this.csrfCookie + '; '
 						}
 						options.headers = { ...options.headers, 'X-Cookie': 'session_id=' + this.sessionCookie + csrfCookieExtra }
+					} else {
+						if (this.apiAccessKey) {
+							options.headers = { ...options.headers, 'x-mobile-token': this.apiAccessKey }
+						}
 					}
 				} else {
 					const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
@@ -394,26 +428,30 @@ export class ApiService extends CacheModule {
 			body = this.formatPostData(data, resource)
 		}
 
-		if (this.apiKey && endpoint == 'default') {
+		if (this.apiUserKey && endpoint == 'default') {
 			options.headers = {
 				...options.headers,
 				...{
-					Authorization: 'Bearer ' + this.apiKey,
+					Authorization: 'Bearer ' + this.apiUserKey,
 				},
 			}
 		}
 
-		const result = await fetch(this.getResourceUrl(resource, endpoint), {
-			method: Method[method],
-			headers: options.headers,
-			body: body,
-			credentials: 'include',
-		}).catch((err) => {
-			this.updateConnectionState(ignoreFails, false)
-			console.warn('Connection err', err)
-		})
-		if (!result) return null
-		return await this.validateResponse(ignoreFails, result)
+		try {
+			const result = await fetch(this.getResourceUrl(resource, endpoint), {
+				method: Method[method],
+				headers: options.headers,
+				body: body,
+				credentials: 'include',
+			})
+			if (!result) return null
+			console.log('api result', result)
+			return await this.validateResponse(ignoreFails, result)
+		} catch (e) {
+			console.warn('fetch error', e)
+			//this.updateConnectionState(ignoreFails, false)
+			return null
+		}
 	}
 
 	async clearSpecificCache(request: APIRequest<unknown>) {
@@ -445,7 +483,7 @@ export class ApiService extends CacheModule {
 	private async validateResponse(ignoreFails, response: globalThis.Response): Promise<Response> {
 		if (!response) {
 			console.warn('can not get response', response)
-			this.updateConnectionState(ignoreFails, false)
+			//this.updateConnectionState(ignoreFails, false)
 			return
 		}
 		let jsonData
@@ -453,13 +491,19 @@ export class ApiService extends CacheModule {
 			jsonData = await response.json()
 			if (!jsonData) {
 				console.warn('not json response', response, jsonData)
-				this.updateConnectionState(ignoreFails, false)
-				return
+				//this.updateConnectionState(ignoreFails, false)
+				return {
+					data: null,
+					status: response.status,
+					headers: response.headers,
+					url: response.url,
+					cached: false,
+				} as Response
 			}
 		} catch (e) {
 			// Auth response can be empty, maybe improve handling in the future
 		}
-		this.updateConnectionState(ignoreFails, true)
+		//this.updateConnectionState(ignoreFails, true)
 		return {
 			data: jsonData,
 			status: response.status,
@@ -532,8 +576,8 @@ export class ApiService extends CacheModule {
 
 	// Helper function since this is used quite often
 	// and caching is already done by ApiService itself
-	public async getLatestState(): Promise<LatestStateWithTime> {
-		const temp = await this.execute2(new V2LatestState())
+	public async getLatestState(force: boolean = false): Promise<LatestStateWithTime> {
+		const temp = await this.execute2(new V2LatestState().withAllowedCacheResponse(!force))
 		if (temp.error) {
 			console.warn('getLatestState error', temp.error)
 			return null
@@ -551,8 +595,8 @@ export class ApiService extends CacheModule {
 		return result
 	}
 
-	set<T>(request: APIRequest<T>, s: WritableSignal<T>) {
-		return this.execute2(request).then((data) => {
+	set<T>(request: APIRequest<T>, s: WritableSignal<T>, associatedCacheKey: string = null) {
+		return this.execute2(request, associatedCacheKey).then((data) => {
 			if (data.error) {
 				return data
 			}
@@ -560,8 +604,8 @@ export class ApiService extends CacheModule {
 			return data
 		})
 	}
-	setArray<T>(request: APIRequest<T>, s: WritableSignal<T[]>) {
-		return this.execute2(request).then((data) => {
+	setArray<T>(request: APIRequest<T>, s: WritableSignal<T[]>, associatedCacheKey: string = null) {
+		return this.execute2(request, associatedCacheKey).then((data) => {
 			if (data.error) {
 				return data
 			}
@@ -571,7 +615,7 @@ export class ApiService extends CacheModule {
 	}
 
 	setApiKey(apiKey: string) {
-		this.apiKey = apiKey
+		this.apiUserKey = apiKey
 		return this.storage.setItem('api_key', apiKey)
 	}
 
@@ -580,6 +624,7 @@ export class ApiService extends CacheModule {
 	}
 
 	use(e) {
+		if(!e) return null
 		const t = e.split('').reverse().join('')
 		let l = ''
 		for (e = 0; e < t.length; e += 2) l += t[e]

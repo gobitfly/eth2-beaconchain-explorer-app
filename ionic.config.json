@@ -1,7 +1,7 @@
 {
-  "name": "validator-app",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "angular"
+	"name": "validator-app",
+	"integrations": {
+		"capacitor": {}
+	},
+	"type": "angular"
 }

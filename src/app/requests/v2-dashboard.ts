@@ -135,7 +135,7 @@ export class V2DashboardRewardChart extends APIRequest<ChartData<number, string>
 // Validator management
 export interface V2AddValidatorToDashboardData {
 	group_id: number // starts at 0
-	validators?: string[]
+	validators?: string[] | number[]
 	deposit_address?: string
 	withdrawal_address?: string
 	graffiti?: string
@@ -176,14 +176,16 @@ export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsT
 }
 
 export class V2DeleteValidatorFromDashboard extends APIRequest<NoContent> {
-	resource = 'validator-dashboards/{id}/validators'
+	resource = 'validator-dashboards/{id}/bulk-deletions'
 	method = Method.DELETE
 	expectedResponseStatus: number = 204 // no content
 
 	constructor(id: dashboardID, validators: number[]) {
 		super()
 		this.resource = setID(this.resource, id)
-		this.resource += '?validators=' + validators.join()
+		this.postData = {
+			validators: validators,
+		}
 	}
 }
 

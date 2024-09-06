@@ -13,7 +13,7 @@
 		<ion-title>Blocks</ion-title>
 	</ion-toolbar>
 
-	<ion-item class="top-bar" @fadeIn *ngIf="!loading">
+	<ion-item class="top-bar" @fadeIn *ngIf="!loading && dataSource && dataSource.hasItems()">
 		<ion-label
 			>Proposal Luck:
 			<span *ngIf="summaryGroup() && summaryGroup().luck.proposal.percent" [class]="summaryGroup().luck.proposal.percent | valuestyle: 100"
@@ -31,7 +31,7 @@
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher>
 
-	<p class="next-block-hint" *ngIf="summaryGroup() && !loading">
+	<p class="next-block-hint" *ngIf="summaryGroup() && !loading && dataSource && dataSource.hasItems()">
 		<span *ngIf="!(expectedNextBlockTs() | timeago).includes('ago')">On average, next block expected in</span>
 		<span *ngIf="(expectedNextBlockTs() | timeago).includes('ago')">On average, next block was expected</span>
 		<br />
@@ -40,7 +40,7 @@
 
 	<app-ad @fadeIn location="blocks" *ngIf="dataSource && dataSource.hasItems() && !loading"></app-ad>
 
-	<div class="nothingfound" *ngIf="dataSource && !dataSource.hasItems() && !loading && initialized">
+	<div class="nothingfound" *ngIf="(!dataSource || dataSource && !dataSource.hasItems()) && !loading && initialized">
 		<ion-icon name="telescope-outline"></ion-icon>
 		<h2>No Blocks so far</h2>
 		<ion-label>Your proposed blocks will show up here.</ion-label>

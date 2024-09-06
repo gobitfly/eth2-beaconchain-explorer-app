@@ -27,6 +27,8 @@
 	</ion-popover>
 </ion-header>
 <ion-content>
+
+
 	<app-dashboard-item
 		*ngFor="let item of dashboards()?.validator_dashboards"
 		[data]="item"
@@ -38,5 +40,38 @@
 		<div class="center">
 			<ion-spinner class="status-icon loading-spinner"></ion-spinner>
 		</div>
+	</div>
+
+	<div style="margin-top: 10px;"*ngIf="!infoDismissed">
+		<ion-list>
+			<ion-item lines="none" class="premium">
+				<ion-icon slot="start" name="information-circle-outline" class="opacity-icon" class="prem-icon"></ion-icon>
+				<ion-label>New: Manage Dashboards</ion-label>
+				<ion-icon (click)="dismissInfo()" slot="end" name="close-outline" class="opacity-icon"></ion-icon>
+			</ion-item>
+			<span class="hint">It's now possible to have more than one dashboard. Each dashboard is associated with a network, for example Ethereum or Gnosis and can be further organized with groups.</span>
+		</ion-list>
+	</div>
+
+	<div style="margin-top: 10px;" *ngIf="!isLoggedIn" (click)="signIn()">
+		<ion-list>
+			<ion-item lines="none" class="premium">
+				<ion-icon slot="start" name="person-circle-outline" class="opacity-icon" class="prem-icon"></ion-icon>
+				<ion-label>Sign in to beaconcha.in</ion-label>
+				<ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon"></ion-icon>
+			</ion-item>
+			<span class="hint">Get free notifications about your validators, manage or share your dashboards and stay in sync from web or app. </span>
+		</ion-list>
+	</div>
+
+	<div style="margin-top: 10px;" *ngIf="!merchant.isPremium() && isLoggedIn" (click)="sellUp()">
+		<ion-list>
+			<ion-item lines="none" class="premium">
+				<ion-icon slot="start" name="rocket-outline" class="opacity-icon" class="prem-icon"></ion-icon>
+				<ion-label>Get more with Premium</ion-label>
+				<ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon"></ion-icon>
+			</ion-item>
+			<span class="hint">Premium lets you track more validators, access more dashboards and groups, extended history timeframes and much more.</span>
+		</ion-list>
 	</div>
 </ion-content>

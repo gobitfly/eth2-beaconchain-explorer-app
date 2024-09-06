@@ -21,16 +21,14 @@ import { ApiService } from '../services/api.service'
 import { Injectable } from '@angular/core'
 import { StorageService } from '../services/storage.service'
 import FirebaseUtils from './FirebaseUtils'
-import { ValidatorUtils } from './ValidatorUtils'
 import { LoadingController, Platform } from '@ionic/angular'
-import { SyncService } from '../services/sync.service'
 import { MerchantUtils } from './MerchantUtils'
 
 import { Toast } from '@capacitor/toast'
 import { Device } from '@capacitor/device'
 import { OAuth2AuthenticateOptions, OAuth2Client } from '@byteowls/capacitor-oauth2'
 import FlavorUtils from './FlavorUtils'
-import { V2MyDashboards } from '../requests/v2-user'
+import { mergeLocalDashboardToRemote } from './DashboardUtils'
 
 @Injectable({
 	providedIn: 'root',
@@ -40,9 +38,7 @@ export class OAuthUtils {
 		private api: ApiService,
 		private storage: StorageService,
 		private firebaseUtils: FirebaseUtils,
-		private validatorUtils: ValidatorUtils,
 		private loadingController: LoadingController,
-		private sync: SyncService,
 		private merchantUtils: MerchantUtils,
 		private flavor: FlavorUtils,
 		private platform: Platform
@@ -97,25 +93,7 @@ export class OAuthUtils {
 					})
 				}
 
-				this.validatorUtils.clearDeletedSet()
-				await this.firebaseUtils.pushLastTokenUpstream(true)
-				//await this.sync.fullSync()
-
-				await this.merchantUtils.getUserInfo(true, () => {
-					console.warn('can not get user info')
-					Toast.show({
-						text: 'Could not log in, please try again later.',
-					})
-				})
-				if (!this.merchantUtils.userInfo()) {
-					return
-				}
-
-				const myDashboards = await this.api.execute2(new V2MyDashboards())
-				if (myDashboards.data) {
-					this.storage.setDashboardID(myDashboards.data[0].validator_dashboards[0].id)
-				}
-
+				await this.postLogin()
 				const isPremium = this.merchantUtils.isPremium()
 
 				loadingScreen.dismiss()
@@ -137,6 +115,20 @@ export class OAuthUtils {
 				})
 				return false
 			})
+	}
+
+	async postLogin() {
+		await this.firebaseUtils.pushLastTokenUpstream(true)
+		//await this.sync.fullSync()
+
+		await this.merchantUtils.getUserInfo(true, () => {
+			console.warn('can not get user info')
+			Toast.show({
+				text: 'Could not log in, please try again later.',
+			})
+		})
+
+		await mergeLocalDashboardToRemote(this.api, this.storage)
 	}
 
 	private async presentLoading() {

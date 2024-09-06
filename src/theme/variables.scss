@@ -39,6 +39,7 @@
 
 :root {
 	--test-color: #ee7112;
+	--smaller-label-weight: normal;
 
 	--ion-font-family: 'Mukta';
 	/** primary **/
@@ -124,6 +125,7 @@
 }
 
 body {
+	--bar-transparency: 0.9;
 	--tab-top-border: 1px;
 	--status-ok: var(--ion-color-success);
 	--status-warn: var(--ion-color-warning);
@@ -171,6 +173,7 @@ body {
 }
 
 body.dark {
+	--bar-transparency: 0.79;
 	--ion-color-primary: #ee7112;
 	--ion-color-primary-rgb: 238, 113, 18;
 	--ion-color-primary-contrast: #ffffff;

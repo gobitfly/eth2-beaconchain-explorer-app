@@ -57,7 +57,7 @@
 	</ion-toolbar>
 	<app-offline *ngIf="!api.connectionStateOK"></app-offline>
 
-	<ion-item *ngIf="dataSource && (!loading || initialized)" class="top-bar" @fadeIn>
+	<ion-item *ngIf="dataSource && (!loading || initialized) && dashboardID" class="top-bar" @fadeIn>
 		<ion-select [disabled]="selectMode" placeholder="My groups" interface="popover" (ionChange)="selectGroup()" [(ngModel)]="selectedGroup">
 			<ion-select-option *ngFor="let group of groups()" [value]="group.id">{{group.name}}</ion-select-option>
 		</ion-select>
@@ -92,7 +92,7 @@
 
 	<app-ad @fadeIn location="validator" *ngIf="dataSource && dataSource.hasItems() && !loading"></app-ad>
 
-	<div class="nothingfound" *ngIf="dataSource && !dataSource.hasItems() && !searchResultMode && !loading && initialized">
+	<div class="nothingfound" *ngIf="(!dataSource || !dataSource.hasItems()) && !searchResultMode && !loading && initialized">
 		<ion-icon name="arrow-up-circle-outline"></ion-icon>
 		<h2>Add Validators</h2>
 		<ion-label>
@@ -136,11 +136,12 @@
 			</div>
 
 			<div>
-				<ion-label class="search-result-title" *ngIf="!searchResultHandler.searchNumFieldIsIndex(item)">{{item.num_value}} Validators</ion-label>
-				<ion-label class="search-result-title" *ngIf="searchResultHandler.searchNumFieldIsIndex(item)">Validator {{item.num_value}}</ion-label>
-				<ion-badge slot="start" style="padding: 4px 5px 2px 5px">{{ searchResultHandler.formatSearchType(item.type) }}</ion-badge>
+				<ion-label class="search-result-title" *ngIf="!dashboardUtils.searchResultHandler.searchNumFieldIsIndex(item)">{{item.num_value}} Validators</ion-label>
+				<ion-label class="search-result-title" *ngIf="dashboardUtils.searchResultHandler.searchNumFieldIsIndex(item)">Validator {{item.num_value}}</ion-label>
+				<ion-label slot="start" class="smaller-info">Found via {{ dashboardUtils.searchResultHandler.formatSearchType(item.type) }}</ion-label>
 			</div>
 
+			<ion-icon slot="end" name="diamond-outline" style="color: var(--ion-color-primary); font-size: 20px;" (click)="premiumInfo()" *ngIf="!merchant.canBulkAdd() && dashboardUtils.searchResultHandler.requiresPremium(item)"></ion-icon>
 			<ion-icon slot="end" name="add-circle-outline" (click)="addSearchResult(item)"> </ion-icon>
 		</ion-item>
 

@@ -7,6 +7,8 @@ import { dashboardID, V2ChangeDashboardName, V2DeleteDashboard } from 'src/app/r
 import { AlertService } from 'src/app/services/alert.service'
 import { ApiService } from 'src/app/services/api.service'
 import { StorageService } from 'src/app/services/storage.service'
+import { DashboardUtils } from 'src/app/utils/DashboardUtils'
+import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 
 @Component({
 	selector: 'app-dashboard-item',
@@ -33,7 +35,22 @@ export class DashboardItemComponent {
 		//return this.data.network
 	})
 
-	constructor(private alertController: AlertController, private api: ApiService, private alert: AlertService, private storage: StorageService) {
+	reachedMaxGroupClassStyle = computed(() => {
+		return this.data.group_count >= this.merchant.getCurrentPlanMaxGroups() ? 'maxed' : ''
+	})
+
+	reachedMaxValidatorClassStyle = computed(() => {
+		this.data.validator_count >= this.merchant.getCurrentPlanMaxValidator() ? 'maxed' : ''
+	})
+
+	constructor(
+		private alertController: AlertController,
+		private api: ApiService,
+		private alert: AlertService,
+		private dashboardUtils: DashboardUtils,
+		private storage: StorageService,
+		protected merchant: MerchantUtils
+	) {
 		effect(() => {
 			this.selected = this.defaultDashboard() === this.data.id
 			this.triggerID = 'click-trigger-' + this.data.id
@@ -41,11 +58,17 @@ export class DashboardItemComponent {
 	}
 
 	setAsDefault() {
-		console.log('set as default', this.data.id)
 		this.defaultDashboard.set(this.data.id)
 	}
 
 	async rename() {
+		if (!(await this.storage.isLoggedIn())) {
+			Toast.show({
+				text: 'Please log in to manage dashboards',
+			})
+			return
+		}
+
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
 			header: 'Rename my dashboard',
@@ -94,7 +117,13 @@ export class DashboardItemComponent {
 		await alert.present()
 	}
 
-	remove() {
+	async remove() {
+		if (!(await this.storage.isLoggedIn())) {
+			Toast.show({
+				text: 'Please log in to manage dashboards',
+			})
+			return
+		}
 		this.alert.confirmDialog(
 			'Remove dashboard',
 			'This will permanently remove the dashboard and all associated groups and validators. <br/><br/>Are you sure you want to continue?',
@@ -118,6 +147,9 @@ export class DashboardItemComponent {
 								text: 'Dashboard removed',
 							})
 							this.data = null
+							if (this.selected) {
+								this.dashboardUtils.dashboardAwareListener.notifyAll()
+							}
 							this.refresh.emit()
 						}
 

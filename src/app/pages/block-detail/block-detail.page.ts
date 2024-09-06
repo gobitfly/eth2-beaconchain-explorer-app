@@ -26,7 +26,7 @@ export class BlockDetailPage implements OnInit {
 	imgData = null
 	timestamp = 0
 	producerReward = new BigNumber(0)
-	feeRecipient = ''
+	feeRecipient = null
 
 	showGasUsedPercent = true
 	nameResolved = ''
@@ -37,27 +37,40 @@ export class BlockDetailPage implements OnInit {
 		return ((parseInt(this.overview().gas_usage) * 100) / this.overview().gas_limit.value).toFixed(1)
 	})
 
-	constructor(public unit: UnitconvService, private modalCtrl: ModalController, private api: ApiService) {}
+
+	constructor(public unit: UnitconvService, private modalCtrl: ModalController, protected api: ApiService) {}
 
 	ngOnInit() {
 		this.getOverview()
 		this.imgData = this.getBlockies()
 		this.timestamp = slotToSecondsTimestamp(this.api, this.block.slot) * 1000
-		this.producerReward = new BigNumber(this.block.reward.el).plus(new BigNumber(this.block.reward.cl))
+		if (this.block.reward) {
+			this.producerReward = new BigNumber(this.block.reward.el).plus(new BigNumber(this.block.reward.cl))
+		}
 		this.nameResolved = null
 
-		this.feeRecipient = this.block.reward_recipient.hash
-		if (this.block.reward_recipient.ens != null) {
-			this.nameResolved = this.block.reward_recipient.ens
+		this.feeRecipient = this.block.reward_recipient?.hash
+		if (this.block.reward_recipient?.ens != null) {
+			this.nameResolved = this.block.reward_recipient?.ens
 		}
-		if (this.feeRecipient.toLocaleLowerCase() == ROCKETPOOL_SMOOTHING_POOL) {
+		if (this.block.reward_recipient?.hash?.toLocaleLowerCase() == ROCKETPOOL_SMOOTHING_POOL) {
 			this.nameResolved = 'Went to Rocketpool Smoothing-Pool'
-		} else if (this.feeRecipient.toLocaleLowerCase() == ETHPOOL) {
+		} else if (this.block.reward_recipient?.hash?.toLocaleLowerCase() == ETHPOOL) {
 			this.nameResolved = 'Distributed via ethpool.eth'
 		}
+
+		if (this.block.status == "missed") {
+			this.feeRecipient = 'This block was missed'
+		} else if (this.block.status == "orphaned") {
+			this.feeRecipient = 'This block was orphaned'
+		} else if (this.block.status == "scheduled") {
+			this.feeRecipient = 'This block is scheduled'
+		}
+		
 	}
 
 	async getOverview() {
+		if (!this.block.block) return
 		// todo network
 		const result = await this.api.set(new V2BlockOverview('holesky', this.block.block), this.overview)
 		if (result.error) {

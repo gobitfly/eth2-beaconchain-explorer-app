@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable, isDevMode } from '@angular/core'
+import { Injectable, isDevMode, OnInit } from '@angular/core'
 import { Plugins } from '@capacitor/core'
 import * as StorageTypes from '../models/StorageTypes'
 import { MAP, findConfigForKey } from '../utils/NetworkData'
@@ -44,9 +44,12 @@ export const DEBUG_SETTING_OVERRIDE_PACKAGE = 'debug_setting_override_package'
 @Injectable({
 	providedIn: 'root',
 })
-export class StorageService extends CacheModule {
+export class StorageService extends CacheModule implements OnInit{
 	constructor(private platform: Platform) {
 		super()
+	}
+
+	ngOnInit() {
 		this.reflectiOSStorage()
 	}
 
@@ -60,14 +63,12 @@ export class StorageService extends CacheModule {
 		return (await Device.getId()).identifier
 	}
 
-	// todo support v2
 	async backupAuthUser() {
-		return this.setObject(AUTH_USER + '_backup', await this.getAuthUser())
+		return this.setObject(AUTH_USER_V2 + '_backup', await this.getAuthUserv2())
 	}
 
-	// todo support v2
 	async restoreAuthUser() {
-		return this.setAuthUser((await this.getObject(AUTH_USER + '_backup')) as StorageTypes.AuthUser)
+		return this.setAuthUserv2((await this.getObject(AUTH_USER_V2 + '_backup')) as StorageTypes.AuthUserv2)
 	}
 
 	/**@deprecated */
@@ -110,7 +111,6 @@ export class StorageService extends CacheModule {
 		return true
 	}
 
-	// todo also support v2
 	async removeAuthUser() {
 		this.remove(AUTH_USER_V2)
 		return this.remove(AUTH_USER)
@@ -167,11 +167,12 @@ export class StorageService extends CacheModule {
 		})
 	}
 
-	async getStakingShare(): Promise<BigNumber> {
-		const value = await this.getItem('staking_share')
-		if (!value) return null
-		return new BigNumber(value)
-	}
+
+	// async getStakingShare(): Promise<BigNumber> {
+	// 	const value = await this.getItem('staking_share')
+	// 	if (!value) return null
+	// 	return new BigNumber(value)
+	// }
 
 	async setLastEpochRequestTime(time: number) {
 		await this.setObject('last_epoch_time', { ts: time } as EpochRequestTime)

@@ -23,19 +23,18 @@
 		<ion-item lines="none">
 			<div slot="start">
 				<img class="blockie" src="{{ imgData }}" />
-				<ion-label class="blocknr">{{ block.block }}</ion-label>
+				<ion-label class="blocknr smaller-info">{{ block.block || "-" }}</ion-label>
 			</div>
 
 			<div class="info">
 				<ion-text class="title">Reward: {{ producerReward | mcurrency : 'WEI' : unit.pref.Exec }}</ion-text>
-				<ion-label class="smaller-info" style="padding-bottom: 0px">
+				<ion-label class="smaller-info smaller-pad" style="padding-bottom: 0px">
 					<span>Proposer: {{ block.proposer }}</span>
 				</ion-label>
-				<ion-label class="smaller-info">
-					<span *ngIf="!resolvedName">To: {{ feeRecipient | slice : 0 : 6 }}…{{ feeRecipient | slice : 37 : 42 }}</span>
-					<span *ngIf="resolvedName"
-						>To: <span [class]="resolvedClass">{{ resolvedName }}</span></span
-					>
+				<ion-label class="smaller-info smaller-pad">
+					<span *ngIf="!resolvedName && feeRecipient">To: {{ feeRecipient | slice : 0 : 6 }}…{{ feeRecipient | slice : 37 : 42 }}</span>
+					<span *ngIf="resolvedName">To: <span [class]="resolvedClass">{{ resolvedName }}</span></span>
+					<span *ngIf="block.status != 'success'" [class]="block.status">{{ block.status }}</span>
 				</ion-label>
 			</div>
 			<div slot="end" class="status-container">

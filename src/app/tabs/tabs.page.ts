@@ -17,27 +17,35 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { StorageService } from '../services/storage.service'
-import { SyncService } from '../services/sync.service'
 import FirebaseUtils from '../utils/FirebaseUtils'
 import { MerchantUtils } from '../utils/MerchantUtils'
 import ThemeUtils from '../utils/ThemeUtils'
 import { Toast } from '@capacitor/toast'
+import { ApiService } from '../services/api.service'
 
 @Component({
 	selector: 'app-tabs',
 	templateUrl: 'tabs.page.html',
 	styleUrls: ['tabs.page.scss'],
 })
-export class TabsPage {
+export class TabsPage implements OnInit {
 	constructor(
 		private firebaseUtils: FirebaseUtils,
-		private sync: SyncService,
 		private storage: StorageService,
 		private merchant: MerchantUtils,
-		private theme: ThemeUtils
-	) {}
+		private theme: ThemeUtils,
+		private api: ApiService
+	) { }
+	
+	ngOnInit() {
+		console.log("force init latest state!")
+		// This might seem weird but if there is no dashboard ID yet,
+		// stuff like validator search (post) won't work since we have no CSRF token yet.
+		// By getting latest state, we also get the csrf token.
+		this.api.getLatestState(true)
+	}
 
 	ionViewDidEnter() {
 		setTimeout(() => this.preload(), 500)

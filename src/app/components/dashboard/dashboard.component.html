@@ -135,18 +135,11 @@
 			*ngIf="showFirstProposalMsg() | async"></app-message>
 
 		<app-message
-			title="Limited to 100 validators."
+			title="Upgrade for more validators."
 			icon="rocket-outline"
 			iconStyle="genesis"
 			(click)="upgrade()"
-			*ngIf="data.validatorCount() >= this.merchant.getCurrentPlanMaxValidator() && data.validatorCount() <= 100">
-		</app-message>
-
-		<app-message
-			title="Limited to 280 validators."
-			icon="rocket-outline"
-			iconStyle="genesis"
-			*ngIf="data.validatorCount() >= this.merchant.getCurrentPlanMaxValidator() && data.validatorCount() > 100">
+			*ngIf="data.validatorCount() >= this.merchant.getCurrentPlanMaxValidator()">
 		</app-message>
 
 		<app-ad location="info"></app-ad>

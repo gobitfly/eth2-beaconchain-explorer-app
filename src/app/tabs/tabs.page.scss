@@ -30,8 +30,14 @@ ion-tab-bar {
 
 @supports ((-webkit-backdrop-filter: blur(0)) or (backdrop-filter: blur(0))) {
 	ion-tab-bar {
-		--background: rgba(var(--ion-background-color-rgb, 255, 255, 255), 0.75);
-		-webkit-backdrop-filter: saturate(210%) blur(20px);
-		backdrop-filter: saturate(210%) blur(20px);
+		--background: rgba(var(--ion-background-color-rgb, 255, 255, 255), var(--bar-transparency)); // Default (light mode) transparency
+
+		//--background: rgba(var(--ion-background-color-rgb, 255, 255, 255), 0.9); 
+		-webkit-backdrop-filter: saturate(180%) blur(5px);
+		backdrop-filter: saturate(180%) blur(5px); 
+		will-change: transform; /* Create a new layer to avoid flickering */
+		transform: translateZ(0); /* Forces the browser to create a new layer */
 	}
+
+	
 }

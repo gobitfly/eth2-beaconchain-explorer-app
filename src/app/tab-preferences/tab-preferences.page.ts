@@ -27,7 +27,6 @@ import ThemeUtils from '../utils/ThemeUtils'
 import { findConfigForKey } from '../utils/NetworkData'
 import { ModalController } from '@ionic/angular'
 import { HelppagePage } from '../pages/helppage/helppage.page'
-import { ValidatorUtils } from '../utils/ValidatorUtils'
 import Unit, { MAPPING } from '../utils/EthereumUnits'
 import { AlertController } from '@ionic/angular'
 
@@ -44,12 +43,12 @@ import { Router } from '@angular/router'
 import { App } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { Toast } from '@capacitor/toast'
-import { MergeChecklistPage } from '../pages/merge-checklist/merge-checklist.page'
 import { ClientsPage } from '../pages/clients/clients.page'
 import FlavorUtils from '../utils/FlavorUtils'
 import { Capacitor } from '@capacitor/core'
 import { trigger, style, animate, transition } from '@angular/animations'
 import V2Migrator from '../utils/V2Migrator'
+import { DashboardUtils } from '../utils/DashboardUtils'
 @Component({
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
@@ -95,10 +94,10 @@ export class Tab3Page {
 		public unit: UnitconvService,
 		protected storage: StorageService,
 		protected updateUtils: ClientUpdateUtils,
-		protected validatorUtils: ValidatorUtils,
 		protected modalController: ModalController,
 		protected alertController: AlertController,
 		protected firebaseUtils: FirebaseUtils,
+		protected dashboardUtils: DashboardUtils,
 		public platform: Platform,
 		protected alerts: AlertService,
 		protected sync: SyncService,
@@ -259,6 +258,7 @@ export class Tab3Page {
 		this.oauth.login().then((success) => {
 			if (success) {
 				this.storage.getAuthUserv2().then((result) => (this.authUser = result))
+				this.dashboardUtils.dashboardAwareListener.notifyAll()
 			}
 		})
 	}
@@ -311,7 +311,10 @@ export class Tab3Page {
 
 	confirmLogout() {
 		this.storage.removeAuthUser()
+		this.storage.setDashboardID(null)
+		this.merchant.clearTempUserInfo()
 		this.authUser = null
+		this.dashboardUtils.dashboardAwareListener.notifyAll()
 		Toast.show({
 			text: 'Logged out',
 		})
@@ -322,13 +325,13 @@ export class Tab3Page {
 			this.network,
 			this.storage,
 			this.api,
-			this.validatorUtils,
 			this.unit,
 			this.notificationBase,
 			this.theme,
 			this.alerts,
 			this.merchant,
-			false
+			false,
+			this.dashboardUtils
 		)
 		this.currentFiatCurrency = await this.unit.getCurrentConsFiat()
 	}
@@ -339,18 +342,6 @@ export class Tab3Page {
 			header: 'App Icon Credit',
 			message:
 				'Satellite dish by Font Awesome.<br/>Licensed under the Creative Commons Attribution 4.0 International.<br/><a href="https://fontawesome.com/license">https://fontawesome.com/license</a>',
-			buttons: ['OK'],
-		})
-
-		await alert.present()
-	}
-
-	async partialStake() {
-		const alert = await this.alertController.create({
-			cssClass: 'my-custom-class',
-			header: 'Define stake share',
-			message:
-				'If you own partial amounts of a validator, you can define your share on a per validator basis. To do that, go to the validators tab, select your validators by holding down and set the stake share.',
 			buttons: ['OK'],
 		})
 
@@ -391,18 +382,6 @@ export class Tab3Page {
 
 	toggleSnow() {
 		this.theme.toggleWinter(this.snowing)
-	}
-
-	async openMergeChecklist() {
-		const modal = await this.modalController.create({
-			component: MergeChecklistPage,
-			cssClass: 'my-custom-class',
-			componentProps: {
-				fromSettings: true,
-			},
-		})
-
-		return await modal.present()
 	}
 
 	versionClickCount = 0
@@ -450,13 +429,13 @@ export async function changeNetwork(
 	network: string,
 	storage: StorageService,
 	api: ApiService,
-	validatorUtils: ValidatorUtils,
 	unit: UnitconvService,
 	notificationBase: NotificationBase,
 	theme: ThemeUtils,
 	alertService: AlertService,
 	merchant: MerchantUtils,
-	forceThemeSwitch: boolean
+	forceThemeSwitch: boolean,
+	dashboardUtils: DashboardUtils
 ) {
 	const darkTheme = await theme.isDarkThemed()
 
@@ -468,8 +447,8 @@ export async function changeNetwork(
 	await api.initialize()
 	await notificationBase.loadAllToggles()
 	await unit.networkSwitchReload()
+	dashboardUtils.dashboardAwareListener.notifyAll()
 	//await this.unit.changeCurrency(this.currentFiatCurrency)
-	validatorUtils.notifyListeners()
 
 	const currentTheme = theme.currentThemeColor
 

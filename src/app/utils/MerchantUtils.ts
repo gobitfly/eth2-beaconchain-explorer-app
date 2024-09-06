@@ -17,18 +17,19 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { computed, Injectable, Signal, signal, WritableSignal } from '@angular/core'
+import { computed, Injectable, OnInit, Signal, signal, WritableSignal } from '@angular/core'
 import 'cordova-plugin-purchase/www/store.d'
 import { Platform } from '@ionic/angular'
 import { SubscriptionData } from '../requests/requests'
 import { AlertService, PURCHASEUTILS } from '../services/alert.service'
 import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
+import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from '../services/storage.service'
 
 import { SplashScreen } from '@capacitor/splash-screen'
 import { V2Me, V2PurchaseValidation } from '../requests/v2-user'
 import { UserInfo, UserSubscription } from '../requests/types/user'
 import { Aggregation } from '../requests/v2-dashboard'
+import { ONE_DAY, ONE_HOUR } from './TimeUtils'
 
 export const PRODUCT_STANDARD = 'standard'
 const MAX_PRODUCT = 'dolphin'
@@ -38,7 +39,7 @@ export const AggregationTimeframes: Aggregation[] = [Aggregation.Epoch, Aggregat
 @Injectable({
 	providedIn: 'root',
 })
-export class MerchantUtils {
+export class MerchantUtils implements OnInit {
 	DEPRECATED_PACKAGES: Package[] = [
 		{
 			name: 'Plankton',
@@ -209,22 +210,24 @@ export class MerchantUtils {
 			console.info('merchant is not supported on this platform')
 			return
 		}
+	}
 
+	ngOnInit() {
 		this.initialize = this.init()
 	}
 
 	public async getUserInfo(forceRefresh: boolean = false, errHandler: (err) => void = () => {}) {
-		if (!forceRefresh) {
-			this.userInfo.set(await (this.storage.getObject('userInfo') as Promise<UserInfo | null>))
-		}
-
 		if (await this.storage.getAuthUserv2()) {
+			if (!forceRefresh) {
+				this.userInfo.set(await (this.storage.getObject('userInfo') as Promise<UserInfo | null>))
+			}
 			const result = await this.api.set(new V2Me().withAllowedCacheResponse(!forceRefresh), this.userInfo)
 			if (result.error) {
 				console.warn('failed to get user info', result.error)
 				errHandler(result.error)
 				return
 			}
+
 			if (this.userInfo()) {
 				this.storage.setObject('userInfo', this.userInfo())
 				if (this.userInfo().api_keys && this.userInfo().api_keys.length > 0) {
@@ -232,6 +235,88 @@ export class MerchantUtils {
 				}
 			}
 		}
+		// check for override
+		const override = (await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')) as string
+		if (override != 'default') {
+			this.overridePerks(override)
+		}
+	}
+
+	// debug
+	private overridePerks(target: string) {
+		const userInfoShadow =
+			this.userInfo() ||
+			({
+				premium_perks: {
+					ad_free: false,
+					validator_dashboards: 1,
+					validators_per_dashboard: 20,
+					validator_groups_per_dashboard: 1,
+					chart_history_seconds: {
+						epoch: 0,
+						hourly: 12 * ONE_HOUR,
+						daily: 0,
+						weekly: 0,
+					},
+				},
+				subscriptions: [],
+			} as UserInfo)
+		switch (target) {
+			case 'standard':
+				userInfoShadow.premium_perks.ad_free = true // false
+				userInfoShadow.premium_perks.validator_dashboards = 1
+				userInfoShadow.premium_perks.validators_per_dashboard = 5 // 20
+				userInfoShadow.premium_perks.validator_groups_per_dashboard = 1
+				userInfoShadow.premium_perks.chart_history_seconds = {
+					epoch: 0,
+					hourly: 12 * ONE_HOUR,
+					daily: 0,
+					weekly: 0,
+				}
+				break
+			case 'guppy':
+				userInfoShadow.premium_perks.ad_free = true
+				userInfoShadow.premium_perks.validator_dashboards = 1
+				userInfoShadow.premium_perks.validators_per_dashboard = 100
+				userInfoShadow.premium_perks.validator_groups_per_dashboard = 3
+				userInfoShadow.premium_perks.chart_history_seconds = {
+					epoch: 1 * ONE_DAY,
+					hourly: 7 * ONE_DAY,
+					daily: 30 * ONE_DAY,
+					weekly: 0,
+				}
+				break
+			case 'dolphin':
+				userInfoShadow.premium_perks.ad_free = true
+				userInfoShadow.premium_perks.validator_dashboards = 2
+				userInfoShadow.premium_perks.validators_per_dashboard = 300
+				userInfoShadow.premium_perks.validator_groups_per_dashboard = 10
+				userInfoShadow.premium_perks.chart_history_seconds = {
+					epoch: 5 * ONE_DAY,
+					hourly: 30 * ONE_DAY,
+					daily: 60 * ONE_DAY,
+					weekly: 56 * ONE_DAY, // todo
+				}
+				break
+			case 'orca':
+				userInfoShadow.premium_perks.ad_free = true
+				userInfoShadow.premium_perks.validator_dashboards = 2
+				userInfoShadow.premium_perks.validators_per_dashboard = 1000
+				userInfoShadow.premium_perks.validator_groups_per_dashboard = 30
+				userInfoShadow.premium_perks.chart_history_seconds = {
+					epoch: 21 * ONE_DAY,
+					hourly: 180 * ONE_DAY,
+					daily: 360 * ONE_DAY,
+					weekly: 999 * ONE_DAY,
+				}
+				break
+		}
+
+		this.userInfo.set(userInfoShadow)
+	}
+
+	clearTempUserInfo() {
+		return this.storage.setObject('userInfo', this.userInfo())
 	}
 
 	public getMonthlyBilledPackages(): Package[] {
@@ -519,9 +604,19 @@ export class MerchantUtils {
 		return this.userInfo().premium_perks.ad_free
 	})
 
+	canBulkAdd = computed(() => {
+		if (!this.userInfo()) return false
+		return this.userInfo().premium_perks.bulk_adding
+	})
+
 	getCurrentPlanMaxValidator = computed(() => {
 		if (!this.isPremium()) return 20
 		return this.userInfo().premium_perks.validators_per_dashboard
+	})
+
+	getCurrentPlanMaxGroups = computed(() => {
+		if (!this.isPremium()) return 1
+		return this.userInfo().premium_perks.validator_groups_per_dashboard
 	})
 
 	highestPackageDashboardsAllowed = computed(() => {

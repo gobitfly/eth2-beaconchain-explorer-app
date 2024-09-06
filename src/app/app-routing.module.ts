@@ -26,10 +26,6 @@ const routes: Routes = [
 		loadChildren: () => import('./tabs/tabs.module').then((m) => m.TabsPageModule),
 	},
 	{
-		path: 'validatordetail',
-		loadChildren: () => import('./pages/validatordetail/validatordetail.module').then((m) => m.ValidatordetailPageModule),
-	},
-	{
 		path: 'helppage',
 		loadChildren: () => import('./pages/helppage/helppage.module').then((m) => m.HelppagePageModule),
 	},
@@ -56,10 +52,6 @@ const routes: Routes = [
 	{
 		path: 'logview',
 		loadChildren: () => import('./pages/logview/logview.module').then((m) => m.LogviewPageModule),
-	},
-	{
-		path: 'merge-checklist',
-		loadChildren: () => import('./pages/merge-checklist/merge-checklist.module').then((m) => m.MergeChecklistPageModule),
 	},
 	{
 		path: 'tab-blocks',

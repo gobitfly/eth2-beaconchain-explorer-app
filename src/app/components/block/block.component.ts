@@ -20,7 +20,7 @@ export class BlockComponent implements OnInit {
 	imgData = null
 	timestamp = 0
 	producerReward = new BigNumber(0)
-	feeRecipient = ''
+	feeRecipient = null
 	resolvedName = null
 	resolvedClass = ''
 
@@ -33,17 +33,19 @@ export class BlockComponent implements OnInit {
 	ngOnChanges() {
 		this.imgData = this.getBlockies()
 		this.timestamp = slotToSecondsTimestamp(this.api, this.block.slot) * 1000
-		this.producerReward = new BigNumber(this.block.reward.el).plus(new BigNumber(this.block.reward.cl))
+		if (this.block.reward) {
+			this.producerReward = new BigNumber(this.block.reward.el).plus(new BigNumber(this.block.reward.cl))
+		} 
 		this.resolvedName = null
 
-		this.feeRecipient = this.block.reward_recipient.hash
+		this.feeRecipient = this.block.reward_recipient?.hash
 		if (this.block.reward_recipient.ens != null) {
 			this.resolvedName = this.block.reward_recipient.ens
 		}
-		if (this.block.reward_recipient.hash.toLocaleLowerCase() == ROCKETPOOL_SMOOTHING_POOL) {
+		if (this.block.reward_recipient?.hash?.toLocaleLowerCase() == ROCKETPOOL_SMOOTHING_POOL) {
 			this.resolvedName = 'Smoothing Pool'
 			this.resolvedClass = 'smoothing'
-		} else if (this.block.reward_recipient.hash.toLocaleLowerCase() == ETHPOOL) {
+		} else if (this.block.reward_recipient?.hash?.toLocaleLowerCase() == ETHPOOL) {
 			this.resolvedName = 'ethpool.eth'
 			this.resolvedClass = 'ethpool'
 		}

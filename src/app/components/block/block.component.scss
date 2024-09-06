@@ -29,17 +29,13 @@
 }
 
 .container {
-	padding: 10px 0px 0px 0px;
+	padding: 5px 0px 5px 0px;
 }
 
 .blocknr {
 	text-align: center;
 	padding-top: 48px;
 	width: 45px;
-	font-size: 0.75rem;
-}
-
-.inner {
 }
 
 ion-item {
@@ -58,7 +54,7 @@ ion-icon {
 
 .info {
 	margin-left: 5px;
-	height: 77px;
+	height: 81px;
 }
 
 .balance {
@@ -68,16 +64,6 @@ ion-icon {
 .title {
 	font-size: 16px;
 	font-weight: bold;
-}
-
-.smaller-info {
-	font-size: 0.75rem;
-	color: var(--ion-text-color-secondary);
-}
-
-.smallest-info {
-	font-size: 0.65rem;
-	color: var(--ion-text-color-secondary);
 }
 
 .status-container {
@@ -92,4 +78,16 @@ ion-icon {
 
 .ethpool {
 	color: #ee7112;
+}
+
+.orphaned {
+	color: var(--ion-color-warning);
+}
+
+.missed {
+	color: var(--ion-color-danger);
+}
+
+.scheduled {
+	color: var(--ion-color-secondary);
 }

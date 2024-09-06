@@ -19,7 +19,7 @@
 
 import { ApiService } from '../services/api.service'
 import { StorageService, StoredShare, StoredTimestamp } from '../services/storage.service'
-import { Injectable } from '@angular/core'
+import { Injectable} from '@angular/core'
 import {
 	RemoveMyValidatorsRequest,
 	AttestationPerformanceResponse,
@@ -89,6 +89,7 @@ export interface Validator {
 	providedIn: 'root',
 })
 export class ValidatorUtils {
+
 	private listeners: (() => void)[] = []
 
 	rocketpoolStats: RocketPoolNetworkStats
@@ -99,8 +100,8 @@ export class ValidatorUtils {
 		private api: ApiService,
 		private storage: StorageService,
 		private merchantUtils: MerchantUtils,
-		private unitConversion: UnitconvService
-	) {}
+		private unitConversion: UnitconvService,
+	) { }
 
 	notifyListeners() {
 		this.listeners.forEach((callback) => callback())
@@ -121,19 +122,6 @@ export class ValidatorUtils {
 
 	public getStorageKey(): string {
 		return KEYPREFIX + this.api.getNetworkName()
-	}
-
-	async migrateTo3Dot2() {
-		const share = await this.storage.getStakingShare()
-		const valis = await this.getAllValidatorsLocal()
-		if (valis) {
-			for (let i = 0; i < valis.length; i++) {
-				if (share) {
-					valis[i].share = share.toNumber()
-				}
-			}
-			this.saveValidatorsLocal(valis)
-		}
 	}
 
 	/**

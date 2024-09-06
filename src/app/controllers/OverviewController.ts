@@ -35,6 +35,8 @@ import { ApiService, LatestStateWithTime } from '../services/api.service'
 import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
 import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/core'
 import { ChartData } from '../requests/types/common'
+import { ApiResult } from '../requests/requests'
+import { DashboardUtils } from '../utils/DashboardUtils'
 export interface SummaryChartOptions {
 	aggregation: Aggregation
 	startTime: number
@@ -44,9 +46,10 @@ export interface SummaryChartOptions {
 
 @Injectable({ providedIn: 'root' })
 export class OverviewProvider {
-	constructor(private api: ApiService) {}
 
-	async setSummaryChartOptions(data: OverviewData2, options: SummaryChartOptions) {
+	constructor(private api: ApiService, private dashboardUtils: DashboardUtils) {}
+
+	async setSummaryChartOptions(data: OverviewData2, options: SummaryChartOptions, force: boolean = false) {
 		data.summaryChartOptionsInternal.set(options)
 		const aggregation = options.aggregation
 
@@ -62,11 +65,9 @@ export class OverviewProvider {
 			}
 		}
 
-		console.log('change summary aggregation', aggregation, startTime, options.endTime)
-
-		const request = new V2DashboardSummaryChart(data.id, EfficiencyType.All, aggregation, startTime, options.endTime).withCustomCacheKey(
-			'summary-chart-initial-' + aggregation + data.id
-		)
+		const request = new V2DashboardSummaryChart(data.id, EfficiencyType.All, aggregation, startTime, options.endTime)
+			.withAllowedCacheResponse(!force)
+			.withCustomCacheKey('summary-chart-initial-' + aggregation + data.id)
 		if (options.force) {
 			request.withAllowedCacheResponse(false)
 		}
@@ -78,38 +79,61 @@ export class OverviewProvider {
 		return null
 	}
 
-	async setTimeframe(data: OverviewData2, timeframe: Period) {
+	async setTimeframe(data: OverviewData2, timeframe: Period, force: boolean = false) {
 		data.timeframeInternal.set(timeframe)
 		const period = timeframe
-		console.log('change timeframe', period)
 
 		return Promise.all([
-			this.api.setArray(new V2DashboardSummaryTable(data.id, period, null), data.summary),
-			this.api.set(new V2DashboardSummaryGroupTable(data.id, 0, period, null), data.summaryGroup),
+			this.api.setArray(new V2DashboardSummaryTable(data.id, period, null).withAllowedCacheResponse(!force), data.summary),
+			this.api.set(new V2DashboardSummaryGroupTable(data.id, 0, period, null).withAllowedCacheResponse(!force), data.summaryGroup),
 		])
 	}
 
-	create(id: dashboardID, timeframe: Period, summaryChartOptions: SummaryChartOptions): OverviewData2 {
+	async create(id: dashboardID, timeframe: Period, summaryChartOptions: SummaryChartOptions, associatedCacheKey: string = null): Promise<OverviewData2> {
 		if (!id) return null
 
 		const temp = new OverviewData2(id, this.api.getNetwork(), false)
 
-		this.api.set(new V2DashboardOverview(id), temp.overviewData)
-		this.api.set(new V2DashboardRocketPool(id), temp.rocketpool)
-		this.api.set(new V2DashboardRewardChart(id).withCustomCacheKey('reward-chart-initial-' + id), temp.rewardChart)
+		const overview = this.api.set(new V2DashboardOverview(id), temp.overviewData, associatedCacheKey)
+		this.api.set(new V2DashboardRocketPool(id), temp.rocketpool, associatedCacheKey)
+		this.api.set(new V2DashboardRewardChart(id).withCustomCacheKey('reward-chart-initial-' + id), temp.rewardChart, associatedCacheKey)
 
 		this.api.getLatestState().then((latestState) => {
 			temp.latestState.set(latestState)
 		})
 
-		this.setTimeframe(temp, timeframe)
+		this.setTimeframe(temp, timeframe, true)
 		temp.summaryChartOptionsInternal.set(summaryChartOptions)
 
 		// Summary Chart handles its own fetch logic, so below is not necessary
 		//this.setSummaryChartOptions(temp, summaryChartOptions)
 
+		const overviewResult = await overview
+		if (overviewResult.error) {
+			const error = getDashboardError(overviewResult)
+			if (error) {
+				throw error
+			}	
+		}
+
 		return temp
 	}
+}
+
+export function getDashboardError<T>(result: ApiResult<T>): DashboardError {
+	if (result.error) {
+		if (result.error.code == 404) {
+			return new DashboardNotFoundError()
+		} else if (result.error.code == 401) {
+			return new DashboardUnauthorizedError()
+		} else if (result.error.code == 403) {
+			return new DashboardForbiddenError()
+		} else if (result.error.code == 429) {
+			return new DashboardRateLimitedError()
+		}
+		return new DashboardUnknownError(result.error.message)
+	}
+	return null
 }
 
 function getPeriodDisplayable(period: Period): string {
@@ -119,7 +143,44 @@ function getPeriodDisplayable(period: Period): string {
 	if (period == Period.Last30d) return '30d'
 }
 
+export class DashboardError extends Error { }
+export class DashboardNotFoundError extends DashboardError {
+	constructor(message?: string) {
+		super(message || 'Dashboard not found')
+		this.name = 'DashboardNotFoundError'
+	}
+}
+
+export class DashboardUnauthorizedError extends DashboardError {
+	constructor(message?: string) {
+		super(message || 'Unauthorized')
+		this.name = 'UnauthorizedError'
+	}
+}
+
+export class DashboardForbiddenError extends DashboardError {
+	constructor(message?: string) {
+		super(message || 'Forbidden')
+		this.name = 'ForbiddenError'
+	}
+}
+
+export class DashboardRateLimitedError extends DashboardError {
+	constructor(message?: string) {
+		super(message || 'Rate Limited')
+		this.name = 'RateLimitedError'
+	}
+}
+
+export class DashboardUnknownError extends DashboardError {
+	constructor(message?: string) {
+		super(message || 'Unknown Error')
+		this.name = 'UnknownError'
+	}
+}
+
 export class OverviewData2 {
+
 	loading: WritableSignal<boolean> = signal(false)
 	id: dashboardID
 
@@ -146,6 +207,10 @@ export class OverviewData2 {
 		this.network = network
 		this.foreignValidator = foreignValidator
 	}
+
+	isEmpty = computed(() => {
+		return this.validatorCount() == 0
+	})
 
 	validatorCount: Signal<number> = computed(() => {
 		if (!this.overviewData()) return 0

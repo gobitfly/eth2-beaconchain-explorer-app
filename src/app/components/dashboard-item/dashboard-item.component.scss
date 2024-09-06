@@ -30,14 +30,35 @@ ion-badge {
 
 .star {
 	color: var(--ion-color-primary);
-	height: 22px;
 }
 
 .opac-star {
 	opacity: 0.35;
-	height: 22px;
 }
 
 .network {
 	//font-size: small;
+}
+
+.info-label {
+	opacity: 0.6; 
+	font-size: 0.7rem;
+}
+
+.maxed {
+	color: var(--ion-color-danger) !important;
+}
+
+.stat-count {
+	font-weight: bold;
+}
+
+.action {
+	// height: 25px;
+	// width: 25px;
+	font-size: 25px;
+}
+
+.badge {
+	padding: 20px 10px;
 }

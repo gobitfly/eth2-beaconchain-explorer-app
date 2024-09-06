@@ -17,65 +17,74 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { ApiService } from '../services/api.service'
-import { ValidatorUtils } from '../utils/ValidatorUtils'
-import { OverviewData2, OverviewProvider, SummaryChartOptions } from '../controllers/OverviewController'
+import { DashboardError, DashboardNotFoundError, OverviewData2, OverviewProvider, SummaryChartOptions } from '../controllers/OverviewController'
 import ClientUpdateUtils from '../utils/ClientUpdateUtils'
 import { StorageService } from '../services/storage.service'
 import { UnitconvService } from '../services/unitconv.service'
 import { App, AppState } from '@capacitor/app'
-import { SyncService } from '../services/sync.service'
 import { MerchantUtils } from '../utils/MerchantUtils'
 import { ModalController } from '@ionic/angular'
 import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
-import { Period } from '../requests/v2-dashboard'
+import { dashboardID, Period } from '../requests/v2-dashboard'
 import { AlertService } from '../services/alert.service'
 import { Toast } from '@capacitor/toast'
+import { DashboardUtils } from '../utils/DashboardUtils'
 
 export const REAPPLY_KEY = 'reapply_notification2'
+
+const DASHBOARD_UPDATE = 'dashboard_update'
 
 @Component({
 	selector: 'app-tab1',
 	templateUrl: 'tab-dashboard.page.html',
 	styleUrls: ['tab-dashboard.page.scss'],
 })
-export class Tab1Page {
+export class Tab1Page implements OnInit {
 	readonly Period = Period
 
 	lastRefreshTs = 0
 	overallData: OverviewData2
 	currentY = 0
 	scrolling = false
+	isLoggedIn = false
+	dashboardID: dashboardID = null
 
-	loading: HTMLIonLoadingElement
+	loading: boolean = false
 
 	constructor(
-		private validatorUtils: ValidatorUtils,
 		public api: ApiService,
 		public updates: ClientUpdateUtils,
 		private storage: StorageService,
 		private unitConv: UnitconvService,
-		private sync: SyncService,
 		public merchant: MerchantUtils,
 		private modalCtrl: ModalController,
 		private alert: AlertService,
-		private overviewProvider: OverviewProvider
+		private overviewProvider: OverviewProvider,
+		private dashboardUtils: DashboardUtils
 	) {
-		this.validatorUtils.registerListener(() => {
-			this.refresh()
-		})
-
+		this.dashboardUtils.dashboardAwareListener.register(DASHBOARD_UPDATE)
 		App.addListener('appStateChange', (state: AppState) => {
 			if (state.isActive) {
 				if (this.lastRefreshTs + 6 * 60 > this.getUnixSeconds()) return
-				this.refresh()
+				this.setup(false)
 			} else {
 				console.log('App has become inactive')
 			}
 		})
+	}
 
-		this.reApplyNotifications()
+	ngOnInit() {}
+
+	ionViewWillEnter() {
+		if (this.dashboardUtils.dashboardAwareListener.hasAndConsume(DASHBOARD_UPDATE)) {
+			this.setup(false, true)
+			return
+		}
+
+		if (this.lastRefreshTs + 6 * 60 > this.getUnixSeconds()) return
+		this.setup()
 	}
 
 	async changeTimeframe(period: Period) {
@@ -102,27 +111,18 @@ export class Tab1Page {
 		loading.dismiss()
 	}
 
-	async reApplyNotifications() {
-		const isLoggedIn = await this.storage.getAuthUser()
-		if (!isLoggedIn) return
-
-		const reapply = await this.storage.getBooleanSetting(REAPPLY_KEY, false)
-		if (!reapply) {
-			this.sync.syncAllSettingsForceStaleNotifications()
-		}
-		this.storage.setBooleanSetting(REAPPLY_KEY, true)
-	}
-
 	onScroll($event) {
 		this.currentY = $event.detail.currentY
 	}
 
 	onScrollStarted() {
+		console.log("scrolling")
 		this.scrolling = true
 		this.removeTooltips()
 	}
 
 	onScrollEnded() {
+		console.log('scrolling stopped')
 		this.scrolling = false
 	}
 
@@ -133,19 +133,13 @@ export class Tab1Page {
 		}
 	}
 
-	ionViewWillEnter() {
-		if (this.lastRefreshTs + 6 * 60 > this.getUnixSeconds()) return
-
-		this.refresh()
-	}
-
 	async openDashboardAndGroupSelect() {
 		const modal = await this.modalCtrl.create({
 			component: DashboardAndGroupSelectComponent,
 			componentProps: {
 				dashboardChangedCallback: () => {
 					this.overallData = null
-					this.refresh(false)
+					this.setup(false)
 				},
 			},
 		})
@@ -154,23 +148,41 @@ export class Tab1Page {
 		await modal.onWillDismiss()
 	}
 
-	async refresh(checkUpdates: boolean = true) {
-		if (!(await this.validatorUtils.hasLocalValdiators())) {
-			return
-		}
+	async setup(checkUpdates: boolean = true, force: boolean = false, recursiveMax = false) {
 		if (checkUpdates) {
 			this.updates.checkAllUpdates()
 		}
-		// const validators = await this.validatorUtils.getAllMyValidators().catch((error) => {
-		// 	console.warn('error getAllMyValidators', error)
-		// 	return []
-		// })
+		this.isLoggedIn = await this.storage.isLoggedIn()
+		this.dashboardID = await this.dashboardUtils.initDashboard()
 
-		this.overallData = this.overviewProvider.create(await this.storage.getDashboardID(), await this.storage.getDashboardTimeframe(), {
-			aggregation: await this.storage.getDashboardSummaryAggregation(),
-			startTime: null,
-			force: false,
-		} as SummaryChartOptions)
+		this.loading = true
+		try {
+			this.overallData = await this.overviewProvider.create(this.dashboardID, await this.storage.getDashboardTimeframe(), {
+				aggregation: await this.storage.getDashboardSummaryAggregation(),
+				startTime: null,
+				force: false,
+			} as SummaryChartOptions)
+		} catch (e) {
+			if (e instanceof DashboardNotFoundError) {
+				if (recursiveMax) {
+					Toast.show({
+						text: 'Dashboard not found',
+					})
+					return
+				}
+				// if dashboard is not available any more (maybe user deleted it) reinit and try again
+				this.dashboardID = await this.dashboardUtils.initDashboard()
+				return this.setup(false, force, true)
+			} else if (e instanceof DashboardError) {
+				this.dashboardUtils.defaultDashboardErrorHandler(e)
+			} else {
+				console.error(e)
+				Toast.show({
+					text: 'Error loading dashboard',
+				})
+			}
+		}
+		this.loading = false
 
 		console.log('overallData', this.overallData)
 		this.lastRefreshTs = this.getUnixSeconds()
@@ -183,7 +195,7 @@ export class Tab1Page {
 	async doRefresh(event) {
 		const old = Object.assign({}, this.overallData)
 		this.overallData = null
-		await this.refresh().catch(() => {
+		await this.setup().catch(() => {
 			this.api.mayInvalidateOnFaultyConnectionState()
 			this.overallData = old
 			event.target.complete()

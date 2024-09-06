@@ -198,10 +198,6 @@
 	</ion-list-header>
 
 	<ion-list>
-		<ion-item lines="none" (click)="partialStake()">
-			<ion-icon class="opacity-icon" slot="start" name="pie-chart-outline"></ion-icon>
-			<ion-label>Stake Share</ion-label>
-		</ion-item>
 
 		<ion-item lines="none">
 			<ion-icon class="opacity-icon" slot="start" name="planet-outline"></ion-icon>
@@ -220,11 +216,6 @@
 		<ion-item lines="none" (click)="openFAQ()">
 			<ion-icon class="opacity-icon" slot="start" name="bulb-outline"></ion-icon>
 			<ion-label>Guides & FAQ</ion-label>
-		</ion-item>
-
-		<ion-item lines="none" (click)="openMergeChecklist()">
-			<ion-icon class="opacity-icon" slot="start" name="clipboard-outline"></ion-icon>
-			<ion-label>Merge Checklist</ion-label>
 		</ion-item>
 
 		<ion-item lines="none" (click)="manageSubs()" [disabled]="!authUser">

@@ -43,9 +43,14 @@ interface Paging {
 
 export interface ApiResult<T> {
 	data: T
-	error: string | null
+	error: Error | null
 	cached: boolean
 	paging: Paging | null
+}
+
+interface Error {
+	message: string
+	code: number
 }
 
 export abstract class APIRequest<T> {
@@ -84,9 +89,17 @@ export abstract class APIRequest<T> {
 			}
 		}
 
+		let error: Error = null
+		if (!response || response.status != this.expectedResponseStatus) {
+			error = {
+				message: response?.data?.error || response ? 'HTTP status code: ' + response.status : 'No response error',
+				code: response ? response.status : 0,
+			}
+		}
+
 		return {
 			data: null,
-			error: response?.data?.error || response ? 'HTTP status code: ' + response.status : 'No response error',
+			error: error,
 			cached: response?.cached || false,
 			paging: null,
 		}

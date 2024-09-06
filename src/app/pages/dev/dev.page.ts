@@ -229,14 +229,13 @@ export class DevPage extends Tab3Page implements OnInit {
 				{
 					text: 'Ok',
 					handler: async (alertData) => {
-						this.storage.setAuthUserv2({
+						await this.storage.setAuthUserv2({
 							Session: alertData.session,
 						})
-						const myDashboards = await this.api.execute2(new V2MyDashboards())
-						if (myDashboards.data) {
-							this.storage.setDashboardID(myDashboards.data[0].validator_dashboards[0].id)
-						}
 						this.api.invalidateAllCache()
+						await this.oauth.postLogin()
+						this.dashboardUtils.dashboardAwareListener.notifyAll()
+						alert.dismiss()
 					},
 				},
 			],
@@ -247,6 +246,7 @@ export class DevPage extends Tab3Page implements OnInit {
 
 	async restoreAuthUser() {
 		await this.storage.restoreAuthUser()
+		await this.oauth.postLogin()
 		this.alerts.confirmDialog('Success', 'Restart app with restored user?', 'OK', () => {
 			this.restartApp()
 		})

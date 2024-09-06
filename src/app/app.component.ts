@@ -24,9 +24,6 @@ import ThemeUtils from './utils/ThemeUtils'
 import { SplashScreen } from '@capacitor/splash-screen'
 import { StorageService } from './services/storage.service'
 import BigNumber from 'bignumber.js'
-import { ApiService } from './services/api.service'
-import { SyncService } from './services/sync.service'
-import { ValidatorUtils } from './utils/ValidatorUtils'
 
 @Component({
 	selector: 'app-root',
@@ -39,9 +36,6 @@ export class AppComponent {
 		private theme: ThemeUtils,
 		private modalController: ModalController,
 		private storage: StorageService,
-		private api: ApiService,
-		private sync: SyncService,
-		private validatorUtils: ValidatorUtils
 	) {
 		this.initializeApp()
 	}
@@ -49,17 +43,7 @@ export class AppComponent {
 	initializeApp() {
 		BigNumber.config({ DECIMAL_PLACES: 25 })
 		this.platform.ready().then(() => {
-			this.storage.migrateToCapacitor3().then(async () => {
-				const networkName = this.api.getNetworkName()
-				// migrate to 3.2+
-				const result = await this.storage.getBooleanSetting(networkName + 'migrated_to_3.2', false)
-				if (!result) {
-					this.storage.setBooleanSetting(networkName + 'migrated_to_3.2', true)
-					this.sync.developDeleteQueue()
-					this.validatorUtils.migrateTo3Dot2()
-					console.log('== MIGRATED TO 3.2 ==')
-				}
-
+			this.storage.migrateToCapacitor3().then(() => {
 				this.theme.init(() => {
 					SplashScreen.hide()
 				}) // just initialize the theme service

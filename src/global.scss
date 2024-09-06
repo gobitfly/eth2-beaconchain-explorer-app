@@ -354,3 +354,19 @@ ion-toolbar {
 		opacity: 1;
 	}
 }
+
+.smaller-info {
+	font-size: 0.75rem !important;
+	color: var(--ion-text-color-secondary) !important;
+	font-weight: var(--smaller-label-weight) !important;
+}
+
+.smallest-info {
+	font-size: 0.65rem !important;
+	color: var(--ion-text-color-secondary) !important;
+	font-weight: var(--smaller-label-weight) !important;
+}
+
+.smaller-pad {
+	padding: 3px 0px;
+}

@@ -18,5 +18,5 @@
 export function encodeDashboardID(validatorIDs: number[]): string {
 	const encodedString = validatorIDs.join(',')
 	const base64String = btoa(encodedString)
-	return base64String
+	return base64String.replace(/=/g, '')
 }
