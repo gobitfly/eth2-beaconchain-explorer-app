@@ -7,7 +7,6 @@ import { ApiService } from '../services/api.service'
 import { UnitconvService } from '../services/unitconv.service'
 import { InfiniteScrollDataSource, loadMoreType } from '../utils/InfiniteScrollDataSource'
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling'
-import { trigger, style, animate, transition } from '@angular/animations'
 import { VDBBlocksTableRow, VDBGroupSummaryData } from '../requests/types/validator_dashboard'
 import { StorageService } from '../services/storage.service'
 import { dashboardID, Period, V2DashboardSummaryGroupTable } from '../requests/v2-dashboard'
@@ -18,14 +17,13 @@ import { DashboardError, DashboardNotFoundError, getDashboardError } from '../co
 import { DashboardUtils } from '../utils/DashboardUtils'
 import { relativeTs } from '../utils/TimeUtils'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = 'blocks_update'
 const ASSOCIATED_CACHE_KEY = 'blocks'
 @Component({
 	selector: 'app-tab-blocks',
 	templateUrl: './tab-blocks.page.html',
 	styleUrls: ['./tab-blocks.page.scss'],
-	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))])])],
 })
 export class TabBlocksPage implements OnInit {
 	public classReference = UnitconvService
@@ -33,7 +31,7 @@ export class TabBlocksPage implements OnInit {
 	dataSource: InfiniteScrollDataSource<VDBBlocksTableRow>
 	@ViewChild(CdkVirtualScrollViewport) virtualScroll: CdkVirtualScrollViewport
 
-	loading = false
+	initialLoading = true
 	loadMore = false
 
 	initialized = false
@@ -71,6 +69,11 @@ export class TabBlocksPage implements OnInit {
 		await this.update()
 	}
 
+	/**
+	 * Call when you need to clear the API request cache for all calls this view made.
+	 * Note: when making calls in this view, always use the ASSOCIATED_CACHE_KEY
+	 * @returns promise void
+	 */
 	clearRequestCache() {
 		return this.api.clearAllAssociatedCacheKeys(ASSOCIATED_CACHE_KEY)
 	}
@@ -148,17 +151,13 @@ export class TabBlocksPage implements OnInit {
 		if (!this.dashboardID) {
 			return
 		}
-		this.setLoading(true)
+		this.initialLoading = true
 
 		await this.dataSource.reset()
 		this.virtualScroll.scrollToIndex(0)
 		this.initialized = true
 
-		this.setLoading(false)
-	}
-
-	private setLoading(loading: boolean) {
-		this.loading = loading
+		this.initialLoading = false
 	}
 
 	async clickBlock(item: BlockResponse) {
@@ -172,13 +171,20 @@ export class TabBlocksPage implements OnInit {
 		return await modal.present()
 	}
 
-	doRefresh(event) {
-		setTimeout(async () => {
-			await this.clearRequestCache()
-			this.virtualScroll.scrollToIndex(0)
-			await this.dataSource.reset()
+	private lastRefreshedTs: number = 0
+	async doRefresh(event) {
+		if (this.lastRefreshedTs + 15 * 1000 > new Date().getTime()) {
+			Toast.show({
+				text: 'Nothing to update',
+			})
 			event.target.complete()
-		}, 1500)
+			return
+		}
+		this.lastRefreshedTs = new Date().getTime()
+
+		await this.clearRequestCache()
+		this.update()
+		event.target.complete()
 	}
 
 	luckHelp() {

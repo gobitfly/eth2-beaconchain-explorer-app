@@ -33,9 +33,11 @@
 }
 
 .income-title {
-	opacity: 0.85;
-	font-size: 1em;
-	//color: var(--ion-text-color-lighter);
+	opacity: var(--default-secondary-transparency);
+	font-size: var(--smaller-info-size);
+	//font-weight: var(--smaller-label-weight);
+	font-weight: bold;
+	//color: var(--ion-text-color-secondary) !important;
 }
 
 .grid {

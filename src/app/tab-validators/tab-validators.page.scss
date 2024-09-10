@@ -19,6 +19,11 @@
 
 @import '../../theme/variables.scss';
 
+.last-icon {
+	margin: var(--edge-padding-left-minus-5px);
+	margin-left: 15px; 
+}
+
 ion-searchbar {
 	--background: var(--ion-toolbar-background);
 	--box-shadow: var(--ion-toolbar-background);
@@ -28,6 +33,7 @@ ion-searchbar {
 	--icon-color: var(--x-toolbar-title-color);
 	--placeholder-color: var(--x-toolbar-title-color);
 	--placeholder-opacity: 0.8;
+	width: 92%;
 }
 
 .toolbar-btn::part(native) {
@@ -62,10 +68,6 @@ ion-label {
 	color: var(--ion-text-color-lighter);
 }
 
-.top-bar {
-	padding-bottom: 0px !important;
-	margin-bottom: 0px !important;
-}
 
 cdk-virtual-scroll-viewport {
 	margin-left: 0px;

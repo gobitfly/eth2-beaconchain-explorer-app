@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core'
+import { Component, Input } from '@angular/core'
 import * as blockies from 'ethereum-blockies'
 import { UnitconvService } from 'src/app/services/unitconv.service'
 import { ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from 'src/app/utils/BlockUtils'
@@ -13,10 +13,11 @@ import { ApiService } from 'src/app/services/api.service'
 	templateUrl: './block.component.html',
 	styleUrls: ['./block.component.scss'],
 })
-export class BlockComponent implements OnInit {
+export class BlockComponent  {
 	@Input() block: VDBBlocksTableRow
+	@Input() first: boolean
+	@Input() last: boolean
 
-	fadeIn = 'fade-in'
 	imgData = null
 	timestamp = 0
 	producerReward = new BigNumber(0)
@@ -54,12 +55,6 @@ export class BlockComponent implements OnInit {
 	setInput(block: VDBBlocksTableRow) {
 		this.block = block
 		this.ngOnChanges()
-	}
-
-	ngOnInit() {
-		setTimeout(() => {
-			this.fadeIn = null
-		}, 500)
 	}
 
 	private getBlockies() {

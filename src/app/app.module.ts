@@ -77,7 +77,7 @@ export class MyHammerConfig extends HammerGestureConfig {
 			deps: [ApiService, BootPreloadService],
 		},
 		provideEcharts(),
-		provideExperimentalZonelessChangeDetection() // experimental zoneless
+		//provideExperimentalZonelessChangeDetection() // experimental zoneless
 	],
 	bootstrap: [AppComponent],
 })

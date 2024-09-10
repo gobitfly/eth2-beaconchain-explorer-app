@@ -28,9 +28,10 @@ ion-list-header {
 	display: inline-block;
 	color: var(--ion-text-color-secondary);
 	
-	margin-left: 72px;
-	font-size: 0.9em;
-	line-height: 1em !important;
+	margin-left: 45px;
+	font-size: var(--smaller-info-size);
+	font-weight: var(--smaller-label-weight);
+	line-height: 1.25em !important;
 	margin-bottom: 10px;
 	margin-right: 45px;
 }
@@ -38,4 +39,24 @@ ion-list-header {
 
 .premium {
 	padding-bottom: 0px !important;
+	height: 38px;
+}
+
+.prem-icon {
+	padding: 0px;
+    margin-right: 10px;
+    margin-top: 3px;
+    font-size: 18px;
+}
+
+.prem-title {
+	padding-top: 0px;
+    margin-top: 0px;
+}
+
+.prem-x {
+	padding: 0px;
+    margin: 1px;
+    font-size: 19px;
+    padding-bottom: 11px;
 }

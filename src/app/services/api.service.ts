@@ -442,7 +442,7 @@ export class ApiService extends CacheModule {
 				method: Method[method],
 				headers: options.headers,
 				body: body,
-				credentials: 'include',
+				credentials: endpoint == "default" ? 'include' : 'omit',
 			})
 			if (!result) return null
 			return await this.validateResponse(ignoreFails, result)

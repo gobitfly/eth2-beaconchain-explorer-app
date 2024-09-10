@@ -4,24 +4,24 @@
 			
 			<ion-badge class="badge" (click)="setAsDefault()" slot="start" [class]="networkColor()">{{ networkName() }}</ion-badge>
 		</div>
-		<ion-label (click)="setAsDefault()">
+		<ion-label (click)="setAsDefault()" style="padding-top: 5px;">
 			<div>
 				{{ data.name }}
 			</div>
 			<div>
-				<ion-label class="info-label">Groups: 
+				<ion-label class="smaller-info">Groups: 
 					<span class="stat-count" [class]="reachedMaxGroupClassStyle()">{{ data.group_count }}</span> 
 					/ 
 					<span class="stat-count" [class]="reachedMaxGroupClassStyle()">{{ merchant.getCurrentPlanMaxGroups() }}</span>
 				</ion-label>
-				<ion-label class="info-label">Validators: 
+				<ion-label class="smaller-info">Validators: 
 					<span class="stat-count" [class]="reachedMaxValidatorClassStyle()">{{ data.validator_count }}</span> 
 					/ 
 					<span class="stat-count" [class]="reachedMaxValidatorClassStyle()">{{ merchant.getCurrentPlanMaxValidator() }}</span>
 				</ion-label>
 			</div>
 		</ion-label>
-		<div style="height: 50px;">
+		<div style="height: 55px;">
 			<ion-icon class="action opacity-icon" (click)="setAsDefault()" aria-hidden="true" name="star" slot="end" [class]="selected ? 'star' : 'opac-star'"></ion-icon>
 			<ion-icon class="action opacity-icon" aria-hidden="true" style="margin-left: 5px" name="ellipsis-vertical-outline" slot="end" [id]="triggerID"></ion-icon>
 		</div>

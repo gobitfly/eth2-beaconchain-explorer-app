@@ -19,24 +19,6 @@
 
 @import '../../../theme/variables.scss';
 
-.blockie {
-	position: absolute;
-	left: 16px;
-	border-radius: 20%;
-	height: 45px;
-	width: 45px;
-	image-rendering: pixelated;
-}
-
-.container {
-	padding: 5px 0px 5px 0px;
-}
-
-.blocknr {
-	text-align: center;
-	padding-top: 48px;
-	width: 45px;
-}
 
 ion-item {
 	background: var(--ion-card-background);
@@ -52,11 +34,6 @@ ion-icon {
 	margin-bottom: 29px;
 }
 
-.info {
-	margin-left: 5px;
-	height: 81px;
-}
-
 .balance {
 	font-weight: bold;
 }
@@ -67,8 +44,8 @@ ion-icon {
 }
 
 .status-container {
-	height: 69px;
-
+	height: 78px;
+	margin-right: 2px;
 	margin-left: 0px;
 }
 
@@ -81,13 +58,21 @@ ion-icon {
 }
 
 .orphaned {
-	color: var(--ion-color-warning);
+	color: var(--ion-color-warning) !important;
 }
 
 .missed {
-	color: var(--ion-color-danger);
+	color: var(--ion-color-danger) !important;
 }
 
 .scheduled {
-	color: var(--ion-color-secondary);
+	color: var(--ion-color-secondary) !important;
+}
+
+.first {
+	padding-top: 13px;
+}
+
+.last {
+	margin-bottom: 45px;
 }

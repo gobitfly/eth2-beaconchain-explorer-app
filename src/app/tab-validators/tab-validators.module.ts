@@ -28,19 +28,21 @@ import { Tab2PageRoutingModule } from './tab-validators-routing.module'
 import { MessageComponentModule } from '../components/message/message.module'
 import { AdComponentModule } from '../components/ad/ad.module'
 import { ScrollingModule } from '@angular/cdk/scrolling'
+import { FullPageLoadingComponent } from "../components/full-page-loading/full-page-loading.component";
 
 @NgModule({
 	imports: [
-		ScrollingModule,
-		IonicModule,
-		CommonModule,
-		FormsModule,
-		ValidatorComponentModule,
-		OfflineComponentModule,
-		Tab2PageRoutingModule,
-		MessageComponentModule,
-		AdComponentModule,
-	],
+    ScrollingModule,
+    IonicModule,
+    CommonModule,
+    FormsModule,
+    ValidatorComponentModule,
+    OfflineComponentModule,
+    Tab2PageRoutingModule,
+    MessageComponentModule,
+    AdComponentModule,
+    FullPageLoadingComponent
+],
 	declarations: [Tab2Page],
 })
 export class Tab2PageModule {}

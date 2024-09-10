@@ -30,7 +30,6 @@ import { Keyboard } from '@capacitor/keyboard'
 
 import { UnitconvService } from '../services/unitconv.service'
 import { InfiniteScrollDataSource, loadMoreType } from '../utils/InfiniteScrollDataSource'
-import { trigger, style, animate, transition } from '@angular/animations'
 import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
 import {
 	dashboardID,
@@ -49,21 +48,20 @@ import { DashboardError, DashboardNotFoundError, getDashboardError } from '../co
 import { DashboardUtils } from '../utils/DashboardUtils'
 import ThemeUtils from '../utils/ThemeUtils'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = "validators_tab"
 const ASSOCIATED_CACHE_KEY = 'validators'
 @Component({
 	selector: 'app-tab2',
 	templateUrl: 'tab-validators.page.html',
-	styleUrls: ['tab-validators.page.scss'],
-	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))])])],
+	styleUrls: ['tab-validators.page.scss']
 })
 export class Tab2Page implements OnInit {
 	public classReference = UnitconvService
 	@ViewChild('searchbarRef', { static: true }) searchbarRef: IonSearchbar
 	dataSource: InfiniteScrollDataSource<VDBManageValidatorsTableRow>
 
-	loading = false
+	initialLoading = true
 	reachedMaxValidators = false
 	isLoggedIn = false
 	initialized = false // when first data has been loaded and displayed
@@ -97,6 +95,15 @@ export class Tab2Page implements OnInit {
 		private alertController: AlertController
 	) {
 		this.dashboardUtils.dashboardAwareListener.register(DASHBOARD_UPDATE)
+
+		// Back key on android should cancel select mode
+		this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+			if (this.selectMode) {
+				this.cancelSelect()
+			} else {
+				processNextHandler()
+			}
+		})
 	}
 
 	ngOnInit() {
@@ -110,6 +117,11 @@ export class Tab2Page implements OnInit {
 		}
 	}
 
+	/**
+	 * Call when you need to clear the API request cache for all calls this view made.
+	 * Note: when making calls in this view, always use the ASSOCIATED_CACHE_KEY
+	 * @returns promise void
+	 */
 	clearRequestCache() {
 		return this.api.clearAllAssociatedCacheKeys(ASSOCIATED_CACHE_KEY)
 	}
@@ -213,7 +225,7 @@ export class Tab2Page implements OnInit {
 		return async (cursor) => {
 			const firstRun = !cursor && !this.initialized
 			if (firstRun) {
-				this.loading = true
+				this.initialLoading = true
 			}
 
 			this.loadMore = !!cursor
@@ -221,7 +233,7 @@ export class Tab2Page implements OnInit {
 			this.loadMore = false
 
 			if (firstRun) {
-				this.loading = false
+				this.initialLoading = false
 				this.initialized = true
 			}
 			return result
@@ -229,13 +241,16 @@ export class Tab2Page implements OnInit {
 	}
 
 	async searchEvent(event) {
+		console.log("search event 1")
 		const searchString = event.target.value
 		if (!searchString || searchString.length < 0) return
 		if (this.platform.is('ios') || this.platform.is('android')) {
 			Keyboard.hide()
 		}
-
+console.log('search event2 ')
 		this.searchResultMode = true
+		this.searchResult = null
+		console.log('search event 3')
 		const isETH1Address = searchString.startsWith('0x') && searchString.length == 42
 		const isWithdrawalCredential = searchString.startsWith('0x') && searchString.length == 66
 		const isPubkey = searchString.startsWith('0x') && searchString.length == 98
@@ -261,6 +276,7 @@ export class Tab2Page implements OnInit {
 			searchTypes = [searchType.validatorByIndex, searchType.validatorsByDepositEnsName, searchType.validatorsByWithdrawalEns]
 		}
 
+		console.log('search event 4')
 		// todo network from dashboard
 		const result = await this.api.execute2(new V2SearchValidators(searchString, ['holesky'], searchTypes), ASSOCIATED_CACHE_KEY)
 		if (result.error) {
@@ -272,6 +288,8 @@ export class Tab2Page implements OnInit {
 			})
 			return
 		}
+
+		console.log('search event 5')
 
 		this.searchResult = result.data
 	}
@@ -288,7 +306,7 @@ export class Tab2Page implements OnInit {
 
 		const resultValidatorCount = this.dashboardUtils.searchResultHandler.resultCount(item)
 		if (resultValidatorCount + dashboardValidatorCount > this.merchant.getCurrentPlanMaxValidator()) {
-			if (this.isLoggedIn) {
+			if (this.isLoggedIn && this.dashboardUtils.searchResultHandler.resultCount(item) > 1) {
 				this.alerts.confirmDialog(
 					'Maximum validators reached',
 					'Some of your validators can not be added since it exceeds your current plans limit. <br/><br/>You can add more validators by upgrading to a higher plan.<br/><br/>Do you want to add the remaining validators?',
@@ -440,12 +458,25 @@ export class Tab2Page implements OnInit {
 		}
 	}
 
+	private lastRefreshedTs: number = 0
+
 	async doRefresh(event) {
+		if (this.lastRefreshedTs + 15 * 1000 > new Date().getTime()) {
+			Toast.show({
+				text: 'Nothing to update',
+			})
+			event.target.complete()
+			return
+		}
+		this.lastRefreshedTs = new Date().getTime()
+
+		this.initialLoading = true
 		await this.clearRequestCache()
 		await this.updateValidators().catch(() => {
 			this.api.mayInvalidateOnFaultyConnectionState()
 			event.target.complete()
 		})
+		this.initialLoading = false
 		event.target.complete()
 	}
 

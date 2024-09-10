@@ -31,7 +31,6 @@ import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import FirebaseUtils from 'src/app/utils/FirebaseUtils'
-import { trigger, style, animate, transition } from '@angular/animations'
 import { endEpochSyncCommittee, slotToEpoch, startEpochSyncCommittee } from 'src/app/utils/MathUtils'
 import { epochToTimestamp, getLocale } from 'src/app/utils/TimeUtils'
 import { Period, setID } from 'src/app/requests/v2-dashboard'
@@ -42,8 +41,7 @@ type RewardTabs = 'combined' | 'cons' | 'exec'
 @Component({
 	selector: 'app-validator-dashboard',
 	templateUrl: './dashboard.component.html',
-	styleUrls: ['./dashboard.component.scss'],
-	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 300ms', style({ opacity: 1 }))])])],
+	styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
 	public classReference = UnitconvService
@@ -151,11 +149,11 @@ export class DashboardComponent implements OnInit {
 
 			const plural = this.data.summaryGroup().sync_count.current_validators > 1
 			const options = this.syncDateFormatOptions()
+
+			const opening = plural ? `${this.data.summaryGroup().sync_count.current_validators} of your validators` : 'Your validator'
 			return {
 				title: 'Sync Committee',
-				text: `${this.data.summaryGroup().sync_count.current_validators} of your validator${plural ? 's' : ''} ${
-					plural ? 'are' : 'is'
-				} currently part of the active sync committee.
+				text: `${opening} ${plural ? 'are' : 'is'} currently part of the active sync committee.
 					<br/><br/>This duty started at ${new Date(startTs).toLocaleString(getLocale(), options)} (Epoch ${startEpoch}) and 
 					will end at ${new Date(endTs).toLocaleString(getLocale(), options)} (Epoch ${endEpoch - 1}). 
 					<br/><br/>You'll earn extra rewards during this period if you are online and attesting.
@@ -175,9 +173,11 @@ export class DashboardComponent implements OnInit {
 
 			const plural = this.data.summaryGroup().sync_count.upcoming_validators > 1
 			const options = this.syncDateFormatOptions()
+
+			const opening = plural ? `${this.data.summaryGroup().sync_count.current_validators} of your validators` : 'Your validator'
 			return {
 				title: 'Sync Committee Soon',
-				text: `${this.data.summaryGroup().sync_count.upcoming_validators} of your validator${plural ? 's' : ''}  ${
+				text: `${opening}  ${
 					plural ? 'are' : 'is'
 				} part of the <strong>next</strong> sync committee.
 					<br/><br/>This duty starts at ${new Date(startTs).toLocaleString(getLocale(), options)} (Epoch ${startEpoch}) and 

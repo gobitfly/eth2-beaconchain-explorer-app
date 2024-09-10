@@ -36,17 +36,18 @@
 }
 
 .top-bar {
-	padding-bottom: 0px !important;
+	padding: 0px !important;
+    background: var(--ion-item-background);
 	margin-bottom: 0px !important;
 }
 
 .next-block-hint {
 	opacity: 0.6;
-	font-size: 0.85rem;
+	font-size: var(--smaller-info-size);
+	font-weight: 400;//var(--smaller-label-weight);
 
 	text-align: center;
-	margin-block-start: 6px;
-	margin-block-end: 6px;
+	margin: 6px 6px 6px 6px;
 }
 
 .nothingfound {
@@ -59,8 +60,9 @@
 }
 
 ion-label {
-	font-weight: normal;
-	color: var(--ion-text-color-lighter);
+	//font-weight: normal;
+	//color: var(--ion-text-color-lighter);
+	opacity: var(--default-secondary-transparency);
 }
 
 cdk-virtual-scroll-viewport {
@@ -85,7 +87,3 @@ cdk-virtual-scroll-viewport {
 	font-size: 69px;
 }
 
-.loading-spinner {
-	margin-top: 55px;
-	margin-bottom: 10px;
-}

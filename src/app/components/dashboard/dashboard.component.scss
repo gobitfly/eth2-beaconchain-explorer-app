@@ -18,16 +18,9 @@
  */
 
 @import '../../../theme/variables.scss';
-
 ion-segment-button {
-	--indicator-height: 0px !important;
-	text-transform: none !important;
-	--ripple-color: transparent !important;
-	//transition: color 0.15s ease;
-	font-family: 'Varela';
-	font-size: 0.75em;
 	--background-focused-opacity: 1;
-	opacity: 1 !important;
+	color: var(--ion-text-color-lighter);
 }
 
 ion-segment-button.md::part(native) {
@@ -123,21 +116,13 @@ ion-segment {
 	padding-bottom: 6px !important;
 }
 
-ion-list-header {
-	padding-left: 0px;
-	text-align: center;
-}
-ion-list-header ion-label {
-	font-size: 0.9rem;
-	font-weight: 600 !important;
-	font-family: 'Varela';
-	letter-spacing: 1.05px;
-}
+
 
 ion-item {
-	//max-width: 92%;
+	//max-width: var(--ion-item-max-width);
 
-	margin: auto;
+	//margin: auto;
+	margin: var(--edge-padding);
 }
 
 .value {
@@ -152,10 +137,7 @@ ion-item {
 	margin: auto;
 }
 
-.loading-spinner {
-	padding-top: 55px;
-	padding-bottom: 10px;
-}
+
 
 .updates {
 	padding-top: 0px;
@@ -176,15 +158,11 @@ ion-item {
 }
 
 .stat-title {
-	opacity: 0.85;
-}
-
-.income-title {
-	opacity: 0.85;
-	font-size: 1em;
-	//color: var(--ion-text-color-lighter);
+	opacity: var(--default-secondary-transparency);
+	font-weight: var(--smaller-label-weight);
 }
 
 .grid {
 	width: 100%;
 }
+

@@ -1,0 +1,20 @@
+<div class="container loading-container" *ngIf="showLoading" @out (@out.done)="onLoadingAnimationDone()">
+    <div class="center">
+        <div class="lds-grid">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+</div>
+
+<div class="content" [hidden]="!showContent" [@fadeIn]="fadeInComplete">
+    <ng-content></ng-content>
+</div>
+

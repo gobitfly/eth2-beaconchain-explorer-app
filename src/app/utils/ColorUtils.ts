@@ -67,34 +67,20 @@ export function getSummaryChartGroupColors(theme: string) {
 	return theme === 'light' ? colorsLight : colorsDark
 }
 
-export function getChartTextColor(theme: string) {
-	const styles = window.getComputedStyle(document.documentElement)
-
-	if (theme === 'light') {
-		return styles.getPropertyValue('--light-black')
-	} else {
-		return styles.getPropertyValue('--light-grey')
-	}
+export function getChartTextColor() {
+	return null // keep default
+	// const styles = getComputedStyle(document.body)
+	// return styles.getPropertyValue('--ion-text-color-lighter')
 }
 
-export function getChartTooltipBackgroundColor(theme: string) {
-	const styles = window.getComputedStyle(document.documentElement)
-
-	if (theme === 'light') {
-		return styles.getPropertyValue('--light-grey-3')
-	} else {
-		return styles.getPropertyValue('--dark-grey')
-	}
+export function getChartTooltipBackgroundColor() {
+	const styles = window.getComputedStyle(document.body)
+	return styles.getPropertyValue('--ion-item-background')
 }
 
-export function getRewardsChartLineColor(theme: string) {
-	const styles = window.getComputedStyle(document.documentElement)
-
-	if (theme === 'light') {
-		return styles.getPropertyValue('--light-grey-3')
-	} else {
-		return styles.getPropertyValue('--dark-grey')
-	}
+export function getRewardsChartLineColor() {
+	const styles = window.getComputedStyle(document.body)
+	return styles.getPropertyValue('--ion-text-color-lighter')
 }
 
 export function getRewardChartColors() {

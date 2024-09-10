@@ -10,14 +10,12 @@ import { OAuthUtils } from 'src/app/utils/OAuthUtils'
 import MachineUtils from 'src/app/utils/MachineUtils'
 
 import { Browser } from '@capacitor/browser'
-import { trigger, style, animate, transition } from '@angular/animations'
 import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-machines',
 	templateUrl: './machines.page.html',
-	styleUrls: ['./machines.page.scss'],
-	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))])])],
+	styleUrls: ['./machines.page.scss']
 })
 export class MachinesPage extends MachineController implements OnInit {
 	data: ProcessedStats[] = null

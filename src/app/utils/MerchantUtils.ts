@@ -263,9 +263,9 @@ export class MerchantUtils implements OnInit {
 			} as UserInfo)
 		switch (target) {
 			case 'standard':
-				userInfoShadow.premium_perks.ad_free = true // false
+				userInfoShadow.premium_perks.ad_free = false
 				userInfoShadow.premium_perks.validator_dashboards = 1
-				userInfoShadow.premium_perks.validators_per_dashboard = 5 // 20
+				userInfoShadow.premium_perks.validators_per_dashboard = 20
 				userInfoShadow.premium_perks.validator_groups_per_dashboard = 1
 				userInfoShadow.premium_perks.chart_history_seconds = {
 					epoch: 0,

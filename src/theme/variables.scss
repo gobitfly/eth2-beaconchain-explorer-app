@@ -39,7 +39,12 @@
 
 :root {
 	--test-color: #ee7112;
-	--smaller-label-weight: normal;
+	--smaller-label-weight: 600;
+	--edge-padding: 0px 0px;
+	--edge-padding-left-minus-5px: 0px 0px;
+	--default-secondary-transparency: 0.83;
+	--smaller-info-size: 0.82rem;
+	
 
 	--ion-font-family: 'Mukta';
 	/** primary **/
@@ -124,8 +129,25 @@
 	--hilight-color: #0275d8;
 }
 
+// Example for a larger screen (e.g., desktops)
+@media (min-width: 360px) {
+  :root {
+	--edge-padding: 0px 15px;
+	--edge-padding-left-minus-5px: 0px 10px;
+  }
+}
+
+// Example for very large screens (e.g., large desktops)
+@media (min-width: 480px) {
+  :root {
+	--edge-padding: 0px 25px;
+	--edge-padding-left-minus-5px: 0px 20px;
+  }
+}
+
 body {
-	--bar-transparency: 0.9;
+	--loading-opacity: 0.55;
+	--bar-transparency: 0.92;
 	--tab-top-border: 1px;
 	--status-ok: var(--ion-color-success);
 	--status-warn: var(--ion-color-warning);
@@ -173,6 +195,7 @@ body {
 }
 
 body.dark {
+	--loading-opacity: 0.7;
 	--bar-transparency: 0.79;
 	--ion-color-primary: #ee7112;
 	--ion-color-primary-rgb: 238, 113, 18;

@@ -1,16 +1,5 @@
 @import '../../../theme/variables.scss';
 
-ion-segment-button {
-	color: var(--x-toolbar-title-color);
-
-	font-family: 'Varela';
-	font-size: 0.75em;
-	--indicator-height: 0px !important;
-	text-transform: none !important;
-	--ripple-color: transparent !important;
-	//transition: color 0.15s ease;
-	opacity: 0.65;
-}
 
 ion-segment {
 	background-color: var(--ion-toolbar-background);

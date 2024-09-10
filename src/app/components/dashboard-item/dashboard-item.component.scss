@@ -1,7 +1,6 @@
 @import '../../../theme/variables.scss';
 
 .dashboard-card {
-	margin-top: 10px;
 	background-color: var(--ion-item-background);
 }
 
@@ -40,11 +39,6 @@ ion-badge {
 	//font-size: small;
 }
 
-.info-label {
-	opacity: 0.6; 
-	font-size: 0.7rem;
-}
-
 .maxed {
 	color: var(--ion-color-danger) !important;
 }
@@ -56,9 +50,9 @@ ion-badge {
 .action {
 	// height: 25px;
 	// width: 25px;
-	font-size: 25px;
+	font-size: 23px;
 }
 
 .badge {
-	padding: 20px 10px;
+	padding: 21px 10px;
 }

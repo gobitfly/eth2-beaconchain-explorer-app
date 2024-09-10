@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, Input } from '@angular/core'
+import { Component, Input } from '@angular/core'
 import * as blockies from 'ethereum-blockies'
 import { getDisplayName, ValidatorState } from 'src/app/utils/ValidatorUtils'
 import { UnitconvService } from '../../services/unitconv.service'
@@ -28,10 +28,11 @@ import { VDBManageValidatorsTableRow } from 'src/app/requests/types/validator_da
 	templateUrl: './validator.component.html',
 	styleUrls: ['./validator.component.scss'],
 })
-export class ValidatorComponent implements OnInit {
-	fadeIn = 'fade-in'
+export class ValidatorComponent  {
 
 	@Input() validator: VDBManageValidatorsTableRow
+	@Input() first: boolean
+	@Input() last: boolean
 
 	name: string
 	imgData: string
@@ -47,12 +48,6 @@ export class ValidatorComponent implements OnInit {
 		this.imgData = this.getBlockies()
 		this.state = this.interpretState(this.validator)
 		this.stateCss = this.interpretStateCss(this.validator)
-	}
-
-	ngOnInit() {
-		setTimeout(() => {
-			this.fadeIn = null
-		}, 500)
 	}
 
 	private getBlockies() {

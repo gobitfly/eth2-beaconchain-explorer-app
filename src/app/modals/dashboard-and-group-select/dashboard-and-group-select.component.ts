@@ -13,11 +13,13 @@ import { StorageService } from 'src/app/services/storage.service'
 import { DashboardUtils } from 'src/app/utils/DashboardUtils'
 import { OAuthUtils } from 'src/app/utils/OAuthUtils'
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
+import { FullPageLoadingComponent } from "../../components/full-page-loading/full-page-loading.component";
 
+const DASHBOARD_INFO_DISMISS_KEY = 'dashboard_info_dismissed'
 @Component({
 	selector: 'app-dashboard-and-group-select',
 	standalone: true,
-	imports: [CommonModule, IonicModule, DashboardItemComponent],
+	imports: [CommonModule, IonicModule, DashboardItemComponent, FullPageLoadingComponent],
 	templateUrl: './dashboard-and-group-select.component.html',
 	styleUrl: './dashboard-and-group-select.component.scss',
 })
@@ -57,7 +59,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 	}
 
 	async ngOnInit() {
-		this.infoDismissed = await this.storage.getBooleanSetting('dashboardInfoDismissed', false)
+		this.infoDismissed = await this.storage.getBooleanSetting(DASHBOARD_INFO_DISMISS_KEY, false)
 		this.init()
 	}
 
@@ -197,7 +199,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 	}
 
 	dismissInfo() {
-		this.storage.setBooleanSetting('dashboardInfoDismissed', true)
+		this.storage.setBooleanSetting(DASHBOARD_INFO_DISMISS_KEY, true)
 		this.infoDismissed = true
 	}
 }

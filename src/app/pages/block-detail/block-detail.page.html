@@ -1,5 +1,5 @@
 <ion-header [translucent]="true">
-	<ion-toolbar>
+	<ion-toolbar class="top">
 		<ion-buttons slot="start">
 			<ion-button (click)="closeModal()">
 				<ion-icon size="large" name="close-outline"></ion-icon>
@@ -17,192 +17,192 @@
 	(ionScroll)="onScroll($event)"
 	(ionScrollStart)="onScrollStarted()"
 	(ionScrollEnd)="onScrollEnded()">
-	<ion-list class="status">
-		<div lines="none" class="status-container">
-			<div [ngStyle]="{'opacity': currentY | fadeoutpipe: 73 }">
-				<img class="blockie" src="{{ imgData }}" />
+
+		<ion-list class="status">
+			<div lines="none" class="status-container">
+				<div [ngStyle]="{'opacity': currentY | fadeoutpipe: 73 }">
+					<img class="blockie" src="{{ imgData }}" />
+				</div>
+
+				<div class="status-text" [ngStyle]="{'opacity': currentY | fadeoutpipe: 133 }">
+					<ion-label class="validator-count" (click)="unit.switchCurrencyPipe()">
+						<strong> {{ producerReward | mcurrency: "WEI":unit.pref.Exec }} </strong>
+					</ion-label>
+				</div>
+
+				<div class="status-text" [ngStyle]="{'opacity': currentY | fadeoutpipe: 173 }">
+					<ion-label *ngIf="!nameResolved">
+						<strong class="fee-recipient"> {{ feeRecipient || "no recipient" }} </strong>
+					</ion-label>
+					<ion-label *ngIf="nameResolved">
+						<strong class="fee-recipient">{{ nameResolved }}</strong>
+					</ion-label>
+				</div>
 			</div>
+		</ion-list>
 
-			<div class="status-text" [ngStyle]="{'opacity': currentY | fadeoutpipe: 133 }">
-				<ion-label class="validator-count" (click)="unit.switchCurrencyPipe()">
-					<strong> {{ producerReward | mcurrency: "WEI":unit.pref.Exec }} </strong>
-				</ion-label>
+		<div style="background: var(--ion-background-color); height: 100%;">
+			<app-full-page-loading [renderWait]="0" [loading]="!overview() && this.block.block">
+
+			<div *ngIf="overview() || !this.block.block">
+				<ion-list-header>
+					<ion-label>Proposer Rewards</ion-label>
+				</ion-list-header>
+				<ion-list class="performance">
+					<ion-item lines="none">
+						<ion-label class="stat-title"> Execution</ion-label>
+						<ion-label class="value" [class]="block.reward?.el || 0 | valuestyle:1" (click)="unit.switchCurrencyPipe()">
+							{{ block.reward?.el || 0 | mcurrency: "WEI":unit.pref.Exec }}
+						</ion-label>
+					</ion-item>
+
+					<ion-item lines="none">
+						<ion-label class="stat-title"> Consensus</ion-label>
+						<ion-label class="value" [class]="block.reward?.cl || 0 | valuestyle:1" (click)="unit.switchCurrencyPipe()">
+							{{ block.reward?.cl || 0 | mcurrency: "WEI":unit.pref.Exec }}
+						</ion-label>
+					</ion-item>
+				</ion-list>
+
+				<ion-list-header>
+					<ion-label>General</ion-label>
+				</ion-list-header>
+
+				<ion-list class="performance">
+					<ion-item lines="none">
+						<ion-label class="stat-title"> Status </ion-label>
+						<ion-label class="value" [class]="block.status"> {{ block.status }} </ion-label>
+					</ion-item>
+
+					<ion-item lines="none">
+						<ion-label class="stat-title"> Proposer </ion-label>
+						<ion-label class="value"> {{ block.proposer }} </ion-label>
+					</ion-item>
+
+					<ion-item lines="none" *ngIf="overview()">
+						<ion-label class="stat-title"> Burned </ion-label>
+						<ion-label class="value negative-value" (click)="unit.switchCurrencyPipe()">
+							{{ overview()?.burned_fees | mcurrency: "WEI":unit.pref.Exec }}
+						</ion-label>
+					</ion-item>
+
+					<ion-item lines="none" *ngIf="overview()">
+						<ion-label class="stat-title"> Base Fee </ion-label>
+						<ion-label class="value"> {{ overview()?.base_fee }} </ion-label>
+					</ion-item>
+
+					<ion-item lines="none" *ngIf="overview()"> 
+						<ion-label class="stat-title"> Gas Used </ion-label>
+						<ion-label class="value" (click)="switchGasPercent()">
+							<span *ngIf="!showGasUsedPercent">{{ this.overview()?.gas_usage }}</span>
+							<span *ngIf="showGasUsedPercent">{{ gasUsedPercent() }} %</span>
+						</ion-label>
+					</ion-item>
+
+					<ion-item lines="none" *ngIf="overview()">
+						<ion-label class="stat-title"> Gas Limit </ion-label>
+						<ion-label class="value"> {{ this.overview()?.gas_limit.value }} </ion-label>
+					</ion-item>
+
+					<ion-item lines="none">
+						<ion-label class="stat-title"> Time </ion-label>
+						<ion-label class="value"> {{ timestamp | date:'MMM d, yy, h:mm' }} </ion-label>
+					</ion-item>
+				</ion-list>
+
+				<ion-list-header>
+					<ion-label>Consensus</ion-label>
+				</ion-list-header>
+
+				<ion-list class="performance">
+					<ion-item lines="none">
+						<ion-label class="stat-title"> Epoch </ion-label>
+						<ion-label class="value"> {{ overview()?.epoch || block.slot / api.networkConfig.slotPerEpoch | number: '1.0-0'}} </ion-label>
+					</ion-item>
+
+					<ion-item lines="none">
+						<ion-label class="stat-title"> Slot </ion-label>
+						<ion-label class="value"> {{ block.slot | number: '1.0-0' }} </ion-label>
+					</ion-item>
+
+					<ion-item lines="none">
+						<ion-label class="stat-title"> Finalized </ion-label>
+						<ion-label class="value">
+							<ion-icon class="check" class="check" name="checkmark-outline" *ngIf="overview()?.status.finalized == 'finalized'"></ion-icon>
+							<ion-icon class="check" class="check" name="hourglass-outline" *ngIf="overview()?.status.finalized == 'justified'"></ion-icon>
+							<ion-icon class="nocheck" class="nocheck" name="close-outline" *ngIf="overview()?.status.finalized == 'not_finalized'"></ion-icon>
+						</ion-label>
+					</ion-item>
+				</ion-list>
+
+				<ion-list-header *ngIf="overview()">
+					<ion-label>MEV Relays</ion-label>
+				</ion-list-header>
+
+				<ion-list class="performance" *ngIf="overview()">
+					<ion-item lines="none" *ngFor="let item of overview()?.mev_tags">
+						<ion-icon class="opacity-icon" slot="start" name="megaphone-outline"></ion-icon>
+						<ion-label slot="end" [ngStyle]="{'color': item.color}">{{item.name}}</ion-label>
+					</ion-item>
+					<ion-item *ngIf="!overview()?.mev_tags">
+						<ion-icon slot="start" class="opacity-icon" name="help-outline"></ion-icon>
+						<ion-label slot="end">unknown or self proposed</ion-label>
+					</ion-item>
+				</ion-list>
+
+				<ion-list-header *ngIf="overview()">
+					<ion-label>Content</ion-label>
+				</ion-list-header>
+
+				<ion-list class="performance" *ngIf="overview()">
+					<ion-item lines="none">
+						<ion-label class="stat-title"> TX Count </ion-label>
+						<ion-label class="value"> {{overview()?.transactions.general }} </ion-label>
+					</ion-item>
+
+					<ion-item lines="none">
+						<ion-label class="stat-title"> Internal Count </ion-label>
+						<ion-label class="value"> {{ overview()?.transactions.internal  }} </ion-label>
+					</ion-item>
+
+					<ion-item lines="none">
+						<ion-label class="stat-title"> Blobs Count </ion-label>
+						<ion-label class="value"> {{ overview()?.transactions.blob }} </ion-label>
+					</ion-item>
+				</ion-list>
+
+				<ion-list-header>
+					<ion-label>Graffiti</ion-label>
+				</ion-list-header>
+
+				<ion-list class="performance">
+					<ion-item lines="none">
+						<ion-label class="value"> {{ block.graffiti }} </ion-label>
+					</ion-item>
+				</ion-list>
+
+				<ion-list-header>
+					<ion-label>Links</ion-label>
+				</ion-list-header>
+
+				<ion-list class="performance">
+					<ion-list class="performances">
+						<ion-item lines="none" (click)="openBlock()">
+							<ion-icon slot="end" name="open-outline"></ion-icon>
+							<ion-label class="stat-title"> View Block </ion-label>
+						</ion-item>
+					</ion-list>
+
+					<ion-list class="performances">
+						<ion-item lines="none" (click)="openFeeRecipient()">
+							<ion-icon slot="end" name="open-outline"></ion-icon>
+							<ion-label class="stat-title"> View Fee Recipient </ion-label>
+						</ion-item>
+					</ion-list>
+				</ion-list>
+
+				<div class="bottomFiller"></div>
 			</div>
-
-			<div class="status-text" [ngStyle]="{'opacity': currentY | fadeoutpipe: 173 }">
-				<ion-label *ngIf="!nameResolved">
-					<strong class="fee-recipient"> {{ feeRecipient || "no recipient" }} </strong>
-				</ion-label>
-				<ion-label *ngIf="nameResolved">
-					<strong class="fee-recipient">{{ nameResolved }}</strong>
-				</ion-label>
-			</div>
-		</div>
-	</ion-list>
-
-	<div class="container" *ngIf="!overview() && this.block.block" style="height: 100%">
-		<div class="center">
-			<ion-spinner class="status-icon loading-spinner"></ion-spinner>
-		</div>
-	</div>
-
-	<div *ngIf="overview() || !this.block.block">
-		<ion-list-header>
-			<ion-label>Proposer Rewards</ion-label>
-		</ion-list-header>
-		<ion-list class="performance">
-			<ion-item lines="none">
-				<ion-label class="stat-title"> Execution</ion-label>
-				<ion-label class="value" [class]="block.reward?.el || 0 | valuestyle:1" (click)="unit.switchCurrencyPipe()">
-					{{ block.reward?.el || 0 | mcurrency: "WEI":unit.pref.Exec }}
-				</ion-label>
-			</ion-item>
-
-			<ion-item lines="none">
-				<ion-label class="stat-title"> Consensus</ion-label>
-				<ion-label class="value" [class]="block.reward?.cl || 0 | valuestyle:1" (click)="unit.switchCurrencyPipe()">
-					{{ block.reward?.cl || 0 | mcurrency: "WEI":unit.pref.Exec }}
-				</ion-label>
-			</ion-item>
-		</ion-list>
-
-		<ion-list-header>
-			<ion-label>General</ion-label>
-		</ion-list-header>
-
-		<ion-list class="performance">
-			<ion-item lines="none">
-				<ion-label class="stat-title"> Status </ion-label>
-				<ion-label class="value" [class]="block.status"> {{ block.status }} </ion-label>
-			</ion-item>
-
-			<ion-item lines="none">
-				<ion-label class="stat-title"> Proposer </ion-label>
-				<ion-label class="value"> {{ block.proposer }} </ion-label>
-			</ion-item>
-
-			<ion-item lines="none" *ngIf="overview()">
-				<ion-label class="stat-title"> Burned </ion-label>
-				<ion-label class="value negative-value" (click)="unit.switchCurrencyPipe()">
-					{{ overview()?.burned_fees | mcurrency: "WEI":unit.pref.Exec }}
-				</ion-label>
-			</ion-item>
-
-			<ion-item lines="none" *ngIf="overview()">
-				<ion-label class="stat-title"> Base Fee </ion-label>
-				<ion-label class="value"> {{ overview()?.base_fee }} </ion-label>
-			</ion-item>
-
-			<ion-item lines="none" *ngIf="overview()"> 
-				<ion-label class="stat-title"> Gas Used </ion-label>
-				<ion-label class="value" (click)="switchGasPercent()">
-					<span *ngIf="!showGasUsedPercent">{{ this.overview()?.gas_usage }}</span>
-					<span *ngIf="showGasUsedPercent">{{ gasUsedPercent() }} %</span>
-				</ion-label>
-			</ion-item>
-
-			<ion-item lines="none" *ngIf="overview()">
-				<ion-label class="stat-title"> Gas Limit </ion-label>
-				<ion-label class="value"> {{ this.overview()?.gas_limit.value }} </ion-label>
-			</ion-item>
-
-			<ion-item lines="none">
-				<ion-label class="stat-title"> Time </ion-label>
-				<ion-label class="value"> {{ timestamp | date:'MMM d, yy, h:mm' }} </ion-label>
-			</ion-item>
-		</ion-list>
-
-		<ion-list-header>
-			<ion-label>Consensus</ion-label>
-		</ion-list-header>
-
-		<ion-list class="performance">
-			<ion-item lines="none">
-				<ion-label class="stat-title"> Epoch </ion-label>
-				<ion-label class="value"> {{ overview()?.epoch || block.slot / api.networkConfig.slotPerEpoch | number: '1.0-0'}} </ion-label>
-			</ion-item>
-
-			<ion-item lines="none">
-				<ion-label class="stat-title"> Slot </ion-label>
-				<ion-label class="value"> {{ block.slot | number: '1.0-0' }} </ion-label>
-			</ion-item>
-
-			<ion-item lines="none">
-				<ion-label class="stat-title"> Finalized </ion-label>
-				<ion-label class="value">
-					<ion-icon class="check" class="check" name="checkmark-outline" *ngIf="overview()?.status.finalized == 'finalized'"></ion-icon>
-					<ion-icon class="check" class="check" name="hourglass-outline" *ngIf="overview()?.status.finalized == 'justified'"></ion-icon>
-					<ion-icon class="nocheck" class="nocheck" name="close-outline" *ngIf="overview()?.status.finalized == 'not_finalized'"></ion-icon>
-				</ion-label>
-			</ion-item>
-		</ion-list>
-
-		<ion-list-header *ngIf="overview()">
-			<ion-label>MEV Relays</ion-label>
-		</ion-list-header>
-
-		<ion-list class="performance" *ngIf="overview()">
-			<ion-item lines="none" *ngFor="let item of overview()?.mev_tags">
-				<ion-icon class="opacity-icon" slot="start" name="megaphone-outline"></ion-icon>
-				<ion-label slot="end" [ngStyle]="{'color': item.color}">{{item.name}}</ion-label>
-			</ion-item>
-			<ion-item *ngIf="!overview()?.mev_tags">
-				<ion-icon slot="start" class="opacity-icon" name="help-outline"></ion-icon>
-				<ion-label slot="end">unknown or self proposed</ion-label>
-			</ion-item>
-		</ion-list>
-
-		<ion-list-header *ngIf="overview()">
-			<ion-label>Content</ion-label>
-		</ion-list-header>
-
-		<ion-list class="performance" *ngIf="overview()">
-			<ion-item lines="none">
-				<ion-label class="stat-title"> TX Count </ion-label>
-				<ion-label class="value"> {{overview()?.transactions.general }} </ion-label>
-			</ion-item>
-
-			<ion-item lines="none">
-				<ion-label class="stat-title"> Internal Count </ion-label>
-				<ion-label class="value"> {{ overview()?.transactions.internal  }} </ion-label>
-			</ion-item>
-
-			<ion-item lines="none">
-				<ion-label class="stat-title"> Blobs Count </ion-label>
-				<ion-label class="value"> {{ overview()?.transactions.blob }} </ion-label>
-			</ion-item>
-		</ion-list>
-
-		<ion-list-header>
-			<ion-label>Graffiti</ion-label>
-		</ion-list-header>
-
-		<ion-list class="performance">
-			<ion-item lines="none">
-				<ion-label class="value"> {{ block.graffiti }} </ion-label>
-			</ion-item>
-		</ion-list>
-
-		<ion-list-header>
-			<ion-label>Links</ion-label>
-		</ion-list-header>
-
-		<ion-list class="performance">
-			<ion-list class="performances">
-				<ion-item lines="none" (click)="openBlock()">
-					<ion-icon slot="end" name="open-outline"></ion-icon>
-					<ion-label class="stat-title"> View Block </ion-label>
-				</ion-item>
-			</ion-list>
-
-			<ion-list class="performances">
-				<ion-item lines="none" (click)="openFeeRecipient()">
-					<ion-icon slot="end" name="open-outline"></ion-icon>
-					<ion-label class="stat-title"> View Fee Recipient </ion-label>
-				</ion-item>
-			</ion-list>
-		</ion-list>
-
-		<div class="bottomFiller"></div>
+		</app-full-page-loading>
 	</div>
 </ion-content>

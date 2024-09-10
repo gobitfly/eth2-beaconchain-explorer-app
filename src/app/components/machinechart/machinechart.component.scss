@@ -29,7 +29,7 @@
 	width: 9px;
 	height: 9px;
 	border-radius: 50%;
-	opacity: 0.85;
+	opacity: var(--default-secondary-transparency);
 }
 
 .offline {

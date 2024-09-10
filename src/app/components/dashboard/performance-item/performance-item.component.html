@@ -18,31 +18,31 @@
  -->
 
 <div class="grid">
-	<app-grid-cell-left name="Last 24h" [tooltip]="todayTooltip">
+	<app-grid-cell-left name="Last 24h" [tooltipText]="todayTooltip" (valueClick)="unit.switchCurrencyPipe()">
 		<span [class]="performanceData.performance1d | valuestyle : 0">
 			{{ performanceData.performance1d | mcurrency : currency : targetCurrency }}
 		</span>
 	</app-grid-cell-left>
 
-	<app-grid-cell-right name="Last 7d" [tooltip]="last7DaysTooltip">
+	<app-grid-cell-right name="Last 7d" [tooltipText]="last7DaysTooltip" (valueClick)="unit.switchCurrencyPipe()">
 		<span [class]="performanceData.performance7d | valuestyle : 0">
 			{{ performanceData.performance7d | mcurrency : currency : targetCurrency }}
 		</span>
 	</app-grid-cell-right>
 
-	<app-grid-cell-left name="Last 30d" [tooltip]="last30DaysTooltip">
+	<app-grid-cell-left name="Last 30d" [tooltipText]="last30DaysTooltip" (valueClick)="unit.switchCurrencyPipe()">
 		<span [class]="performanceData.performance30d | valuestyle : 0">
 			{{ performanceData.performance30d | mcurrency : currency : targetCurrency }}
 		</span>
 	</app-grid-cell-left>
 
-	<app-grid-cell-right name="Total" [tooltip]="totalTooltip">
+	<app-grid-cell-right name="Total" [tooltipText]="totalTooltip" (valueClick)="unit.switchCurrencyPipe()">
 		<span [class]="performanceData.total | valuestyle : 0">
 			{{ performanceData.total | mcurrency : currency : targetCurrency }}
 		</span>
 	</app-grid-cell-right>
 
-	<app-grid-cell-left name="APR 30d" [tooltip]="aprTooltip">
+	<app-grid-cell-left name="APR 30d" [tooltipText]="aprTooltip">
 		<span [class]="performanceData.apr30d | valuestyle : 0"> {{ performanceData.apr30d | number : '1.0-2' }} % </span>
 	</app-grid-cell-left>
 </div>

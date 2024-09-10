@@ -48,15 +48,6 @@ ion-refresher-content {
 	margin: 0 10px;
 }
 
-ion-segment-button {
-	--indicator-height: 0px !important;
-	text-transform: none !important;
-	--ripple-color: transparent !important;
-	//transition: color 0.15s ease;
-	font-size: 1.05em !important;
-	letter-spacing: normal !important;
-	opacity: 1 !important;
-}
 
 .segment-button-checked {
 	color: var(--segment-primary) !important;
@@ -150,9 +141,10 @@ ion-list {
 }
 
 ion-item {
-	//max-width: 92%;
+	// max-width: var(--ion-item-max-width);
 
-	margin: auto;
+	// margin: auto;
+	margin: var(--edge-padding);
 }
 
 .value {
@@ -208,13 +200,8 @@ ion-item {
 }
 
 .stat-title {
-	opacity: 0.85;
-}
-
-.income-title {
-	opacity: 0.85;
-	font-size: 1em;
-	//color: var(--ion-text-color-lighter);
+	opacity: var(--default-secondary-transparency);
+	font-weight: var(--smaller-label-weight);
 }
 
 .grid {

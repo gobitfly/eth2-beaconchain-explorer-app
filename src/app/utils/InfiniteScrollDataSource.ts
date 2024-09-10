@@ -25,7 +25,7 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 	public static ALL_ITEMS_AT_ONCE = 0
 
 	private pageSize = 100
-	private cachedData: T[] = []
+	cachedData: T[] = []
 	private fetchedPages = new Set<number>()
 	private dataStream = new BehaviorSubject<T[]>(this.cachedData)
 	private subscription = new Subscription()

@@ -35,24 +35,26 @@ import { GridCellLeftComponent } from './grid-cell-left/grid-cell-left.component
 import { GridCellRightComponent } from './grid-cell-right/grid-cell-right.component'
 import { SummaryChartModule } from './summary-chart/summary-chart.module'
 import { RewardChartModule } from './reward-chart/reward-chart.module'
+import { FullPageLoadingComponent } from "../full-page-loading/full-page-loading.component";
 
 @NgModule({
 	imports: [
-		CommonModule,
-		FormsModule,
-		IonicModule,
-		PipesModule,
-		ClientupdateComponentModule,
-		MessageComponentModule,
-		TooltipModule,
-		AdComponentModule,
-		PerformanceItemComponentModule,
-		SummaryChartModule,
-		SuccessFailViewComponent,
-		GridCellLeftComponent,
-		GridCellRightComponent,
-		RewardChartModule,
-	],
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    PipesModule,
+    ClientupdateComponentModule,
+    MessageComponentModule,
+    TooltipModule,
+    AdComponentModule,
+    PerformanceItemComponentModule,
+    SummaryChartModule,
+    SuccessFailViewComponent,
+    GridCellLeftComponent,
+    GridCellRightComponent,
+    RewardChartModule,
+    FullPageLoadingComponent
+],
 	declarations: [DashboardComponent],
 	exports: [DashboardComponent],
 })

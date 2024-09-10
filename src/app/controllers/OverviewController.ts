@@ -47,7 +47,12 @@ export interface SummaryChartOptions {
 @Injectable({ providedIn: 'root' })
 export class OverviewProvider {
 
-	constructor(private api: ApiService, private dashboardUtils: DashboardUtils) {}
+	constructor(private api: ApiService, private dashboardUtils: DashboardUtils) { }
+	
+	clearRequestCache(data: OverviewData2) {
+		if(!data) return
+		return this.api.clearAllAssociatedCacheKeys(data.associatedCacheKey)
+	}
 
 	async setSummaryChartOptions(data: OverviewData2, options: SummaryChartOptions, force: boolean = false) {
 		data.summaryChartOptionsInternal.set(options)
@@ -71,7 +76,7 @@ export class OverviewProvider {
 		if (options.force) {
 			request.withAllowedCacheResponse(false)
 		}
-		const result = await this.api.set(request, data.summaryChart)
+		const result = await this.api.set(request, data.summaryChart, data.associatedCacheKey)
 		if (result.error) {
 			console.error('Error fetching summary chart', result.error)
 		}
@@ -84,15 +89,19 @@ export class OverviewProvider {
 		const period = timeframe
 
 		return Promise.all([
-			this.api.setArray(new V2DashboardSummaryTable(data.id, period, null).withAllowedCacheResponse(!force), data.summary),
-			this.api.set(new V2DashboardSummaryGroupTable(data.id, 0, period, null).withAllowedCacheResponse(!force), data.summaryGroup),
+			this.api.setArray(new V2DashboardSummaryTable(data.id, period, null).withAllowedCacheResponse(!force), data.summary, data.associatedCacheKey),
+			this.api.set(
+				new V2DashboardSummaryGroupTable(data.id, 0, period, null).withAllowedCacheResponse(!force),
+				data.summaryGroup,
+				data.associatedCacheKey
+			),
 		])
 	}
 
 	async create(id: dashboardID, timeframe: Period, summaryChartOptions: SummaryChartOptions, associatedCacheKey: string = null): Promise<OverviewData2> {
 		if (!id) return null
 
-		const temp = new OverviewData2(id, this.api.getNetwork(), false)
+		const temp = new OverviewData2(id, this.api.getNetwork(), associatedCacheKey)
 
 		const overview = this.api.set(new V2DashboardOverview(id), temp.overviewData, associatedCacheKey)
 		this.api.set(new V2DashboardRocketPool(id), temp.rocketpool, associatedCacheKey)
@@ -102,7 +111,7 @@ export class OverviewProvider {
 			temp.latestState.set(latestState)
 		})
 
-		this.setTimeframe(temp, timeframe, true)
+		this.setTimeframe(temp, timeframe, false)
 		temp.summaryChartOptionsInternal.set(summaryChartOptions)
 
 		// Summary Chart handles its own fetch logic, so below is not necessary
@@ -180,6 +189,7 @@ export class DashboardUnknownError extends DashboardError {
 }
 
 export class OverviewData2 {
+	associatedCacheKey: string = null
 
 	loading: WritableSignal<boolean> = signal(false)
 	id: dashboardID
@@ -193,7 +203,6 @@ export class OverviewData2 {
 	rewardChart: WritableSignal<ChartData<number, string>> = signal(null)
 
 	network: ApiNetwork
-	foreignValidator: boolean
 
 	timeframeInternal: WritableSignal<Period> = signal(null)
 	timeframe = computed(() => this.timeframeInternal())
@@ -202,10 +211,12 @@ export class OverviewData2 {
 	summaryChartOptionsInternal: WritableSignal<SummaryChartOptions> = signal(null)
 	summaryChartOptions = computed(() => this.summaryChartOptionsInternal())
 
-	constructor(id: dashboardID, network: ApiNetwork, foreignValidator: boolean) {
+	foreignValidator: boolean = false
+
+	constructor(id: dashboardID, network: ApiNetwork, associatedCacheKey: string) {
 		this.id = id
 		this.network = network
-		this.foreignValidator = foreignValidator
+		this.associatedCacheKey = associatedCacheKey
 	}
 
 	isEmpty = computed(() => {

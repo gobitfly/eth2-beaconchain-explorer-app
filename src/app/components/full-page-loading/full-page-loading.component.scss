@@ -1,0 +1,119 @@
+/**
+ * Copyright (C) 2024 Bitfly GmbH
+ * 
+ * This file is part of Beaconchain Dashboard.
+ * 
+ * Beaconchain Dashboard is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Beaconchain Dashboard is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+.content {
+    display:block; 
+    height:100%;
+    position: relative;
+}
+
+.container {
+	background-color: var(--ion-background-color);
+    height: 100vh;
+}
+
+.center {
+	width: 100%;
+	// display: flex;
+	// justify-content: center;
+	// text-align: center;
+    //padding-top: 42.5vh;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--ion-background-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lds-grid,
+.lds-grid div {
+  box-sizing: border-box;
+  opacity: var(--loading-opacity);
+}
+.lds-grid {
+  display: inline-block;
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+.lds-grid div {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: lds-grid 1.2s linear infinite;
+}
+.lds-grid div:nth-child(1) {
+  top: 4px;
+  left: 4px;
+  animation-delay: 0s;
+}
+.lds-grid div:nth-child(2) {
+  top: 4px;
+  left: 16px;
+  animation-delay: -0.4s;
+}
+.lds-grid div:nth-child(3) {
+  top: 4px;
+  left: 28px;
+  animation-delay: -0.8s;
+}
+.lds-grid div:nth-child(4) {
+  top: 16px;
+  left: 4px;
+  animation-delay: -0.4s;
+}
+.lds-grid div:nth-child(5) {
+  top: 16px;
+  left: 16px;
+  animation-delay: -0.8s;
+}
+.lds-grid div:nth-child(6) {
+  top: 16px;
+  left: 28px;
+  animation-delay: -1.2s;
+}
+.lds-grid div:nth-child(7) {
+  top: 28px;
+  left: 4px;
+  animation-delay: -0.8s;
+}
+.lds-grid div:nth-child(8) {
+  top: 28px;
+  left: 16px;
+  animation-delay: -1.2s;
+}
+.lds-grid div:nth-child(9) {
+  top:28px;
+  left: 28px;
+  animation-delay: -1.6s;
+}
+@keyframes lds-grid {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+

@@ -1,5 +1,5 @@
 <ion-header>
-	<ion-toolbar>
+	<ion-toolbar class="top">
 		<ion-buttons slot="start">
 			<ion-icon size="large" name="close-outline" (click)="cancel()"></ion-icon>
 		</ion-buttons>
@@ -7,12 +7,13 @@
 	</ion-toolbar>
 	<ion-item class="top-bar">
 		<ion-label
+		 class="top-bar-inner"
 			>My Dashboards
 			<span style="padding-left: 5px; opacity: 0.7"
 				>{{ dashboards() ? dashboards().validator_dashboards.length : '-' }} / {{ maxAllowedDashboards() }}
 			</span></ion-label
 		>
-		<ion-icon class="opacity-icon" slot="end" name="add-circle-outline" id="add-dashboard"></ion-icon>
+		<ion-icon class="opacity-icon top-bar-inner" slot="end" name="add-circle-outline" id="add-dashboard"></ion-icon>
 	</ion-item>
 	<ion-popover trigger="add-dashboard" triggerAction="click" [dismissOnSelect]="true">
 		<ng-template>
@@ -26,52 +27,44 @@
 		</ng-template>
 	</ion-popover>
 </ion-header>
+
 <ion-content>
+	<app-full-page-loading [renderWait]="20" [loading]="!dashboards()">
 
+			<app-dashboard-item *ngFor="let item of dashboards()?.validator_dashboards" [data]="item"
+				[defaultDashboard]="defaultDashboard" (refresh)="init(false)"></app-dashboard-item>
 
-	<app-dashboard-item
-		*ngFor="let item of dashboards()?.validator_dashboards"
-		[data]="item"
-		[defaultDashboard]="defaultDashboard"
-		(refresh)="init(false)"></app-dashboard-item>
-	<!-- (click)="selectItem(item)" -->
-
-	<div style="padding-top: 20px" *ngIf="!dashboards()" class="fadein fadeout">
-		<div class="center">
-			<ion-spinner class="status-icon loading-spinner"></ion-spinner>
+		<div style="margin-top: 10px;"*ngIf="!infoDismissed">
+			<ion-list>
+				<ion-item lines="none" class="premium">
+					<ion-icon slot="start" name="information-circle-outline" class="opacity-icon" class="prem-icon"></ion-icon>
+					<ion-label class="prem-title">New: Your Dashboards</ion-label>
+					<ion-icon (click)="dismissInfo()" slot="end" name="close-outline" class="opacity-icon prem-x"></ion-icon>
+				</ion-item>
+				<span class="hint">You may have more than one dashboard. Each dashboard is associated with a network, like Ethereum or Gnosis. The new groups feature allows you to further organize a dashboard.</span>
+			</ion-list>
 		</div>
-	</div>
 
-	<div style="margin-top: 10px;"*ngIf="!infoDismissed">
-		<ion-list>
-			<ion-item lines="none" class="premium">
-				<ion-icon slot="start" name="information-circle-outline" class="opacity-icon" class="prem-icon"></ion-icon>
-				<ion-label>New: Manage Dashboards</ion-label>
-				<ion-icon (click)="dismissInfo()" slot="end" name="close-outline" class="opacity-icon"></ion-icon>
-			</ion-item>
-			<span class="hint">It's now possible to have more than one dashboard. Each dashboard is associated with a network, for example Ethereum or Gnosis and can be further organized with groups.</span>
-		</ion-list>
-	</div>
+		<div style="margin-top: 10px;" *ngIf="!isLoggedIn" (click)="signIn()">
+			<ion-list>
+				<ion-item lines="none" class="premium">
+					<ion-icon slot="start" name="person-circle-outline" class="opacity-icon" class="prem-icon"></ion-icon>
+					<ion-label class="prem-title">Sign in to beaconcha.in</ion-label>
+					<ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon prem-x"></ion-icon>
+				</ion-item>
+				<span class="hint">Get free notifications about your validators, manage or share your dashboards and stay in sync from web or app. </span>
+			</ion-list>
+		</div>
 
-	<div style="margin-top: 10px;" *ngIf="!isLoggedIn" (click)="signIn()">
-		<ion-list>
-			<ion-item lines="none" class="premium">
-				<ion-icon slot="start" name="person-circle-outline" class="opacity-icon" class="prem-icon"></ion-icon>
-				<ion-label>Sign in to beaconcha.in</ion-label>
-				<ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon"></ion-icon>
-			</ion-item>
-			<span class="hint">Get free notifications about your validators, manage or share your dashboards and stay in sync from web or app. </span>
-		</ion-list>
-	</div>
-
-	<div style="margin-top: 10px;" *ngIf="!merchant.isPremium() && isLoggedIn" (click)="sellUp()">
-		<ion-list>
-			<ion-item lines="none" class="premium">
-				<ion-icon slot="start" name="rocket-outline" class="opacity-icon" class="prem-icon"></ion-icon>
-				<ion-label>Get more with Premium</ion-label>
-				<ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon"></ion-icon>
-			</ion-item>
-			<span class="hint">Premium lets you track more validators, access more dashboards and groups, extended history timeframes and much more.</span>
-		</ion-list>
-	</div>
+		<div style="margin-top: 10px;" *ngIf="!merchant.isPremium() && isLoggedIn" (click)="sellUp()">
+			<ion-list>
+				<ion-item lines="none" class="premium">
+					<ion-icon slot="start" name="rocket-outline" class="opacity-icon" class="prem-icon"></ion-icon>
+					<ion-label class="prem-title">Get more with Premium</ion-label>
+					<ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon prem-x"></ion-icon>
+				</ion-item>
+				<span class="hint">Premium lets you track more validators, access more dashboards and groups, extended history timeframes and much more.</span>
+			</ion-list>
+		</div>
+	</app-full-page-loading>
 </ion-content>

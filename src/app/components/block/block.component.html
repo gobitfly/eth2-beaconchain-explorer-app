@@ -18,15 +18,15 @@
     along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<div class="container" [class]="fadeIn">
+<div class="infi-item-container" [ngClass]="{ 'infi-item-first': first, 'infi-item-last': last}">
 	<div class="inner">
 		<ion-item lines="none">
 			<div slot="start">
-				<img class="blockie" src="{{ imgData }}" />
-				<ion-label class="blocknr smaller-info">{{ block.block || "-" }}</ion-label>
+				<img class="infi-item-blockie" src="{{ imgData }}" />
+				<ion-label class="infi-item-container-below-blockie smaller-info">{{ block.block || "-" }}</ion-label>
 			</div>
 
-			<div class="info">
+			<div class="infi-item-middle-container">
 				<ion-text class="title">Reward: {{ producerReward | mcurrency : 'WEI' : unit.pref.Exec }}</ion-text>
 				<ion-label class="smaller-info smaller-pad" style="padding-bottom: 0px">
 					<span>Proposer: {{ block.proposer }}</span>
@@ -34,7 +34,7 @@
 				<ion-label class="smaller-info smaller-pad">
 					<span *ngIf="!resolvedName && feeRecipient">To: {{ feeRecipient | slice : 0 : 6 }}…{{ feeRecipient | slice : 37 : 42 }}</span>
 					<span *ngIf="resolvedName">To: <span [class]="resolvedClass">{{ resolvedName }}</span></span>
-					<span *ngIf="block.status != 'success'" [class]="block.status">{{ block.status }}</span>
+					<span *ngIf="block.status != 'success'">Status: <span [class]="block.status">{{ block.status }}</span></span>
 				</ion-label>
 			</div>
 			<div slot="end" class="status-container">

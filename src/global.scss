@@ -128,6 +128,30 @@ cdk-virtual-scroll-viewport {
 	background: var(--ion-background-color);
 }
 
+ion-list-header {
+	padding-left: 0px;
+	text-align: center;
+}
+ion-list-header ion-label {
+	font-size: 0.79rem;
+	font-weight: 600 !important;
+	font-family: 'Varela';
+	letter-spacing: 1px;
+	color: var(--ion-text-color-lighter);
+}
+
+ion-segment-button {
+	color: var(--x-toolbar-title-color);
+
+	font-family: 'Varela';
+	font-size: 0.75em;
+	--indicator-height: 0px !important;
+	text-transform: none !important;
+	--ripple-color: transparent !important;
+	//transition: color 0.15s ease;
+	opacity: 0.65;
+}
+
 .header-md::after {
 	display: none;
 }
@@ -296,6 +320,15 @@ ion-toolbar {
 	border-style: none !important;
 }
 
+ion-toolbar.top {
+	padding: 0px 10px;
+}
+
+ion-item,
+ion-buttons {
+	margin: var(--edge-padding);
+}
+
 .fade-in {
 	-webkit-animation: fadein 0.7s;
 	-moz-animation: fadein 0.7s;
@@ -356,17 +389,64 @@ ion-toolbar {
 }
 
 .smaller-info {
-	font-size: 0.75rem !important;
-	color: var(--ion-text-color-secondary) !important;
+	font-size: var(--smaller-info-size) !important;
+	//color: var(--ion-text-color-secondary) !important;
+	opacity: var(--default-secondary-transparency);
 	font-weight: var(--smaller-label-weight) !important;
 }
 
 .smallest-info {
-	font-size: 0.65rem !important;
-	color: var(--ion-text-color-secondary) !important;
+	font-size: 0.75rem !important;
+	//color: var(--ion-text-color-secondary) !important;
+	opacity: var(--default-secondary-transparency);
 	font-weight: var(--smaller-label-weight) !important;
 }
 
 .smaller-pad {
-	padding: 3px 0px;
+	padding: 2px 0px 0px 0px;
+}
+
+.top-bar {
+	padding-bottom: 0px !important;
+	margin-bottom: 0px !important;
+	margin-left: 0px;
+	margin-right: 0px;
+}
+
+.top-bar-inner {
+	margin: var(--edge-padding);
+}
+
+.infi-item-blockie {
+	position: absolute;
+	left: 16px;
+	margin-left: 5px;
+	border-radius: 20%;
+	height: 40px;
+	width: 40px;
+	image-rendering: pixelated;
+}
+
+.infi-item-container {
+	padding: 3px 0px 3px 0px;
+	margin: var(--edge-padding-left-minus-5px); // blockie is shifted 5px to the right so text can be centered
+}
+
+.infi-item-container-below-blockie {
+	text-align: center;
+	padding-top: 45px;
+	width: 50px;
+}
+
+.infi-item-middle-container {
+	margin-left: 5px;
+	padding-bottom: 8px;
+}
+
+.infi-item-first {
+	padding-top: 13px;
+}
+
+.infi-item-last {
+	margin-bottom: 45px;
 }

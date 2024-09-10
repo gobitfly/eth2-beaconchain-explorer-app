@@ -19,14 +19,15 @@
  -->
 
 <ion-header [translucent]="true">
-	<ion-toolbar>
-		<ion-buttons style="margin-left: 15px" slot="start" (click)="openDashboardAndGroupSelect()">
+	<ion-toolbar class="top">
+		<ion-buttons slot="start" (click)="openDashboardAndGroupSelect()">
 			<ion-icon slot="icon-only" ios="apps-outline" md="apps-outline" id="network-icon"></ion-icon>
 		</ion-buttons>
+		<ion-title> Dashboard </ion-title>
 		<ion-buttons slot="primary" id="options-dashboard" *ngIf="overallData && !overallData.isEmpty()">
 			<ion-icon slot="icon-only" ios="ellipsis-horizontal-outline" md="ellipsis-vertical-outline"></ion-icon>
 		</ion-buttons>
-		<ion-title> Dashboard </ion-title>
+		
 	</ion-toolbar>
 	<ion-popover trigger="options-dashboard" triggerAction="click" [dismissOnSelect]="true" *ngIf="overallData && !overallData.isEmpty()">
 		<ng-template>

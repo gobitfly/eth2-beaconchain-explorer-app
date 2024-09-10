@@ -349,20 +349,19 @@ export class SummaryChartComponent implements OnInit {
 				bottom: 10,
 				left: '3%', // Match this with the grid's left margin
 				right: '3%', // Match this with the grid's right margin
-				// borderColor: this.colors().label,
-				// dataBackground: {
-				// 	areaStyle: { color: this.colors().label },
-				// 	lineStyle: { color: this.colors().label },
-				// },
+				dataBackground: {
+					areaStyle: { color: this.colors().background },
+					lineStyle: { color: this.colors().background },
+				},
 			},
 		}
 	}
 
 	colors = computed(() => {
 		return {
-			background: getChartTooltipBackgroundColor('light'),
-			groups: getSummaryChartGroupColors('light'),
-			label: getChartTextColor('light'),
+			background: getChartTooltipBackgroundColor(),
+			groups: getSummaryChartGroupColors("light"), // todo
+			label: getChartTextColor(),
 		}
 	})
 

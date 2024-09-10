@@ -32,10 +32,10 @@ export class RewardChartComponent {
 
 	colors = computed(() => {
 		return {
-			background: getChartTooltipBackgroundColor('light'), // todo
+			background: getChartTooltipBackgroundColor(), 
 			data: getRewardChartColors(),
-			label: getChartTextColor('light'),
-			line: getRewardsChartLineColor('light'),
+			label: getChartTextColor(),
+			line: getRewardsChartLineColor(),
 		}
 	})
 
@@ -136,15 +136,13 @@ export class RewardChartComponent {
 
 		const root = document.body
 		const chartDefaultColor = getComputedStyle(root).getPropertyValue('--chart-default').trim()
-		console.log('chartDefaultColor', chartDefaultColor)
 
 		return {
 			dataZoom: {
-				// borderColor: this.colors().label,
-				// dataBackground: {
-				// 	areaStyle: { color: this.colors().label },
-				// 	lineStyle: { color: this.colors().label },
-				// },
+				dataBackground: {
+					areaStyle: { color: this.colors().background },
+					lineStyle: { color: this.colors().background },
+				},
 				left: '3%', // Match this with the grid's left margin
 				right: '3%', // Match this with the grid's right margin
 				end: 100,
@@ -162,7 +160,7 @@ export class RewardChartComponent {
 				bottom: 50,
 				orient: 'horizontal',
 				textStyle: {
-					color: this.colors().label,
+					// color: this.colors().label,
 					fontSize: fontSize,
 					//fontWeight: fontWeightMedium,
 				},
@@ -170,7 +168,7 @@ export class RewardChartComponent {
 			},
 			series: series,
 			textStyle: {
-				color: this.colors().label,
+				// color: this.colors().label,
 				//fontFamily,
 				fontSize: fontSize,
 				//fontWeight: fontWeightLight,
@@ -194,6 +192,7 @@ export class RewardChartComponent {
 				trigger: 'axis',
 				triggerOn: 'click',
 			},
+			color: [chartDefaultColor, '#ff835c', '#e4a354', '#2b908f', '#f45b5b', '#91e8e1'],
 			xAxis: {
 				axisLabel: {
 					fontSize: fontSize,
@@ -219,7 +218,7 @@ export class RewardChartComponent {
 					padding: [0, 10, 0, 0],
 				},
 				silent: true,
-				splitLine: { lineStyle: { color: this.colors().line } },
+				// splitLine: { lineStyle: { color: this.colors().line } },
 				type: 'value',
 			},
 		}

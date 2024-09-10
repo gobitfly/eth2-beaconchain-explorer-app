@@ -46,14 +46,12 @@ import { Toast } from '@capacitor/toast'
 import { ClientsPage } from '../pages/clients/clients.page'
 import FlavorUtils from '../utils/FlavorUtils'
 import { Capacitor } from '@capacitor/core'
-import { trigger, style, animate, transition } from '@angular/animations'
 import V2Migrator from '../utils/V2Migrator'
 import { DashboardUtils } from '../utils/DashboardUtils'
 @Component({
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
-	styleUrls: ['tab-preferences.page.scss'],
-	animations: [trigger('fadeIn', [transition(':enter', [style({ opacity: 0 }), animate('300ms 100ms', style({ opacity: 1 }))])])],
+	styleUrls: ['tab-preferences.page.scss']
 })
 export class Tab3Page {
 	darkMode: boolean
@@ -77,8 +75,10 @@ export class Tab3Page {
 	themeColor: string
 
 	premiumLabel = computed(() => {
-		if (this.merchant.getUsersSubscription()?.product_id != null) {
+		if (this.merchant.getUsersSubscription()?.product_name) {
 			return ' - ' + capitalize(this.merchant.getUsersSubscription().product_name)
+		} else {
+			return ''
 		}
 	})
 
@@ -455,8 +455,8 @@ export async function changeNetwork(
 	if (forceThemeSwitch && (currentTheme == '' || currentTheme == 'gnosis')) {
 		theme.undoColor()
 		setTimeout(() => {
-			theme.toggle(darkTheme, true, api.isGnosis() ? 'gnosis' : ''), 50
-		})
+			theme.toggle(darkTheme, true, api.isGnosis() ? 'gnosis' : '')
+		}, 50)
 	} else {
 		await merchant.initialize
 		const hasTheming = merchant.userInfo()?.premium_perks.mobile_app_custom_themes == true
@@ -466,8 +466,8 @@ export async function changeNetwork(
 		alertService.confirmDialog('Switch App Theme', 'Do you want to switch to the free ' + api.getNetwork().name + ' App theme?', 'Sure', () => {
 			theme.undoColor()
 			setTimeout(() => {
-				theme.toggle(darkTheme, true, api.isGnosis() ? 'gnosis' : ''), 50
-			})
+				theme.toggle(darkTheme, true, api.isGnosis() ? 'gnosis' : '')
+			}, 50)
 		})
 	}
 }

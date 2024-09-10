@@ -28,13 +28,19 @@
 }
 
 ion-item {
-	//max-width: 92%;
+	// max-width: var(--ion-item-max-width);
 
-	margin: auto;
+	// margin: auto;
+	margin: var(--edge-padding);
 }
 
 .value {
 	text-align: end;
 	font-weight: bold !important;
 	font-size: 1.1em !important;
+}
+
+.stat-title {
+	opacity: var(--default-secondary-transparency);
+	font-weight: var(--smaller-label-weight);
 }

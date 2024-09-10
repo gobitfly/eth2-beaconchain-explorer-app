@@ -1,5 +1,5 @@
 <ion-header>
-	<ion-toolbar>
+	<ion-toolbar class="top">
 		<ion-title>Monitoring</ion-title>
 	</ion-toolbar>
 	<ion-segment [(ngModel)]="selectedChart" mode="md" scrollable="true">
@@ -20,7 +20,7 @@
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher>
 
-	<ion-item @fadeIn class="top-bar" *ngIf="!this.data || showData" (click)="openTimeSelection()">
+	<ion-item class="top-bar" *ngIf="!this.data || showData" (click)="openTimeSelection()">
 		<ion-label>Last {{ this.selectedTimeFrame }}</ion-label>
 		<ion-icon class="opacity-icon" slot="end" name="time-outline"></ion-icon>
 	</ion-item>
@@ -47,11 +47,11 @@
 			</ion-card-content>
 		</ion-card>
 
-		<div @fadeIn style="margin-top: 0px; margin-bottom: 10px" *ngIf="!this.merchant.hasMachineMonitoringPremium()">
+		<div style="margin-top: 0px; margin-bottom: 10px" *ngIf="!this.merchant.hasMachineMonitoringPremium()">
 			<app-ad location="machines"></app-ad>
 		</div>
 
-		<div @fadeIn *ngFor="let key of orderedKeys" class="card">
+		<div  *ngFor="let key of orderedKeys" class="card">
 			<app-machinechart
 				priority="true"
 				[title]="key ? key : 'Machine'"

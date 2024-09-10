@@ -11,18 +11,20 @@ import { BlockComponentModule } from '../components/block/block.module'
 import { AdComponentModule } from '../components/ad/ad.module'
 import { PipesModule } from '../pipes/pipes.module'
 import { ScrollingModule } from '@angular/cdk/scrolling'
+import { FullPageLoadingComponent } from "../components/full-page-loading/full-page-loading.component";
 
 @NgModule({
 	imports: [
-		CommonModule,
-		ScrollingModule,
-		FormsModule,
-		IonicModule,
-		TabBlocksPageRoutingModule,
-		BlockComponentModule,
-		AdComponentModule,
-		PipesModule,
-	],
+    CommonModule,
+    ScrollingModule,
+    FormsModule,
+    IonicModule,
+    TabBlocksPageRoutingModule,
+    BlockComponentModule,
+    AdComponentModule,
+    PipesModule,
+    FullPageLoadingComponent
+],
 	declarations: [TabBlocksPage],
 })
 export class TabBlocksPageModule {}

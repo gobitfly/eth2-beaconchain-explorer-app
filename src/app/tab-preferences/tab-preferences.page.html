@@ -19,12 +19,12 @@
  -->
 
 <ion-header [translucent]="true">
-	<ion-toolbar>
+	<ion-toolbar class="top">
 		<ion-title> Preferences </ion-title>
 	</ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" @fadeIn>
+<ion-content [fullscreen]="true">
 	<ion-list (click)="openUpgrades()" *ngIf="this.merchant.getUsersSubscription() == null">
 		<ion-item lines="none" class="premium">
 			<ion-icon slot="start" name="rocket-outline" class="opacity-icon"></ion-icon>
@@ -141,7 +141,7 @@
 	</ion-list>
 
 	<ion-list-header>
-		<ion-label>Show me client updates for</ion-label>
+		<ion-label>Client Updates</ion-label>
 	</ion-list-header>
 
 	<ion-list>

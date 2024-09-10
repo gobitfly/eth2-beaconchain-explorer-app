@@ -115,10 +115,11 @@ export class V2DashboardSummaryChart extends APIRequest<ChartData<number, number
 	) {
 		super()
 		this.resource = setID(this.resource, id)
-		this.resource = this.resource + '?group_ids=' + groupIds.join(',')
-		this.resource = this.resource + '&after_ts=' + Math.floor(afterTs)
-		;(this.resource = this.resource + '&before_ts=' + Math.floor(beforeTs)), (this.resource = this.resource + '&efficiency_type=' + efficiencyType)
-		this.resource = this.resource + '&aggregation=' + aggregation
+		this.resource = this.resource + '?group_ids=' + groupIds.join(',');
+		this.resource = this.resource + '&after_ts=' + Math.floor(afterTs);
+		this.resource = this.resource + '&before_ts=' + Math.floor(beforeTs);
+		this.resource = this.resource + '&efficiency_type=' + efficiencyType;
+		this.resource = this.resource + '&aggregation=' + aggregation;
 	}
 }
 
@@ -176,8 +177,8 @@ export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsT
 }
 
 export class V2DeleteValidatorFromDashboard extends APIRequest<NoContent> {
-	resource = 'validator-dashboards/{id}/bulk-deletions'
-	method = Method.DELETE
+	resource = 'validator-dashboards/{id}/validators/bulk-deletions'
+	method = Method.POST
 	expectedResponseStatus: number = 204 // no content
 
 	constructor(id: dashboardID, validators: number[]) {

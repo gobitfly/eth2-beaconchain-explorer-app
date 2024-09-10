@@ -35,6 +35,7 @@ import { DashboardUtils } from '../utils/DashboardUtils'
 export const REAPPLY_KEY = 'reapply_notification2'
 
 const DASHBOARD_UPDATE = 'dashboard_update'
+const ASSOCIATED_CACHE_KEY = 'dashboard'
 
 @Component({
 	selector: 'app-tab1',
@@ -51,7 +52,7 @@ export class Tab1Page implements OnInit {
 	isLoggedIn = false
 	dashboardID: dashboardID = null
 
-	loading: boolean = false
+	loading: boolean = true
 
 	constructor(
 		public api: ApiService,
@@ -116,13 +117,11 @@ export class Tab1Page implements OnInit {
 	}
 
 	onScrollStarted() {
-		console.log("scrolling")
 		this.scrolling = true
 		this.removeTooltips()
 	}
 
 	onScrollEnded() {
-		console.log('scrolling stopped')
 		this.scrolling = false
 	}
 
@@ -157,11 +156,16 @@ export class Tab1Page implements OnInit {
 
 		this.loading = true
 		try {
-			this.overallData = await this.overviewProvider.create(this.dashboardID, await this.storage.getDashboardTimeframe(), {
-				aggregation: await this.storage.getDashboardSummaryAggregation(),
-				startTime: null,
-				force: false,
-			} as SummaryChartOptions)
+			this.overallData = await this.overviewProvider.create(
+				this.dashboardID,
+				await this.storage.getDashboardTimeframe(),
+				{
+					aggregation: await this.storage.getDashboardSummaryAggregation(),
+					startTime: null,
+					force: false,
+				} as SummaryChartOptions,
+				ASSOCIATED_CACHE_KEY
+			)
 		} catch (e) {
 			if (e instanceof DashboardNotFoundError) {
 				if (recursiveMax) {
@@ -192,10 +196,21 @@ export class Tab1Page implements OnInit {
 		return new Date().getTime() / 1000
 	}
 
+	private lastRefreshedTs: number = 0
 	async doRefresh(event) {
+		if (this.lastRefreshedTs + 60 * 1000 > new Date().getTime()) {
+			Toast.show({
+				text: 'Nothing to update',
+			})
+			event.target.complete()
+			return
+		}
+		this.lastRefreshedTs = new Date().getTime()
+
 		const old = Object.assign({}, this.overallData)
+		this.overviewProvider.clearRequestCache(this.overallData)
 		this.overallData = null
-		await this.setup().catch(() => {
+		await this.setup(true, true).catch(() => {
 			this.api.mayInvalidateOnFaultyConnectionState()
 			this.overallData = old
 			event.target.complete()

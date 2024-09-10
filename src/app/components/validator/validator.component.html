@@ -18,29 +18,18 @@
     along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<div class="container" [class]="fadeIn">
+<div class="infi-item-container" [ngClass]="{'infi-item-first': first, 'infi-item-last': last}">
 	<div class="inner">
 		<ion-item lines="none">
 			<div slot="start">
-				<img class="blockie" src="{{ imgData }}" />
-				<ion-label class="pubkey smaller-info">{{ validator.public_key | slice : 0 : 5 }}</ion-label>
+				<img class="infi-item-blockie" src="{{ imgData }}" />
+				<ion-label class="infi-item-container-below-blockie smaller-info">{{ validator.public_key | slice : 0 : 7 }}</ion-label>
 			</div>
 
-			<div class="info">
+			<div class="infi-item-middle-container">
 				<ion-text class="title">{{ name }}</ion-text>
 				<ion-label class="smaller-info smaller-pad"> Balance: {{ validator.balance | mcurrency : 'WEI' : unit.pref.Cons }} </ion-label>
-
-				<span> 
-					<!-- <ion-badge class="rpl" *ngIf="validator.rocketpool"
-						>Rocketpool {{ validator.rocketpool.node_deposit_balance | mcurrency : 'WEI' : 'ETHER' : false }}</ion-badge
-					>
-					<ion-badge class="vacant" *ngIf="validator.rocketpool && validator.rocketpool.is_vacant">Vacant</ion-badge>
-					<ion-badge class="sync" *ngIf="validator.currentSyncCommittee">Sync</ion-badge> -->
-				</span>
-
-				<!--<ion-label class="smaller-info"
-          *ngIf="validator.data.lastattestationslot">Last Attestation:
-          {{ validator.data.lastattestationslot }}</ion-label>-->
+				<ion-label class="smaller-info smaller-pad"> Labels: Solo</ion-label>
 			</div>
 			<div slot="end" class="status-container">
 				<ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge>

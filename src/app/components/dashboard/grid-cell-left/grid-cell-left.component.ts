@@ -12,7 +12,13 @@ import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
 })
 export class GridCellLeftComponent {
 	@Input() name: string = ''
-	@Input() tooltip: string | null = null
+	@Input() tooltipText: string | null = null
 
 	@Output() valueClick = new EventEmitter<void>()
+
+	onClick($event) {
+		$event.stopPropagation()
+		this.valueClick.emit($event)
+		
+	}
 }
