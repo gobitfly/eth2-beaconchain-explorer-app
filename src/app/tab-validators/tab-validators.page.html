@@ -55,7 +55,7 @@
 			animated>
 		</ion-searchbar>
 
-		<ion-button slot="start" *ngIf="selectMode" class="toolbar-btn" style="padding: 0 10px" (click)="deleteSelected()">Delete</ion-button>
+		<ion-button slot="end" *ngIf="selectMode" class="toolbar-btn" style="padding: 0 10px" (click)="deleteSelected()">Delete</ion-button>
 		<!-- <ion-button slot="end" *ngIf="selectMode" class="toolbar-btn" style="padding: 0 10px" (click)="moveSelected()">Move</ion-button> -->
 	</ion-toolbar>
 	<app-offline *ngIf="!api.connectionStateOK"></app-offline>
