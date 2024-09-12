@@ -24,6 +24,7 @@ import ThemeUtils from './utils/ThemeUtils'
 import { SplashScreen } from '@capacitor/splash-screen'
 import { StorageService } from './services/storage.service'
 import BigNumber from 'bignumber.js'
+import V2Migrator from './utils/V2Migrator'
 
 @Component({
 	selector: 'app-root',
@@ -36,6 +37,7 @@ export class AppComponent {
 		private theme: ThemeUtils,
 		private modalController: ModalController,
 		private storage: StorageService,
+		private v2Migrator: V2Migrator
 	) {
 		this.initializeApp()
 	}
@@ -44,11 +46,13 @@ export class AppComponent {
 		BigNumber.config({ DECIMAL_PLACES: 25 })
 		this.platform.ready().then(() => {
 			this.storage.migrateToCapacitor3().then(() => {
-				this.theme.init(() => {
-					SplashScreen.hide()
-				}) // just initialize the theme service
+				this.v2Migrator.migrate().then(() => {
+					this.theme.init(() => {
+						SplashScreen.hide()
+					}) // just initialize the theme service
 
-				this.setAndroidBackButtonBehavior()
+					this.setAndroidBackButtonBehavior()
+				})
 			})
 		})
 	}

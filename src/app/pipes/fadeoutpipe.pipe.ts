@@ -30,3 +30,16 @@ export class FadeoutpipePipe implements PipeTransform {
 		return opacity
 	}
 }
+
+@Pipe({
+	name: 'fadeinpipe',
+})
+export class FadeinpipePipe implements PipeTransform {
+	transform(currentY: number, fullHide: number, offset = 0): number {
+		currentY -= offset
+		if (currentY <= 0) return 0
+		const opacity = currentY / fullHide
+		if (opacity >= 1) return 1
+		return opacity
+	}
+}

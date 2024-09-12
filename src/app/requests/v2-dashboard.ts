@@ -30,6 +30,7 @@ import {
 } from './types/validator_dashboard'
 
 export type dashboardID = string | number | number[]
+export type networkID = string | number
 export enum Period {
 	AllTime = 'all_time',
 	Last24h = 'last_24h',
@@ -60,8 +61,6 @@ export class V2DashboardOverview extends APIRequest<VDBOverviewData> {
 		super()
 		this.resource = setID(this.resource, id)
 	}
-
-	ignoreFails = false
 }
 
 export class V2DashboardSummaryTable extends APIRequest<VDBSummaryTableRow> {
@@ -81,8 +80,6 @@ export class V2DashboardSummaryTable extends APIRequest<VDBSummaryTableRow> {
 		this.resource = setID(this.resource, id) + '?period=' + period
 		if (limit) this.resource += '&limit=' + limit
 	}
-
-	ignoreFails = false
 }
 
 export class V2DashboardSummaryGroupTable extends APIRequest<VDBGroupSummaryData> {
@@ -94,8 +91,6 @@ export class V2DashboardSummaryGroupTable extends APIRequest<VDBGroupSummaryData
 		this.resource = setID(this.resource, id).replace('{group_id}', groupID + '') + '?period=' + period
 		if (limit) this.resource += '&limit=' + limit
 	}
-
-	ignoreFails = false
 }
 
 export class V2DashboardSummaryChart extends APIRequest<ChartData<number, number>> {
@@ -201,7 +196,7 @@ export class V2CreateDashboard extends APIRequest<VDBPostReturnData> {
 	 * @param name for the dashboard
 	 * @param network Can be string or network id
 	 */
-	constructor(name: string, network: string | number) {
+	constructor(name: string, network: networkID) {
 		super()
 		this.postData = {
 			name: name,

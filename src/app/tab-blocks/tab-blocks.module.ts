@@ -12,6 +12,8 @@ import { AdComponentModule } from '../components/ad/ad.module'
 import { PipesModule } from '../pipes/pipes.module'
 import { ScrollingModule } from '@angular/cdk/scrolling'
 import { FullPageLoadingComponent } from "../components/full-page-loading/full-page-loading.component";
+import { FullPageOfflineComponent } from "../components/full-page-offline/full-page-offline.component";
+import { OfflineComponentModule } from "../components/offline/offline.module";
 
 @NgModule({
 	imports: [
@@ -23,7 +25,9 @@ import { FullPageLoadingComponent } from "../components/full-page-loading/full-p
     BlockComponentModule,
     AdComponentModule,
     PipesModule,
-    FullPageLoadingComponent
+    FullPageLoadingComponent,
+    FullPageOfflineComponent,
+    OfflineComponentModule
 ],
 	declarations: [TabBlocksPage],
 })

@@ -29,7 +29,7 @@
 		<ion-label>Or login with {{ api.getHostName() }} </ion-label>
 	</ion-item>
 
-	<ion-item lines="none" (click)="switchNetwork()">
+	<ion-item lines="none" (click)="switchNetwork()" *ngIf="false"> <!-- todo gnosis -->
 		<ion-icon slot="start" name="repeat-outline"></ion-icon>
 		<ion-label
 			>{{ api.getNetwork().name }} Network

@@ -11,6 +11,7 @@ import { slotToSecondsTimestamp } from 'src/app/utils/TimeUtils'
 import { BlockOverview } from 'src/app/requests/types/block'
 import { V2BlockOverview } from 'src/app/requests/v2-blocks'
 import { Toast } from '@capacitor/toast'
+import { findChainNetworkById } from 'src/app/utils/NetworkData'
 
 @Component({
 	selector: 'app-block-detail',
@@ -37,13 +38,23 @@ export class BlockDetailPage implements OnInit {
 		return ((parseInt(this.overview().gas_usage) * 100) / this.overview().gas_limit.value).toFixed(1)
 	})
 
+	chainID = 0
 
-	constructor(public unit: UnitconvService, private modalCtrl: ModalController, protected api: ApiService) {}
+	online: boolean = true
+	initialLoading: boolean = true
 
-	ngOnInit() {
+	constructor(
+		public unit: UnitconvService,
+		private modalCtrl: ModalController,
+		protected api: ApiService
+	) {}
+
+	async ngOnInit() {
+		this.online = true
+		this.chainID = await this.api.getCurrentDashboardChainID()
 		this.getOverview()
 		this.imgData = this.getBlockies()
-		this.timestamp = slotToSecondsTimestamp(this.api, this.block.slot) * 1000
+		this.timestamp = slotToSecondsTimestamp(this.chainID, this.block.slot) * 1000
 		if (this.block.reward) {
 			this.producerReward = new BigNumber(this.block.reward.el).plus(new BigNumber(this.block.reward.cl))
 		}
@@ -59,27 +70,34 @@ export class BlockDetailPage implements OnInit {
 			this.nameResolved = 'Distributed via ethpool.eth'
 		}
 
-		if (this.block.status == "missed") {
+		if (this.block.status == 'missed') {
 			this.feeRecipient = 'This block was missed'
-		} else if (this.block.status == "orphaned") {
+		} else if (this.block.status == 'orphaned') {
 			this.feeRecipient = 'This block was orphaned'
-		} else if (this.block.status == "scheduled") {
+		} else if (this.block.status == 'scheduled') {
 			this.feeRecipient = 'This block is scheduled'
 		}
-		
+	}
+
+	getChainNetwork() {
+		return findChainNetworkById(this.chainID)
 	}
 
 	async getOverview() {
-		if (!this.block.block) return
-		// todo network
-		const result = await this.api.set(new V2BlockOverview('holesky', this.block.block), this.overview)
+		if (!this.block.block) {
+			this.initialLoading = false
+			return
+		}
+		const result = await this.api.set(new V2BlockOverview(this.chainID, this.block.block), this.overview)
 		if (result.error) {
 			Toast.show({
 				text: 'Failed to fetch block overview',
 				duration: 'long',
 			})
+			this.online = false
 			console.error(result.error)
 		}
+		this.initialLoading = false
 	}
 
 	closeModal() {

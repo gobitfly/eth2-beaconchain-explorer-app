@@ -54,5 +54,8 @@ ion-badge {
 }
 
 .badge {
-	padding: 21px 10px;
+	margin-top: -1px;
+	font-size: 0.63rem;
+	padding: 5px 8px;
+	padding-top: 6px; // seems to be off by 1px?
 }

@@ -29,16 +29,12 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		genesisTs: 1606824023,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: [0, 100],
 		name: 'Ethereum',
 		v2NetworkConfigKey: 'main_v2',
 	},
 	{
+		// todo change
 		key: 'gnosis',
 		protocol: 'https',
 		host: 'gnosischa.in',
@@ -47,12 +43,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		genesisTs: 1638993340,
-		clCurrency: NetworkMainCurrency.GNO,
-		elCurrency: NetworkMainCurrency.xDAI,
-		slotPerEpoch: 16,
-		slotsTime: 5,
-		epochsPerSyncPeriod: 512,
+		supportedChainIds: [0, 100],
 		name: 'Gnosis',
 		v2NetworkConfigKey: 'main_v2',
 	},
@@ -65,12 +56,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		genesisTs: 1655733600,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: [11155111],
 		name: 'Ethereum',
 		v2NetworkConfigKey: 'holesky_v2_prod',
 	},
@@ -83,12 +69,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		genesisTs: 1695902400,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: [17000],
 		name: 'Ethereum',
 		v2NetworkConfigKey: 'holesky_v2',
 	},
@@ -102,12 +83,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'i',
 		onlyDebug: true,
 		active: true,
-		genesisTs: 1695902400,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: [17000],
 		name: 'Ethereum',
 	},
 	{
@@ -120,12 +96,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'i',
 		onlyDebug: true,
 		active: true,
-		genesisTs: 1695902400,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: [17000],
 		name: 'Ethereum',
 	},
 	{
@@ -137,12 +108,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: true,
 		active: true,
-		genesisTs: 1606824023,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: [17000],
 		name: 'Ethereum',
 	},
 ]
@@ -155,4 +121,67 @@ export function findConfigForKey(key: string): ApiNetwork {
 	}
 	console.log('config for ' + key + ' not found, using mainnet instead', key)
 	return MAP[0]
+}
+
+export const CHAIN_NETWORKS: ChainNetwork[] = [
+	{
+		id: 0,
+		name: 'ethereum',
+		genesisTs: 1606824023,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+	},
+	{
+		id: 17000,
+		name: 'holesky',
+		genesisTs: 1695902400,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+	},
+	{
+		id: 100,
+		name: 'gnosis',
+		genesisTs: 1638993340,
+		clCurrency: NetworkMainCurrency.GNO,
+		elCurrency: NetworkMainCurrency.xDAI,
+		slotPerEpoch: 16,
+		slotsTime: 5,
+		epochsPerSyncPeriod: 512,
+	},
+	{
+		id: 11155111,
+		name: 'sepolia',
+		genesisTs: 1655733600,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+	},
+]
+
+export function findChainNetworkById(id: number): ChainNetwork | null {
+	for (const entry of CHAIN_NETWORKS) {
+		if (entry.id == id) {
+			return entry
+		}
+	}
+	return CHAIN_NETWORKS[0]
+}
+
+export interface ChainNetwork {
+	id: number
+	name: string
+	genesisTs: number
+	elCurrency: NetworkMainCurrency
+	clCurrency: NetworkMainCurrency
+	slotPerEpoch: number
+	slotsTime: number
+	epochsPerSyncPeriod: number
 }

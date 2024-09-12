@@ -30,7 +30,7 @@ interface ClientInfo {
 }
 
 export const Clients: ClientInfo[] = [
-	// Execution
+	// Consensus
 	{
 		key: 'LIGHTHOUSE',
 		name: 'Lighthouse',
@@ -65,7 +65,15 @@ export const Clients: ClientInfo[] = [
 		repo: 'ConsenSys/teku',
 		storageKey: 'client_updates_teku',
 	},
-	// Consensus
+
+	{
+		key: 'GRANDINE',
+		name: 'Grandine',
+		repo: 'grandinetech/grandine',
+		storageKey: 'client_updates_grandine',
+	},
+
+	// Execution
 	{
 		key: 'BESU',
 		name: 'Besu',
@@ -92,6 +100,13 @@ export const Clients: ClientInfo[] = [
 		name: 'Nethermind',
 		repo: 'NethermindEth/nethermind',
 		storageKey: 'client_updates_nethermind',
+	},
+
+	{
+		key: 'RETH',
+		name: 'Reth',
+		repo: 'paradigmxyz/reth',
+		storageKey: 'client_updates_reth',
 	},
 	// Various
 	{

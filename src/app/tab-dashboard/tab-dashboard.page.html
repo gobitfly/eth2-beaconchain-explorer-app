@@ -65,7 +65,7 @@
 			</ion-content>
 		</ng-template>
 	</ion-popover>
-	<app-offline *ngIf="!api.connectionStateOK"></app-offline>
+	<app-offline *ngIf="!online"></app-offline>
 </ion-header>
 
 <ion-content
@@ -79,15 +79,18 @@
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher>
 
-	<div class="setup-head" *ngIf="!loading && (!overallData || overallData.isEmpty())">
-		<div class="inner-setup-head">
-			<ion-icon class="setup-icon" name="color-wand-outline" [ngStyle]="{'opacity': currentY | fadeoutpipe: 100 }"> </ion-icon>
-			<h2 [ngStyle]="{'opacity': currentY | fadeoutpipe: 180 }">Let´s get started</h2>
+	<app-full-page-offline (retry)="this.doRefresh(null)" [online]="online || (overallData && overallData.isReadyToDisplay())">
+
+		<div class="setup-head" *ngIf="!loading && (!overallData || overallData.isEmpty())">
+			<div class="inner-setup-head">
+				<ion-icon class="setup-icon" name="color-wand-outline" [ngStyle]="{'opacity': currentY | fadeoutpipe: 100 }"> </ion-icon>
+				<h2 [ngStyle]="{'opacity': currentY | fadeoutpipe: 180 }">Let´s get started</h2>
+			</div>
 		</div>
-	</div>
 
-	<app-validator-dashboard [data]="overallData" [currentY]="currentY" [scrolling]="scrolling" [updates]="updates.updates" *ngIf="loading || (overallData && !overallData.isEmpty() && dashboardID)">
-	</app-validator-dashboard>
+		<app-validator-dashboard [online]="online" [data]="overallData" [currentY]="currentY" [scrolling]="scrolling" [updates]="updates.updates" *ngIf="loading || (overallData && !overallData.isEmpty() && dashboardID)">
+		</app-validator-dashboard>
 
-	<app-help *ngIf="!loading && (!overallData || overallData.isEmpty())"></app-help>
+		<app-help *ngIf="!loading && (!overallData || overallData.isEmpty())"></app-help>
+	</app-full-page-offline>
 </ion-content>

@@ -17,6 +17,7 @@
 
 import { APIRequest, Method } from './requests'
 import { SearchResult } from './types/common'
+import { networkID } from './v2-dashboard'
 
 export enum searchType {
 	validatorByIndex = 'validator_by_index',
@@ -33,7 +34,7 @@ export class V2SearchValidators extends APIRequest<SearchResult> {
 	resource = 'search'
 	method = Method.POST
 
-	constructor(query: string, networks: string[], types: searchType[] = undefined) {
+	constructor(query: string, networks: networkID[], types: searchType[] = undefined) {
 		super()
 		if (types) {
 			this.postData = { input: query, networks: networks, types: types }

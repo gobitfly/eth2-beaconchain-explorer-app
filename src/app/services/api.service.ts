@@ -22,7 +22,7 @@ import { APIRequest, ApiResult, Method, RefreshTokenRequest } from '../requests/
 import { StorageService } from './storage.service'
 import { ApiNetwork } from '../models/StorageTypes'
 import { Mutex } from 'async-mutex'
-import { findConfigForKey, MAP } from '../utils/NetworkData'
+import { findChainNetworkById, findConfigForKey, MAP } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
 import { Capacitor, HttpOptions } from '@capacitor/core'
 import { CapacitorCookies } from '@capacitor/core'
@@ -40,8 +40,6 @@ const R = 2
 })
 export class ApiService extends CacheModule {
 	networkConfig: ApiNetwork // todo signal?
-
-	public connectionStateOK = true
 
 	private awaitingResponses: Map<string, Mutex> = new Map()
 
@@ -77,10 +75,6 @@ export class ApiService extends CacheModule {
 			window.localStorage.setItem('debug', this.debug ? 'true' : 'false')
 		})
 		this.lastCacheInvalidate = Date.now()
-	}
-
-	mayInvalidateOnFaultyConnectionState() {
-		if (!this.connectionStateOK) this.invalidateCache()
 	}
 
 	invalidateCache() {
@@ -298,10 +292,6 @@ export class ApiService extends CacheModule {
 	async execute(request: APIRequest<unknown>): Promise<Response> {
 		await this.initialized
 
-		if (!this.connectionStateOK) {
-			this.invalidateCache()
-		}
-
 		await this.lockOrWait(request.resource)
 
 		try {
@@ -361,10 +351,9 @@ export class ApiService extends CacheModule {
 			console.log(LOGTAG + ' Send request: ' + request.resource, request.method, request)
 			const startTs = Date.now()
 
-			const response = this.doHttp(request.method, request.resource, request.postData, request.endPoint, request.ignoreFails, options)
+			const response = this.doHttp(request.method, request.resource, request.postData, request.endPoint, options)
 
 			const result = await response
-			this.updateConnectionState(request.ignoreFails, result && result.data && !!result.url)
 
 			if (!result) {
 				console.log(LOGTAG + ' Empty Response: ' + request.resource, 'took ' + (Date.now() - startTs) + 'ms')
@@ -379,6 +368,7 @@ export class ApiService extends CacheModule {
 				const temp = result.headers.get('x-csrf-token')
 				if (temp) {
 					this.lastCsrfHeader = temp
+					console.log("set csrf token", temp)
 				}
 
 				// workaround for non native development
@@ -415,7 +405,6 @@ export class ApiService extends CacheModule {
 		resource: string,
 		data,
 		endpoint = 'default',
-		ignoreFails = false,
 		options: HttpOptions = { url: null, headers: {} }
 	) {
 		let body: BodyInit = undefined
@@ -442,13 +431,12 @@ export class ApiService extends CacheModule {
 				method: Method[method],
 				headers: options.headers,
 				body: body,
-				credentials: endpoint == "default" ? 'include' : 'omit',
+				credentials: endpoint == 'default' ? 'include' : 'omit',
 			})
 			if (!result) return null
-			return await this.validateResponse(ignoreFails, result)
+			return await this.validateResponse(result)
 		} catch (e) {
 			console.warn('fetch error', e)
-			//this.updateConnectionState(ignoreFails, false)
 			return null
 		}
 	}
@@ -473,16 +461,9 @@ export class ApiService extends CacheModule {
 		return JSON.stringify(data)
 	}
 
-	private updateConnectionState(ignoreFails: boolean, working: boolean) {
-		if (ignoreFails) return
-		this.connectionStateOK = working
-		console.log(LOGTAG + ' setting status', working)
-	}
-
-	private async validateResponse(ignoreFails, response: globalThis.Response): Promise<Response> {
+	private async validateResponse(response: globalThis.Response): Promise<Response> {
 		if (!response) {
 			console.warn('can not get response', response)
-			//this.updateConnectionState(ignoreFails, false)
 			return
 		}
 		let jsonData
@@ -490,7 +471,6 @@ export class ApiService extends CacheModule {
 			jsonData = await response.json()
 			if (!jsonData) {
 				console.warn('not json response', response, jsonData)
-				//this.updateConnectionState(ignoreFails, false)
 				return {
 					data: null,
 					status: response.status,
@@ -500,9 +480,9 @@ export class ApiService extends CacheModule {
 				} as Response
 			}
 		} catch (e) {
+			console.log('could not parse json', e)
 			// Auth response can be empty, maybe improve handling in the future
 		}
-		//this.updateConnectionState(ignoreFails, true)
 		return {
 			data: jsonData,
 			status: response.status,
@@ -559,14 +539,15 @@ export class ApiService extends CacheModule {
 	 * @returns true if the current network is the mainnet
 	 */
 	isGnosis() {
+		// todo refactor to chainID
 		return this.networkConfig.key == 'gnosis'
 	}
 
 	/**
 	 * Returns the formatted currencies for the network
 	 */
-	public getCurrenciesFormatted(): string {
-		const network = this.networkConfig
+	public getCurrenciesFormatted(chainID: number): string {
+		const network = findChainNetworkById(chainID)
 		if (network.elCurrency.internalName == network.clCurrency.internalName) {
 			return network.clCurrency.formattedName
 		}
@@ -623,13 +604,24 @@ export class ApiService extends CacheModule {
 	}
 
 	use(e) {
-		if(!e) return null
+		if (!e) return null
 		const t = e.split('').reverse().join('')
 		let l = ''
 		for (e = 0; e < t.length; e += 2) l += t[e]
 		let n = ''
 		for (e = 0; e < l.length; e++) n += String.fromCharCode(l.charCodeAt(e) - this.r)
 		return n
+	}
+
+	async setCurrentDashboardChainID(chainID: number) {
+		return this.storage.setObject('current_dashboard_chain_id', chainID)
+	}
+
+	async getCurrentDashboardChainID(): Promise<number> {
+		let data = (await this.storage.getObject('current_dashboard_chain_id')) as number
+		if (!data) data = this.networkConfig.supportedChainIds[0]
+		console.log('getCurrentDashboardChainID', data)
+		return data
 	}
 }
 

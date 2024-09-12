@@ -75,6 +75,19 @@
 						>Nethermind</ion-toggle
 					>
 				</ion-item>
+				<ion-item lines="none">
+					<ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
+					<ion-toggle
+						checked
+						id="clientToggle"
+						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('RETH')"
+						(ngModelChange)="notificationBase.setClientToggleState('RETH', $event)"
+						(ionChange)="notificationBase.clientUpdateOnToggle('RETH')"
+						labelPlacement="start"
+						justify="space-between"
+						>Reth</ion-toggle
+					>
+				</ion-item>
 			</ion-list>
 		</span>
 		<span *ngSwitchCase="'eth2Clients'">
@@ -107,7 +120,6 @@
 				</ion-item>
 				<ion-item lines="none">
 					<ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
-					<ion-label></ion-label>
 					<ion-toggle
 						checked
 						id="clientToggle"
@@ -143,6 +155,19 @@
 						labelPlacement="start"
 						justify="space-between"
 						>Teku</ion-toggle
+					>
+				</ion-item>
+				<ion-item lines="none">
+					<ion-icon class="opacity-icon" slot="start" name="bonfire-outline"></ion-icon>
+					<ion-toggle
+						checked
+						id="clientToggle"
+						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('GRANDINE')"
+						(ngModelChange)="notificationBase.setClientToggleState('GRANDINE', $event)"
+						(ionChange)="notificationBase.clientUpdateOnToggle('GRANDINE')"
+						labelPlacement="start"
+						justify="space-between"
+						>Grandine</ion-toggle
 					>
 				</ion-item>
 			</ion-list>

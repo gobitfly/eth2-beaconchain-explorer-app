@@ -178,8 +178,11 @@ export class RewardChartComponent {
 				formatter: (params) => {
 					const startEpoch = parseInt(params[0].axisValue)
 					return (
-						getTooltipHeader(epochToTimestamp(this.api, startEpoch) / 1000, this.api, Aggregation.Hourly, (val) =>
-							formatTsToDateTime(val, getLocale())
+						getTooltipHeader(
+							epochToTimestamp(this.data.chainNetwork().id, startEpoch) / 1000,
+							this.data.chainNetwork().id,
+							Aggregation.Hourly,
+							(val) => formatTsToDateTime(val, getLocale())
 						) +
 						'<br/>' +
 						params.map((d) => `<span style="color: ${d.color};">●</span> ${d.seriesName}: ${d.value.toFixed(5)} ETH `).join('<br/>')
@@ -198,7 +201,7 @@ export class RewardChartComponent {
 					fontSize: fontSize,
 					//fontWeight: fontWeightMedium,
 					formatter: (value: number) => {
-						const date = formatTsToAbsolute(epochToTimestamp(this.api, value) / 1000, getLocale(), false)
+						const date = formatTsToAbsolute(epochToTimestamp(this.data.chainNetwork().id, value) / 1000, getLocale(), false)
 						if (date === undefined) {
 							return ''
 						}

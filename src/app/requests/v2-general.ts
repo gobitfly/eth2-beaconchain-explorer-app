@@ -1,62 +1,25 @@
 // Copyright (C) 2024 Bitfly GmbH
-//
+// 
 // This file is part of Beaconchain Dashboard.
-//
+// 
 // Beaconchain Dashboard is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // Beaconchain Dashboard is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
-ion-list-header {
-	padding-top: 5px;
+import { APIRequest, Method } from "./requests"
+import { ProductSummary } from "./types/user"
+
+export class V2ProductSummary extends APIRequest<ProductSummary> {
+	resource = '/product-summary'
+	method = Method.GET
 }
 
-.top-bar {
-	padding-bottom: 0px !important;
-	margin-bottom: 0px !important;
-}
-
-.hint {
-	display: inline-block;
-	color: var(--ion-text-color-secondary);
-	
-	margin-left: 60px;
-	font-size: var(--smaller-info-size);
-	font-weight: var(--smaller-label-weight);
-	line-height: 1.25em !important;
-	margin-bottom: 10px;
-	margin-right: 45px;
-}
-
-
-.premium {
-	padding-bottom: 0px !important;
-	height: 38px;
-}
-
-.prem-icon {
-	padding: 0px;
-    margin-right: 10px;
-    margin-top: 3px;
-    font-size: 18px;
-}
-
-.prem-title {
-	padding-top: 0px;
-    margin-top: 0px;
-}
-
-.prem-x {
-	padding: 0px;
-    margin: 1px;
-    font-size: 19px;
-    padding-bottom: 11px;
-}

@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
-import { ApiService } from '../services/api.service'
 import { DateTime, type StringUnitLength } from 'luxon'
+import { findChainNetworkById } from './NetworkData'
 
 export type AgeFormat = 'absolute' | 'relative'
 
@@ -26,18 +26,18 @@ export const ONE_DAY = ONE_HOUR * 24
 export const ONE_WEEK = ONE_DAY * 7
 export const ONE_YEAR = ONE_DAY * 365
 
-export function epochToTimestamp(api: ApiService, epoch: number) {
-	const network = api.getNetwork()
+export function epochToTimestamp(chainID: number, epoch: number) {
+	const network = findChainNetworkById(chainID)
 	return (network.genesisTs + epoch * network.slotPerEpoch * network.slotsTime) * 1000
 }
 
-export function timestampToEpoch(api: ApiService, ts: number) {
-	const network = api.getNetwork()
+export function timestampToEpoch(chainID: number, ts: number) {
+	const network = findChainNetworkById(chainID)
 	return Math.floor((ts / 1000 - network.genesisTs) / network.slotPerEpoch / network.slotsTime)
 }
 
-export function slotToSecondsTimestamp(api: ApiService, slot: number) {
-	const network = api.getNetwork()
+export function slotToSecondsTimestamp(chainID: number, slot: number) {
+	const network = findChainNetworkById(chainID)
 	return network.genesisTs + slot * network.slotsTime
 }
 
@@ -145,21 +145,18 @@ export function formatTsToAbsolute(ts: number, locales: string, includeTime?: bo
 }
 
 export function relativeTs(diff: number) {
-		const seconds = Math.floor(diff / 1000)
-		const minutes = Math.floor(seconds / 60)
-		const hours = Math.floor(minutes / 60)
-		const days = Math.floor(hours / 24)
-		const months = Math.floor(days / 30)
+	const seconds = Math.floor(diff / 1000)
+	const minutes = Math.floor(seconds / 60)
+	const hours = Math.floor(minutes / 60)
+	const days = Math.floor(hours / 24)
 
-		if (months > 0) {
-			return months > 1 ? `${months} months` : 'month'
-		} else if (days > 0) {
-			return days > 1 ? `${days} days` : 'day'
-		} else if (hours > 0) {
-			return hours > 1 ? `${hours} hours` : 'hour'
-		} else if (minutes > 0) {
-			return minutes > 1 ? `${minutes} minutes` : 'minute'
-		} else {
-			return seconds > 1 ? `${seconds} seconds` : 'second'
-		}
+	if (days > 0) {
+		return days > 1 ? `${days} days` : 'day'
+	} else if (hours > 0) {
+		return hours > 1 ? `${hours} hours` : 'hour'
+	} else if (minutes > 0) {
+		return minutes > 1 ? `${minutes} minutes` : 'minute'
+	} else {
+		return seconds > 1 ? `${seconds} seconds` : 'second'
 	}
+}

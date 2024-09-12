@@ -13,10 +13,11 @@ import { ApiService } from 'src/app/services/api.service'
 	templateUrl: './block.component.html',
 	styleUrls: ['./block.component.scss'],
 })
-export class BlockComponent  {
+export class BlockComponent {
 	@Input() block: VDBBlocksTableRow
 	@Input() first: boolean
 	@Input() last: boolean
+	@Input() chainID: number
 
 	imgData = null
 	timestamp = 0
@@ -24,6 +25,7 @@ export class BlockComponent  {
 	feeRecipient = null
 	resolvedName = null
 	resolvedClass = ''
+
 
 	constructor(public unit: UnitconvService, private validatorUtils: ValidatorUtils, private api: ApiService) {
 		this.validatorUtils.registerListener(() => {
@@ -33,7 +35,7 @@ export class BlockComponent  {
 
 	ngOnChanges() {
 		this.imgData = this.getBlockies()
-		this.timestamp = slotToSecondsTimestamp(this.api, this.block.slot) * 1000
+		this.timestamp = slotToSecondsTimestamp(this.chainID, this.block.slot) * 1000
 		if (this.block.reward) {
 			this.producerReward = new BigNumber(this.block.reward.el).plus(new BigNumber(this.block.reward.cl))
 		} 

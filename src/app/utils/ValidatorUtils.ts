@@ -89,7 +89,6 @@ export interface Validator {
 	providedIn: 'root',
 })
 export class ValidatorUtils {
-
 	private listeners: (() => void)[] = []
 
 	rocketpoolStats: RocketPoolNetworkStats
@@ -100,8 +99,8 @@ export class ValidatorUtils {
 		private api: ApiService,
 		private storage: StorageService,
 		private merchantUtils: MerchantUtils,
-		private unitConversion: UnitconvService,
-	) { }
+		private unitConversion: UnitconvService
+	) {}
 
 	notifyListeners() {
 		this.listeners.forEach((callback) => callback())
@@ -244,6 +243,13 @@ export class ValidatorUtils {
 			}
 		}
 		return null
+	}
+
+	async getMyLocalValidators(): Promise<number[]> {
+		const storageKey = this.getStorageKey()
+		const local = await this.getMapWithoutDeleted(storageKey)
+		if (local.size == 0) return []
+		return [...local.values()].map((item) => item.index)
 	}
 
 	async getAllMyValidators(): Promise<Validator[]> {

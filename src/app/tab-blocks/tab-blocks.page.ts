@@ -41,6 +41,10 @@ export class TabBlocksPage implements OnInit {
 
 	summaryGroup: WritableSignal<VDBGroupSummaryData> = signal(null)
 
+	chainID = 0
+
+	online: boolean = true
+
 	constructor(
 		public api: ApiService,
 		public unit: UnitconvService,
@@ -81,9 +85,11 @@ export class TabBlocksPage implements OnInit {
 	private async setup() {
 		this.dashboardID = await this.dashboardUtils.initDashboard()
 		this.isLoggedIn = await this.storage.isLoggedIn()
+		this.chainID = await this.api.getCurrentDashboardChainID()
 
 		if (!this.dashboardID) {
 			this.initialized = true
+			this.initialLoading = false
 			return
 		}
 
@@ -125,6 +131,7 @@ export class TabBlocksPage implements OnInit {
 					text: 'Could not load blocks',
 					duration: 'long',
 				})
+				this.online = false
 				console.error('Could not load blocks', result.error)
 				return {
 					data: undefined,
@@ -152,6 +159,7 @@ export class TabBlocksPage implements OnInit {
 			return
 		}
 		this.initialLoading = true
+		this.online = true
 
 		await this.dataSource.reset()
 		this.virtualScroll.scrollToIndex(0)
@@ -177,14 +185,14 @@ export class TabBlocksPage implements OnInit {
 			Toast.show({
 				text: 'Nothing to update',
 			})
-			event.target.complete()
+			if (event) event.target.complete()
 			return
 		}
 		this.lastRefreshedTs = new Date().getTime()
 
 		await this.clearRequestCache()
 		this.update()
-		event.target.complete()
+		if (event) event.target.complete()
 	}
 
 	luckHelp() {

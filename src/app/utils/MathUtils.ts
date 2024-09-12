@@ -18,7 +18,7 @@
  */
 
 import BigNumber from 'bignumber.js'
-import { ApiService } from '../services/api.service'
+import { findChainNetworkById } from './NetworkData'
 
 export function sumBigInt<T>(validators: T[], field: (cur: T) => BigNumber) {
 	let sum = new BigNumber('0')
@@ -50,23 +50,26 @@ export function findLowest<T>(validators: T[], field: (cur: T) => number): numbe
 	return lowest
 }
 
-export function slotToEpoch(api: ApiService, slot: number): number {
-	return Math.floor(slot / api.networkConfig.slotPerEpoch)
+export function slotToEpoch(chainID: number, slot: number): number {
+	const network = findChainNetworkById(chainID)
+	return Math.floor(slot / network.slotPerEpoch)
 }
 
 /**
  * @returns the epoch at which the sync committee started, inclusive
  */
-export function startEpochSyncCommittee(api: ApiService, currentSlot: number): number {
-	const period = Math.floor(slotToEpoch(api, currentSlot) / api.networkConfig.epochsPerSyncPeriod)
-	return period * api.networkConfig.epochsPerSyncPeriod
+export function startEpochSyncCommittee(chainID: number, currentSlot: number): number {
+	const network = findChainNetworkById(chainID)
+	const period = Math.floor(slotToEpoch(chainID, currentSlot) / network.epochsPerSyncPeriod)
+	return period * network.epochsPerSyncPeriod
 }
 
 /**
  * @returns the epoch at which the sync committee ended, exclusive
  */
-export function endEpochSyncCommittee(api: ApiService, currentSlot: number): number {
-	return startEpochSyncCommittee(api, currentSlot) + api.networkConfig.epochsPerSyncPeriod
+export function endEpochSyncCommittee(chainID: number, currentSlot: number): number {
+	const network = findChainNetworkById(chainID)
+	return startEpochSyncCommittee(chainID, currentSlot) + network.epochsPerSyncPeriod
 }
 
 export default class {}

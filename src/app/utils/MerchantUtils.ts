@@ -32,7 +32,6 @@ import { Aggregation } from '../requests/v2-dashboard'
 import { ONE_DAY, ONE_HOUR } from './TimeUtils'
 
 export const PRODUCT_STANDARD = 'standard'
-const MAX_PRODUCT = 'dolphin'
 
 export const AggregationTimeframes: Aggregation[] = [Aggregation.Epoch, Aggregation.Hourly, Aggregation.Daily, Aggregation.Weekly]
 
@@ -46,143 +45,12 @@ export class MerchantUtils implements OnInit {
 			price: '$1.99',
 			priceMicros: 1990000,
 			currency: 'USD',
-			maxValidators: 100,
-			maxTestnetValidators: 100,
-			maxBeaconNodes: 1,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: false,
-			customTheme: false,
-			supportUs: true,
 			purchaseKey: 'plankton',
 			renewFrame: null,
 		},
 	]
 
-	PACKAGES: Package[] = [
-		{
-			name: 'Free',
-			price: '$0.00',
-			priceMicros: 0,
-			currency: 'USD',
-			maxValidators: 100,
-			maxTestnetValidators: 100,
-			maxBeaconNodes: 1,
-			deviceMonitoringHours: 3,
-			deviceMonitorAlerts: false,
-			noAds: false,
-			widgets: false,
-			customTheme: false,
-			supportUs: false,
-			purchaseKey: null,
-			renewFrame: null,
-		},
-		{
-			name: 'Guppy',
-			price: '$9.99',
-			priceMicros: 9990000,
-			currency: 'USD',
-			maxValidators: 100,
-			maxTestnetValidators: 100,
-			maxBeaconNodes: 2,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: true,
-			customTheme: true,
-			supportUs: true,
-			purchaseKey: 'guppy',
-			renewFrame: 'monthly',
-		},
-		{
-			name: 'Guppy',
-			price: '$107.88',
-			priceMicros: 107880000,
-			currency: 'USD',
-			maxValidators: 100,
-			maxTestnetValidators: 100,
-			maxBeaconNodes: 2,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: true,
-			customTheme: true,
-			supportUs: true,
-			purchaseKey: 'guppy.yearly',
-			renewFrame: 'yearly',
-		},
-		{
-			name: 'Dolphin',
-			price: '$29.99',
-			priceMicros: 29990000,
-			currency: 'USD',
-			maxValidators: 280,
-			maxTestnetValidators: 280,
-			maxBeaconNodes: 10,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: true,
-			customTheme: true,
-			supportUs: true,
-			purchaseKey: 'dolphin',
-			renewFrame: 'monthly',
-		},
-		{
-			name: 'Dolphin',
-			price: '$311.88',
-			priceMicros: 311880000,
-			currency: 'USD',
-			maxValidators: 280,
-			maxTestnetValidators: 280,
-			maxBeaconNodes: 10,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: true,
-			customTheme: true,
-			supportUs: true,
-			purchaseKey: 'dolphin.yearly',
-			renewFrame: 'yearly',
-		},
-		{
-			name: 'Orca',
-			price: '$29.99',
-			priceMicros: 29990000,
-			currency: 'USD',
-			maxValidators: 280,
-			maxTestnetValidators: 280,
-			maxBeaconNodes: 10,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: true,
-			customTheme: true,
-			supportUs: true,
-			purchaseKey: 'orca',
-			renewFrame: 'monthly',
-		},
-		{
-			name: 'Orca',
-			price: '$311.88',
-			priceMicros: 311880000,
-			currency: 'USD',
-			maxValidators: 280,
-			maxTestnetValidators: 280,
-			maxBeaconNodes: 10,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: true,
-			customTheme: true,
-			supportUs: true,
-			purchaseKey: 'orca.yearly',
-			renewFrame: 'yearly',
-		},
-	]
-
-	//currentPlan = PRODUCT_STANDARD // use getCurrentPlanConfirmed instead
+	PACKAGES: Package[]
 
 	purchaseIntent = '' // temp workaround until new api is live
 
@@ -195,21 +63,88 @@ export class MerchantUtils implements OnInit {
 		}
 
 		const result: Aggregation[] = []
-		add(result, this.userInfo().premium_perks?.chart_history_seconds?.epoch ?? 0, Aggregation.Epoch)
-		add(result, this.userInfo().premium_perks?.chart_history_seconds?.daily ?? 0, Aggregation.Daily)
-		add(result, this.userInfo().premium_perks?.chart_history_seconds?.hourly ?? 0, Aggregation.Hourly)
-		add(result, this.userInfo().premium_perks?.chart_history_seconds?.weekly ?? 0, Aggregation.Weekly)
+		add(result, this.userInfo()?.premium_perks?.chart_history_seconds?.epoch ?? 0, Aggregation.Epoch)
+		add(result, this.userInfo()?.premium_perks?.chart_history_seconds?.daily ?? 0, Aggregation.Daily)
+		add(result, this.userInfo()?.premium_perks?.chart_history_seconds?.hourly ?? 43200, Aggregation.Hourly)
+		add(result, this.userInfo()?.premium_perks?.chart_history_seconds?.weekly ?? 0, Aggregation.Weekly)
 
 		return result
 	})
 
 	initialize: Promise<void>
 
-	constructor(private alertService: AlertService, private api: ApiService, private platform: Platform, private storage: StorageService) {
+	constructor(
+		private alertService: AlertService,
+		private api: ApiService,
+		private platform: Platform,
+		private storage: StorageService
+	) {
+		this.initPackages(this.platform.is('ios') ? '.apple' : '') // you don't wanna know :)
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
 			console.info('merchant is not supported on this platform')
 			return
 		}
+	}
+
+	initPackages(appendix: string) {
+		this.PACKAGES = [
+			{
+				name: 'Free',
+				price: '€0.00',
+				priceMicros: 0,
+				currency: 'EUR',
+				purchaseKey: null,
+				renewFrame: null,
+			},
+			{
+				name: 'Guppy',
+				price: '€9.99',
+				priceMicros: 9990000,
+				currency: 'EUR',
+				purchaseKey: 'guppy' + appendix,
+				renewFrame: 'monthly',
+			},
+			{
+				name: 'Guppy',
+				price: '€107.88',
+				priceMicros: 107880000,
+				currency: 'EUR',
+				purchaseKey: 'guppy.yearly' + appendix,
+				renewFrame: 'yearly',
+			},
+			{
+				name: 'Dolphin',
+				price: '€29.99',
+				priceMicros: 29990000,
+				currency: 'EUR',
+				purchaseKey: 'dolphin' + appendix,
+				renewFrame: 'monthly',
+			},
+			{
+				name: 'Dolphin',
+				price: '€311.88',
+				priceMicros: 311880000,
+				currency: 'EUR',
+				purchaseKey: 'dolphin.yearly' + appendix,
+				renewFrame: 'yearly',
+			},
+			{
+				name: 'Orca',
+				price: '€49.99',
+				priceMicros: 49990000,
+				currency: 'EUR',
+				purchaseKey: 'orca' + appendix,
+				renewFrame: 'monthly',
+			},
+			{
+				name: 'Orca',
+				price: '€479.88',
+				priceMicros: 479880000,
+				currency: 'EUR',
+				purchaseKey: 'orca.yearly' + appendix,
+				renewFrame: 'yearly',
+			},
+		]
 	}
 
 	ngOnInit() {
@@ -552,24 +487,6 @@ export class MerchantUtils implements OnInit {
 		)
 	}
 
-	// async getCurrentPlanConfirmed(): Promise<string> {
-	// 	if (this.api.debug) {
-	// 		const debugPackage = await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')
-	// 		if (debugPackage != 'default') {
-	// 			return debugPackage as string
-	// 		}
-	// 	}
-
-	// 	const authUser = await this.storage.getAuthUser()
-	// 	if (!authUser || !authUser.accessToken) return PRODUCT_STANDARD
-	// 	const jwtParts = authUser.accessToken.split('.')
-	// 	const claims: ClaimParts = JSON.parse(atob(jwtParts[1]))
-	// 	if (claims && claims.package) {
-	// 		return claims.package
-	// 	}
-	// 	return PRODUCT_STANDARD
-	// }
-
 	async getDefaultTheme(): Promise<string> {
 		const authUser = await this.storage.getAuthUser()
 		if (!authUser || !authUser.accessToken) return ''
@@ -632,7 +549,23 @@ export class MerchantUtils implements OnInit {
 		if (name.indexOf('guppy') >= 0) return 'plankton'
 		if (name.indexOf('dolphin') >= 0) return 'goldfish'
 		if (name.indexOf('orca') >= 0) return 'whale'
-		return null
+		return name
+	}
+
+	mapv1Tov2(name: string): string {
+		if (name == null) return null
+		if (name.indexOf('plankton') >= 0) return 'guppy'
+		if (name.indexOf('goldfish') >= 0) return 'dolphin'
+		if (name.indexOf('whale') >= 0) return 'orca'
+		return name
+	}
+
+	removeApplePrefix(name: string): string {
+		if (name == null) return null
+		if (name.indexOf('.apple')) {
+			name = name.replace('.apple', '')
+		}
+		return name
 	}
 
 	hasMachineMonitoringPremium = computed(() => {
@@ -654,15 +587,6 @@ export class MerchantUtils implements OnInit {
 		if (appSubs.length == 0) return none
 		return appSubs[0]
 	})
-
-	getHighestPackageValidator(): number {
-		const currentProduct = this.findProduct(MAX_PRODUCT)
-		if (currentProduct == null) return 100
-
-		const notMainnet = this.api.isNotEthereumMainnet()
-		if (notMainnet) return currentProduct.maxTestnetValidators
-		return currentProduct.maxValidators
-	}
 }
 
 interface ClaimParts {
@@ -680,15 +604,6 @@ export interface Package {
 	price: string
 	priceMicros: number
 	currency: string
-	maxValidators: number
-	maxTestnetValidators: number
-	maxBeaconNodes: number
-	deviceMonitoringHours: number
-	deviceMonitorAlerts: boolean
-	noAds: boolean
-	widgets: boolean
-	customTheme: boolean
-	supportUs: boolean
 	purchaseKey: string
 	renewFrame: 'monthly' | 'yearly' | null
 }

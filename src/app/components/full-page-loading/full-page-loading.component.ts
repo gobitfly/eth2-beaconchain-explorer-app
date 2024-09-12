@@ -22,6 +22,7 @@ const SKIP_LOADING_IF_FASTER_THAN = 30 //ms
 	],
 })
 export class FullPageLoadingComponent implements OnChanges {
+	@Input() fixInfiniteScroll: boolean = false
 	@Input() loading: boolean // the real loading state
 	showLoading = false // the fake loading state, is only shown if loading is still true after SKIP_LOADING_IF_FASTER_THAN
 

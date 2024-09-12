@@ -36,6 +36,7 @@ import { GridCellRightComponent } from './grid-cell-right/grid-cell-right.compon
 import { SummaryChartModule } from './summary-chart/summary-chart.module'
 import { RewardChartModule } from './reward-chart/reward-chart.module'
 import { FullPageLoadingComponent } from "../full-page-loading/full-page-loading.component";
+import { FullPageOfflineComponent } from "../full-page-offline/full-page-offline.component";
 
 @NgModule({
 	imports: [
@@ -53,7 +54,8 @@ import { FullPageLoadingComponent } from "../full-page-loading/full-page-loading
     GridCellLeftComponent,
     GridCellRightComponent,
     RewardChartModule,
-    FullPageLoadingComponent
+    FullPageLoadingComponent,
+    FullPageOfflineComponent
 ],
 	declarations: [DashboardComponent],
 	exports: [DashboardComponent],

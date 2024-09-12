@@ -18,7 +18,7 @@
 import { APIRequest, Method } from './requests'
 import { BlockOverview } from './types/block'
 import { VDBBlocksTableRow } from './types/validator_dashboard'
-import { dashboardID, setID } from './v2-dashboard'
+import { dashboardID, networkID, setID } from './v2-dashboard'
 
 export class V2DashboardBlocks extends APIRequest<VDBBlocksTableRow> {
 	resource = 'validator-dashboards/{id}/blocks'
@@ -39,9 +39,9 @@ export class V2BlockOverview extends APIRequest<BlockOverview> {
 	resource = 'networks/{network}/blocks/{block}/overview'
 	method = Method.GET
 
-	constructor(network: string, block: number) {
+	constructor(network: networkID, block: number) {
 		super()
-		this.resource = this.resource.replace('{network}', network)
+		this.resource = this.resource.replace('{network}', network.toString())
 		this.resource = this.resource.replace('{block}', block.toString())
 	}
 }

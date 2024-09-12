@@ -1,0 +1,19 @@
+<div *ngIf="!online" class="container">
+    <div class="center">
+        <div>
+            <div style="height: 80px;">
+                <ion-icon name="rainy-outline" class="opacity-icon"></ion-icon>
+            </div>
+            <div style="height:80px;">
+                <h2>No Connection</h2>
+                <ion-label>Please check your internet connection.</ion-label>
+            </div>
+            <ion-label class="link" (click)="onRetryClick()">Retry</ion-label>
+        </div>
+        
+    </div>
+</div>
+
+<div [ngClass]="{content: fixInfiniteScroll}" *ngIf="online" >
+    <ng-content></ng-content>
+</div>

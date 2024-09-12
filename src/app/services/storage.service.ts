@@ -22,7 +22,6 @@ import { Plugins } from '@capacitor/core'
 import * as StorageTypes from '../models/StorageTypes'
 import { MAP, findConfigForKey } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
-import BigNumber from 'bignumber.js'
 import { Platform } from '@ionic/angular'
 
 import { Preferences } from '@capacitor/preferences'
@@ -320,6 +319,8 @@ export class StorageService extends CacheModule implements OnInit{
 	async setDashboardTimeframe(timeframe: Period): Promise<void> {
 		await this.setObject('dashboard_timeframe', timeframe)
 	}
+
+
 }
 
 interface DashboardSetting {
@@ -338,7 +339,7 @@ export function replacer(key, value) {
 	}
 }
 
-function reviver(key, value) {
+function reviver(_, value) {
 	if (typeof value === 'object' && value !== null) {
 		if (value.dataType === 'Map') {
 			return new Map(value.value)

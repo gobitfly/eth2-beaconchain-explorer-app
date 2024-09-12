@@ -54,6 +54,8 @@ export class Tab1Page implements OnInit {
 
 	loading: boolean = true
 
+	online: boolean = true
+
 	constructor(
 		public api: ApiService,
 		public updates: ClientUpdateUtils,
@@ -97,17 +99,20 @@ export class Tab1Page implements OnInit {
 		const loading = await this.alert.presentLoading('Loading...')
 		loading.present()
 		const result = await this.overviewProvider.setTimeframe(this.overallData, period)
+		this.online = true
 		if (result[0].error) {
 			console.error('Error fetching summary table', result[0].error)
 			Toast.show({
 				text: 'Error fetching summary table',
 			})
+			this.online = false
 		}
 		if (result[1].error) {
 			console.error('Error fetching summary group', result[1].error)
 			Toast.show({
 				text: 'Error fetching summary group',
 			})
+			this.online = false
 		}
 		loading.dismiss()
 	}
@@ -153,7 +158,7 @@ export class Tab1Page implements OnInit {
 		}
 		this.isLoggedIn = await this.storage.isLoggedIn()
 		this.dashboardID = await this.dashboardUtils.initDashboard()
-
+		this.online = true
 		this.loading = true
 		try {
 			this.overallData = await this.overviewProvider.create(
@@ -179,14 +184,19 @@ export class Tab1Page implements OnInit {
 				return this.setup(false, force, true)
 			} else if (e instanceof DashboardError) {
 				this.dashboardUtils.defaultDashboardErrorHandler(e)
+				this.online = false
 			} else {
 				console.error(e)
 				Toast.show({
 					text: 'Error loading dashboard',
 				})
+				this.online = false
 			}
 		}
 		this.loading = false
+		if (this.overallData) {
+			this.api.setCurrentDashboardChainID(this.overallData.chainNetwork().id)
+		}
 
 		console.log('overallData', this.overallData)
 		this.lastRefreshTs = this.getUnixSeconds()
@@ -198,24 +208,24 @@ export class Tab1Page implements OnInit {
 
 	private lastRefreshedTs: number = 0
 	async doRefresh(event) {
+		console.log('henlo 2')
 		if (this.lastRefreshedTs + 60 * 1000 > new Date().getTime()) {
 			Toast.show({
 				text: 'Nothing to update',
 			})
-			event.target.complete()
+			if (event) event.target.complete()
 			return
 		}
 		this.lastRefreshedTs = new Date().getTime()
 
 		const old = Object.assign({}, this.overallData)
-		this.overviewProvider.clearRequestCache(this.overallData)
+		await this.overviewProvider.clearRequestCache(this.overallData)
 		this.overallData = null
 		await this.setup(true, true).catch(() => {
-			this.api.mayInvalidateOnFaultyConnectionState()
 			this.overallData = old
-			event.target.complete()
+			if (event) event.target.complete()
 		})
 		await this.unitConv.updatePriceData()
-		event.target.complete()
+		if (event) event.target.complete()
 	}
 }

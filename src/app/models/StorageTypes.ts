@@ -37,12 +37,7 @@ export interface ApiNetwork {
 	version: string
 	onlyDebug: boolean
 	active: boolean
-	genesisTs: number
-	elCurrency: NetworkMainCurrency
-	clCurrency: NetworkMainCurrency
-	slotPerEpoch: number
-	slotsTime: number
-	epochsPerSyncPeriod: number
+	supportedChainIds: number[]
 	name: string
 	v2NetworkConfigKey?: string
 	passXCookieDANGEROUS?: boolean // do not set unless you know what you are doing, enabling this could expose your session to attackers

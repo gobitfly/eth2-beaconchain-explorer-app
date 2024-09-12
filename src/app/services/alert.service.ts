@@ -27,7 +27,10 @@ export const PURCHASEUTILS = 150
 	providedIn: 'root',
 })
 export class AlertService {
-	constructor(private alertController: AlertController, private loadingController: LoadingController) {}
+	constructor(
+		private alertController: AlertController,
+		private loadingController: LoadingController
+	) {}
 
 	async showError(title: string, message: string, code: number) {
 		const alert = await this.alertController.create({
@@ -60,6 +63,23 @@ export class AlertService {
 			header: title,
 			message: message,
 			buttons: ['OK'],
+		})
+
+		await alert.present()
+	}
+
+	async noChoiceDialog(title: string, message: string, action: () => void, customCss: '' | 'bigger-alert' = '') {
+		const alert = await this.alertController.create({
+			cssClass: customCss,
+			header: title,
+			message: message,
+			backdropDismiss: false,
+			buttons: [
+				{
+					text: 'OK',
+					handler: action
+				}
+			],
 		})
 
 		await alert.present()

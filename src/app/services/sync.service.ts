@@ -29,7 +29,6 @@ import {
 	SetMobileSettingsRequest,
 } from '../requests/requests'
 import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils'
-import { ValidatorSyncUtils } from '../utils/ValidatorSyncUtils'
 import { NotificationBase } from '../tab-preferences/notification-base'
 
 const NOTIFY_SYNCCHANGE = 'notify_syncchange_'
@@ -80,7 +79,6 @@ export class SyncService {
 	constructor(
 		private api: ApiService,
 		private storage: StorageService,
-		private validatorSyncUtils: ValidatorSyncUtils,
 		private updateUtils: ClientUpdateUtils,
 		protected injector: Injector
 	) {
@@ -88,20 +86,12 @@ export class SyncService {
 		setTimeout(() => (this.notificationBase = injector.get(NotificationBase)), 0)
 	}
 
-	public async mightSyncUpAndSyncDelete() {
-		await this.validatorSyncUtils.mightSyncUpAndSyncDelete(() => {
-			this.syncAllSettingsForceStaleNotifications()
-		})
+	public mightSyncUpAndSyncDelete() {
+		this.syncAllSettingsForceStaleNotifications()
 	}
 
-	public async fullSync() {
-		await this.validatorSyncUtils.fullSync(() => {
-			this.syncAllSettingsForceStaleNotifications()
-		})
-	}
-
-	public async syncDown() {
-		await this.validatorSyncUtils.syncDown()
+	public fullSync() {
+		this.syncAllSettingsForceStaleNotifications()
 	}
 
 	async syncAllSettings(useForce = false) {

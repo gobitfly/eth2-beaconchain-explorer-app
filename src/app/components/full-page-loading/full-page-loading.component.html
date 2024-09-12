@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<div class="content" [hidden]="!showContent" [@fadeIn]="fadeInComplete">
+<div  [ngClass]="{content: fixInfiniteScroll}" [hidden]="!showContent" [@fadeIn]="fadeInComplete">
     <ng-content></ng-content>
 </div>
 

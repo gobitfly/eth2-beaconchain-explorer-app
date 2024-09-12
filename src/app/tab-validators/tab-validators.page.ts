@@ -45,7 +45,7 @@ import { Haptics } from '@capacitor/haptics'
 import { searchType, V2SearchValidators } from '../requests/search'
 import { SearchResult } from '../requests/types/common'
 import { DashboardError, DashboardNotFoundError, getDashboardError } from '../controllers/OverviewController'
-import { DashboardUtils } from '../utils/DashboardUtils'
+import { DashboardUtils, isLocalDashboard } from '../utils/DashboardUtils'
 import ThemeUtils from '../utils/ThemeUtils'
 
 const PAGE_SIZE = 25
@@ -54,7 +54,7 @@ const ASSOCIATED_CACHE_KEY = 'validators'
 @Component({
 	selector: 'app-tab2',
 	templateUrl: 'tab-validators.page.html',
-	styleUrls: ['tab-validators.page.scss']
+	styleUrls: ['tab-validators.page.scss'],
 })
 export class Tab2Page implements OnInit {
 	public classReference = UnitconvService
@@ -67,9 +67,9 @@ export class Tab2Page implements OnInit {
 	initialized = false // when first data has been loaded and displayed
 	loadMore = false // infinite scroll load more text at bottom
 
-	dashboardID: dashboardID
+	dashboardID: WritableSignal<dashboardID> = signal(null)
 	private dashboardData: WritableSignal<VDBOverviewData> = signal(null)
-	private validatorLoader: ValidatorLoader = null
+	validatorLoader: ValidatorLoader = null
 
 	searchResultMode = false
 	searchResult: SearchResult[] = null
@@ -80,6 +80,10 @@ export class Tab2Page implements OnInit {
 	selected = new Map<number, boolean>()
 
 	private validatorSetAltered = false
+
+	private sort: string
+
+	online: boolean = true
 
 	constructor(
 		public modalController: ModalController,
@@ -134,6 +138,7 @@ export class Tab2Page implements OnInit {
 	}
 
 	async setup() {
+		this.online = true
 		this.selectMode = false
 		this.selected = new Map<number, boolean>()
 		this.searchResult = null
@@ -142,12 +147,14 @@ export class Tab2Page implements OnInit {
 			this.searchbarRef.value = ''
 		}
 
+		this.sort = await this.getDefaultSort()
 		this.isLoggedIn = await this.storage.isLoggedIn()
 
 		await this.merchant.getUserInfo(false)
-		this.dashboardID = await this.dashboardUtils.initDashboard()
+		this.dashboardID.set(await this.dashboardUtils.initDashboard())
 		if (!this.dashboardID) {
 			this.initialized = true
+			this.initialLoading = false
 			return
 		}
 		console.log('dashboard id', this.dashboardID)
@@ -157,6 +164,8 @@ export class Tab2Page implements OnInit {
 			Toast.show({
 				text: 'Could not load groups',
 			})
+			this.initialLoading = false
+			this.online = false
 			return
 		}
 
@@ -165,6 +174,74 @@ export class Tab2Page implements OnInit {
 		}
 
 		await this.updateValidators()
+	}
+
+	async getDefaultSort() {
+		return (await this.storage.getItem('validators_sort')) || 'index:asc'
+	}
+
+	async setDefaultSort(sort: string) {
+		await this.storage.setItem('validators_sort', sort)
+	}
+
+	selectSort() {
+		this.alerts.showSelect(
+			'Sort by',
+			[
+				{
+					name: 'sort',
+					label: 'Index Ascending',
+					value: 'index:asc',
+					type: 'radio',
+					checked: this.sort == 'index:asc',
+				},
+				{
+					name: 'sort',
+					label: 'Index Descending',
+					value: 'index:desc',
+					type: 'radio',
+					checked: this.sort == 'index:desc',
+				},
+				{
+					name: 'sort',
+					label: 'Online State (Offline first)',
+					value: 'status:asc',
+					type: 'radio',
+					checked: this.sort == 'status:asc',
+				},
+				{
+					name: 'sort',
+					label: 'Online State (Online first)',
+					value: 'status:desc',
+					type: 'radio',
+					checked: this.sort == 'status:desc',
+				},
+				{
+					name: 'sort',
+					label: 'Balance Ascending',
+					value: 'balance:asc',
+					type: 'radio',
+					checked: this.sort == 'balance:asc',
+				},
+				{
+					name: 'sort',
+					label: 'Balance Descending',
+					value: 'balance:desc',
+					type: 'radio',
+					checked: this.sort == 'balance:desc',
+				},
+			],
+			async (data) => {
+				if (data) {
+					if (data != this.sort) {
+						await this.clearRequestCache()
+						this.sort = data
+						this.setDefaultSort(data)
+						this.updateValidators()
+					}
+				}
+			}
+		)
 	}
 
 	async openDashboardAndGroupSelect() {
@@ -188,10 +265,10 @@ export class Tab2Page implements OnInit {
 		if (!this.isLoggedIn) {
 			return
 		}
-		if (!this.dashboardID) {
+		if (!this.dashboardID()) {
 			return
 		}
-		const result = await this.api.set(new V2DashboardOverview(this.dashboardID), this.dashboardData, ASSOCIATED_CACHE_KEY)
+		const result = await this.api.set(new V2DashboardOverview(this.dashboardID()), this.dashboardData, ASSOCIATED_CACHE_KEY)
 		const e = getDashboardError(result)
 		if (e) {
 			if (e instanceof DashboardNotFoundError) {
@@ -202,7 +279,7 @@ export class Tab2Page implements OnInit {
 					return
 				}
 				// if dashboard is not available any more (maybe user deleted it) reinit and try again
-				this.dashboardID = await this.dashboardUtils.initDashboard()
+				this.dashboardID.set(await this.dashboardUtils.initDashboard())
 				return this.updateGroups(true)
 			} else if (e instanceof DashboardError) {
 				if (this.dashboardUtils.defaultDashboardErrorHandler(e)) {
@@ -215,7 +292,9 @@ export class Tab2Page implements OnInit {
 
 	private async updateValidators() {
 		this.reachedMaxValidators = false
-		this.validatorLoader = new ValidatorLoader(this.api, this.dashboardID, this.selectedGroup)
+		this.validatorLoader = new ValidatorLoader(this.api, this.dashboardID(), this.selectedGroup, this.sort, (result) => {
+			this.online = result
+		})
 		this.dataSource = new InfiniteScrollDataSource<VDBManageValidatorsTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
 
 		await this.dataSource.reset()
@@ -240,17 +319,15 @@ export class Tab2Page implements OnInit {
 		}
 	}
 
-	async searchEvent(event) {
-		console.log("search event 1")
+	async searchEvent(event, maxRecursive = false) {
 		const searchString = event.target.value
 		if (!searchString || searchString.length < 0) return
 		if (this.platform.is('ios') || this.platform.is('android')) {
 			Keyboard.hide()
 		}
-console.log('search event2 ')
+
 		this.searchResultMode = true
 		this.searchResult = null
-		console.log('search event 3')
 		const isETH1Address = searchString.startsWith('0x') && searchString.length == 42
 		const isWithdrawalCredential = searchString.startsWith('0x') && searchString.length == 66
 		const isPubkey = searchString.startsWith('0x') && searchString.length == 98
@@ -276,20 +353,23 @@ console.log('search event2 ')
 			searchTypes = [searchType.validatorByIndex, searchType.validatorsByDepositEnsName, searchType.validatorsByWithdrawalEns]
 		}
 
-		console.log('search event 4')
-		// todo network from dashboard
-		const result = await this.api.execute2(new V2SearchValidators(searchString, ['holesky'], searchTypes), ASSOCIATED_CACHE_KEY)
+		const chainID = await this.api.getCurrentDashboardChainID()
+		const result = await this.api.execute2(new V2SearchValidators(searchString, [chainID], searchTypes), ASSOCIATED_CACHE_KEY)
 		if (result.error) {
+			// If we get a cors forbidden error, try a get call and then retry
+			if (result.error.code == 403 && !maxRecursive) {
+				await this.api.getLatestState(true)
+				return this.searchEvent(event, true)
+			}
+
 			this.searchResultMode = false
-			this.api.connectionStateOK = false
+			this.online = false
 			Toast.show({
 				text: 'Could not search for validators',
 				duration: 'long',
 			})
 			return
 		}
-
-		console.log('search event 5')
 
 		this.searchResult = result.data
 	}
@@ -459,13 +539,12 @@ console.log('search event2 ')
 	}
 
 	private lastRefreshedTs: number = 0
-
 	async doRefresh(event) {
 		if (this.lastRefreshedTs + 15 * 1000 > new Date().getTime()) {
 			Toast.show({
 				text: 'Nothing to update',
 			})
-			event.target.complete()
+			if (event) event.target.complete()
 			return
 		}
 		this.lastRefreshedTs = new Date().getTime()
@@ -473,20 +552,16 @@ console.log('search event2 ')
 		this.initialLoading = true
 		await this.clearRequestCache()
 		await this.updateValidators().catch(() => {
-			this.api.mayInvalidateOnFaultyConnectionState()
-			event.target.complete()
+			if (event) event.target.complete()
 		})
 		this.initialLoading = false
-		event.target.complete()
+		if (event) event.target.complete()
 	}
 
 	async upgrade() {
 		const modal = await this.modalController.create({
 			component: SubscribePage,
 			cssClass: 'my-custom-class',
-			componentProps: {
-				tab: 'dolphin',
-			},
 		})
 		return await modal.present()
 	}
@@ -526,7 +601,7 @@ console.log('search event2 ')
 				}) || [
 				{
 					id: null,
-					count: 0,
+					count: isLocalDashboard(this.dashboardID()) ? (this.dashboardID() as number[]).length : 0,
 					name: 'Default',
 					realName: 'default',
 				},
@@ -581,7 +656,7 @@ console.log('search event2 ')
 						const loading = await this.alerts.presentLoading('Applying changes...')
 						loading.present()
 
-						const result = await this.api.execute2(new V2UpdateDashboardGroup(this.dashboardID, renameGroup.id, alertData.newName))
+						const result = await this.api.execute2(new V2UpdateDashboardGroup(this.dashboardID(), renameGroup.id, alertData.newName))
 						if (result.error) {
 							Toast.show({
 								text: 'Error creating group, please try again later',
@@ -590,7 +665,8 @@ console.log('search event2 ')
 							Toast.show({
 								text: 'Group renamed',
 							})
-							const updateGroupsResult = await this.updateGroups(true)
+							await this.clearRequestCache()
+							const updateGroupsResult = await this.updateGroups()
 							if (updateGroupsResult.error) {
 								Toast.show({
 									text: 'Could not load groups',
@@ -641,7 +717,7 @@ console.log('search event2 ')
 		const loading = await this.alerts.presentLoading('Deleting group...')
 		loading.present()
 
-		const result = await this.api.execute2(new V2DeleteDashboardGroup(this.dashboardID, deleteGroup.id))
+		const result = await this.api.execute2(new V2DeleteDashboardGroup(this.dashboardID(), deleteGroup.id))
 		if (result.error) {
 			Toast.show({
 				text: 'Error deleting group, please try again later',
@@ -652,7 +728,8 @@ console.log('search event2 ')
 			})
 
 			this.validatorSetAltered = true
-			const updateGroupsResult = await this.updateGroups(true)
+			await this.clearRequestCache()
+			const updateGroupsResult = await this.updateGroups()
 			if (updateGroupsResult.error) {
 				Toast.show({
 					text: 'Could not load groups',
@@ -735,7 +812,7 @@ console.log('search event2 ')
 						const loading = await this.alerts.presentLoading('Creating group...')
 						loading.present()
 
-						const result = await this.api.execute2(new V2AddDashboardGroup(this.dashboardID, alertData.newName))
+						const result = await this.api.execute2(new V2AddDashboardGroup(this.dashboardID(), alertData.newName))
 						if (result.error) {
 							Toast.show({
 								text: 'Error creating group, please try again later',
@@ -777,18 +854,19 @@ console.log('search event2 ')
 
 
 class ValidatorLoader {
-	constructor(private api: ApiService, private dashboard: dashboardID, private groupID: number) {}
+	constructor(private api: ApiService, private dashboard: dashboardID, private groupID: number, private sort: string, private offlineCallback: (online: boolean) => void) {}
 
 	public getDefaultDataRetriever(): loadMoreType<VDBManageValidatorsTableRow> {
 		return async (cursor) => {
 			const result = await this.api.execute2(
-				new V2GetValidatorFromDashboard(this.dashboard, this.groupID, cursor, PAGE_SIZE), ASSOCIATED_CACHE_KEY
+				new V2GetValidatorFromDashboard(this.dashboard, this.groupID, cursor, PAGE_SIZE, this.sort), ASSOCIATED_CACHE_KEY
 			)
 			if (result.error) {
 				Toast.show({
 					text: 'Could not load validators',
 					duration: 'long',
 				})
+				this.offlineCallback(false)
 				return {
 					data: undefined,
 					next_cursor: null,

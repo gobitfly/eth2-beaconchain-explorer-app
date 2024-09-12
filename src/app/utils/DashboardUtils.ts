@@ -27,12 +27,15 @@ import { MerchantUtils } from "./MerchantUtils";
 import { DashboardError, DashboardUnauthorizedError } from "../controllers/OverviewController";
 import { SearchResult } from "../requests/types/common";
 import { searchType } from "../requests/search";
+import { UnitconvService } from "../services/unitconv.service";
 
 @Injectable({
 	providedIn: 'root',
 })
 export class DashboardUtils {
-	dashboardAwareListener: PullEventListener = new PullEventListener()
+	dashboardAwareListener: PullEventListener = new PullEventListener(() => {
+		this.unit.loadCurrentChainNetwork()
+	})
 	searchResultHandler = new SeachResultHandler()
 
 	constructor(
@@ -40,7 +43,8 @@ export class DashboardUtils {
 		private storage: StorageService,
 		private alerts: AlertService,
 		private oauth: OAuthUtils,
-		private merchant: MerchantUtils
+		private merchant: MerchantUtils,
+		private unit: UnitconvService
 	) {}
 
 	initDashboard() {
@@ -49,63 +53,89 @@ export class DashboardUtils {
 		})
 	}
 
-    async addValidator(item: SearchResult, groupID: number): Promise<boolean> {
-        const loggedIn = await this.storage.isLoggedIn()
-        const id = await this.storage.getDashboardID()
-        
-        if (loggedIn) {
-            const result = await this.api.execute2(
-                new V2AddValidatorToDashboard(id, {
-                    group_id: groupID,
-                    validators: this.searchResultHandler.getAddByIndex(item),
-                    deposit_address: this.searchResultHandler.getAddByDepositAddress(item),
-                    withdrawal_address: this.searchResultHandler.getAddByWithdrawalAddress(item),
-                    graffiti: undefined,
-                } as V2AddValidatorToDashboardData),
-            )
-            return result && !result.error
-        } else {
-            const indexToAdd = this.searchResultHandler.getAddByIndex(item)
-            if (!indexToAdd || indexToAdd.length === 0) {
-                return false
-            }
+	async addValidator(item: SearchResult, groupID: number): Promise<boolean> {
+		const loggedIn = await this.storage.isLoggedIn()
+		const id = await this.storage.getDashboardID()
 
-            if (isLocalDashboard(id)) {
-                await this.storage.setDashboardID([...id, ...indexToAdd])
-            } else {
-                await this.storage.setDashboardID(indexToAdd)
-            }
-            return true
-        }
-    }
+		if (loggedIn) {
+			const result = await this.api.execute2(
+				new V2AddValidatorToDashboard(id, {
+					group_id: groupID,
+					validators: this.searchResultHandler.getAddByIndex(item),
+					deposit_address: this.searchResultHandler.getAddByDepositAddress(item),
+					withdrawal_address: this.searchResultHandler.getAddByWithdrawalAddress(item),
+					graffiti: undefined,
+				} as V2AddValidatorToDashboardData)
+			)
+			return result && !result.error
+		} else {
+			const indexToAdd = this.searchResultHandler.getAddByIndex(item)
+			if (!indexToAdd || indexToAdd.length === 0) {
+				return false
+			}
 
-    async deleteValidator(index: number[]) {
-        const loggedIn = await this.storage.isLoggedIn()
-        const id = await this.storage.getDashboardID()
+			if (isLocalDashboard(id)) {
+				await this.storage.setDashboardID([...id, ...indexToAdd].slice(0, 20))
+			} else {
+				await this.storage.setDashboardID(indexToAdd)
+			}
+			return true
+		}
+	}
 
-        if (loggedIn) {
-            const result = await this.api.execute2(new V2DeleteValidatorFromDashboard(id, index))
-            return result && !result.error
-        } else {
-            if (isLocalDashboard(id)) {
-                await this.storage.setDashboardID(
-                    id.filter((element) => !index.includes(element))
-                )
-            } else {
-                console.log("how did we end up here?")
-                return true
-            }
-            return true
-        }
-    }
+	async addValidators(index: number[], groupID: number): Promise<boolean> {
+		if (index.length === 0) {
+			return
+		}
+		const loggedIn = await this.storage.isLoggedIn()
+		const id = await this.storage.getDashboardID()
 
-    async getLocalValidatorCount() {
-        const id = await this.storage.getDashboardID()
-        if (isLocalDashboard(id)) {
-            return id.length
-        }
-        return 0
-    }
+		if (loggedIn) {
+			const result = await this.api.execute2(
+				new V2AddValidatorToDashboard(id, {
+					group_id: groupID,
+					validators: index,
+					graffiti: undefined,
+				} as V2AddValidatorToDashboardData)
+			)
+			return result && !result.error
+		} else {
+			index = index.slice(0, 20) // truncate as free tier is limited to 20 validators
+
+			if (isLocalDashboard(id)) {
+				await this.storage.setDashboardID([...id, ...index].slice(0, 20))
+			} else {
+				await this.storage.setDashboardID(index)
+			}
+			return true
+		}
+	}
+
+	async deleteValidator(index: number[]) {
+		const loggedIn = await this.storage.isLoggedIn()
+		const id = await this.storage.getDashboardID()
+
+		if (loggedIn) {
+			const result = await this.api.execute2(new V2DeleteValidatorFromDashboard(id, index))
+			return result && !result.error
+		} else {
+			if (isLocalDashboard(id)) {
+				await this.storage.setDashboardID(id.filter((element) => !index.includes(element)))
+			} else {
+				console.log('how did we end up here?')
+				return true
+			}
+			return true
+		}
+	}
+
+	async getLocalValidatorCount() {
+		const id = await this.storage.getDashboardID()
+		if (isLocalDashboard(id)) {
+			return id.length
+		}
+		return 0
+	}
 
 	// @returns whether the error was handled
 	defaultDashboardErrorHandler(error: DashboardError | null) {
@@ -131,17 +161,23 @@ export class DashboardUtils {
 	}
 }
 
-function isLocalDashboard(id: dashboardID): id is number[] {
+export function isLocalDashboard(id: dashboardID): id is number[] {
     return id && Array.isArray(id) && id.every((element) => typeof element === 'number')
 }
 
 class PullEventListener {
 	private updateMap: Map<string, boolean> = new Map()
 
+	private push: () => void
+	constructor(push: () => void = null) { 
+		this.push = push 
+	}
+
 	notifyAll() {
-		this.updateMap.forEach((value, key) => {
+		this.updateMap.forEach((_, key) => {
 			this.updateMap.set(key, true)
 		})
+		if(this.push) this.push()
 	}
 
 	register(key: string) {
@@ -214,7 +250,8 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 			} else {
 				console.log('user has no dashboards, creating default dashboard')
 				// create a new dashboard
-				const createResult = await api.execute2(new V2CreateDashboard('Default Dashboard', 'holesky')) // todo network
+				const chainID = await this.api.getCurrentDashboardChainID()
+				const createResult = await api.execute2(new V2CreateDashboard('Default Dashboard', chainID)) 
 				if (createResult.error) {
 					Toast.show({
 						text: 'Error renaming dashboard, please try again later',

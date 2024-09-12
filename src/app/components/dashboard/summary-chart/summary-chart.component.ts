@@ -4,7 +4,6 @@ import { OverviewData2, OverviewProvider } from 'src/app/controllers/OverviewCon
 import { ChartData } from 'src/app/requests/types/common'
 import { Aggregation, V2DashboardSummaryChart } from 'src/app/requests/v2-dashboard'
 import { AlertService } from 'src/app/services/alert.service'
-import { ApiService } from 'src/app/services/api.service'
 import { getChartTextColor, getChartTooltipBackgroundColor, getSummaryChartGroupColors } from 'src/app/utils/ColorUtils'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import {
@@ -48,7 +47,6 @@ export class SummaryChartComponent implements OnInit {
 	selectedAggregation: Aggregation = Aggregation.Hourly
 
 	constructor(
-		private api: ApiService,
 		private merchant: MerchantUtils,
 		private alert: AlertService,
 		private storage: StorageService,
@@ -188,12 +186,12 @@ export class SummaryChartComponent implements OnInit {
 			return []
 		}
 		const list: number[] = []
-		let latestTs = slotToSecondsTimestamp(this.api, this.data.latestState().state.current_slot - 5) || 0
+		let latestTs = slotToSecondsTimestamp(this.data.chainNetwork().id, this.data.latestState().state.current_slot - 5) || 0
 
 		let step = 0
 		switch (this.data.summaryChartOptions().aggregation) {
 			case Aggregation.Epoch:
-				step = this.api.getNetwork().slotsTime * this.api.getNetwork().slotPerEpoch
+				step = this.data.chainNetwork().slotsTime * this.data.chainNetwork().slotPerEpoch
 				break
 			case Aggregation.Daily:
 				step = ONE_DAY
@@ -208,7 +206,7 @@ export class SummaryChartComponent implements OnInit {
 		if (!step) {
 			return []
 		}
-		const minTs = Math.max(slotToSecondsTimestamp(this.api, 0) || 0, latestTs - maxSeconds)
+		const minTs = Math.max(slotToSecondsTimestamp(this.data.chainNetwork().id, 0) || 0, latestTs - maxSeconds)
 		while (latestTs >= minTs) {
 			list.splice(0, 0, latestTs)
 
@@ -275,7 +273,7 @@ export class SummaryChartComponent implements OnInit {
 						fontSize: fontSize,
 						lineHeight: 20,
 						formatter: (value) => {
-							return formatTimestamp(value, this.api, this.data.summaryChartOptions().aggregation)
+							return formatTimestamp(value, this.data.chainNetwork().id, this.data.summaryChartOptions().aggregation)
 						},
 					},
 				},
@@ -333,7 +331,9 @@ export class SummaryChartComponent implements OnInit {
 				formatter: (params) => {
 					const ts = parseInt(params[0].axisValue)
 					return (
-						getTooltipHeader(ts, this.api, this.data.summaryChartOptions().aggregation, (val) => formatTsToDateTime(val, getLocale())) +
+						getTooltipHeader(ts, this.data.chainNetwork().id, this.data.summaryChartOptions().aggregation, (val) =>
+							formatTsToDateTime(val, getLocale())
+						) +
 						'<br/>' +
 						params.map((d) => `<span style="color: ${d.color};">●</span> ${d.seriesName}: ${d.value.toFixed(2)} % `).join('<br/>')
 					)
@@ -374,7 +374,7 @@ export class SummaryChartComponent implements OnInit {
 
 	formatToDateOrEpoch = (value: string) => {
 		if (this.data.summaryChartOptions().aggregation === 'epoch') {
-			return formatTSToEpoch(value + '', this.api)
+			return formatTSToEpoch(value + '', this.data.chainNetwork().id)
 		}
 		return formatTSToDate(value + '')
 	}
@@ -622,19 +622,19 @@ function debounce(callback: () => Promise<void>, wait: number): Promise<void> {
 
 export const fontSize = '12px'
 
-export function getTooltipHeader(ts: number, api: ApiService, aggregationValue: string, timeFormat: (number) => string): string {
+export function getTooltipHeader(ts: number, chainID: number, aggregationValue: string, timeFormat: (number) => string): string {
 	let endDateFormatted = ''
 	let endEpochFormatted = ''
 	if (aggregationValue != 'epoch') {
 		endDateFormatted = ' - ' + timeFormat(getEndTs(aggregationValue, ts))
-		endEpochFormatted = ' - ' + timestampToEpoch(api, getEndTs(aggregationValue, ts) * 1000)
+		endEpochFormatted = ' - ' + timestampToEpoch(chainID, getEndTs(aggregationValue, ts) * 1000)
 	}
 	return (
 		'<span style="font-size: 12px;">' +
 		timeFormat(ts) +
 		endDateFormatted +
 		'<br>Epoch ' +
-		timestampToEpoch(api, ts * 1000) +
+		timestampToEpoch(chainID, ts * 1000) +
 		endEpochFormatted +
 		'</span>'
 	)
@@ -643,15 +643,15 @@ export function getTooltipHeader(ts: number, api: ApiService, aggregationValue: 
 export function formatTSToDate(value: string) {
 	return formatGoTimestamp(Number(value), undefined, 'absolute', 'narrow', getLocale(), false)
 }
-export function formatTSToEpoch(value: string, api: ApiService) {
-	return `Epoch ${timestampToEpoch(api, parseInt(value) * 1000)}`
+export function formatTSToEpoch(value: string, chainID: number) {
+	return `Epoch ${timestampToEpoch(chainID, parseInt(value) * 1000)}`
 }
 
-export function formatTimestamp(value: string, api: ApiService, aggregationValue: string) {
+export function formatTimestamp(value: string, chainID: number, aggregationValue: string) {
 	const date = formatTSToDate(value)
 	switch (aggregationValue) {
 		case 'epoch':
-			return `${date}\n${timestampToEpoch(api, parseInt(value) * 1000)}`
+			return `${date}\n${timestampToEpoch(chainID, parseInt(value) * 1000)}`
 		case 'hourly':
 			return `${date}\n${formatTsToTime(Number(value), getLocale())}`
 		default:

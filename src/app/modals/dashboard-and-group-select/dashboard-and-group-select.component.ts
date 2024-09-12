@@ -14,12 +14,22 @@ import { DashboardUtils } from 'src/app/utils/DashboardUtils'
 import { OAuthUtils } from 'src/app/utils/OAuthUtils'
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
 import { FullPageLoadingComponent } from "../../components/full-page-loading/full-page-loading.component";
+import { findChainNetworkById } from 'src/app/utils/NetworkData'
+import { fromEvent, Subscription } from 'rxjs'
+import { FullPageOfflineComponent } from "../../components/full-page-offline/full-page-offline.component";
+import { OfflineComponentModule } from "../../components/offline/offline.module";
 
 const DASHBOARD_INFO_DISMISS_KEY = 'dashboard_info_dismissed'
+const ASSOCIATED_CACHE_KEY = 'manage_dashboards'
+
+interface DashboardAddButton {
+	network: number
+	text: string
+}
 @Component({
 	selector: 'app-dashboard-and-group-select',
 	standalone: true,
-	imports: [CommonModule, IonicModule, DashboardItemComponent, FullPageLoadingComponent],
+	imports: [CommonModule, IonicModule, DashboardItemComponent, FullPageLoadingComponent, FullPageOfflineComponent, OfflineComponentModule],
 	templateUrl: './dashboard-and-group-select.component.html',
 	styleUrl: './dashboard-and-group-select.component.scss',
 })
@@ -35,6 +45,12 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 
 	isLoggedIn = true
 	infoDismissed = true
+
+	dashboardAddButtons: DashboardAddButton[] = []
+
+	private backbuttonSubscription: Subscription
+
+	online: boolean = true
 
 	constructor(
 		private modalCtrl: ModalController,
@@ -56,11 +72,15 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 				this.dashboardUtils.dashboardAwareListener.notifyAll()
 			}
 		})
+		const event = fromEvent(document, 'backbutton')
+		this.backbuttonSubscription = event.subscribe(() => {
+			this.modalCtrl.dismiss()
+		})
 	}
 
 	async ngOnInit() {
 		this.infoDismissed = await this.storage.getBooleanSetting(DASHBOARD_INFO_DISMISS_KEY, false)
-		this.init()
+		this.setup()
 	}
 
 	maxAllowedDashboards = computed(() => {
@@ -68,7 +88,16 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 		return this.merchant.userInfo().premium_perks.validator_dashboards
 	})
 
-	async init(allowCached = true) {
+	async setup() {
+		this.online = true
+		this.dashboardAddButtons = []
+		this.api.networkConfig.supportedChainIds.forEach((chainID) => {
+			this.dashboardAddButtons.push({
+				network: chainID,
+				text: `Add ${capitalize(findChainNetworkById(chainID).name)} Dashboard`,
+			})
+		})
+
 		this.isLoggedIn = await this.storage.isLoggedIn()
 		if (!this.isLoggedIn) {
 			this.dashboards.set({
@@ -85,12 +114,13 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 			return
 		}
 
-		const result = await this.api.set(new V2MyDashboards().withAllowedCacheResponse(allowCached), this.dashboards)
+		const result = await this.api.set(new V2MyDashboards(), this.dashboards, ASSOCIATED_CACHE_KEY)
 		if (result.error) {
 			console.warn('dashboards can not be loaded', result.error)
 			Toast.show({
 				text: 'Error loading dashboards',
 			})
+			this.online = false
 			return
 		}
 
@@ -162,7 +192,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 							Toast.show({
 								text: 'Dashboard created',
 							})
-							await this.init(false)
+							this.doRefresh()
 						}
 
 						loading.dismiss()
@@ -183,10 +213,24 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 		return this.modalCtrl.dismiss(null, 'cancel')
 	}
 
+	/**
+	 * Call when you need to clear the API request cache for all calls this view made.
+	 * Note: when making calls in this view, always use the ASSOCIATED_CACHE_KEY
+	 * @returns promise void
+	 */
+	clearRequestCache() {
+		return this.api.clearAllAssociatedCacheKeys(ASSOCIATED_CACHE_KEY)
+	}
+
+	async doRefresh() {
+		await this.clearRequestCache()
+		return this.setup()
+	}
+
 	async signIn() {
 		const success = await this.oauth.login()
 		if (success) {
-			this.init()
+			this.setup()
 		}
 	}
 
@@ -201,5 +245,9 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 	dismissInfo() {
 		this.storage.setBooleanSetting(DASHBOARD_INFO_DISMISS_KEY, true)
 		this.infoDismissed = true
+	}
+
+	ngOnDestroy() {
+		this.backbuttonSubscription.unsubscribe()
 	}
 }

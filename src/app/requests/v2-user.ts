@@ -39,8 +39,7 @@ export class V2MyDashboards extends APIRequest<UserDashboardsData> {
 export class V2RegisterPushNotificationToken extends APIRequest<NoContent> {
 	resource = 'users/me/notifications/settings/paired-devices/{client_id}/token'
 	method = Method.PUT
-	ignoreFails = true
-
+	
 	parse(response: Response): NoContent[] {
 		if (response && response.data) return response.data as NoContent[]
 		return null
@@ -56,8 +55,7 @@ export class V2RegisterPushNotificationToken extends APIRequest<NoContent> {
 export class V2PurchaseValidation extends APIRequest<NoContent> {
 	resource = 'mobile/purchase'
 	method = Method.POST
-	ignoreFails = true
-
+	
 	constructor(subscriptionData: SubscriptionData) {
 		super()
 		this.postData = subscriptionData

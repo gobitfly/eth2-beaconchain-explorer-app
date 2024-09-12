@@ -50,6 +50,7 @@ export class DashboardComponent implements OnInit {
 	@Input() updates?: Release[]
 	@Input() currentY: number
 	@Input() scrolling: boolean
+	@Input() online: boolean
 
 	beaconChainUrl: string = null
 
@@ -122,30 +123,30 @@ export class DashboardComponent implements OnInit {
 		if (!this.data || !this.data.latestState()?.state) return false
 		const epochsToWaitBeforeFinalizationIssue = 4 // 2 normal delay + 2 extra
 		return (
-			slotToEpoch(this.api, this.data.latestState().state.finalized_epoch) - epochsToWaitBeforeFinalizationIssue >
+			slotToEpoch(this.data.chainNetwork().id, this.data.latestState().state.finalized_epoch) - epochsToWaitBeforeFinalizationIssue >
 			this.data.latestState().state.finalized_epoch
 		)
 	})
 
 	awaitGenesis = computed(() => {
 		if (!this.data || !this.data.latestState()?.state) return false
-		const currentEpoch = slotToEpoch(this.api, this.data.latestState().state.current_slot)
+		const currentEpoch = slotToEpoch(this.data.chainNetwork().id, this.data.latestState().state.current_slot)
 		return currentEpoch == 0 && this.data.latestState().state.current_slot <= 0
 	})
 
 	earlyGenesis = computed(() => {
 		if (!this.data || !this.data.latestState()?.state) return false
-		const currentEpoch = slotToEpoch(this.api, this.data.latestState().state.current_slot)
+		const currentEpoch = slotToEpoch(this.data.chainNetwork().id, this.data.latestState().state.current_slot)
 		return !this.awaitGenesis() && !this.finalizationIssue() && currentEpoch <= 7
 	})
 
 	currentSyncCommitteeMessage: Signal<SyncCommitteeMessage> = computed(() => {
 		if (this.data && this.data.summaryGroup().sync_count.current_validators > 0 && this.data.latestState()?.state) {
-			const startEpoch = startEpochSyncCommittee(this.api, this.data.latestState().state.current_slot)
-			const startTs = epochToTimestamp(this.api, startEpoch)
+			const startEpoch = startEpochSyncCommittee(this.data.chainNetwork().id, this.data.latestState().state.current_slot)
+			const startTs = epochToTimestamp(this.data.chainNetwork().id, startEpoch)
 
-			const endEpoch = endEpochSyncCommittee(this.api, this.data.latestState().state.current_slot)
-			const endTs = epochToTimestamp(this.api, endEpoch)
+			const endEpoch = endEpochSyncCommittee(this.data.chainNetwork().id, this.data.latestState().state.current_slot)
+			const endTs = epochToTimestamp(this.data.chainNetwork().id, endEpoch)
 
 			const plural = this.data.summaryGroup().sync_count.current_validators > 1
 			const options = this.syncDateFormatOptions()
@@ -165,11 +166,11 @@ export class DashboardComponent implements OnInit {
 
 	nextSyncCommitteeMessage: Signal<SyncCommitteeMessage> = computed(() => {
 		if (this.data && this.data.summaryGroup().sync_count.upcoming_validators > 0 && this.data.latestState()?.state) {
-			const startEpoch = endEpochSyncCommittee(this.api, this.data.latestState().state.current_slot) // end of current is start of next
-			const startTs = epochToTimestamp(this.api, startEpoch)
+			const startEpoch = endEpochSyncCommittee(this.data.chainNetwork().id, this.data.latestState().state.current_slot) // end of current is start of next
+			const startTs = epochToTimestamp(this.data.chainNetwork().id, startEpoch)
 
-			const endEpoch = endEpochSyncCommittee(this.api, startEpoch * this.api.networkConfig.slotPerEpoch) // end of next
-			const endTs = epochToTimestamp(this.api, endEpoch)
+			const endEpoch = endEpochSyncCommittee(this.data.chainNetwork().id, startEpoch * this.data.chainNetwork().slotPerEpoch) // end of next
+			const endTs = epochToTimestamp(this.data.chainNetwork().id, endEpoch)
 
 			const plural = this.data.summaryGroup().sync_count.upcoming_validators > 1
 			const options = this.syncDateFormatOptions()
@@ -298,27 +299,10 @@ export class DashboardComponent implements OnInit {
 		this.storage.getItem('rpl_pdisplay_mode').then((result) => (this.rplState = result ? result : 'rpl'))
 	}
 
-	// TODO
-	// async getChartData(data: 'allbalances' | 'proposals') {
-	// 	if (!this.data || !this.data.lazyChartValidators) return null
-	// 	const chartReq = new DashboardDataRequest(data, this.data.lazyChartValidators)
-	// 	const response = await this.api.execute(chartReq).catch(() => {
-	// 		return null
-	// 	})
-	// 	if (!response) {
-	// 		this.chartError = true
-	// 		return null
-	// 	}
-	// 	return chartReq.parse(response)
-	// }
-
 	async upgrade() {
 		const modal = await this.modalController.create({
 			component: SubscribePage,
 			cssClass: 'my-custom-class',
-			componentProps: {
-				tab: 'dolphin',
-			},
 		})
 		return await modal.present()
 	}
@@ -341,31 +325,12 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	// TODO
-	// updateRplDisplay() {
-	// 	if (this.rplState == '%') {
-	// 		const rplPrice = this.unit.getRPLPrice()
-	// 		const currentETH = this.data.rocketpool.currentRpl.multipliedBy(rplPrice)
-	// 		const minETH = this.data.rocketpool.minRpl.multipliedBy(rplPrice).multipliedBy(10) // since collateral is 10% of borrowed eth, multiply by 10 to get to the borrowed eth amount
-
-	// 		this.rplDisplay = currentETH.dividedBy(minETH).multipliedBy(100).decimalPlaces(1).toNumber()
-	// 	} else {
-	// 		this.rplDisplay = this.data.rocketpool.currentRpl
-	// 	}
-	// }
-
 	async openBrowser() {
-		// todo
 		await Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
 	}
 
 	getBrowserURL(): string {
-		// todo foreign validator
-		// if (this.data.foreignValidator) {
-		// 	return this.api.getBaseUrl() + '/dashboard/' + this.data.foreignValidatorItem
-		// } else {
 		return setID(this.api.getBaseUrl() + '/dashboard/{id}', this.data.id)
-		//}
 	}
 }
 

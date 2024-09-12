@@ -91,7 +91,7 @@ export abstract class CacheModule {
 				await this.clearHardCache()
 			}
 		} catch (e) {
-			console.warn('could not calculate cache size')
+			console.warn('could not calculate cache size',e)
 		}
 	}
 
@@ -231,6 +231,7 @@ export abstract class CacheModule {
 	private getKey(key: string) {
 		return this.keyPrefix + key
 	}
+
 }
 
 function isQuotaExceededError(err: unknown): boolean {

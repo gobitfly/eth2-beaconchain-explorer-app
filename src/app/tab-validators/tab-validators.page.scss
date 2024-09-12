@@ -68,6 +68,12 @@ ion-label {
 	color: var(--ion-text-color-lighter);
 }
 
+ion-select {
+	--highlight-color-valid: var(--ion-text-color-lighter);
+	--highlight-color-invalid: var(--ion-text-color-lighter);
+	--highlight-color-focused: var(--ion-text-color-lighter);
+}
+
 
 cdk-virtual-scroll-viewport {
 	margin-left: 0px;

@@ -47,6 +47,12 @@ export class ClientsPage implements OnInit {
 		this.updateUtils.getClient('NETHERMIND').then((result) => {
 			this.notificationBase.setClientToggleState('NETHERMIND', result && result != 'null')
 		})
+		this.updateUtils.getClient('RETH').then((result) => {
+			this.notificationBase.setClientToggleState('RETH', result && result != 'null')
+		})
+		this.updateUtils.getClient('GRANDINE').then((result) => {
+			this.notificationBase.setClientToggleState('GRANDINE', result && result != 'null')
+		})
 
 		this.notificationBase.disableToggleLock()
 	}

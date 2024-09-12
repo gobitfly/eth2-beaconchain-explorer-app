@@ -150,7 +150,6 @@ export abstract class APIRequest<T> {
 	requiresAuth = false
 
 	updatesLastRefreshState = false
-	ignoreFails = true
 	maxCacheAge = 6 * 60 * 1000
 }
 
@@ -454,8 +453,7 @@ export class ValidatorViaWithdrawalAddress extends APIRequest<ETH1ValidatorRespo
 export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 	resource = 'execution/'
 	method = Method.GET
-	ignoreFails = true
-
+	
 	parse(response: Response): BlockResponse[] {
 		if (!this.wasSuccessful(response, true)) {
 			return []
@@ -475,8 +473,7 @@ export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 export class DashboardDataRequest extends APIRequest<number[]> {
 	resource = 'dashboard/data/'
 	method = Method.GET
-	ignoreFails = true
-
+	
 	parse(response: Response): number[][] {
 		if (!this.wasSuccessful(response, false)) {
 			return []
@@ -501,8 +498,7 @@ export class SetMobileSettingsRequest extends APIRequest<MobileSettingsResponse>
 	method = Method.POST
 
 	requiresAuth = true
-	ignoreFails = true
-
+	
 	parse(response: Response): MobileSettingsResponse[] {
 		if (!response || !response.data) return null
 		return response.data as MobileSettingsResponse[]
@@ -533,8 +529,7 @@ export class PostMobileSubscription extends APIRequest<MobileSettingsResponse> {
 	resource = 'user/subscription/register'
 	method = Method.POST
 	requiresAuth = true
-	ignoreFails = true
-
+	
 	constructor(subscriptionData: SubscriptionData) {
 		super()
 		this.postData = subscriptionData
@@ -546,8 +541,7 @@ export class GetMobileSettingsRequest extends APIRequest<MobileSettingsResponse>
 	resource = 'user/mobile/settings'
 	method = Method.GET
 	requiresAuth = true
-	ignoreFails = true
-}
+	}
 
 export class GetMyValidatorsRequest extends APIRequest<MyValidatorResponse> {
 	resource = 'user/validator/saved'
@@ -559,8 +553,7 @@ export class GetMyMachinesRequest extends APIRequest<StatsResponse> {
 	resource = 'user/stats'
 	method = Method.GET
 	requiresAuth = true
-	ignoreFails = true
-
+	
 	constructor(offset = 0, limit = 180) {
 		super()
 		this.resource += '/' + offset + '/' + limit
@@ -572,8 +565,7 @@ export class RemoveMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	method = Method.POST
 	requiresAuth = true
 	postData = {}
-	ignoreFails = true
-
+	
 	options = {
 		url: null, // unused
 		headers: {
@@ -597,8 +589,7 @@ export class AddMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	resource = 'user/dashboard/save'
 	method = Method.POST
 	requiresAuth = true
-	ignoreFails = true
-
+	
 	options = {
 		url: null, // unused
 		headers: {
@@ -624,8 +615,7 @@ export class NotificationGetRequest extends APIRequest<NotificationGetResponse> 
 	method = Method.GET
 	requiresAuth = true
 	postData = {}
-	ignoreFails = true
-
+	
 	constructor() {
 		super()
 	}
@@ -652,8 +642,7 @@ export class NotificationBundleSubsRequest extends APIRequest<ApiTokenResponse> 
 	method = Method.POST
 	requiresAuth = true
 	postData = {}
-	ignoreFails = true
-
+	
 	constructor(enabled: boolean, data: BundleSub[]) {
 		super()
 		this.resource += enabled ? this.subscribe : this.unsubscribe
@@ -666,7 +655,6 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 	resource = 'user/token'
 	method = Method.POST
 	requiresAuth = true
-	ignoreFails = true
 	maxCacheAge = 1000
 	options = {
 		url: null,
@@ -704,8 +692,7 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 	resource = 'user/mobile/notify/register'
 	method = Method.POST
 	requiresAuth = true
-	ignoreFails = true
-
+	
 	parse(response: Response): APIResponse[] {
 		if (response && response.data) return response.data as APIResponse[]
 		return null
@@ -724,7 +711,6 @@ export class BitflyAdRequest extends APIRequest<BitflyAdResponse> {
 
 	resource = '/www/delivery/asyncspc.php?zones={ZONE}&prefix={PREFIX}'
 	method = Method.GET
-	ignoreFails = true
 	maxCacheAge = 4 * 60 * 1000
 
 	options = {
@@ -752,7 +738,6 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
 
 	resource = 'v2/prices/'
 	method = Method.GET
-	ignoreFails = true
 	maxCacheAge = 40 * 60 * 1000
 
 	parse(response: Response): CoinbaseExchangeResponse[] {
@@ -770,7 +755,6 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 
 	resource = 'repos/'
 	method = Method.GET
-	ignoreFails = true
 	maxCacheAge = 4 * 60 * 60 * 1000
 	options = {
 		url: null, // unused

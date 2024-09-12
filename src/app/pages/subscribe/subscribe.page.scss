@@ -38,6 +38,8 @@ ion-segment-button {
 
 ion-segment {
 	background-color: var(--ion-toolbar-background);
+		padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 .segment-button-checked {
@@ -45,6 +47,7 @@ ion-segment {
 }
 
 .packages {
+
 }
 
 .first-item-group {
@@ -81,8 +84,10 @@ h2 {
 	padding-bottom: 8px;
 }
 
-ion-label {
+.white {
 	color: var(--x-toolbar-title-color);
+	padding: 0px;
+    margin: 0px;
 }
 
 .package {
@@ -92,16 +97,12 @@ ion-label {
 
 	background-color: var(--x-update-messages-background);
 
-	height: 96px;
+	height: 82px;
 }
 
 .package-inner {
 	margin-top: 0.3em;
 	height: 30px;
-}
-
-.pkg-name {
-	font-size: 1.15em;
 }
 
 .value {
@@ -140,18 +141,14 @@ ion-list {
 	line-height: 1em !important;
 }
 
-.check {
-	color: var(--ion-color-success);
-}
-
-.nocheck {
-	color: var(--ion-color-danger);
-}
-
 // Makes the iOS top bounce in our primary color
 // and the bottom bounce in main themes color
 ion-content {
 	--background: linear-gradient(0deg, var(--ion-background-color) 65%, var(--ion-toolbar-background) 35%);
+}
+
+.smallest-info {
+	font-size: 0.5rem !important
 }
 
 @media only screen and (max-width: 380px) {
@@ -159,6 +156,22 @@ ion-content {
 		width: 85%;
 	}
 	.pkg-name {
-		font-size: 1.05em;
+		font-size: 1rem;
 	}
+}
+
+.pkg-name {
+	font-size: 1rem;
+	display:block;
+}
+
+.pkg-price {
+	font-size: var(--smaller-info-size);
+	display:block;
+}
+
+.pkg-price-yearly {
+	font-size: var(--smallest-info-size);
+	opacity: 0.8;
+	display:block;
 }

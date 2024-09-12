@@ -18,7 +18,6 @@
  */
 
 import BigNumber from 'bignumber.js'
-import { ApiNetwork } from '../models/StorageTypes'
 import {
 	Aggregation,
 	dashboardID,
@@ -37,6 +36,7 @@ import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/c
 import { ChartData } from '../requests/types/common'
 import { ApiResult } from '../requests/requests'
 import { DashboardUtils } from '../utils/DashboardUtils'
+import { ChainNetwork, findChainNetworkById } from '../utils/NetworkData'
 export interface SummaryChartOptions {
 	aggregation: Aggregation
 	startTime: number
@@ -101,9 +101,11 @@ export class OverviewProvider {
 	async create(id: dashboardID, timeframe: Period, summaryChartOptions: SummaryChartOptions, associatedCacheKey: string = null): Promise<OverviewData2> {
 		if (!id) return null
 
-		const temp = new OverviewData2(id, this.api.getNetwork(), associatedCacheKey)
+		const temp = new OverviewData2(id, associatedCacheKey)
 
 		const overview = this.api.set(new V2DashboardOverview(id), temp.overviewData, associatedCacheKey)
+		this.setTimeframe(temp, timeframe, false)
+
 		this.api.set(new V2DashboardRocketPool(id), temp.rocketpool, associatedCacheKey)
 		this.api.set(new V2DashboardRewardChart(id).withCustomCacheKey('reward-chart-initial-' + id), temp.rewardChart, associatedCacheKey)
 
@@ -111,18 +113,17 @@ export class OverviewProvider {
 			temp.latestState.set(latestState)
 		})
 
-		this.setTimeframe(temp, timeframe, false)
 		temp.summaryChartOptionsInternal.set(summaryChartOptions)
 
-		// Summary Chart handles its own fetch logic, so below is not necessary
-		//this.setSummaryChartOptions(temp, summaryChartOptions)
+		//this.setSummaryChartOptions(temp, summaryChartOptions) // Summary Chart handles its own fetch logic, so below is not necessary
 
+		// wait after all requests are made
 		const overviewResult = await overview
 		if (overviewResult.error) {
 			const error = getDashboardError(overviewResult)
 			if (error) {
 				throw error
-			}	
+			}
 		}
 
 		return temp
@@ -202,8 +203,6 @@ export class OverviewData2 {
 	summaryChart: WritableSignal<ChartData<number, number>> = signal(null)
 	rewardChart: WritableSignal<ChartData<number, string>> = signal(null)
 
-	network: ApiNetwork
-
 	timeframeInternal: WritableSignal<Period> = signal(null)
 	timeframe = computed(() => this.timeframeInternal())
 	timeframeDisplay = computed(() => getPeriodDisplayable(this.timeframe()))
@@ -213,9 +212,13 @@ export class OverviewData2 {
 
 	foreignValidator: boolean = false
 
-	constructor(id: dashboardID, network: ApiNetwork, associatedCacheKey: string) {
+	chainNetwork: Signal<ChainNetwork> = computed(() => {	
+		if (!this.overviewData()) return findChainNetworkById(0)
+		return findChainNetworkById(this.overviewData().network)
+	})
+
+	constructor(id: dashboardID, associatedCacheKey: string) {
 		this.id = id
-		this.network = network
 		this.associatedCacheKey = associatedCacheKey
 	}
 
@@ -272,7 +275,6 @@ export class OverviewData2 {
 	})
 
 	isReadyToDisplay: Signal<boolean> = computed(() => {
-		// todo, we can prob show before waiting on all the data
 		return this.overviewData() != null && this.summary() != null && this.summaryGroup() != null
 	})
 

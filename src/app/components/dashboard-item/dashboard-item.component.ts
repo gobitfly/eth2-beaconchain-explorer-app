@@ -9,6 +9,7 @@ import { ApiService } from 'src/app/services/api.service'
 import { StorageService } from 'src/app/services/storage.service'
 import { DashboardUtils } from 'src/app/utils/DashboardUtils'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
+import { findChainNetworkById } from 'src/app/utils/NetworkData'
 
 @Component({
 	selector: 'app-dashboard-item',
@@ -26,12 +27,13 @@ export class DashboardItemComponent {
 	selected: boolean
 
 	networkName = computed(() => {
-		return 'HOL'
-		//return capitalize(this.data.network) // todo
+		const network = findChainNetworkById(this.data.network)
+		return network.name.toUpperCase().substring(0, 3) 
 	})
 
 	networkColor = computed(() => {
-		return 'holesky'
+		const network = findChainNetworkById(this.data.network)
+		return network.name
 		//return this.data.network
 	})
 
@@ -40,7 +42,7 @@ export class DashboardItemComponent {
 	})
 
 	reachedMaxValidatorClassStyle = computed(() => {
-		this.data.validator_count >= this.merchant.getCurrentPlanMaxValidator() ? 'maxed' : ''
+		return this.data.validator_count >= this.merchant.getCurrentPlanMaxValidator() ? 'maxed' : ''
 	})
 
 	constructor(

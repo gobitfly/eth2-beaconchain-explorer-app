@@ -23,6 +23,7 @@ import { StorageService } from './storage.service'
 import BigNumber from 'bignumber.js'
 import { ApiService } from './api.service'
 import { CoinbaseExchangeRequest, CoinbaseExchangeResponse } from '../requests/requests'
+import { CHAIN_NETWORKS, ChainNetwork, findChainNetworkById } from '../utils/NetworkData'
 
 const STORAGE_KEY_CONS = 'prefered_unit' // cons
 const STORAGE_KEY_EXEC = 'prefered_unit_exec'
@@ -41,6 +42,7 @@ export class UnitconvService {
 	}
 	public lastPrice: LastPrice
 	private rplETHPrice: BigNumber = new BigNumber(1)
+	chainNetwork: ChainNetwork = CHAIN_NETWORKS[0]
 
 	private mGNOXDAI = { value: 'GNOXDAI', type: 'cons', unit: Unit.DAI_GNO_HELPER } as Currency // dummy var to help us get the price of mGNO in xDAI
 
@@ -72,7 +74,14 @@ export class UnitconvService {
 			this.save()
 		}
 
+		this.chainNetwork = findChainNetworkById(await this.api.getCurrentDashboardChainID())
+
+		await this.loadCurrentChainNetwork()
 		await this.updatePriceData()
+	}
+
+	public async loadCurrentChainNetwork() {
+		this.chainNetwork = findChainNetworkById(await this.api.getCurrentDashboardChainID())
 	}
 
 	public async networkSwitchReload() {
@@ -144,11 +153,10 @@ export class UnitconvService {
 
 		// Coinbase spot name (for api calls)
 		if (result.coinbaseSpot) {
-			const network = this.api.getNetwork()
 			if (currency.type == 'cons') {
-				result.coinbaseSpot = result.coinbaseSpot.replace('XXX', network.clCurrency.coinbaseSpot)
+				result.coinbaseSpot = result.coinbaseSpot.replace('XXX', this.chainNetwork.clCurrency.coinbaseSpot)
 			} else if (currency.type == 'exec') {
-				result.coinbaseSpot = result.coinbaseSpot.replace('XXX', network.elCurrency.coinbaseSpot)
+				result.coinbaseSpot = result.coinbaseSpot.replace('XXX', this.chainNetwork.elCurrency.coinbaseSpot)
 			}
 		}
 		return result
@@ -167,11 +175,10 @@ export class UnitconvService {
 			type = type.type
 		}
 
-		const network = this.api.getNetwork()
 		if (type == 'cons') {
-			return network.clCurrency.internalName
+			return this.chainNetwork.clCurrency.internalName
 		} else if (type == 'exec') {
-			return network.elCurrency.internalName
+			return this.chainNetwork.elCurrency.internalName
 		} else if (type == 'rpl') {
 			return 'RPL'
 		}
@@ -369,7 +376,7 @@ export class UnitconvService {
 				}
 				this.storage.setBooleanSetting('migrated_gnosis', true)
 			} catch (e) {
-				console.warn('could not migrate to gnosis')
+				console.warn('could not migrate to gnosis',e)
 			}
 		}
 	}

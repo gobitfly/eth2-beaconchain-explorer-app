@@ -396,7 +396,7 @@ ion-buttons {
 }
 
 .smallest-info {
-	font-size: 0.75rem !important;
+	font-size: var(--smallest-info-size) !important;
 	//color: var(--ion-text-color-secondary) !important;
 	opacity: var(--default-secondary-transparency);
 	font-weight: var(--smaller-label-weight) !important;
