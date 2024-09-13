@@ -44,9 +44,9 @@ import { Toast } from '@capacitor/toast'
 import { Haptics } from '@capacitor/haptics'
 import { searchType, V2SearchValidators } from '../requests/search'
 import { SearchResult } from '../requests/types/common'
-import { DashboardError, DashboardNotFoundError, getDashboardError } from '../controllers/OverviewController'
 import { DashboardUtils, isLocalDashboard } from '../utils/DashboardUtils'
 import ThemeUtils from '../utils/ThemeUtils'
+import { APIError, APIForbiddenError, APINotFoundError, APIUnauthorizedError } from '../requests/requests'
 
 const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = "validators_tab"
@@ -271,9 +271,8 @@ export class Tab2Page implements OnInit {
 			return
 		}
 		const result = await this.api.set(new V2DashboardOverview(this.dashboardID()), this.dashboardData, ASSOCIATED_CACHE_KEY)
-		const e = getDashboardError(result)
-		if (e) {
-			if (e instanceof DashboardNotFoundError) {
+		if (result.error) {
+			if (result.error instanceof APINotFoundError) {
 				if (recursiveMax) {
 					Toast.show({
 						text: 'Dashboard not found',
@@ -283,8 +282,8 @@ export class Tab2Page implements OnInit {
 				// if dashboard is not available any more (maybe user deleted it) reinit and try again
 				this.dashboardID.set(await this.dashboardUtils.initDashboard())
 				return this.updateGroups(true)
-			} else if (e instanceof DashboardError) {
-				if (this.dashboardUtils.defaultDashboardErrorHandler(e)) {
+			} else if (result.error instanceof APIError) {
+				if (this.dashboardUtils.defaultDashboardErrorHandler(result.error)) {
 					result.error = null
 				} else {
 					this.online = false
@@ -364,7 +363,7 @@ export class Tab2Page implements OnInit {
 		const result = await this.api.execute2(new V2SearchValidators(searchString, [chainID], searchTypes), ASSOCIATED_CACHE_KEY)
 		if (result.error) {
 			// If we get a cors forbidden error, try a get call and then retry
-			if (result.error.code == 403 && !maxRecursive) {
+			if (result.error instanceof APIForbiddenError && !maxRecursive) {
 				await this.api.getLatestState(true)
 				return this.searchEvent(event, true)
 			}
@@ -873,7 +872,7 @@ class ValidatorLoader {
 					text: 'Could not load validators',
 					duration: 'long',
 				})
-				if (result?.error?.code != 401) { // todo change to just if timeout?
+				if (!(result.error instanceof APIUnauthorizedError)) { // todo change to just if timeout?
 					this.offlineCallback(false)
 				}
 				return {

@@ -19,7 +19,8 @@ import { fromEvent, Subscription } from 'rxjs'
 import { FullPageOfflineComponent } from "../../components/full-page-offline/full-page-offline.component";
 import { OfflineComponentModule } from "../../components/offline/offline.module";
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
-import { DashboardUnauthorizedError, getDashboardError, getValidatorCount } from 'src/app/controllers/OverviewController'
+import { getValidatorCount } from 'src/app/controllers/OverviewController'
+import { APIUnauthorizedError } from 'src/app/requests/requests'
 
 const DASHBOARD_INFO_DISMISS_KEY = 'dashboard_info_dismissed'
 const ASSOCIATED_CACHE_KEY = 'manage_dashboards'
@@ -159,12 +160,11 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 		}
 
 		const result = await this.api.set(new V2MyDashboards(), this.dashboards, ASSOCIATED_CACHE_KEY)
-		const e = getDashboardError(result)
-		if (e) {
+		if (result.error) {
 			console.warn('dashboards can not be loaded', result.error)
 
-			this.dashboardUtils.defaultDashboardErrorHandler(e)
-			if (e !instanceof DashboardUnauthorizedError) {
+			this.dashboardUtils.defaultDashboardErrorHandler(result.error)
+			if (!(result.error instanceof APIUnauthorizedError)) {
 				this.online = false
 			}
 			this.initLoading = false

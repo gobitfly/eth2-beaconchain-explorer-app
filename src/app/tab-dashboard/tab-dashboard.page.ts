@@ -19,7 +19,7 @@
 
 import { Component, OnInit } from '@angular/core'
 import { ApiService } from '../services/api.service'
-import { DashboardError, DashboardNotFoundError, DashboardUnauthorizedError, OverviewData2, OverviewProvider, SummaryChartOptions } from '../controllers/OverviewController'
+import { OverviewData2, OverviewProvider, SummaryChartOptions } from '../controllers/OverviewController'
 import ClientUpdateUtils from '../utils/ClientUpdateUtils'
 import { StorageService } from '../services/storage.service'
 import { UnitconvService } from '../services/unitconv.service'
@@ -31,6 +31,7 @@ import { dashboardID, Period } from '../requests/v2-dashboard'
 import { AlertService } from '../services/alert.service'
 import { Toast } from '@capacitor/toast'
 import { DashboardUtils } from '../utils/DashboardUtils'
+import { APIError, APINotFoundError, APIUnauthorizedError } from '../requests/requests'
 
 export const REAPPLY_KEY = 'reapply_notification2'
 
@@ -172,7 +173,7 @@ export class Tab1Page implements OnInit {
 				ASSOCIATED_CACHE_KEY
 			)
 		} catch (e) {
-			if (e instanceof DashboardNotFoundError) {
+			if (e instanceof APINotFoundError) {
 				if (recursiveMax) {
 					Toast.show({
 						text: 'Dashboard not found',
@@ -182,9 +183,9 @@ export class Tab1Page implements OnInit {
 				// if dashboard is not available any more (maybe user deleted it) reinit and try again
 				this.dashboardID = await this.dashboardUtils.initDashboard()
 				return this.setup(false, force, true)
-			} else if (e instanceof DashboardUnauthorizedError) {
+			} else if (e instanceof APIUnauthorizedError) {
 				this.dashboardUtils.defaultDashboardErrorHandler(e)
-			} else if (e instanceof DashboardError) {
+			} else if (e instanceof APIError) {
 				this.dashboardUtils.defaultDashboardErrorHandler(e)
 				this.online = false
 			} else {

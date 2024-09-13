@@ -35,10 +35,53 @@ export interface APIResponse {
 	data: unknown
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NoContent {}
 
 interface Paging {
 	next_cursor: string
+}
+
+export class APIError extends Error {
+	code: number
+	constructor(message: string, code: number) {
+		super(message)
+		this.code = code
+	}
+}
+export class APINotFoundError extends APIError {
+	constructor(message: string, code: number) {
+		super(message, code)
+		this.name = 'DashboardNotFoundError'
+	}
+}
+
+export class APIUnauthorizedError extends APIError {
+	constructor(message: string, code: number) {
+		super(message, code)
+		this.name = 'UnauthorizedError'
+	}
+}
+
+export class APIForbiddenError extends APIError {
+	constructor(message: string, code: number) {
+		super(message, code)
+		this.name = 'ForbiddenError'
+	}
+}
+
+export class APIRateLimitedError extends APIError {
+	constructor(message: string, code: number) {
+		super(message, code)
+		this.name = 'RateLimitedError'
+	}
+}
+
+export class APIUnknownError extends APIError {
+	constructor(message: string, code: number) {
+		super(message, code)
+		this.name = 'UnknownError'
+	}
 }
 
 export interface ApiResult<T> {
@@ -46,11 +89,6 @@ export interface ApiResult<T> {
 	error: Error | null
 	cached: boolean
 	paging: Paging | null
-}
-
-interface Error {
-	message: string
-	code: number
 }
 
 export abstract class APIRequest<T> {
@@ -89,12 +127,12 @@ export abstract class APIRequest<T> {
 			}
 		}
 
-		let error: Error = null
+		let error: Error
 		if (!response || response.status != this.expectedResponseStatus) {
-			error = {
-				message: response?.data?.error || response ? 'HTTP status code: ' + response.status : 'No response error',
-				code: response ? response.status : 0,
-			}
+			error = getHTTPError(
+				response ? response.status : 0,
+				response?.data?.error || response ? 'HTTP status code: ' + response.status : 'No response error'
+			)
 		}
 
 		return {
@@ -152,6 +190,20 @@ export abstract class APIRequest<T> {
 	updatesLastRefreshState = false
 	maxCacheAge = 6 * 60 * 1000
 }
+
+export function getHTTPError(code: number, msg: string): APIError {
+	if (code == 404) {
+		return new APINotFoundError(msg, code)
+	} else if (code == 401) {
+		return new APIUnauthorizedError(msg, code)
+	} else if (code == 403) {
+		return new APIForbiddenError(msg, code)
+	} else if (code == 429) {
+		return new APIRateLimitedError(msg, code)
+	}
+	return new APIUnknownError(msg, code)
+}
+
 
 // ------------- Responses -------------
 

@@ -1,7 +1,7 @@
 import { Component, computed, OnInit, signal, ViewChild, WritableSignal } from '@angular/core'
 import { ModalController } from '@ionic/angular'
 import { BlockDetailPage } from '../pages/block-detail/block-detail.page'
-import { BlockResponse } from '../requests/requests'
+import { APINotFoundError, APIUnauthorizedError, BlockResponse } from '../requests/requests'
 import { AlertService } from '../services/alert.service'
 import { ApiService } from '../services/api.service'
 import { UnitconvService } from '../services/unitconv.service'
@@ -13,7 +13,6 @@ import { dashboardID, Period, V2DashboardSummaryGroupTable } from '../requests/v
 import { Toast } from '@capacitor/toast'
 import { V2DashboardBlocks } from '../requests/v2-blocks'
 import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
-import { DashboardError, DashboardNotFoundError, getDashboardError } from '../controllers/OverviewController'
 import { DashboardUtils } from '../utils/DashboardUtils'
 import { relativeTs } from '../utils/TimeUtils'
 
@@ -103,9 +102,8 @@ export class TabBlocksPage implements OnInit {
 			this.summaryGroup,
 			ASSOCIATED_CACHE_KEY
 		)
-		const e = getDashboardError(result)
-		if (e) {
-			if (e instanceof DashboardNotFoundError) {
+		if (result.error) {
+			if (result.error instanceof APINotFoundError) {
 				if (recursiveMax) {
 					Toast.show({
 						text: 'Dashboard not found',
@@ -115,8 +113,8 @@ export class TabBlocksPage implements OnInit {
 				// if dashboard is not available any more (maybe user deleted it) reinit and try again
 				this.dashboardID = await this.dashboardUtils.initDashboard()
 				return this.loadSummaryGroup(true)
-			} else if (e instanceof DashboardError) {
-				this.dashboardUtils.defaultDashboardErrorHandler(e)
+			} else {
+				this.dashboardUtils.defaultDashboardErrorHandler(result.error)
 			}
 		}
 		return result
@@ -131,7 +129,7 @@ export class TabBlocksPage implements OnInit {
 					text: 'Could not load blocks',
 					duration: 'long',
 				})
-				if (result?.error?.code != 401) { // todo change to just if timeout?
+				if (!(result.error instanceof APIUnauthorizedError)) { // todo change to just if timeout?
 					this.online = false
 				}
 				

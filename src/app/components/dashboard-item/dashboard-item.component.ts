@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, computed, effect, EventEmitter, Input, OnChanges, Output, signal, WritableSignal } from '@angular/core'
+import { Component, computed, effect, EventEmitter, Input, OnChanges, Output, WritableSignal } from '@angular/core'
 import { Toast } from '@capacitor/toast'
 import { AlertController, IonicModule } from '@ionic/angular'
 import { ValidatorDashboard } from 'src/app/requests/types/dashboard'
@@ -163,7 +163,7 @@ export class DashboardItemComponent implements OnChanges {
 					async () => {
 						const loading = await this.alert.presentLoading('Removing dashboard...')
 						loading.present()
-						
+
 						await this.validatorUtils.deleteAll(this.legacyGetNetwork())
 
 						loading.dismiss()

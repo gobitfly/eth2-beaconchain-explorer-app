@@ -259,15 +259,24 @@ export class ApiService extends CacheModule {
 	}
 
 	async execute2<T>(request: APIRequest<T>, associatedCacheKey: string = null): Promise<ApiResult<T[]>> {
-		const response = await this.execute(request)
-		if (associatedCacheKey) {
-			if (this.associatedCacheKeyMap.has(associatedCacheKey)) {
-				this.associatedCacheKeyMap.get(associatedCacheKey).add(this.getCacheKey(request))
-			} else {
-				this.associatedCacheKeyMap.set(associatedCacheKey, new Set([this.getCacheKey(request)]))
+		try {
+			const response = await this.executeUnhandled(request)
+			if (associatedCacheKey) {
+				if (this.associatedCacheKeyMap.has(associatedCacheKey)) {
+					this.associatedCacheKeyMap.get(associatedCacheKey).add(this.getCacheKey(request))
+				} else {
+					this.associatedCacheKeyMap.set(associatedCacheKey, new Set([this.getCacheKey(request)]))
+				}
+			}
+			return request.parse2(response)
+		} catch (e) {
+			return {
+				error: e,
+				data: null,
+				cached: false,
+				paging: null
 			}
 		}
-		return request.parse2(response)
 	}
 
 	async clearAllAssociatedCacheKeys(associatedCacheKey: string) {
@@ -289,7 +298,16 @@ export class ApiService extends CacheModule {
 		}
 	}
 
-	async execute(request: APIRequest<unknown>): Promise<Response> {
+	async execute<T>(request: APIRequest<T>): Promise<Response> {
+		try {
+			return await this.executeUnhandled(request)
+		} catch (e) {
+			console.error('Error in execute', e)
+			return null
+		}
+	}
+
+	private async executeUnhandled(request: APIRequest<unknown>): Promise<Response> {
 		await this.initialized
 
 		await this.lockOrWait(request.resource)
@@ -426,19 +444,14 @@ export class ApiService extends CacheModule {
 			}
 		}
 
-		try {
-			const result = await fetch(this.getResourceUrl(resource, endpoint), {
-				method: Method[method],
-				headers: options.headers,
-				body: body,
-				credentials: endpoint == 'default' ? 'include' : 'omit',
-			})
-			if (!result) return null
-			return await this.validateResponse(result)
-		} catch (e) {
-			console.warn('fetch error', e)
-			return null
-		}
+		const result = await fetch(this.getResourceUrl(resource, endpoint), {
+			method: Method[method],
+			headers: options.headers,
+			body: body,
+			credentials: endpoint == 'default' ? 'include' : 'omit',
+		})
+		if (!result) return null
+		return await this.validateResponse(result)
 	}
 
 	async clearSpecificCache(request: APIRequest<unknown>) {

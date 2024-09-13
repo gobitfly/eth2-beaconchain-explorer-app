@@ -24,10 +24,10 @@ import { Toast } from "@capacitor/toast";
 import { AlertService } from "../services/alert.service";
 import { OAuthUtils } from "./OAuthUtils";
 import { MerchantUtils } from "./MerchantUtils";
-import { DashboardError, DashboardUnauthorizedError } from "../controllers/OverviewController";
 import { SearchResult } from "../requests/types/common";
 import { searchType } from "../requests/search";
 import { UnitconvService } from "../services/unitconv.service";
+import { APIError, APIUnauthorizedError } from "../requests/requests";
 
 @Injectable({
 	providedIn: 'root',
@@ -141,11 +141,11 @@ export class DashboardUtils {
 	}
 
 	// @returns whether the error was handled
-	defaultDashboardErrorHandler(error: DashboardError | null) {
-		if (!error) {
+	defaultDashboardErrorHandler(error: Error | null) {
+		if (!error || !(error instanceof APIError)) {
 			return
 		}
-		if (error instanceof DashboardUnauthorizedError) {
+		if (error instanceof APIUnauthorizedError) {
 			this.alerts.confirmDialog('Login expired', 'Please log back in to your beaconcha.in account to access your dashboards.', 'LOGIN', async () => {
 				const result = await this.oauth.login()
 				if (result) {

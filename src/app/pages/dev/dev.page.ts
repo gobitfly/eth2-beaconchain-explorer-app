@@ -6,7 +6,7 @@ import { Toast } from '@capacitor/toast'
 import { Clients } from '../../utils/ClientUpdateUtils'
 import { DevModeEnabled } from 'src/app/services/storage.service'
 import { MigrateV1AuthToV2 } from 'src/app/requests/v2-auth'
-import { V2Me, V2MyDashboards, V2RegisterPushNotificationToken } from 'src/app/requests/v2-user'
+import { V2Me, V2RegisterPushNotificationToken } from 'src/app/requests/v2-user'
 
 @Component({
 	selector: 'app-dev',

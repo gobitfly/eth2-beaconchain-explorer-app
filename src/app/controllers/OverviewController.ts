@@ -34,7 +34,6 @@ import { ApiService, LatestStateWithTime } from '../services/api.service'
 import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
 import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/core'
 import { ChartData } from '../requests/types/common'
-import { ApiResult } from '../requests/requests'
 import { DashboardUtils } from '../utils/DashboardUtils'
 import { ChainNetwork, findChainNetworkById } from '../utils/NetworkData'
 export interface SummaryChartOptions {
@@ -120,30 +119,11 @@ export class OverviewProvider {
 		// wait after all requests are made
 		const overviewResult = await overview
 		if (overviewResult.error) {
-			const error = getDashboardError(overviewResult)
-			if (error) {
-				throw error
-			}
+			throw overviewResult.error
 		}
 
 		return temp
 	}
-}
-
-export function getDashboardError<T>(result: ApiResult<T>): DashboardError {
-	if (result.error) {
-		if (result.error.code == 404) {
-			return new DashboardNotFoundError()
-		} else if (result.error.code == 401) {
-			return new DashboardUnauthorizedError()
-		} else if (result.error.code == 403) {
-			return new DashboardForbiddenError()
-		} else if (result.error.code == 429) {
-			return new DashboardRateLimitedError()
-		}
-		return new DashboardUnknownError(result.error.message)
-	}
-	return null
 }
 
 function getPeriodDisplayable(period: Period): string {
@@ -152,43 +132,6 @@ function getPeriodDisplayable(period: Period): string {
 	if (period == Period.Last7d) return '7d'
 	if (period == Period.Last30d) return '30d'
 }
-
-export class DashboardError extends Error { }
-export class DashboardNotFoundError extends DashboardError {
-	constructor(message?: string) {
-		super(message || 'Dashboard not found')
-		this.name = 'DashboardNotFoundError'
-	}
-}
-
-export class DashboardUnauthorizedError extends DashboardError {
-	constructor(message?: string) {
-		super(message || 'Unauthorized')
-		this.name = 'UnauthorizedError'
-	}
-}
-
-export class DashboardForbiddenError extends DashboardError {
-	constructor(message?: string) {
-		super(message || 'Forbidden')
-		this.name = 'ForbiddenError'
-	}
-}
-
-export class DashboardRateLimitedError extends DashboardError {
-	constructor(message?: string) {
-		super(message || 'Rate Limited')
-		this.name = 'RateLimitedError'
-	}
-}
-
-export class DashboardUnknownError extends DashboardError {
-	constructor(message?: string) {
-		super(message || 'Unknown Error')
-		this.name = 'UnknownError'
-	}
-}
-
 export class OverviewData2 {
 	associatedCacheKey: string = null
 
