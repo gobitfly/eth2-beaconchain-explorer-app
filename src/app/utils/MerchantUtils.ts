@@ -151,7 +151,7 @@ export class MerchantUtils implements OnInit {
 		this.initialize = this.init()
 	}
 
-	public async getUserInfo(forceRefresh: boolean = false, errHandler: (err) => void = () => {}) {
+	public async getUserInfo(forceRefresh: boolean = false, errHandler: (err: Error) => void = () => {}) {
 		if (await this.storage.getAuthUserv2()) {
 			if (!forceRefresh) {
 				this.userInfo.set(await (this.storage.getObject('userInfo') as Promise<UserInfo | null>))
@@ -306,15 +306,13 @@ export class MerchantUtils implements OnInit {
 	}
 
 	private async registerPurchaseOnRemote(data: SubscriptionData): Promise<boolean> {
-		const request = new V2PurchaseValidation(data)
-		const response = await this.api.execute(request)
-		const result = request.wasSuccessful(response, false)
+		const result = await this.api.execute2(new V2PurchaseValidation(data))
 
-		if (!result) {
-			console.log('registering purchase receipt failed', response)
+		if (result.error) {
+			console.log('registering purchase receipt failed', result)
 		}
 
-		return result
+		return result.error == null
 	}
 
 	private async initProducts() {
@@ -344,7 +342,7 @@ export class MerchantUtils implements OnInit {
 		}
 	}
 
-	private updatePrice(id, prices: CdvPurchase.PricingPhase) {
+	private updatePrice(id: string, prices: CdvPurchase.PricingPhase) {
 		for (let i = 0; i < this.PACKAGES.length; i++) {
 			if (this.PACKAGES[i].purchaseKey == id) {
 				this.PACKAGES[i].price = prices.price
@@ -373,7 +371,7 @@ export class MerchantUtils implements OnInit {
 		// })
 	}
 
-	sleep(ms) {
+	sleep(ms: number) {
 		return new Promise((resolve) => setTimeout(resolve, ms))
 	}
 
@@ -415,7 +413,7 @@ export class MerchantUtils implements OnInit {
 		)
 	}
 
-	private async confirmPurchaseOnRemote(product) {
+	private async confirmPurchaseOnRemote(product: CdvPurchase.Validator.Request.Body) {
 		const isIOS = this.platform.is('ios')
 
 		// TODO in the future replace isIOS ? product.transaction.appStoreReceipt : product.transaction.purchaseToken
@@ -424,10 +422,13 @@ export class MerchantUtils implements OnInit {
 			currency: product.currency,
 			id: isIOS ? this.purchaseIntent : product.id,
 			priceMicros: product.priceMicros,
-			valid: product.valid,
+			valid: true,
 			transaction: {
 				id: product.id,
-				receipt: isIOS ? product.transaction.id : product.transaction.purchaseToken,
+				receipt: isIOS ?
+					(product.transaction as CdvPurchase.Validator.Request.ApiValidatorBodyTransactionApple).id
+					:
+					(product.transaction as CdvPurchase.Validator.Request.ApiValidatorBodyTransactionGoogle).purchaseToken,
 				type: product.transaction.type,
 			},
 		}

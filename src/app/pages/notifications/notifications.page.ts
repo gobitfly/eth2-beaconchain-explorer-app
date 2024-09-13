@@ -14,6 +14,7 @@ import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { SubscribePage } from '../subscribe/subscribe.page'
 import { Browser } from '@capacitor/browser'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
+import { AuthUser, AuthUserv2 } from 'src/app/models/StorageTypes'
 @Component({
 	selector: 'app-notifications',
 	templateUrl: './notifications.page.html',
@@ -21,7 +22,7 @@ import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 })
 export class NotificationsPage extends NotificationBase implements OnInit {
 	network = 'main'
-	authUser = null
+	authUser: AuthUserv2 | AuthUser = null
 
 	canCustomizeThresholds = false
 
@@ -155,11 +156,11 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 		this.noMachines = result.length == 0
 	}
 
-	changeStorageThreshold($event) {
+	changeStorageThreshold($event: { detail: { value: number } }) {
 		this.storageThreshold = $event.detail.value
 	}
 
-	changeCPUThreshold($event) {
+	changeCPUThreshold($event: { detail: { value: number } }) {
 		this.cpuThreshold = $event.detail.value
 	}
 

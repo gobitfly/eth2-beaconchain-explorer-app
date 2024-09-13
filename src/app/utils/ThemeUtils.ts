@@ -22,7 +22,7 @@ import { Injectable } from '@angular/core'
 import { NavigationBarPlugin } from 'capacitor-navigationbarnx'
 import { Capacitor, Plugins } from '@capacitor/core'
 import { Platform } from '@ionic/angular'
-import * as Snowflakes from 'magic-snowflakes'
+import Snowflakes from 'magic-snowflakes'
 import confetti from 'canvas-confetti'
 
 import { StatusBar, Style } from '@capacitor/status-bar'
@@ -47,11 +47,14 @@ export default class ThemeUtils {
 	currentThemeColor = ''
 	private lock: Promise<void | ThemeStorage>
 
-	private snowFlakes
+	private snowFlakes: { destroy: () => void }
 
-	private currentStatusBarColor = null
+	private currentStatusBarColor: string = null
 
-	constructor(private storage: StorageService, private platform: Platform) {}
+	constructor(
+		private storage: StorageService,
+		private platform: Platform
+	) {}
 
 	init(splashScreenCallback: () => void) {
 		this.lock = this.storage.getObject(STORAGE_KEY).then((preferenceDarkMode) => {
@@ -80,7 +83,7 @@ export default class ThemeUtils {
 		) // fade out duration = 200ms
 	}
 
-	private internalInit(preferenceDarkMode) {
+	private internalInit(preferenceDarkMode: StoredTheme) {
 		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
 		if (preferenceDarkMode) {
 			this.userPreference = preferenceDarkMode.theme
@@ -143,7 +146,7 @@ export default class ThemeUtils {
 		const animationEnd = Date.now() + duration
 		const defaults = { startVelocity: 30, spread: 100, ticks: 70, zIndex: 0 }
 
-		function randomInRange(min, max) {
+		function randomInRange(min: number, max: number) {
 			return Math.random() * (max - min) + min
 		}
 
@@ -161,7 +164,7 @@ export default class ThemeUtils {
 		}, 350)
 	}
 
-	toggleWinter(enabled, saveWinterSetting = true) {
+	toggleWinter(enabled: boolean, saveWinterSetting = true) {
 		this.stopSnow(this.snowFlakes)
 		if (this.isWinterSeason() && saveWinterSetting) this.storage.setBooleanSetting('snow_enabled', enabled)
 
@@ -191,7 +194,7 @@ export default class ThemeUtils {
 	 * @param isDarkThemed Android bottom button bar
 	 * @returns
 	 */
-	private async changeNavigationBarColor(isDarkThemed) {
+	private async changeNavigationBarColor(isDarkThemed: boolean) {
 		if (!Capacitor.isPluginAvailable('StatusBar')) return
 		try {
 			const themeColor = await this.getThemeColor()
@@ -210,7 +213,7 @@ export default class ThemeUtils {
 		}
 	}
 
-	private async changeStatusBarColor(color: string, isDarkThemed) {
+	private async changeStatusBarColor(color: string, isDarkThemed: boolean) {
 		let darker = isDarkThemed ? '#000000' : color.trim() //this.shadeColor(color, -12)
 		if (this.platform.is('android')) {
 			const themeColor = await this.getThemeColor()
@@ -226,7 +229,7 @@ export default class ThemeUtils {
 		}
 	}
 
-	setStatusBarColor(color) {
+	setStatusBarColor(color: string) {
 		try {
 			if (Capacitor.isPluginAvailable('StatusBar')) {
 				StatusBar.setStyle({
@@ -252,7 +255,7 @@ export default class ThemeUtils {
 	}
 
 	private winterSeason(darkTheme: boolean) {
-		if (!this.isWinterSeason()) return false
+		if (!this.isWinterSeason()) return null
 		return this.snow(darkTheme)
 	}
 
@@ -270,7 +273,7 @@ export default class ThemeUtils {
 		})
 	}
 
-	public stopSnow(snow) {
+	public stopSnow(snow: { destroy: () => void }) {
 		if (snow) {
 			try {
 				snow.destroy()

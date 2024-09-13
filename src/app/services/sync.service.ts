@@ -52,7 +52,7 @@ enum SyncActionEvent {
 }
 
 interface BundleSubWithAction extends BundleSub {
-	onComplete: (boolean) => void
+	onComplete: (boolean: boolean) => void
 }
 
 interface BundleSubContainer {
@@ -177,7 +177,7 @@ export class SyncService {
 		}
 	}
 
-	private getSyncAction(key: string): (syncChange: SyncChanged, onComplete: (boolean) => void) => Promise<boolean> {
+	private getSyncAction(key: string): (syncChange: SyncChanged, onComplete: (boolean: boolean) => void) => Promise<boolean> {
 		const actionEvent = this.getSyncActionEvent(key)
 
 		if (actionEvent == SyncActionEvent.NOTIFY_GLOBAL) {
@@ -198,7 +198,7 @@ export class SyncService {
 	}
 
 	getNotifySubSyncAction() {
-		return async (syncChange: SyncChanged, superOnComplete: (boolean) => void) => {
+		return async (syncChange: SyncChanged, superOnComplete: (boolean: boolean) => void) => {
 			let eventFilter = syncChange.eventFilter
 			if (eventFilter) {
 				eventFilter = eventFilter.replace('unsub_', '').replace('sub_', '')
@@ -228,7 +228,7 @@ export class SyncService {
 	}
 
 	private getClientUpdateSyncAction() {
-		return async (syncChange: SyncChanged, superOnComplete: (boolean) => void) => {
+		return async (syncChange: SyncChanged, superOnComplete: (boolean: boolean) => void) => {
 			return this.getNotifySubSyncAction()(syncChange, superOnComplete)
 		}
 	}
@@ -306,7 +306,7 @@ export class SyncService {
 		return true
 	}
 
-	private async updateRemoteGeneralNotifySettings(value): Promise<boolean> {
+	private async updateRemoteGeneralNotifySettings(value: boolean): Promise<boolean> {
 		const req = new SetMobileSettingsRequest(value)
 		const resp = await this.api.execute(req)
 		const result = req.parse(resp)
@@ -316,7 +316,7 @@ export class SyncService {
 		return true
 	}
 
-	private async syncSingle(key: string, syncAction: (syncChange: SyncChanged, onComplete: (boolean) => void) => Promise<boolean>) {
+	private async syncSingle(key: string, syncAction: (syncChange: SyncChanged, onComplete: (boolean: boolean) => void) => Promise<boolean>) {
 		const syncChange = await this.getChanged(key)
 		if (syncChange.eventName == '') {
 			console.log('== Sync notify: (key) ' + key + ' has no event name, abort')

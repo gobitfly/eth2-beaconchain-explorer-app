@@ -16,8 +16,8 @@ export class GridCellRightComponent {
 
 	@Output() valueClick = new EventEmitter<void>()
 
-	onClick($event) {
+	onClick($event: { stopPropagation: () => void }) {
 		$event.stopPropagation()
-		this.valueClick.emit($event)
+		this.valueClick.emit()
 	}
 }

@@ -309,14 +309,10 @@ export default class ClientUpdateUtils {
 
 	private async getReleases(client: ClientInfo): Promise<Release> {
 		const req = new GithubReleaseRequest(client.repo, !(await this.isPreReleaseAllowed()))
-		const response = await this.api.execute(req).catch((error) => {
-			console.warn('error getReleases', error)
-			return null
-		})
-		const temp = req.parse(response)
-		if (temp.length <= 0) return null
-		console.log('Client updates data', response, temp)
-		return new Release(client, temp[0])
+		const temp = await this.api.execute2(req)
+		if(temp.error) return null
+		console.log('Client updates data', temp)
+		return new Release(client, temp.data[0])
 	}
 
 	async convertOldToNewClientSettings() {

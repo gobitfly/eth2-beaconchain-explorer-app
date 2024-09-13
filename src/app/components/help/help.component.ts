@@ -68,7 +68,7 @@ export class HelpComponent implements OnInit {
 		}
 	}
 
-	async openBrowser(link) {
+	async openBrowser(link: string) {
 		await Browser.open({ url: link, toolbarColor: '#2f2e42' })
 	}
 

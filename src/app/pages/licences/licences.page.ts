@@ -38,7 +38,7 @@ export class LicencesPage implements OnInit {
 		})
 	}
 
-	populatePre(url) {
+	populatePre(url: string) {
 		const xhr = new XMLHttpRequest()
 		xhr.onload = function () {
 			document.getElementById('contents').textContent += this.responseText

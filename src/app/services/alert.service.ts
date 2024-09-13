@@ -42,7 +42,7 @@ export class AlertService {
 		await alert.present()
 	}
 
-	async showSelect(title: string, inputs: unknown[], callback: (data) => void) {
+	async showSelect(title: string, inputs: unknown[], callback: (data:unknown) => void) {
 		const alert = await this.alertController.create({
 			header: title,
 			inputs: inputs,
@@ -85,7 +85,7 @@ export class AlertService {
 		await alert.present()
 	}
 
-	async confirmDialog(title: string, message: string, confirmButton: string, confirmCallback: () => void, customCSS: string = undefined) {
+	async confirmDialog(title: string, message: string, confirmButton: string, confirmCallback: () => void, customCSS: string | undefined = undefined) {
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
 			header: title,
@@ -110,7 +110,7 @@ export class AlertService {
 		await alert.present()
 	}
 
-	async confirmDialogReverse(title: string, message: string, confirmButton: string, confirmCallback: () => void, customCSS: string = null) {
+	async confirmDialogReverse(title: string, message: string, confirmButton: string, confirmCallback: () => void, customCSS: string | null = null) {
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
 			header: title,

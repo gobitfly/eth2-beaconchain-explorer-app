@@ -35,7 +35,7 @@ export class MergeChecklistPage {
 		this.loadCheckedState(this.optional)
 	}
 
-	async loadCheckedState(array) {
+	async loadCheckedState(array: { key: string; isChecked: boolean }[]) {
 		for (let i = 0; i < array.length; i++) {
 			array[i].isChecked = await this.getChecked(array[i])
 		}
@@ -45,15 +45,15 @@ export class MergeChecklistPage {
 		this.modalCtrl.dismiss()
 	}
 
-	async openBrowser(link) {
+	async openBrowser(link: string) {
 		await Browser.open({ url: link, toolbarColor: '#2f2e42' })
 	}
 
-	async getChecked(entry) {
+	async getChecked(entry: { key: string; isChecked: boolean }) {
 		return await this.storage.getBooleanSetting(entry.key, false)
 	}
 
-	change(entry) {
+	change(entry: { detail: { value: { key: string; isChecked: boolean } } }) {
 		if (!entry || !entry.detail) return
 		this.storage.setBooleanSetting(entry.detail.value.key, entry.detail.value.isChecked)
 	}

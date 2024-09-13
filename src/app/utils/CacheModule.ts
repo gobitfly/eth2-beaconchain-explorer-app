@@ -213,7 +213,7 @@ export abstract class CacheModule {
 	}
 
 	protected invalidateCache(key: string) {
-		this.cache[this.getKey(key)] = null
+		this.cache.set(this.getKey(key), null)
 	}
 
 	public invalidateAllCache() {

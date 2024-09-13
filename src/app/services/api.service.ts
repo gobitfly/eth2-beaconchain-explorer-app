@@ -120,7 +120,7 @@ export class ApiService extends CacheModule {
 		this.networkConfig = this.networkConfig = await getConfig(this.storage, await this.storage.getNetworkPreferences())
 	}
 
-	networkName = null
+	networkName: string = null
 	getNetworkName(): string {
 		const temp = this.networkConfig.key
 		this.networkName = temp
@@ -165,7 +165,7 @@ export class ApiService extends CacheModule {
 
 	public async initV2Cookies() {
 		const user = await this.storage.getAuthUserv2()
-		if (!user || !user.Session) return null
+		if (!user || !user.Session) return
 
 		console.log('init cookies', this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host, user.Session)
 
@@ -225,15 +225,15 @@ export class ApiService extends CacheModule {
 		return user
 	}
 
-	private async lockOrWait(resource) {
-		if (!this.awaitingResponses[resource]) {
-			this.awaitingResponses[resource] = new Mutex()
+	private async lockOrWait(resource: string) {
+		if (!this.awaitingResponses.get(resource)) {
+			this.awaitingResponses.set(resource, new Mutex())
 		}
-		await this.awaitingResponses[resource].acquire()
+		await this.awaitingResponses.get(resource).acquire()
 	}
 
-	private unlock(resource) {
-		this.awaitingResponses[resource].release()
+	private unlock(resource: string) {
+		this.awaitingResponses.get(resource).release()
 	}
 
 	isNotEthereumMainnet(): boolean {
@@ -273,7 +273,7 @@ export class ApiService extends CacheModule {
 				error: e,
 				data: null,
 				cached: false,
-				paging: null
+				paging: null,
 			}
 		}
 	}
@@ -298,7 +298,7 @@ export class ApiService extends CacheModule {
 	}
 
 	/** @deprecated Use execute2 */
-	async execute<T>(request: APIRequest<T>): Promise<Response> {
+	async execute<T>(request: APIRequest<T>): Promise<Response | null> {
 		try {
 			return await this.executeUnhandled(request)
 		} catch (e) {
@@ -325,7 +325,7 @@ export class ApiService extends CacheModule {
 
 			const options = request.options
 
-			// endPoint default = network specific beaconcha.in 
+			// endPoint default = network specific beaconcha.in
 			if (request.endPoint == 'default' || request.requiresAuth) {
 				if (await this.storage.isV2()) {
 					if (!this.sessionCookie) {
@@ -382,7 +382,7 @@ export class ApiService extends CacheModule {
 				const temp = result.headers.get('x-csrf-token')
 				if (temp) {
 					this.lastCsrfHeader = temp
-					console.log("set csrf token", temp)
+					console.log('set csrf token', temp)
 				}
 
 				// workaround for non native development
@@ -414,13 +414,7 @@ export class ApiService extends CacheModule {
 		}
 	}
 
-	private async doHttp(
-		method: Method,
-		resource: string,
-		data,
-		endpoint = 'default',
-		options: HttpOptions = { url: null, headers: {} }
-	) {
+	private async doHttp(method: Method, resource: string, data: unknown, endpoint = 'default', options: HttpOptions = { url: null, headers: {} }) {
 		let body: BodyInit = undefined
 		if (method == Method.POST || method == Method.PUT) {
 			if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
@@ -465,8 +459,8 @@ export class ApiService extends CacheModule {
 		return 'application/json'
 	}
 
-	private formatPostData(data, resource: string): BodyInit {
-		if (data instanceof FormData || resource.indexOf('user/token') != -1) return data
+	private formatPostData(data: unknown, resource: string): string | FormData {
+		if (data instanceof FormData || resource.indexOf('user/token') != -1) return data as FormData
 		return JSON.stringify(data)
 	}
 
@@ -612,6 +606,7 @@ export class ApiService extends CacheModule {
 		return this.storage.getItem('api_key')
 	}
 
+	// @ts-expect-error ignore
 	use(e) {
 		if (!e) return null
 		const t = e.split('').reverse().join('')
@@ -641,13 +636,13 @@ export interface LatestStateWithTime {
 
 export interface Response {
 	cached: boolean
-	data
+	data: unknown
 	headers: Headers
 	status: number
 	url: string
 }
 
-export function capitalize(text) {
+export function capitalize(text: string) {
 	if (typeof text !== 'string') return ''
 	return text.charAt(0).toUpperCase() + text.slice(1)
 }

@@ -276,7 +276,7 @@ export class UnitconvService {
 		this.pref.RPL = this.createCurrency(this.pref.RPL.value, 'rpl')
 	}
 
-	public convertToPref(value: BigNumber, from, type: RewardType) {
+	public convertToPref(value: BigNumber, from: string, type: RewardType) {
 		if (type == 'cons') {
 			return this.convert(value, from, this.pref.Cons)
 		}
@@ -458,15 +458,10 @@ export class UnitconvService {
 	}
 
 	private async getExchangeRate(unitPair: string): Promise<CoinbaseExchangeResponse> {
-		const req = new CoinbaseExchangeRequest(unitPair)
-		const response = await this.api.execute(req).catch((e) => {
-			console.warn('error in response getExchangeRate', e)
-			return null
-		})
-		const temp = req.parse(response)
-		if (temp.length <= 0) return null
-		console.log('requested exchange rate for ', unitPair, 'got', temp[0].amount, 'as response')
-		return temp[0]
+		const temp = await this.api.execute2(new CoinbaseExchangeRequest(unitPair))
+		if(temp.error) return null
+		console.log('requested exchange rate for ', unitPair, 'got', temp.data[0].amount, 'as response')
+		return temp.data[0]
 	}
 }
 
@@ -480,7 +475,7 @@ interface LastPrice {
 	mGNOXDAI: BigNumber
 }
 
-interface PreferredCurrency {
+export interface PreferredCurrency {
 	Cons: Currency
 	Exec: Currency
 	RPL: Currency

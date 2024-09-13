@@ -15,6 +15,10 @@
 		"importHelpers": true,
 		"target": "ES2022",
 		"lib": ["es2018", "dom"],
+		//"strict": true
+		"strictBindCallApply": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitAny": true
 	},
 	"angularCompilerOptions": {
 		"fullTemplateTypeCheck": true,

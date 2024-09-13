@@ -63,7 +63,7 @@ export class NotificationBase implements OnInit {
 		return toggle
 	}
 
-	setNotifyToggle(eventName: string, event) {
+	setNotifyToggle(eventName: string, event: boolean) {
 		console.log('change notify toggle', eventName, event)
 		this.settingsChanged = true
 		this.notifyTogglesMap.set(eventName, event)
@@ -222,7 +222,7 @@ export class NotificationBase implements OnInit {
 		this.api.clearSpecificCache(new NotificationGetRequest())
 	}
 
-	private async getRemoteNotificationSetting(notifyLocalStore): Promise<boolean> {
+	private async getRemoteNotificationSetting(notifyLocalStore: boolean): Promise<boolean> {
 		const local = await this.getNotificationSetting(notifyLocalStore)
 		const remote = await this.getRemoteNotificationSettingResponse()
 
@@ -233,7 +233,7 @@ export class NotificationBase implements OnInit {
 		return local
 	}
 
-	private async getNotificationSetting(notifyLocalStore): Promise<boolean> {
+	private async getNotificationSetting(notifyLocalStore: boolean): Promise<boolean> {
 		const local = notifyLocalStore != null ? notifyLocalStore : await this.getDefaultNotificationSetting()
 		if (!(await this.firebaseUtils.hasNotificationConsent())) return false
 		console.log('Returning notification enabled local state:', local)
@@ -263,7 +263,7 @@ export class NotificationBase implements OnInit {
 		return toggle
 	}
 
-	private setToggleFromEvent(eventNameTagges, network, value, net) {
+	private setToggleFromEvent(eventNameTagges: string, network: string, value: boolean, net: string) {
 		const parts = eventNameTagges.split(':')
 		let eventName = eventNameTagges
 		if (parts.length == 2) {
@@ -286,12 +286,12 @@ export class NotificationBase implements OnInit {
 		this.storage.setBooleanSetting(net + eventName, value)
 	}
 
-	getCount(eventName) {
+	getCount(eventName: string) {
 		const count = this.activeSubscriptionsPerEventMap.get(eventName)
 		return count ? count : 0
 	}
 
-	notifyEventToggle(eventName, filter = null, threshold = null) {
+	notifyEventToggle(eventName: string, filter: string = null, threshold: number = null) {
 		this.settingsChanged = true
 		this.sync.changeNotifyEvent(eventName, eventName, this.getNotifyToggleFromEvent(eventName), filter, threshold)
 		this.api.clearSpecificCache(new NotificationGetRequest())
@@ -308,7 +308,7 @@ export class NotificationBase implements OnInit {
 	}
 
 	// include filter in key (fe used by machine toggles)
-	notifyEventFilterToggle(eventName, filter = null, threshold = null) {
+	notifyEventFilterToggle(eventName: string, filter: string = null, threshold: number = null) {
 		const key = eventName + filter
 		const value = this.getNotifyToggleFromEvent(eventName)
 		this.settingsChanged = true

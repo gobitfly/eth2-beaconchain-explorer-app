@@ -302,7 +302,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 					}
 				})
 
-				this.alert.showSelect('Add to Group', allGroups, async (groupID) => {
+				this.alert.showSelect('Add to Group', allGroups, async (groupID: number) => {
 					loading = await this.alert.presentLoading('Migrating...')
 					loading.present()
 					const ok = await this.dashboardUtils.addValidators(index, groupID, this.defaultDashboard())

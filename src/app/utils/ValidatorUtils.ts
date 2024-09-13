@@ -108,7 +108,7 @@ export class ValidatorUtils {
 	/**
 	 * @deprecated with v2 we don't need complex syncing logic any more
 	 */
-	private async getMapWithoutDeleted(storageKey): Promise<Map<string, Validator>> {
+	private async getMapWithoutDeleted(storageKey: string): Promise<Map<string, Validator>> {
 		const local = await this.getMap(storageKey)
 		const deleted = await this.getDeletedSet(storageKey)
 		if (await this.storage.isLoggedIn()) {

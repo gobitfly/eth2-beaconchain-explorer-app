@@ -24,10 +24,10 @@ export class BlockDetailPage implements OnInit {
 
 	@Input() block: VDBBlocksTableRow
 
-	imgData = null
+	imgData: string = null
 	timestamp = 0
 	producerReward = new BigNumber(0)
-	feeRecipient = null
+	feeRecipient: string = null
 
 	showGasUsedPercent = true
 	nameResolved = ''
@@ -104,7 +104,7 @@ export class BlockDetailPage implements OnInit {
 		this.modalCtrl.dismiss()
 	}
 
-	onScroll($event) {
+	onScroll($event: { detail: { currentY: number } }) {
 		this.currentY = $event.detail.currentY
 	}
 

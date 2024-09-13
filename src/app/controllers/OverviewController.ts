@@ -79,8 +79,6 @@ export class OverviewProvider {
 		if (result.error) {
 			console.error('Error fetching summary chart', result.error)
 		}
-
-		return null
 	}
 
 	async setTimeframe(data: OverviewData2, timeframe: Period, force: boolean = false) {
@@ -314,7 +312,7 @@ export type Description = {
 	extendedDescriptionPre: string
 }
 
-function getDashboardState(overviewData: VDBOverviewData, validatorCount: number, foreignValidator): DashboardStatus {
+function getDashboardState(overviewData: VDBOverviewData, validatorCount: number, foreignValidator: boolean): DashboardStatus {
 	if (!overviewData) return null
 	// create status object with some default values
 	const dashboardStatus: DashboardStatus = {
@@ -357,7 +355,7 @@ function getDashboardState(overviewData: VDBOverviewData, validatorCount: number
 	return dashboardStatus
 }
 
-function descriptionSwitch(myText, foreignText, foreignValidator) {
+function descriptionSwitch(myText: string, foreignText: string, foreignValidator: boolean) {
 	return foreignValidator ? foreignText : myText
 }
 

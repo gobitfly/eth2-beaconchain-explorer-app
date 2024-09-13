@@ -23,7 +23,7 @@
 
 export const environment = {
 	production: false,
-	API_ACCESS_KEY: null,
+	API_ACCESS_KEY: null as string,
 }
 
 /*

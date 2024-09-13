@@ -77,9 +77,9 @@ export class MachineDetailPage extends MachineController implements OnInit {
 	diskUsageLabelReads = ''
 	diskUsageLabelWrites = ''
 
-	syncAttention = null
-	diskAttention = null
-	memoryAttention = null
+	syncAttention: string = null
+	diskAttention: string = null
+	memoryAttention: string = null
 	syncLabelState = ''
 	syncLabelEth1Connected = ''
 
@@ -89,7 +89,10 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
 	private backbuttonSubscription: Subscription
 
-	constructor(private modalCtrl: ModalController, storage: StorageService) {
+	constructor(
+		private modalCtrl: ModalController,
+		storage: StorageService
+	) {
 		super(storage)
 	}
 
@@ -101,7 +104,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		})
 
 		if (this.data) {
-			this.magicGapNumber = this.normalizeTimeframeNumber(this.data.system)
+			this.magicGapNumber = this.normalizeTimeframeNumber(this.data.system.map((value) => [value.timestamp, 0]))
 			this.os = this.formatOS(this.getLastFrom(this.data.system, (array) => array.misc_os))
 			this.uptime = this.getLastFrom(this.data.system, (array) => array.misc_node_boot_ts_seconds) * 1000
 			this.threadCount = this.getLastFrom(this.data.system, (array) => array.cpu_threads)
@@ -288,7 +291,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addBytesConfig(),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doPeerCharts(current: ProcessedStats): MachineChartData {
@@ -312,13 +315,13 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addAbsoluteConfig(),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doDiskCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
 		if (!current.system) return { Error: 'system_missing' } as MachineChartData
 
 		if (current && current.system) {
@@ -341,7 +344,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addBytesConfig(),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doValidatorChart(current: ProcessedStats): MachineChartData {
@@ -388,13 +391,13 @@ export class MachineDetailPage extends MachineController implements OnInit {
 			Data: chartData,
 			Config: mergedConfig,
 			Error: undefined,
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doDiskIoUsageCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
 		if (!current.system) return { Error: 'system_missing' } as MachineChartData
 
 		if (current && current.system) {
@@ -427,13 +430,13 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addAbsoluteConfig(' iops'),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doNetworkCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
 		if (!current.system) return { Error: 'system_missing' } as MachineChartData
 
 		if (current && current.system) {
@@ -467,13 +470,13 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addBytesConfig(true),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doCPUSystemCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[][]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
 		if (!current.system) return { Error: 'system_missing' } as MachineChartData
 
 		const cpuSystemTotal = this.timeAxisChanges(
@@ -557,13 +560,13 @@ export class MachineDetailPage extends MachineController implements OnInit {
 					},
 				} as Options,
 			},
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doMemorySystemCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
 		if (!current.system) return { Error: 'system_missing' } as MachineChartData
 
 		if (current && current.system) {
@@ -605,7 +608,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addBytesConfig(),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	getDiskFullTimeEstimate(data: number[][]): number {

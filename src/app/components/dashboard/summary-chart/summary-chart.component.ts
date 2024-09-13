@@ -59,7 +59,7 @@ export class SummaryChartComponent implements OnInit {
 		})
 	}
 
-	onChartInit(ec) {
+	onChartInit(ec: ECharts) {
 		this.chartInstance = ec
 		this.initLoad()
 	}
@@ -272,7 +272,7 @@ export class SummaryChartComponent implements OnInit {
 					axisLabel: {
 						fontSize: fontSize,
 						lineHeight: 20,
-						formatter: (value) => {
+						formatter: (value: string) => {
 							return formatTimestamp(value, this.data.chainNetwork().id, this.data.summaryChartOptions().aggregation)
 						},
 					},
@@ -294,7 +294,7 @@ export class SummaryChartComponent implements OnInit {
 				type: 'value',
 				minInterval: 10,
 				maxInterval: 20,
-				min: (range) => (range.min >= 0 ? Math.max(0, 10 * Math.ceil(range.min / 10 - 1)) : 10 * Math.ceil(range.min / 10 - 1)),
+				min: (range: { min: number }) => (range.min >= 0 ? Math.max(0, 10 * Math.ceil(range.min / 10 - 1)) : 10 * Math.ceil(range.min / 10 - 1)),
 				silent: true,
 				axisLabel: {
 					formatter: '{value} %',
@@ -328,7 +328,7 @@ export class SummaryChartComponent implements OnInit {
 				trigger: 'axis',
 				padding: 3,
 				confine: true,
-				formatter: (params) => {
+				formatter: (params: { color: string; seriesName: string; value: number; axisValue: string}[]) => {
 					const ts = parseInt(params[0].axisValue)
 					return (
 						getTooltipHeader(ts, this.data.chainNetwork().id, this.data.summaryChartOptions().aggregation, (val) =>
@@ -574,7 +574,7 @@ export class SummaryChartComponent implements OnInit {
 
 		this.chartInstance.setOption({
 			dataZoom: {
-				...(get(this.chartInstance, 'xAxis[1]') || {}),
+				...((get(this.chartInstance, 'xAxis[1]') as object) || {}),
 				...currentZoom,
 			},
 		})
@@ -622,7 +622,7 @@ function debounce(callback: () => Promise<void>, wait: number): Promise<void> {
 
 export const fontSize = '12px'
 
-export function getTooltipHeader(ts: number, chainID: number, aggregationValue: string, timeFormat: (number) => string): string {
+export function getTooltipHeader(ts: number, chainID: number, aggregationValue: string, timeFormat: (number: number) => string): string {
 	let endDateFormatted = ''
 	let endEpochFormatted = ''
 	if (aggregationValue != 'epoch') {

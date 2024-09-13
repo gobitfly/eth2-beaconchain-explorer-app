@@ -175,7 +175,7 @@ export class RewardChartComponent {
 			},
 			tooltip: {
 				borderColor: this.colors().background,
-				formatter: (params) => {
+				formatter: (params: {axisValue: string, color: string, seriesName: string, value: number}[]) => {
 					const startEpoch = parseInt(params[0].axisValue)
 					return (
 						getTooltipHeader(

@@ -46,7 +46,7 @@ import { searchType, V2SearchValidators } from '../requests/search'
 import { SearchResult } from '../requests/types/common'
 import { DashboardUtils, isLocalDashboard } from '../utils/DashboardUtils'
 import ThemeUtils from '../utils/ThemeUtils'
-import { APIError, APIForbiddenError, APINotFoundError, APIUnauthorizedError } from '../requests/requests'
+import { APIError, APIForbiddenError, APINotFoundError, ApiResult, APIUnauthorizedError } from '../requests/requests'
 
 const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = "validators_tab"
@@ -234,8 +234,8 @@ export class Tab2Page implements OnInit {
 				if (data) {
 					if (data != this.sort) {
 						await this.clearRequestCache()
-						this.sort = data
-						this.setDefaultSort(data)
+						this.sort = data as string
+						this.setDefaultSort(data as string)
 						this.updateValidators()
 					}
 				}
@@ -263,12 +263,12 @@ export class Tab2Page implements OnInit {
 		await modal.onWillDismiss()
 	}
 
-	private async updateGroups(recursiveMax = false) {
+	private async updateGroups(recursiveMax: boolean = false): Promise<ApiResult<VDBOverviewData[]> | null> {
 		if (!this.isLoggedIn) {
-			return
+			return null
 		}
 		if (!this.dashboardID()) {
-			return
+			return null
 		}
 		const result = await this.api.set(new V2DashboardOverview(this.dashboardID()), this.dashboardData, ASSOCIATED_CACHE_KEY)
 		if (result.error) {
@@ -325,7 +325,7 @@ export class Tab2Page implements OnInit {
 		}
 	}
 
-	async searchEvent(event, maxRecursive = false) {
+	async searchEvent(event: { target: { value: string } }, maxRecursive = false): Promise<void> {
 		const searchString = event.target.value
 		if (!searchString || searchString.length < 0) return
 		if (this.platform.is('ios') || this.platform.is('android')) {
@@ -463,7 +463,7 @@ export class Tab2Page implements OnInit {
 	}
 
 	private clickBlocked = false
-	blockClick(forTime) {
+	blockClick(forTime: number) {
 		this.clickBlocked = true
 		setTimeout(() => {
 			this.clickBlocked = false
@@ -545,7 +545,7 @@ export class Tab2Page implements OnInit {
 	}
 
 	private lastRefreshedTs: number = 0
-	async doRefresh(event) {
+	async doRefresh(event: { target: { complete: () => void } }) {
 		if (this.lastRefreshedTs + 15 * 1000 > new Date().getTime()) {
 			Toast.show({
 				text: 'Nothing to update',

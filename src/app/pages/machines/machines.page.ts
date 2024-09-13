@@ -11,6 +11,7 @@ import MachineUtils from 'src/app/utils/MachineUtils'
 
 import { Browser } from '@capacitor/browser'
 import { ApiService } from 'src/app/services/api.service'
+import { getProperty } from 'src/app/requests/requests'
 
 @Component({
 	selector: 'app-machines',
@@ -22,7 +23,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	scrolling = false
 	selectedChart = 'cpu'
 	showData = true
-	selectedTimeFrame = '3h'
+	selectedTimeFrame: string = '3h'
 
 	loggedIn = false
 
@@ -44,7 +45,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	onlineStateDelegate = async (data: ProcessedStats) => {
 		return await this.getOnlineState(data)
 	}
-	machineClickDelegate = (data: ProcessedStats) => {
+	machineClickDelegate = (data: string) => {
 		return () => {
 			return this.openMachineDetail(data)
 		}
@@ -70,7 +71,7 @@ export class MachinesPage extends MachineController implements OnInit {
 		// })
 	}
 
-	async doRefresh(event) {
+	async doRefresh(event: { target: { complete: () => void } }) {
 		await this.getAndProcessData()
 		setTimeout(() => {
 			event.target.complete()
@@ -87,7 +88,7 @@ export class MachinesPage extends MachineController implements OnInit {
 		this.loggedIn = await this.storage.isLoggedIn()
 	}
 
-	delegater(func) {
+	delegater(func: unknown) {
 		return () => {
 			return func
 		}
@@ -162,7 +163,7 @@ export class MachinesPage extends MachineController implements OnInit {
 			(data) => {
 				if (data) {
 					if (data != this.selectedChart) {
-						this.selectedTimeFrame = data
+						this.selectedTimeFrame = data as string
 						this.selectionTimeFrame = this.getTimeSelectionLimit()
 						this.data = null
 						this.getAndProcessData()
@@ -235,16 +236,17 @@ export class MachinesPage extends MachineController implements OnInit {
 		return result
 	}
 
-	async openMachineDetail(key) {
-		const attention = this.getSyncAttention(this.data[key])
-		const diskAttention = await this.getDiskAttention(this.data[key])
-		const memoryAttention = await this.getMemoryAttention(this.data[key])
+	async openMachineDetail(key: string) {
+		const processedStats = getProperty(this.data, key) as ProcessedStats
+		const attention = this.getSyncAttention(processedStats)
+		const diskAttention = await this.getDiskAttention(processedStats)
+		const memoryAttention = await this.getMemoryAttention(processedStats)
 
 		const modal = await this.modalController.create({
 			component: MachineDetailPage,
 			cssClass: 'my-custom-class',
 			componentProps: {
-				data: this.data[key],
+				data: processedStats,
 				key: key,
 				timeframe: this.selectionTimeFrame,
 				selectedTab: attention ? 'sync' : diskAttention ? 'disk' : memoryAttention ? 'memory' : this.selectedChart,
@@ -297,7 +299,7 @@ export class MachinesPage extends MachineController implements OnInit {
 		this.scrolling = false
 	}
 
-	async openBrowser(link) {
+	async openBrowser(link: string) {
 		await Browser.open({ url: link, toolbarColor: '#2f2e42' })
 	}
 }

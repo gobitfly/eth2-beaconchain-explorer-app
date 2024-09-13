@@ -22,7 +22,7 @@ import { Plugins } from '@capacitor/core'
 import * as StorageTypes from '../models/StorageTypes'
 import { MAP, findConfigForKey } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
-import { Platform } from '@ionic/angular'
+import { ModalController, Platform } from '@ionic/angular'
 
 import { Preferences } from '@capacitor/preferences'
 import { LogviewPage } from '../pages/logview/logview.page'
@@ -141,7 +141,7 @@ export class StorageService extends CacheModule implements OnInit{
 		return notifyLocal
 	}
 
-	setBooleanSetting(key, value) {
+	setBooleanSetting(key: string, value: boolean) {
 		return this.setSetting(key, value)
 	}
 
@@ -157,7 +157,7 @@ export class StorageService extends CacheModule implements OnInit{
 		return this.setBooleanSetting('allow_http', value)
 	}
 
-	setSetting(key, value) {
+	setSetting(key: string, value: unknown) {
 		return this.setObject(key, { value: value } as ValueWrapper)
 	}
 
@@ -195,7 +195,7 @@ export class StorageService extends CacheModule implements OnInit{
 		}
 	}
 
-	async openLogSession(modalCtr, offset: number) {
+	async openLogSession(modalCtr: ModalController, offset: number) {
 		let lastLogSession = parseInt(window.localStorage.getItem('last_log_session'))
 		if (isNaN(lastLogSession)) lastLogSession = 0
 
@@ -329,7 +329,7 @@ interface DashboardSetting {
 	id: dashboardID
 }
 
-export function replacer(key, value) {
+export function replacer(key: string, value: unknown) {
 	const originalObject = this[key]
 	if (originalObject instanceof Map) {
 		return {
@@ -341,7 +341,8 @@ export function replacer(key, value) {
 	}
 }
 
-function reviver(_, value) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function reviver(_: string, value: any) {
 	if (typeof value === 'object' && value !== null) {
 		if (value.dataType === 'Map') {
 			return new Map(value.value)

@@ -64,15 +64,11 @@ export default class AdUtils {
 		}
 
 		const request = new BitflyAdRequest(map.get(location))
-		const response = await this.api.execute(request).catch((err) => {
-			console.warn('error adUtils get', err)
-			return null
-		})
-		const result = request.parse(response)
+		const result = await this.api.execute2(request)
 		console.log('Bitfly ad response', result)
-
-		if (result && result.length > 0 && result[0].height != '0') {
-			return result[0]
+		
+		if (!result.error && result.data.length > 0 && result.data[0].height != '0') {
+			return result.data[0]
 		}
 
 		return {

@@ -17,11 +17,11 @@ export class BlockComponent {
 	@Input() last: boolean
 	@Input() chainID: number
 
-	imgData = null
+	imgData: string = null
 	timestamp = 0
 	producerReward = new BigNumber(0)
-	feeRecipient = null
-	resolvedName = null
+	feeRecipient: string = null
+	resolvedName: string = null
 	resolvedClass = ''
 
 	constructor(public unit: UnitconvService) {}

@@ -57,13 +57,12 @@ export class DashboardComponent implements OnInit {
 	selectedExtraTab: WritableSignal<ExtraTabs> = signal('chartIncome')
 
 	rplState = 'rpl'
-	rplDisplay
 
-	nextRewardRound = null
+	nextRewardRound: string = null
 
 	notificationPermissionPending = false
-	depositCreditText = null
-	vacantMinipoolText = null
+	depositCreditText: string = null
+	vacantMinipoolText: string = null
 	showWithdrawalInfo = false
 
 	rewardTab: RewardTabs = 'combined'
@@ -200,7 +199,7 @@ export class DashboardComponent implements OnInit {
 		}
 	}
 
-	ngOnChanges(event) {
+	ngOnChanges(event: { data: { currentValue: unknown } }) {
 		console.log('event data', event.data)
 		if (event.data && event.data instanceof SimpleChange) {
 			if (event.data.currentValue) {

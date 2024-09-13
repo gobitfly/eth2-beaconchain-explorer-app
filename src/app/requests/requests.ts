@@ -85,10 +85,17 @@ export class APIUnknownError extends APIError {
 }
 
 export interface ApiResult<T> {
-	data: T
+	data: T | null
 	error: Error | null
 	cached: boolean
 	paging: Paging | null
+}
+
+export function getProperty(obj: unknown, key: string) {
+	if (typeof obj === 'object' && obj !== null && key in obj) {
+		return (obj as { [key: string]: unknown })[key]
+	}
+	return undefined
 }
 
 export abstract class APIRequest<T> {
@@ -98,7 +105,7 @@ export abstract class APIRequest<T> {
 	endPoint = 'default'
 	postData?: unknown
 	expectedResponseStatus = 200
-	customCacheKey: string = null
+	customCacheKey: string|null = null
 	allowCachedResponse = true
 
 	withCustomCacheKey(key: string): this {
@@ -111,9 +118,9 @@ export abstract class APIRequest<T> {
 		return this
 	}
 
-	sortResultFn: (a: T, b: T) => number = null
+	sortResultFn: ((a: T, b: T) => number) | null = null
 
-	parse(response: Response): T[] {
+	parse(response: Response): T[] | null {
 		return this.parseBase(response)
 	}
 
@@ -123,15 +130,15 @@ export abstract class APIRequest<T> {
 				data: this.parse(response),
 				error: null,
 				cached: response.cached,
-				paging: response?.data?.paging ?? null,
+				paging: getProperty(response?.data, 'paging') as Paging || null,
 			}
 		}
 
-		let error: Error
+		let error: Error | null = null
 		if (!response || response.status != this.expectedResponseStatus) {
 			error = getHTTPError(
 				response ? response.status : 0,
-				response?.data?.error || response ? 'HTTP status code: ' + response.status : 'No response error'
+				getProperty(response?.data, 'error') as string || response ? 'HTTP status code: ' + response.status : 'No response error'
 			)
 		}
 
@@ -153,13 +160,13 @@ export abstract class APIRequest<T> {
 		return response && (response.status == 'OK' || response.status == this.expectedResponseStatus || !hasDataStatus)
 	}
 
-	protected parseBase(response: Response, hasDataStatus = true): T[] {
+	protected parseBase(response: Response, hasDataStatus = true): T[] | null {
 		if (!this.wasSuccessful(response, hasDataStatus)) {
 			return []
 		}
 
-		if (response && response.data && response.data.data) {
-			const data = response.data.data
+		if (response && response.data && getProperty(response?.data, 'data')) {
+			const data = getProperty(response?.data, 'data')
 			if (Array.isArray(data)) {
 				if (this.sortResultFn) {
 					data.sort(this.sortResultFn)
@@ -167,14 +174,14 @@ export abstract class APIRequest<T> {
 
 				return data as T[]
 			} else {
-				return [data]
+				return [data as T]
 			}
 		}
 		return []
 	}
 
 	options: HttpOptions = {
-		url: null, // unused
+		url: undefined, // unused
 		headers: {
 			'Content-Type': 'application/json',
 			Accept: 'application/json',
@@ -510,7 +517,7 @@ export class BlockProducedByRequest extends APIRequest<BlockResponse> {
 		if (!this.wasSuccessful(response, true)) {
 			return []
 		}
-		return response.data.data
+		return getProperty(response?.data, 'data') as BlockResponse[]
 	}
 
 	/**
@@ -530,7 +537,7 @@ export class DashboardDataRequest extends APIRequest<number[]> {
 		if (!this.wasSuccessful(response, false)) {
 			return []
 		}
-		return response.data
+		return response.data as number[][]
 	}
 
 	/**
@@ -551,7 +558,7 @@ export class SetMobileSettingsRequest extends APIRequest<MobileSettingsResponse>
 
 	requiresAuth = true
 	
-	parse(response: Response): MobileSettingsResponse[] {
+	parse(response: Response): MobileSettingsResponse[] | null {
 		if (!response || !response.data) return null
 		return response.data as MobileSettingsResponse[]
 	}
@@ -617,8 +624,8 @@ export class RemoveMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	method = Method.POST
 	requiresAuth = true
 	postData = {}
-	
-	options = {
+
+	options: HttpOptions = {
 		url: null, // unused
 		headers: {
 			'Content-Type': 'application/text',
@@ -626,7 +633,7 @@ export class RemoveMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 		},
 	}
 
-	parse(response: Response): ApiTokenResponse[] {
+	parse(response: Response): ApiTokenResponse[] | null {
 		if (!response || !response.data) return null
 		return response.data as ApiTokenResponse[]
 	}
@@ -641,8 +648,8 @@ export class AddMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 	resource = 'user/dashboard/save'
 	method = Method.POST
 	requiresAuth = true
-	
-	options = {
+
+	options: HttpOptions = {
 		url: null, // unused
 		headers: {
 			'Content-Type': 'application/text',
@@ -650,7 +657,7 @@ export class AddMyValidatorsRequest extends APIRequest<ApiTokenResponse> {
 		},
 	}
 
-	parse(response: Response): ApiTokenResponse[] {
+	parse(response: Response): ApiTokenResponse[] | null {
 		if (!response || !response.data) return null
 		return response.data as ApiTokenResponse[]
 	}
@@ -673,8 +680,8 @@ export class NotificationGetRequest extends APIRequest<NotificationGetResponse> 
 	}
 
 	parse(response: Response): NotificationGetResponse[] {
-		if (!response || !response.data || !response.data.data) return []
-		return response.data.data as NotificationGetResponse[]
+		if (!response || !response.data || !getProperty(response.data, 'data')) return []
+		return getProperty(response.data, "data") as NotificationGetResponse[]
 	}
 }
 
@@ -708,7 +715,7 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 	method = Method.POST
 	requiresAuth = true
 	maxCacheAge = 1000
-	options = {
+	options: HttpOptions = {
 		url: null,
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded',
@@ -745,7 +752,7 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 	method = Method.POST
 	requiresAuth = true
 	
-	parse(response: Response): APIResponse[] {
+	parse(response: Response): APIResponse[] | null {
 		if (response && response.data) return response.data as APIResponse[]
 		return null
 	}
@@ -765,12 +772,12 @@ export class BitflyAdRequest extends APIRequest<BitflyAdResponse> {
 	method = Method.GET
 	maxCacheAge = 4 * 60 * 1000
 
-	options = {
+	options: HttpOptions = {
 		url: null, // unused
 		headers: undefined,
 	}
 
-	parse(response: Response): BitflyAdResponse[] {
+	parse(response: Response): BitflyAdResponse[] | null {
 		if (!response || !response.data) {
 			return []
 		}
@@ -792,7 +799,7 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
 	method = Method.GET
 	maxCacheAge = 40 * 60 * 1000
 
-	parse(response: Response): CoinbaseExchangeResponse[] {
+	parse(response: Response): CoinbaseExchangeResponse[] | null {
 		return this.parseBase(response, false)
 	}
 
@@ -808,7 +815,7 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 	resource = 'repos/'
 	method = Method.GET
 	maxCacheAge = 4 * 60 * 60 * 1000
-	options = {
+	options: HttpOptions = {
 		url: null, // unused
 		headers: {
 			'Content-Type': 'application/json',
@@ -826,7 +833,7 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
 		if (Array.isArray(data)) {
 			return data
 		} else {
-			return [data]
+			return [data as GithubReleaseResponse]
 		}
 	}
 

@@ -247,7 +247,7 @@ export class SubscribePage implements OnInit {
 		}
 	}
 
-	onScroll($event) {
+	onScroll($event: { detail: { currentY: number } }) {
 		this.currentY = $event.detail.currentY
 	}
 

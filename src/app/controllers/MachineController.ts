@@ -25,7 +25,7 @@ const OFFLINE_THRESHOLD = 8 * 60 * 1000
 export interface MachineChartData {
 	Data: Highcharts.SeriesAreaOptions[]
 	Config: MachineChartConfig
-	Error: string
+	Error?: string | undefined
 }
 
 export default class MachineController {
@@ -33,7 +33,7 @@ export default class MachineController {
 
 	selectionTimeFrame = 180
 
-	public addBytesConfig(perS = false) {
+	public addBytesConfig(perS = false): MachineChartConfig {
 		return {
 			config: {
 				tooltip: {
@@ -58,7 +58,7 @@ export default class MachineController {
 					labels: {
 						x: -5,
 						formatter: function () {
-							return bytes(this.value, true, this.isFirst, 0) + (perS ? '/s' : '')
+							return bytes(parseInt(this.value.toString()), true, this.isFirst, 0) + (perS ? '/s' : '')
 						},
 					},
 				},
@@ -129,13 +129,13 @@ export default class MachineController {
 		return {
 			Data: chartData,
 			Config: this.addBytesConfig(),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doCPUCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[][]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
 		if (!current.system) return { Error: 'system_missing' } as MachineChartData
 
 		const cpuSystemTotal = this.timeAxisChanges(
@@ -201,7 +201,7 @@ export default class MachineController {
 					},
 				} as Options,
 			},
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doSyncCharts(current: ProcessedStats): MachineChartData {
@@ -262,7 +262,7 @@ export default class MachineController {
 					},
 				} as Options,
 			},
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	isBuggyPrysmVersion(data: ProcessedStats): boolean {
@@ -364,7 +364,7 @@ export default class MachineController {
 		return Math.round((erg / (depth - 1)) * 100) / 100
 	}
 
-	protected getAvgRelativeFrom(data1LastN: number[], data2LastN: number[], callback: (val1, val2) => number) {
+	protected getAvgRelativeFrom(data1LastN: number[], data2LastN: number[], callback: (val1: number, val2: number) => number) {
 		if (!data1LastN || !data2LastN) return null
 		const length = Math.min(data1LastN.length, data2LastN.length)
 
@@ -387,11 +387,11 @@ export default class MachineController {
 
 	// --- Data helper functions ---
 
-	getTimeDiff(dataSet: StatsBase[], startIndex, endIndex) {
-		return Math.abs(dataSet[startIndex].timestamp - dataSet[endIndex].timestamp)
+	getTimeDiff(dataSet: number[][], startIndex: number, endIndex: number) {
+		return Math.abs(dataSet[startIndex][0] - dataSet[endIndex][0])
 	}
 
-	getGapSize(dataSet: StatsBase[]) {
+	getGapSize(dataSet: number[][]) {
 		if (!dataSet || dataSet.length == 0) return 60000
 		let temp = this.getTimeDiff(dataSet, dataSet.length - 2, dataSet.length - 1)
 
@@ -403,12 +403,12 @@ export default class MachineController {
 		return temp
 	}
 
-	normalizeTimeframeNumber(dataSet: StatsBase[]): number {
+	normalizeTimeframeNumber(dataSet: number[][]): number {
 		const gapSize = Math.round(this.getGapSize(dataSet) / 1000)
 		return gapSize
 	}
 
-	timeAxisRelative(max: StatsBase[], current: number[], inverted = false, rounding = 10) {
+	timeAxisRelative(max: number[][], current: number[][], inverted = false, rounding = 10) {
 		const result = []
 		const gapSize = this.normalizeTimeframeNumber(max)
 
@@ -442,8 +442,8 @@ export default class MachineController {
 		return result
 	}
 
-	public timeAxisChanges<T extends StatsBase>(data: T[], delegateValue: (value: T, timeDiff?) => number, accumilative = false) {
-		let result = []
+	public timeAxisChanges<T extends StatsBase>(data: T[], delegateValue: (value: T, timeDiff?: unknown) => number, accumilative = false) {
+		let result: number[][] = []
 		let summedUp = -1
 		let lastValue = 0
 		let lastTimestamp = -1
@@ -515,10 +515,10 @@ export default class MachineController {
 				node: sortedNode,
 				system: sortedSystem,
 				client: this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => {
-					return value.client_name
+					return (value as ProcessBase).client_name
 				}),
 				clientVersion: this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => {
-					return value.client_version
+					return (value as ProcessBase).client_version
 				}),
 				formattedDate: unixTime ? new Date(unixTime) : null,
 				status: 'ONLINE',
@@ -537,7 +537,12 @@ export default class MachineController {
 		})
 	}
 
-	public findAnyData<V>(validator: StatsValidator[], node: StatsNode[], system: StatsSystem[], dataCallback: (value) => V) {
+	public findAnyData<V>(
+		validator: StatsValidator[],
+		node: StatsNode[],
+		system: StatsSystem[],
+		dataCallback: (value: StatsValidator | StatsNode | StatsSystem) => V
+	) {
 		const result1 = this.findAnyDataIn(validator, dataCallback)
 		const result3 = this.findAnyDataIn(node, dataCallback)
 		const result4 = this.findAnyDataIn(system, dataCallback)
@@ -554,17 +559,17 @@ export default class MachineController {
 	}
 
 	public findAllKeys(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
-		const result = []
+		const set = new Set<string>()
 		for (const key of validator.keys()) {
-			result[key] = true
+			set.add(key)
 		}
 		for (const key of node.keys()) {
-			result[key] = true
+			set.add(key)
 		}
 		for (const key of system.keys()) {
-			result[key] = true
+			set.add(key)
 		}
-		return result
+		return Array.from(set)
 	}
 
 	public filterMachines<Type extends StatsBase>(data: Type[]): Map<string, Type[]> {
@@ -594,10 +599,10 @@ export default class MachineController {
 
 export const bytes = (function () {
 	const s = ['b', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
-		tempLabel = []
-	let count
+		tempLabel: number[] = []
+	let count: number
 
-	return function (byteData, label, isFirst, precision = 3) {
+	return function (byteData: number, label: unknown, isFirst: unknown, precision = 3) {
 		let e, value
 
 		if (byteData == 0) return 0
@@ -605,7 +610,7 @@ export const bytes = (function () {
 		if (isFirst) count = 0
 
 		e = Math.floor(Math.log(byteData) / Math.log(1024))
-		value = (byteData / Math.pow(1024, Math.floor(e))).toFixed(precision)
+		value = parseInt((byteData / Math.pow(1024, Math.floor(e))).toFixed(precision))
 
 		tempLabel[count] = value
 		if (count > 0 && Math.abs(tempLabel[count - 1] - tempLabel[count]) < 0.0001)

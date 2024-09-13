@@ -67,7 +67,7 @@ export function getSummaryChartGroupColors(theme: string) {
 	return theme === 'light' ? colorsLight : colorsDark
 }
 
-export function getChartTextColor() {
+export function getChartTextColor(): null {
 	return null // keep default
 	// const styles = getComputedStyle(document.body)
 	// return styles.getPropertyValue('--ion-text-color-lighter')

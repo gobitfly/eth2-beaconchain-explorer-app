@@ -20,7 +20,7 @@
 import { Component, computed } from '@angular/core'
 import { ApiService, capitalize } from '../services/api.service'
 import { StorageService } from '../services/storage.service'
-import { UnitconvService } from '../services/unitconv.service'
+import { PreferredCurrency, UnitconvService } from '../services/unitconv.service'
 import { OAuthUtils } from '../utils/OAuthUtils'
 import ClientUpdateUtils from '../utils/ClientUpdateUtils'
 import ThemeUtils from '../utils/ThemeUtils'
@@ -48,10 +48,11 @@ import FlavorUtils from '../utils/FlavorUtils'
 import { Capacitor } from '@capacitor/core'
 import V2Migrator from '../utils/V2Migrator'
 import { DashboardUtils } from '../utils/DashboardUtils'
+import { AuthUser, AuthUserv2 } from '../models/StorageTypes'
 @Component({
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
-	styleUrls: ['tab-preferences.page.scss']
+	styleUrls: ['tab-preferences.page.scss'],
 })
 export class Tab3Page {
 	darkMode: boolean
@@ -60,11 +61,11 @@ export class Tab3Page {
 
 	allTestNetworks: string[][]
 
-	authUser
+	authUser: AuthUserv2 | AuthUser
 
 	updateChannel: string
 
-	allCurrencies
+	allCurrencies: Array<Array<[string] | [string]>>
 
 	appVersion: string
 
@@ -83,7 +84,7 @@ export class Tab3Page {
 	})
 
 	protected package = ''
-	protected currentFiatCurrency
+	protected currentFiatCurrency: string
 
 	protected currentYear = new Date().getFullYear()
 
@@ -223,7 +224,7 @@ export class Tab3Page {
 	}
 
 	private getAllCurrencies() {
-		const erg = []
+		const erg: Array<Array<[string] | [string]>> = []
 		MAPPING.forEach((value: Unit, key) => {
 			if (value.settingName) {
 				erg.push([[value.settingName], [key]])
@@ -236,7 +237,7 @@ export class Tab3Page {
 		this.theme.toggle(this.darkMode)
 	}
 
-	overrideDisplayCurrency = null
+	overrideDisplayCurrency: PreferredCurrency = null
 	private changeCurrencyLocked = false
 	async changeCurrency() {
 		if (this.changeCurrencyLocked) return
@@ -276,7 +277,7 @@ export class Tab3Page {
 		this.updateUtils.checkAllUpdates()
 	}
 
-	async openBrowser(link, native = false) {
+	async openBrowser(link: string, native = false) {
 		if (native) {
 			window.open(link, '_system', 'location=yes')
 		} else {

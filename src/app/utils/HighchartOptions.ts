@@ -21,7 +21,7 @@
  *
  * @param where @deprecated replaced by echarts
  */
-export function highChartOptions(where, hostName) {
+export function highChartOptions(where: { setOptions: (object: object) => void}, hostName: string) {
 	where.setOptions({
 		time: {
 			useUTC: false,

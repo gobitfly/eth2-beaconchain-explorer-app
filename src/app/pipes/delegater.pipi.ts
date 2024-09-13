@@ -26,7 +26,7 @@ import { ProcessedStats } from '../controllers/MachineController'
 export class DelegatorPipe implements PipeTransform {
 	// TODO: improve this typing, unknown not working when used with async pipe in template, investigate
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	transform(data: ProcessedStats, delegateMethod: (any: ProcessedStats) => any) {
+	transform(data: ProcessedStats | string, delegateMethod: (any: ProcessedStats | string) => any) {
 		return delegateMethod(data)
 	}
 }

@@ -118,7 +118,7 @@ export class Tab1Page implements OnInit {
 		loading.dismiss()
 	}
 
-	onScroll($event) {
+	onScroll($event: { detail: { currentY: number } }) {
 		this.currentY = $event.detail.currentY
 	}
 
@@ -153,7 +153,7 @@ export class Tab1Page implements OnInit {
 		await modal.onWillDismiss()
 	}
 
-	async setup(checkUpdates: boolean = true, force: boolean = false, recursiveMax = false) {
+	async setup(checkUpdates: boolean = true, force: boolean = false, recursiveMax = false): Promise<void> {
 		if (checkUpdates) {
 			this.updates.checkAllUpdates()
 		}
@@ -210,7 +210,7 @@ export class Tab1Page implements OnInit {
 	}
 
 	private lastRefreshedTs: number = 0
-	async doRefresh(event) {
+	async doRefresh(event: { target: { complete: () => void } }) {
 		console.log('henlo 2')
 		if (this.lastRefreshedTs + 60 * 1000 > new Date().getTime()) {
 			Toast.show({

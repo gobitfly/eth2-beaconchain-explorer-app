@@ -65,7 +65,7 @@ export class MachinechartComponent implements OnInit {
 		this.id = makeid(6)
 	}
 
-	public doChart(key, type = '', data: MachineChartData) {
+	public doChart(key: string, type = '', data: MachineChartData) {
 		const id = 'machinechart_' + type + '_' + this.hashCode(key)
 
 		let overrideConfig = {}
@@ -146,7 +146,7 @@ export class MachinechartComponent implements OnInit {
 	}
 }
 
-function makeid(length) {
+function makeid(length: number) {
 	let result = ''
 	const characters = 'abcdefghijklmnopqrstuvwxyz0123456789'
 	const charactersLength = characters.length

@@ -58,7 +58,7 @@ export default class Unit {
 	public static NZDETH = new Unit('NZ$', new BigNumber('1'), 2, 'XXX-NZD', 'New Zealand Dollar')
 	public static BTCETH = new Unit('₿', new BigNumber('1'), 6, 'XXX-BTC', 'Bitcoin')
 
-	private constructor(symbol: string, value: BigNumber, rounding = 2, coinbaseSpot = null, settingsName = null) {
+	private constructor(symbol: string, value: BigNumber, rounding = 2, coinbaseSpot: string = null, settingsName: string = null) {
 		this.display = symbol
 		this.value = value
 		this.rounding = rounding

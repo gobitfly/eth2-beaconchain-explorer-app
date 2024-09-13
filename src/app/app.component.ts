@@ -25,6 +25,7 @@ import { SplashScreen } from '@capacitor/splash-screen'
 import { StorageService } from './services/storage.service'
 import BigNumber from 'bignumber.js'
 import V2Migrator from './utils/V2Migrator'
+import { App } from '@capacitor/app'
 
 @Component({
 	selector: 'app-root',
@@ -62,7 +63,7 @@ export class AppComponent {
 			this.platform.backButton.subscribe(async () => {
 				const isModalOpened = await this.modalController.getTop()
 				if (window.location.pathname.startsWith('/tabs') && !isModalOpened) {
-					navigator['app'].exitApp()
+					App.exitApp()
 				}
 			})
 		}

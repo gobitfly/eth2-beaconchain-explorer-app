@@ -125,7 +125,7 @@ export class MessageComponent implements OnInit {
 		}
 	}
 
-	async showDialog(title, text) {
+	async showDialog(title: string, text: string) {
 		const alert = await this.alertController.create({
 			header: title,
 			message: text,

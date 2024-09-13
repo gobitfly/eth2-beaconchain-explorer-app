@@ -136,7 +136,7 @@ export default class FirebaseUtils {
 		})*/
 	}
 
-	private async inAppNotification(title, message) {
+	private async inAppNotification(title: string, message: string) {
 		const alert = await this.alertController.create({
 			header: title,
 			message: message,
@@ -203,11 +203,10 @@ export default class FirebaseUtils {
 				} else {
 					request = new UpdateTokenRequest(token)
 				}
-				const result = await this.api.execute(request).catch((error) => {
-					console.warn('error in updateRemoteNotificationToken execute', error)
-					return false
-				})
-				if (request.wasSuccessful(result)) {
+				const result = await this.api.execute2(request)
+				if (result.error) {
+					console.warn(LOGTAG + ' update on remote failed', result.error)
+				} else {
 					console.log(LOGTAG + ' update on remote was successful')
 					this.storage.setItem(firebaseTokenKey, token)
 				}

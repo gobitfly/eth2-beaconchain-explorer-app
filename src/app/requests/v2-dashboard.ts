@@ -153,7 +153,13 @@ export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsT
 	resource = 'validator-dashboards/{id}/validators'
 	method = Method.GET
 
-	constructor(id: dashboardID, groupID: number = undefined, cursor: string = undefined, limit: number = 10, sort: string = 'index:asc') {
+	constructor(
+		id: dashboardID,
+		groupID: number | undefined = undefined,
+		cursor: string | undefined  = undefined,
+		limit: number = 10,
+		sort: string = 'index:asc'
+	) {
 		super()
 		this.resource = setID(this.resource, id)
 		if (groupID !== undefined) {

@@ -1,7 +1,7 @@
 import { Component, computed, OnInit, signal, ViewChild, WritableSignal } from '@angular/core'
 import { ModalController } from '@ionic/angular'
 import { BlockDetailPage } from '../pages/block-detail/block-detail.page'
-import { APINotFoundError, APIUnauthorizedError, BlockResponse } from '../requests/requests'
+import { APINotFoundError, ApiResult, APIUnauthorizedError, BlockResponse } from '../requests/requests'
 import { AlertService } from '../services/alert.service'
 import { ApiService } from '../services/api.service'
 import { UnitconvService } from '../services/unitconv.service'
@@ -96,7 +96,7 @@ export class TabBlocksPage implements OnInit {
 		this.dataSource = new InfiniteScrollDataSource<VDBBlocksTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
 	}
 
-	private async loadSummaryGroup(recursiveMax = false) {
+	private async loadSummaryGroup(recursiveMax = false): Promise<ApiResult<VDBGroupSummaryData[]>> {
 		const result = await this.api.set(
 			new V2DashboardSummaryGroupTable(this.dashboardID, 0, Period.AllTime, null),
 			this.summaryGroup,
@@ -181,7 +181,7 @@ export class TabBlocksPage implements OnInit {
 	}
 
 	private lastRefreshedTs: number = 0
-	async doRefresh(event) {
+	async doRefresh(event: { target: { complete: () => void } }) {
 		if (this.lastRefreshedTs + 15 * 1000 > new Date().getTime()) {
 			Toast.show({
 				text: 'Nothing to update',

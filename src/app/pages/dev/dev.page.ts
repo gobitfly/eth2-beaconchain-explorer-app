@@ -283,15 +283,14 @@ export class DevPage extends Tab3Page implements OnInit {
 		const user = await this.storage.getAuthUser()
 		if (!user || !user.refreshToken) {
 			console.warn('No refreshtoken, cannot refresh token')
-			return null
+			return
 		}
 		console.log('refresh token', user.refreshToken)
 
-		const loginRequest = new MigrateV1AuthToV2(user.refreshToken, await this.storage.getDeviceID(), await this.storage.getDeviceName())
-		this.api.execute(loginRequest).then((response) => {
-			const result = loginRequest.parse(response)
-			console.log('eq exchange', response, result)
-		})
+		const result = await this.api.execute2(
+			new MigrateV1AuthToV2(user.refreshToken, await this.storage.getDeviceID(), await this.storage.getDeviceName())
+		)
+		console.log('migrate result', result)
 	}
 
 	changeToV2Api() {
@@ -299,22 +298,16 @@ export class DevPage extends Tab3Page implements OnInit {
 		this.v2migrator.switchToV2(this.usev2api)
 	}
 
-	getMyDashboards() {
-		const loginRequest = new V2Me()
-		this.api.execute(loginRequest).then((response) => {
-			const result = loginRequest.parse(response)
-			console.log('v2 dashboards', response, result)
-		})
+	async getMyDashboards() {
+		const result = await this.api.execute2(new V2Me())
+		console.log('v2 dashboards', result)
 	}
 
 	async registerV2Push() {
 		//const lastToken = await this.storage.getItem('last_firebase_token')
 		const deviceID = await this.storage.getDeviceID()
-		const registerPush = new V2RegisterPushNotificationToken('hallo', deviceID)
-		this.api.execute(registerPush).then((response) => {
-			const result = registerPush.parse(response)
-			console.log('v2 register push', response, result)
-		})
+		const result = this.api.execute2(new V2RegisterPushNotificationToken('hallo', deviceID))
+		console.log('v2 register push', result)
 	}
 
 	changeAllowHttp() {

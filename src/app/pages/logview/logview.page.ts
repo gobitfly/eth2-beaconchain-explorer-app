@@ -23,7 +23,7 @@ export class LogviewPage implements OnInit {
 		this.modalCtrl.dismiss()
 	}
 
-	formatLog(log) {
+	formatLog(log: string) {
 		if (log.startsWith('[ERROR]')) return 'error'
 		else if (log.startsWith(': Error:')) return 'error'
 		else if (log.startsWith('[WARN]')) return 'warn'
@@ -32,7 +32,7 @@ export class LogviewPage implements OnInit {
 		return ''
 	}
 
-	openExtra(index) {
+	openExtra(index: number) {
 		this.open[index] = !this.open[index]
 	}
 

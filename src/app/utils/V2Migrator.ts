@@ -199,22 +199,21 @@ export default class V2Migrator {
 		await this.api.getLatestState(true) // get csrf token
 
 		const loginRequest = new MigrateV1AuthToV2(user.refreshToken, await this.storage.getDeviceID(), await this.storage.getDeviceName())
-		const response = await this.api.execute(loginRequest)
-		const result = loginRequest.parse(response)
-		console.log('migrator, v1SessionToV2 eq exchange', response, result) // todo remove
+		const result = await this.api.execute2(loginRequest)
+		console.log('migrator, v1SessionToV2 eq exchange', result) // todo remove
 
-		if (result.length != 1) {
-			console.warn('migrator, invalid response', response)
+		if (result.error || result.data.length != 1) {
+			console.warn('migrator, invalid response', result)
 			return false
 		}
 
-		if (!result[0].session) {
-			console.warn('migrator, no session found', response)
+		if (!result.data[0].session) {
+			console.warn('migrator, no session found', result)
 			return false
 		}
 
 		await this.storage.setAuthUserv2({
-			Session: result[0].session,
+			Session: result.data[0].session,
 		} as StorageTypes.AuthUserv2)
 		await this.api.initialize()
 		console.info("migrator, v1 session successfully migrated to v2")
