@@ -62,11 +62,11 @@ export class ApiService extends CacheModule {
 
 	constructor(private storage: StorageService) {
 		super('api', 6 * 60 * 1000, storage, 1000, false)
-		this.storage.getBooleanSetting('migrated_4_4_0', false).then((migrated) => {
+		this.storage.getBooleanSetting('migrated_5_0_0', false).then((migrated) => {
 			if (!migrated) {
 				this.clearHardCache()
-				console.info('Cleared hard cache storage as part of 4.4.0 migration')
-				this.storage.setBooleanSetting('migrated_4_4_0', true)
+				console.info('Cleared hard cache storage as part of 5.0.0 migration')
+				this.storage.setBooleanSetting('migrated_5_0_0', true)
 			}
 		})
 
@@ -96,8 +96,7 @@ export class ApiService extends CacheModule {
 
 	async initialize() {
 		await this.loadNetworkConfig()
-		await this.initV2Cookies()
-		await this.init()
+		await Promise.all([this.initV2Cookies(), this.init()])
 		this.apiUserKey = await this.getApiKey()
 		this.apiAccessKey = this.use(environment.API_ACCESS_KEY)
 		console.log('API SERVICE INITIALISED', this.apiAccessKey)
@@ -298,6 +297,7 @@ export class ApiService extends CacheModule {
 		}
 	}
 
+	/** @deprecated Use execute2 */
 	async execute<T>(request: APIRequest<T>): Promise<Response> {
 		try {
 			return await this.executeUnhandled(request)
@@ -310,7 +310,7 @@ export class ApiService extends CacheModule {
 	private async executeUnhandled(request: APIRequest<unknown>): Promise<Response> {
 		await this.initialized
 
-		await this.lockOrWait(request.resource)
+		await this.lockOrWait(request.resource) // no parallel requests of the same resource
 
 		try {
 			if (request.allowCachedResponse) {
@@ -325,11 +325,7 @@ export class ApiService extends CacheModule {
 
 			const options = request.options
 
-			// second is special case for notifications
-			// notifications are rescheduled if response is != 200
-			// but user can switch network in the mean time, so we need to reapply the network
-			// the user was currently on, when they set the notification toggle
-			// hence the additional request.requiresAuth
+			// endPoint default = network specific beaconcha.in 
 			if (request.endPoint == 'default' || request.requiresAuth) {
 				if (await this.storage.isV2()) {
 					if (!this.sessionCookie) {
