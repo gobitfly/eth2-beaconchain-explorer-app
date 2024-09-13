@@ -24,6 +24,7 @@ import { MerchantUtils } from '../utils/MerchantUtils'
 import ThemeUtils from '../utils/ThemeUtils'
 import { Toast } from '@capacitor/toast'
 import { ApiService } from '../services/api.service'
+import V2Migrator from '../utils/V2Migrator'
 
 @Component({
 	selector: 'app-tabs',
@@ -36,7 +37,8 @@ export class TabsPage implements OnInit {
 		private storage: StorageService,
 		private merchant: MerchantUtils,
 		private theme: ThemeUtils,
-		private api: ApiService
+		private api: ApiService,
+		private v2Migrator: V2Migrator
 	) { }
 	
 	ngOnInit() {
@@ -45,6 +47,10 @@ export class TabsPage implements OnInit {
 		// stuff like validator search (post) won't work since we have no CSRF token yet.
 		// By getting latest state, we also get the csrf token.
 		this.api.getLatestState(true)
+
+		setTimeout(() => {
+			this.v2Migrator.showDeprecationNotice()
+		}, 500)
 	}
 
 	ionViewDidEnter() {

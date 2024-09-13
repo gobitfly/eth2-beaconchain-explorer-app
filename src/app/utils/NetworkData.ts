@@ -175,9 +175,18 @@ export function findChainNetworkById(id: number): ChainNetwork | null {
 	return CHAIN_NETWORKS[0]
 }
 
+export function findChainNetworkByName(name: string): ChainNetwork | null {
+	for (const entry of CHAIN_NETWORKS) {
+		if (entry.name == name) {
+			return entry
+		}
+	}
+	return CHAIN_NETWORKS[0]
+}
+
 export interface ChainNetwork {
 	id: number
-	name: string
+	name: string // do not change once set
 	genesisTs: number
 	elCurrency: NetworkMainCurrency
 	clCurrency: NetworkMainCurrency

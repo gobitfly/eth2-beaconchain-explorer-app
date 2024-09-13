@@ -65,9 +65,9 @@ export class MachinesPage extends MachineController implements OnInit {
 	}
 
 	ngOnInit() {
-		this.validatorUtils.registerListener(() => {
-			this.getAndProcessData()
-		})
+		// this.validatorUtils.registerListener(() => {
+		// 	this.getAndProcessData()
+		// })
 	}
 
 	async doRefresh(event) {

@@ -94,7 +94,6 @@ export class NotificationsPage extends NotificationBase implements OnInit {
 			this.initialized = true
 		}, 400)
 
-		this.disableRocketpoolNode = !(await this.validatorUtils.areRocketpoolValidatorsSubscribed())
 	}
 
 	changeValidatorOffline() {

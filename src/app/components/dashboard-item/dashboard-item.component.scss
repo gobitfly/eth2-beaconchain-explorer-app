@@ -13,6 +13,7 @@ ion-badge {
 	--padding-start: 8px;
 	--padding-top: 6px;
 	--padding-bottom: 6px;
+	min-width: 36px;
 }
 
 .ethereum {
@@ -25,6 +26,10 @@ ion-badge {
 
 .holesky {
 	--background: #8695a0;
+}
+
+.sepolia {
+	--background: #a0869e;
 }
 
 .star {

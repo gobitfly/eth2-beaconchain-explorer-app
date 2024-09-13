@@ -83,12 +83,15 @@ export class DashboardUtils {
 		}
 	}
 
-	async addValidators(index: number[], groupID: number): Promise<boolean> {
+	async addValidators(index: number[], groupID: number, dashID: dashboardID = undefined): Promise<boolean> {
 		if (index.length === 0) {
 			return
 		}
 		const loggedIn = await this.storage.isLoggedIn()
-		const id = await this.storage.getDashboardID()
+		let id = await this.storage.getDashboardID()
+		if (dashID) {
+			id = dashID
+		}
 
 		if (loggedIn) {
 			const result = await this.api.execute2(
@@ -143,7 +146,7 @@ export class DashboardUtils {
 			return
 		}
 		if (error instanceof DashboardUnauthorizedError) {
-			this.alerts.confirmDialog('Login to access', 'Please log in to your beaconcha.in account to access this.', 'LOGIN', async () => {
+			this.alerts.confirmDialog('Login expired', 'Please log back in to your beaconcha.in account to access your dashboards.', 'LOGIN', async () => {
 				const result = await this.oauth.login()
 				if (result) {
 					this.merchant.restartApp()

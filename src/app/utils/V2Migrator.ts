@@ -23,7 +23,6 @@ import { MigrateV1AuthToV2 } from '../requests/v2-auth'
 import * as StorageTypes from '../models/StorageTypes'
 import { ValidatorUtils } from './ValidatorUtils'
 import { DashboardUtils } from './DashboardUtils'
-import { V2AddValidatorToDashboard } from '../requests/v2-dashboard'
 import { AlertService } from '../services/alert.service'
 import { MerchantUtils } from './MerchantUtils'
 
@@ -45,6 +44,40 @@ export default class V2Migrator {
 	async switchToV2(useV2: boolean) {
 		await this.storage.setV2(useV2)
 		await this.api.loadNetworkConfig()
+	}
+
+	async showDeprecationNotice() {
+		const deprecationNoiceKey = 'deprecation_info_seen'
+		if (await this.storage.getBooleanSetting(deprecationNoiceKey, false)) {
+			return
+		}
+		this.storage.setBooleanSetting(deprecationNoiceKey, true)
+
+		let deprecationList = ''
+		const stakeShareUser = await this.validatorUtils.wasStakeShareUser()
+		const gnosisUser = await this.validatorUtils.wasGnosisUser()
+
+		if (!stakeShareUser && !gnosisUser) {
+			return
+		}
+
+		if (stakeShareUser) {
+			deprecationList += `<br/><br/>- Stake Share, the partial validator ownership feature, has been removed. 
+			We value your privacy and specifically made this app without any trackers, but this also means that we have no insight into how much this feature was actually used. 
+			We rely on your feedback, so please let us know if you miss this feature and whether we should spend our resources on bringing it back.`
+		}
+
+		if (gnosisUser) {
+			deprecationList += `<br/><br/>- Gnosis Chain support has been <strong>temporarily</strong> removed. 
+			As beaconcha.in v2 is such a big overhaul to our entire infrastructure, we had to make some tough decisions on what to include in this first release.
+			We know that this is a big inconvenience for some of you and we are hard at work to bring back support within the next couple of weeks and months.`
+		}
+
+		this.alert.showInfo(
+			'Deprecation Notice',
+			`Thank you for using Beaconchain Dashboard, we hope you enjoy the update!<br/><br/>
+			Unfortunately, some features of the old app version did not make it to the new version:` + deprecationList
+		)
 	}
 
 	async migrate() {
@@ -113,6 +146,7 @@ export default class V2Migrator {
 				userHasBeenLoggedOut = true
 			}
 		}
+		this.storage.setAuthUser(null)
 
 		// Stage 3: migrate v1 dashboards to v2 dashboards
 		if (v1DashboardsFound) {
@@ -161,6 +195,8 @@ export default class V2Migrator {
 			console.warn('migrator, no refreshtoken, cannot refresh token')
 			return false
 		}
+
+		await this.api.getLatestState(true) // get csrf token
 
 		const loginRequest = new MigrateV1AuthToV2(user.refreshToken, await this.storage.getDeviceID(), await this.storage.getDeviceName())
 		const response = await this.api.execute(loginRequest)

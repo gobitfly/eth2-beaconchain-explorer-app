@@ -19,7 +19,7 @@
 
 import { Component, OnInit } from '@angular/core'
 import { ApiService } from '../services/api.service'
-import { DashboardError, DashboardNotFoundError, OverviewData2, OverviewProvider, SummaryChartOptions } from '../controllers/OverviewController'
+import { DashboardError, DashboardNotFoundError, DashboardUnauthorizedError, OverviewData2, OverviewProvider, SummaryChartOptions } from '../controllers/OverviewController'
 import ClientUpdateUtils from '../utils/ClientUpdateUtils'
 import { StorageService } from '../services/storage.service'
 import { UnitconvService } from '../services/unitconv.service'
@@ -182,6 +182,8 @@ export class Tab1Page implements OnInit {
 				// if dashboard is not available any more (maybe user deleted it) reinit and try again
 				this.dashboardID = await this.dashboardUtils.initDashboard()
 				return this.setup(false, force, true)
+			} else if (e instanceof DashboardUnauthorizedError) {
+				this.dashboardUtils.defaultDashboardErrorHandler(e)
 			} else if (e instanceof DashboardError) {
 				this.dashboardUtils.defaultDashboardErrorHandler(e)
 				this.online = false

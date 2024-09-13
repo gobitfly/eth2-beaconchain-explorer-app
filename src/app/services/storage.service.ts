@@ -101,13 +101,15 @@ export class StorageService extends CacheModule implements OnInit{
 	}
 
 	async isLoggedIn(): Promise<boolean> {
-		const user = await this.getAuthUser()
-		if (!user || !user.accessToken) {
-			const userv2 = await this.getAuthUserv2()
-			if (!userv2 || !userv2.Session) return false
+		if (await this.isV2()) {
+			const user = await this.getAuthUserv2()
+			if (!user || !user.Session) return false
+			return true
+		} else {
+			const user = await this.getAuthUser()
+			if (!user || !user.accessToken) return false
 			return true
 		}
-		return true
 	}
 
 	async removeAuthUser() {
@@ -244,7 +246,7 @@ export class StorageService extends CacheModule implements OnInit{
 	private reflectiOSStorage() {
 		try {
 			if (!this.platform.is('ios')) return
-			const reflectKeys = ['CapacitorStorage.prefered_unit', 'CapacitorStorage.network_preferences', 'CapacitorStorage.auth_user']
+			const reflectKeys = ['CapacitorStorage.prefered_unit', 'CapacitorStorage.network_preferences', 'CapacitorStorage.' + AUTH_USER_V2]
 			for (let i = 0; i < MAP.length; i++) {
 				if (MAP[i].key.indexOf('invalid') > -1) continue
 				if (MAP[i].key.indexOf('local') > -1) continue

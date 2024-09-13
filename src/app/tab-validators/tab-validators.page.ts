@@ -165,7 +165,6 @@ export class Tab2Page implements OnInit {
 				text: 'Could not load groups',
 			})
 			this.initialLoading = false
-			this.online = false
 			return
 		}
 
@@ -251,6 +250,9 @@ export class Tab2Page implements OnInit {
 				dashboardChangedCallback: async () => {
 					const loading = await this.alerts.presentLoading('Loading...')
 					loading.present()
+					if (this.dashboardID() == await this.storage.getDashboardID()) {
+						this.clearRequestCache()
+					}
 					await this.setup()
 					loading.dismiss()
 				},
@@ -284,13 +286,18 @@ export class Tab2Page implements OnInit {
 			} else if (e instanceof DashboardError) {
 				if (this.dashboardUtils.defaultDashboardErrorHandler(e)) {
 					result.error = null
+				} else {
+					this.online = false
 				}
+			} else {
+				this.online = false
 			}
 		}
 		return result
 	}
 
 	private async updateValidators() {
+		this.initialLoading = true
 		this.reachedMaxValidators = false
 		this.validatorLoader = new ValidatorLoader(this.api, this.dashboardID(), this.selectedGroup, this.sort, (result) => {
 			this.online = result
@@ -311,7 +318,7 @@ export class Tab2Page implements OnInit {
 			const result = await this.validatorLoader.getDefaultDataRetriever()(cursor)
 			this.loadMore = false
 
-			if (firstRun) {
+			if (this.initialLoading) {
 				this.initialLoading = false
 				this.initialized = true
 			}
@@ -866,7 +873,9 @@ class ValidatorLoader {
 					text: 'Could not load validators',
 					duration: 'long',
 				})
-				this.offlineCallback(false)
+				if (result?.error?.code != 401) { // todo change to just if timeout?
+					this.offlineCallback(false)
+				}
 				return {
 					data: undefined,
 					next_cursor: null,

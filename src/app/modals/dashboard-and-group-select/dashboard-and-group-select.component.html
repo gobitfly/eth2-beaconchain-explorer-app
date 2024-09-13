@@ -28,44 +28,56 @@
 </ion-header>
 
 <ion-content>
-	<app-full-page-loading [renderWait]="20" [loading]="!dashboards()">
-		<app-full-page-offline (retry)="this.doRefresh()" [online]="online || dashboards()?.validator_dashboards">
+	<app-full-page-loading [renderWait]="20" [loading]="initLoading">
+		<app-full-page-offline (retry)="this.doRefresh()" [online]="online || dashboards()?.validator_dashboards || legacyDashboard.length > 0">
 
-			<app-dashboard-item *ngFor="let item of dashboards()?.validator_dashboards" [data]="item"
-				[defaultDashboard]="defaultDashboard" (refresh)="doRefresh()"></app-dashboard-item>
-
-			<div style="margin-top: 10px;"*ngIf="!infoDismissed">
+			<div class="message" *ngIf="!infoDismissed">
 				<ion-list>
 					<ion-item lines="none" class="premium">
 						<ion-icon slot="start" name="information-circle-outline" class="opacity-icon" class="prem-icon"></ion-icon>
 						<ion-label class="prem-title">New: Your Dashboards</ion-label>
 						<ion-icon (click)="dismissInfo()" slot="end" name="close-outline" class="opacity-icon prem-x"></ion-icon>
 					</ion-item>
-					<span class="hint">You may have more than one dashboard. Each dashboard is associated with a network, like Ethereum or Gnosis. The new groups feature allows you to further organize a dashboard.</span>
+					<span class="hint">You may have more than one dashboard. Each dashboard is associated with a network, like
+						Ethereum or Gnosis. The new groups feature allows you to further organize a dashboard.</span>
 				</ion-list>
 			</div>
 
-			<div style="margin-top: 10px;" *ngIf="!isLoggedIn" (click)="signIn()">
+			<div class="message" *ngIf="!isLoggedIn" (click)="signIn()">
 				<ion-list>
 					<ion-item lines="none" class="premium">
 						<ion-icon slot="start" name="person-circle-outline" class="opacity-icon" class="prem-icon"></ion-icon>
 						<ion-label class="prem-title">Sign in to beaconcha.in</ion-label>
 						<ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon prem-x"></ion-icon>
 					</ion-item>
-					<span class="hint">Get free notifications about your validators, manage or share your dashboards and stay in sync from web or app. </span>
+					<span class="hint">Get free notifications about your validators, manage or share your dashboards and stay in
+						sync from web or app. </span>
 				</ion-list>
 			</div>
 
-			<div style="margin-top: 10px;" *ngIf="!merchant.isPremium() && isLoggedIn" (click)="sellUp()">
+			<div class="message" *ngIf="!merchant.isPremium() && isLoggedIn" (click)="sellUp()">
 				<ion-list>
 					<ion-item lines="none" class="premium">
 						<ion-icon slot="start" name="rocket-outline" class="opacity-icon" class="prem-icon"></ion-icon>
 						<ion-label class="prem-title">Get more with Premium</ion-label>
 						<ion-icon slot="end" name="chevron-forward-outline" class="opacity-icon prem-x"></ion-icon>
 					</ion-item>
-					<span class="hint">Premium lets you track more validators, access more dashboards and groups, extended history timeframes and much more.</span>
+					<span class="hint">Premium lets you track more validators, access more dashboards and groups, extended history
+						timeframes and much more.</span>
 				</ion-list>
 			</div>
+
+			<app-dashboard-item *ngFor="let item of dashboards()?.validator_dashboards" [data]="item"
+				[defaultDashboard]="defaultDashboard" (refresh)="doRefresh()"></app-dashboard-item>
+
+			<div *ngIf="legacyDashboard.length > 0">
+				<ion-list-header>
+					<ion-label>Old App Dashboards</ion-label>
+				</ion-list-header>
+				<app-dashboard-item *ngFor="let item of legacyDashboard" (legacyAdd)="legacyAddToDashboard($event)" [defaultDashboard]="defaultDashboard" [legacyDashboard]="true" [defaultDashboard]="defaultDashboard" [data]="item" (refresh)="doRefresh()"></app-dashboard-item>
+			</div>
+
+			
 		</app-full-page-offline>
 	</app-full-page-loading>
 </ion-content>

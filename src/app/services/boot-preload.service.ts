@@ -29,7 +29,6 @@ export class BootPreloadService {
 
 	preload() {
 		try {
-			this.validatorUtils.getAllMyValidators()
 			this.clientUpdateUtils.checkAllUpdates()
 		} catch (e) {
 			console.warn('can not preload', e)

@@ -228,13 +228,7 @@ export class OverviewData2 {
 
 	validatorCount: Signal<number> = computed(() => {
 		if (!this.overviewData()) return 0
-		return (
-			this.overviewData().validators.exited +
-			this.overviewData().validators.offline +
-			this.overviewData().validators.online +
-			this.overviewData().validators.slashed +
-			this.overviewData().validators.pending
-		)
+		return getValidatorCount(this.overviewData())
 	})
 
 	dashboardState: Signal<DashboardStatus> = computed(() => {
@@ -305,6 +299,16 @@ export class OverviewData2 {
 		if (this.rocketpool() == null) return new BigNumber(0)
 		return new BigNumber(this.rocketpool().rpl.unclaimed).plus(this.rocketpool().rpl.claimed)
 	})
+}
+
+export function getValidatorCount(overviewData: VDBOverviewData): number {
+	return (
+		overviewData.validators.exited +
+		overviewData.validators.offline +
+		overviewData.validators.online +
+		overviewData.validators.slashed +
+		overviewData.validators.pending
+	)
 }
 
 export type Performance = {

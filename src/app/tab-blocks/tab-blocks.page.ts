@@ -131,7 +131,10 @@ export class TabBlocksPage implements OnInit {
 					text: 'Could not load blocks',
 					duration: 'long',
 				})
-				this.online = false
+				if (result?.error?.code != 401) { // todo change to just if timeout?
+					this.online = false
+				}
+				
 				console.error('Could not load blocks', result.error)
 				return {
 					data: undefined,

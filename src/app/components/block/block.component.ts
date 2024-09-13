@@ -3,10 +3,8 @@ import * as blockies from 'ethereum-blockies'
 import { UnitconvService } from 'src/app/services/unitconv.service'
 import { ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from 'src/app/utils/BlockUtils'
 import BigNumber from 'bignumber.js'
-import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import { VDBBlocksTableRow } from 'src/app/requests/types/validator_dashboard'
 import { slotToSecondsTimestamp } from 'src/app/utils/TimeUtils'
-import { ApiService } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-block',
@@ -26,12 +24,7 @@ export class BlockComponent {
 	resolvedName = null
 	resolvedClass = ''
 
-
-	constructor(public unit: UnitconvService, private validatorUtils: ValidatorUtils, private api: ApiService) {
-		this.validatorUtils.registerListener(() => {
-			this.ngOnChanges()
-		})
-	}
+	constructor(public unit: UnitconvService) {}
 
 	ngOnChanges() {
 		this.imgData = this.getBlockies()

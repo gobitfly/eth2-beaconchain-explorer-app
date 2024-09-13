@@ -283,13 +283,13 @@ export class DashboardComponent implements OnInit {
 	// }
 
 	updateNextRewardRound() {
-		try {
-			if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.claim_interval_time) return
-			const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(':')[0]
-			this.nextRewardRound = this.validatorUtils.rocketpoolStats.claim_interval_time_start * 1000 + parseInt(hoursToAdd) * 60 * 60 * 1000
-		} catch (e) {
-			console.warn('cannot updateNextRewardRound', e)
-		}
+		// try {
+		// 	if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.claim_interval_time) return
+		// 	const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(':')[0]
+		// 	this.nextRewardRound = this.validatorUtils.rocketpoolStats.claim_interval_time_start * 1000 + parseInt(hoursToAdd) * 60 * 60 * 1000
+		// } catch (e) {
+		// 	console.warn('cannot updateNextRewardRound', e)
+		// }
 	}
 
 	ngOnInit() {
