@@ -14,7 +14,7 @@
 		</ion-buttons>
 	</ion-toolbar>
 
-	<ion-item class="top-bar" *ngIf="!initialLoading && dataSource && dataSource.hasItems()">
+	<ion-item class="top-bar" [hidden]="!dataSource || !dataSource.hasItems()">
 		<ion-label class="top-bar-inner"
 			>Proposal Luck: 
 			<span style="padding-left: 2px;" *ngIf="summaryGroup() && summaryGroup().luck.proposal.percent" [class]="summaryGroup().luck.proposal.percent | valuestyle: 100"

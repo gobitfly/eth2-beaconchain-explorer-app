@@ -184,6 +184,39 @@ export class ValidatorUtils {
 		return [...local.values()].map((item) => item.index)
 	}
 
+
+	async debugSetMyLocalValidators(networkName: string = undefined, validators: number[]) {
+		let storageKey = this.getStorageKey()
+		if (networkName) {
+			storageKey = KEYPREFIX + networkName
+		}
+		const mappedToValidators = validators.map((v) => {
+			return {
+				index: v,
+				pubkey: '',
+				name: '',
+				storage: SAVED,
+				synced: false,
+				version: 0,
+				data: null,
+				state: null,
+				attrEffectiveness: 0,
+				rocketpool: null,
+				execution: null,
+				share: 0,
+				rplshare: 0,
+				execshare: 0,
+				currentSyncCommittee: null,
+				nextSyncCommittee: null,
+			} as Validator
+		})
+		const map = new Map<string, Validator>()
+		mappedToValidators.forEach((v) => {
+			map.set(v.index.toString(), v)
+		})
+		await this.storage.setObject(storageKey, map)
+	}
+
 	async wasStakeShareUser() {
 		const hasStakeShareEnabled = async (network: string) => {
 			return !!(await this.getAllValidatorsLocal(network)).find((v) => {

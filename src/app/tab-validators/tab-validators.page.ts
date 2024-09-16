@@ -864,6 +864,12 @@ class ValidatorLoader {
 
 	public getDefaultDataRetriever(): loadMoreType<VDBManageValidatorsTableRow> {
 		return async (cursor) => {
+			if (!this.dashboard) {
+				return {
+					data: undefined,
+					next_cursor: null,
+				}
+			}
 			const result = await this.api.execute2(
 				new V2GetValidatorFromDashboard(this.dashboard, this.groupID, cursor, PAGE_SIZE, this.sort), ASSOCIATED_CACHE_KEY
 			)

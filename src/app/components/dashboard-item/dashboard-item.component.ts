@@ -152,8 +152,8 @@ export class DashboardItemComponent implements OnChanges {
 
 	removeLegacy() {
 		this.alert.confirmDialog(
-			'Remove dashboard',
-			'This will permanently remove the dashboard and all associated validators. <br/><br/>Are you sure you want to continue?',
+			'Remove Legacy dashboard',
+			'This will permanently remove the dashboard and all associated validators. If you have already migrated this old dashboard to the new one, you can safely delete it. <br/><br/>Are you sure you want to proceed?',
 			'Remove',
 			() => {
 				this.alert.confirmDialogReverse(

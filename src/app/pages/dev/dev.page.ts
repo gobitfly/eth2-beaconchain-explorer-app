@@ -264,19 +264,15 @@ export class DevPage extends Tab3Page implements OnInit {
 		this.storage.openLogSession(this.modalController, offset)
 	}
 
-	testv2() {
-		// const test = await this.api.execute2(new V2DashboardOverview(dashboardID))
-		// console.log("test", test)
-		// const loginRequest = new V2DashboardOverview(dashboardID) // encodeDashboardID([0,1,2,3,4])
-		// this.api.execute(loginRequest).then((response) => {
-		// 	const result = loginRequest.parse(response)
-		// 	console.log('v2 dashboards', response, result)
-		// })
-		// const summary = new V2UpdateDashboardGroup(dashboardID, 0, 'Genesis')
-		// this.api.execute(summary).then((response) => {
-		// 	const result = summary.parse(response)
-		// 	console.log('v2 dashboards summary', response, result)
-		// })
+	async migrateV2() {
+		await this.storage.setDashboardID(null)
+		await this.validatorUtils.debugSetMyLocalValidators('holesky', [99, 98, 97, 96, 95])
+
+		await this.storage.setBooleanSetting('migration_completed', false) // reset
+		await this.v2migrator.switchToV2(false)
+
+		this.merchant.restartApp()
+		//this.v2migrator.migrate()
 	}
 
 	async equivalentExchange() {

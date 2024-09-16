@@ -60,7 +60,7 @@
 	</ion-toolbar>
 	<app-offline *ngIf="!online"></app-offline>
 
-	<ion-item [hidden]="!dataSource || (initialLoading && !initialized) || !dashboardID()" class="top-bar">
+	<ion-item [hidden]="!dataSource || !dashboardID()" class="top-bar">
 		<ion-select class="top-bar-inner" [disabled]="selectMode" placeholder="My groups" interface="popover" (ionChange)="selectGroup()" [(ngModel)]="selectedGroup">
 			<ion-select-option *ngFor="let group of groups()" [value]="group.id">
 				{{group.name}} ({{group.count}})

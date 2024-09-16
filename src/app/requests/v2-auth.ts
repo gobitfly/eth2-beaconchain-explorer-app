@@ -15,10 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
+import { Response } from '../services/api.service'
 import { APIRequest, Method } from './requests'
 
 export interface V2AuthResponse {
-	session: string
+	Session: string
 }
 
 export class MigrateV1AuthToV2 extends APIRequest<V2AuthResponse> {
@@ -33,5 +34,16 @@ export class MigrateV1AuthToV2 extends APIRequest<V2AuthResponse> {
 			client_id: deviceID,
 			client_name: deviceName,
 		}
+	}
+
+	parseBase(response: Response, hasDataStatus = true): V2AuthResponse[] | null {
+		if (!this.wasSuccessful(response, hasDataStatus)) {
+			return []
+		}
+
+		if (response && response.data) {
+			return [response.data as V2AuthResponse]
+		}
+		return []
 	}
 }

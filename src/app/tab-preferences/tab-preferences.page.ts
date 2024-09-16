@@ -49,6 +49,7 @@ import { Capacitor } from '@capacitor/core'
 import V2Migrator from '../utils/V2Migrator'
 import { DashboardUtils } from '../utils/DashboardUtils'
 import { AuthUser, AuthUserv2 } from '../models/StorageTypes'
+import { ValidatorUtils } from '../utils/ValidatorUtils'
 @Component({
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
@@ -106,7 +107,8 @@ export class Tab3Page {
 		public notificationBase: NotificationBase,
 		private router: Router,
 		private flavor: FlavorUtils,
-		protected v2migrator: V2Migrator
+		protected v2migrator: V2Migrator,
+		protected validatorUtils: ValidatorUtils
 	) {}
 
 	ngOnInit() {

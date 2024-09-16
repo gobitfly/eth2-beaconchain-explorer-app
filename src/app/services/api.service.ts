@@ -29,6 +29,7 @@ import { CapacitorCookies } from '@capacitor/core'
 import { LatestStateData } from '../requests/types/latest_state'
 import { V2LatestState } from '../requests/network'
 import { environment } from 'src/environments/environment'
+import { MigrateV1AuthToV2 } from '../requests/v2-auth'
 const LOGTAG = '[ApiService]'
 
 const SERVER_TIMEOUT = 25000
@@ -327,7 +328,24 @@ export class ApiService extends CacheModule {
 
 			// endPoint default = network specific beaconcha.in
 			if (request.endPoint == 'default' || request.requiresAuth) {
-				if (await this.storage.isV2()) {
+				// special case, migration needs the v1 token + csrf token
+				if (request instanceof MigrateV1AuthToV2) {
+					const authHeader = await this.getAuthHeader(false)
+					if (authHeader) {
+						const headers = { ...options.headers, ...authHeader }
+						options.headers = headers
+					}
+					
+					options.headers = { ...options.headers, 'X-Csrf-Token': this.lastCsrfHeader }
+					
+					if (this.networkConfig.passXCookieDANGEROUS) {
+						let csrfCookieExtra = ''
+						if (this.csrfCookie) {
+							csrfCookieExtra = '; _gorilla_csrf=' + this.csrfCookie + '; '
+						}
+						options.headers = { ...options.headers, 'X-Cookie': csrfCookieExtra }
+					} 
+				} else if (await this.storage.isV2()) { 
 					if (!this.sessionCookie) {
 						await this.initV2Cookies()
 					}
@@ -344,9 +362,14 @@ export class ApiService extends CacheModule {
 					if (this.networkConfig.passXCookieDANGEROUS) {
 						let csrfCookieExtra = ''
 						if (this.csrfCookie) {
-							csrfCookieExtra = '; _gorilla_csrf=' + this.csrfCookie + '; '
+							csrfCookieExtra = ' _gorilla_csrf=' + this.csrfCookie + '; '
 						}
-						options.headers = { ...options.headers, 'X-Cookie': 'session_id=' + this.sessionCookie + csrfCookieExtra }
+						let sessionExtra = ''
+						if (this.sessionCookie) {
+							sessionExtra = 'session_id=' + this.sessionCookie + '; '
+						}
+
+						options.headers = { ...options.headers, 'X-Cookie': sessionExtra + csrfCookieExtra }
 					} else {
 						if (this.apiAccessKey) {
 							options.headers = { ...options.headers, 'x-mobile-token': this.apiAccessKey }
@@ -434,11 +457,12 @@ export class ApiService extends CacheModule {
 			}
 		}
 
+		const isV2 = await this.storage.isV2()
 		const result = await fetch(this.getResourceUrl(resource, endpoint), {
 			method: Method[method],
 			headers: options.headers,
 			body: body,
-			credentials: endpoint == 'default' ? 'include' : 'omit',
+			credentials: endpoint == 'default' && isV2 ? 'include' : 'omit',
 		})
 		if (!result) return null
 		return await this.validateResponse(result)

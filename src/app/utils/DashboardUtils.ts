@@ -85,7 +85,7 @@ export class DashboardUtils {
 
 	async addValidators(index: number[], groupID: number, dashID: dashboardID = undefined): Promise<boolean> {
 		if (index.length === 0) {
-			return
+			return true
 		}
 		const loggedIn = await this.storage.isLoggedIn()
 		let id = await this.storage.getDashboardID()
@@ -123,7 +123,12 @@ export class DashboardUtils {
 			return result && !result.error
 		} else {
 			if (isLocalDashboard(id)) {
-				await this.storage.setDashboardID(id.filter((element) => !index.includes(element)))
+				const newDashboard = id.filter((element) => !index.includes(element))
+				if (newDashboard.length === 0) {
+					await this.storage.setDashboardID(null)
+					return true
+				}
+				await this.storage.setDashboardID(newDashboard)
 			} else {
 				console.log('how did we end up here?')
 				return true

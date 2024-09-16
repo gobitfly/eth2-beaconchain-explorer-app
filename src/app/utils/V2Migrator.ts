@@ -132,13 +132,15 @@ export default class V2Migrator {
 				}
 			}
 		}
-		
+
 		// -- Happens on v2 api --
 		await this.switchToV2(true)
-		console.log("migrator, switched to v2 api")
+		await this.api.getLatestState(true) // get csrf token
+		console.log('migrator, switched to v2 api')
 
 		// Stage 2: migrate v1 user session to v2 user session
-		if (v1UserFound && !(await this.storage.getAuthUserv2()).Session) {
+		const v2User = await this.storage.getAuthUserv2()
+		if (v1UserFound && !v2User && !v2User?.Session) {
 			console.log('migrator, unmigrated v1 session found, migrating to v2')
 			const sessionMigrated = await this.v1SessionToV2()
 			if (!sessionMigrated) {
@@ -158,8 +160,8 @@ export default class V2Migrator {
 			// note: if user has more validators than free limit, we add the first 20 validators
 			// todo: do I need to truncate or does the api? todo: correctly set notAllValidatorsMigrated
 			const ok = await this.dashboardUtils.addValidators(localValidatorIndex, 0)
-			if (ok) {
-				console.warn("migrator, not all validators or none could be migrated")
+			if (!ok) {
+				console.warn('migrator, not all validators or none could be migrated')
 				notAllValidatorsMigrated = true
 			}
 		}
@@ -171,13 +173,13 @@ export default class V2Migrator {
 			additional += '<br/><br/>Some data could not be migrated:'
 		}
 		if (userHasBeenLoggedOut) {
-			additional += '<br/><br/>- You have been logged.'
+			additional += '<br/><br/>- You have been logged out.'
 		}
 		if (notAllValidatorsMigrated) {
 			additional += `<br/><br/>- We couldn't take all your validators with us. You'll find a full backup of your validators in the new 'Manage Dashboards' section.`
 		}
 
-		this.alert.noChoiceDialog('Completed', 'The app will restart itself.' + additional, () => {
+		this.alert.noChoiceDialog('Update Completed', 'The app will restart itself.' + additional, () => {
 			this.merchant.restartApp()
 		})
 
@@ -196,8 +198,6 @@ export default class V2Migrator {
 			return false
 		}
 
-		await this.api.getLatestState(true) // get csrf token
-
 		const loginRequest = new MigrateV1AuthToV2(user.refreshToken, await this.storage.getDeviceID(), await this.storage.getDeviceName())
 		const result = await this.api.execute2(loginRequest)
 		console.log('migrator, v1SessionToV2 eq exchange', result) // todo remove
@@ -207,13 +207,13 @@ export default class V2Migrator {
 			return false
 		}
 
-		if (!result.data[0].session) {
+		if (!result.data[0].Session) {
 			console.warn('migrator, no session found', result)
 			return false
 		}
 
 		await this.storage.setAuthUserv2({
-			Session: result.data[0].session,
+			Session: result.data[0].Session,
 		} as StorageTypes.AuthUserv2)
 		await this.api.initialize()
 		console.info("migrator, v1 session successfully migrated to v2")
