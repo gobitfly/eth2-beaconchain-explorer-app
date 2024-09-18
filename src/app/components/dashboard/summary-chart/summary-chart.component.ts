@@ -187,6 +187,7 @@ export class SummaryChartComponent implements OnInit {
 		}
 		const list: number[] = []
 		let latestTs = slotToSecondsTimestamp(this.data.chainNetwork().id, this.data.latestState().state.current_slot - 5) || 0
+		console.log('latestTs', latestTs, this.data.chainNetwork().id, this.data.latestState())
 
 		let step = 0
 		switch (this.data.summaryChartOptions().aggregation) {
@@ -442,6 +443,35 @@ export class SummaryChartComponent implements OnInit {
 		}
 	}
 
+	maxDataPoints(aggregation: Aggregation) {
+		switch (aggregation) {
+			case Aggregation.Epoch:
+				return Math.floor(
+					this.merchant.userInfo().premium_perks.chart_history_seconds.epoch /
+						(this.data.chainNetwork().slotsTime * this.data.chainNetwork().slotPerEpoch)
+				)
+			case Aggregation.Daily:
+				return Math.floor(this.merchant.userInfo().premium_perks.chart_history_seconds.daily / ONE_DAY)
+			case Aggregation.Hourly:
+				return Math.floor(this.merchant.userInfo().premium_perks.chart_history_seconds.hourly / ONE_HOUR)
+			case Aggregation.Weekly:
+				return Math.floor(this.merchant.userInfo().premium_perks.chart_history_seconds.weekly / ONE_WEEK)
+		}
+		return 199
+	}
+
+	getDefaultTargetPoints(aggregation: Aggregation) {
+		switch (aggregation) {
+			case Aggregation.Epoch:
+				return 12
+			case Aggregation.Daily:
+				return 7
+			case Aggregation.Weekly:
+				return 8
+		}
+		return 6
+	}
+
 	getTimestamps(aggregation: Aggregation, categoryChanged: boolean) {
 		if (!this.chartInstance) {
 			return
@@ -459,26 +489,14 @@ export class SummaryChartComponent implements OnInit {
 		let dataPointsChanged = false
 		if (useDefault) {
 			dataPointsChanged = true
-			let targetPoints = 6
-			switch (
-				aggregation // this.data.summaryChartOptions().aggregation
-			) {
-				case Aggregation.Epoch:
-					targetPoints = 12
-					break
-				case Aggregation.Daily:
-					targetPoints = 7
-					break
-				case Aggregation.Weekly:
-					targetPoints = 8
-					break
-			}
+			let targetPoints = this.getDefaultTargetPoints(aggregation)
 			// for dashboards with a large amount of time frames we show at least 3%
 			targetPoints = Math.max(targetPoints, Math.ceil(max * 0.03))
 			timestamps.toIndex = firstTime ? max : Math.max(Math.ceil((max / 100) * timestamps.end), targetPoints)
 			timestamps.fromIndex = timestamps.toIndex - targetPoints
 			console.log('fresh timestamps', aggregation, timestamps)
 		} else if (timestamps.toIndex - timestamps.fromIndex > MAX_DATA_POINTS) {
+			console.log('adjusting zoom', timestamps, currentZoom)
 			dataPointsChanged = true
 			if (timestamps.start !== currentZoom.start) {
 				timestamps.toIndex = Math.min(timestamps.fromIndex + MAX_DATA_POINTS, max)

@@ -118,7 +118,8 @@ export class ApiService extends CacheModule {
 			return config
 		}
 
-		this.networkConfig = this.networkConfig = await getConfig(this.storage, await this.storage.getNetworkPreferences())
+		this.networkConfig = await getConfig(this.storage, await this.storage.getNetworkPreferences())
+		this.storage.setWidgetNetworkConfig(this.networkConfig)
 	}
 
 	networkName: string = null

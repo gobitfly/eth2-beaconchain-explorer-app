@@ -15,21 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
-import { APIRequest, Method } from "./requests"
-import { MobileBundleData } from "./types/mobile"
-import { ProductSummary } from "./types/user"
+import { registerPlugin } from '@capacitor/core';
 
-export class V2ProductSummary extends APIRequest<ProductSummary> {
-	resource = '/product-summary'
-	method = Method.GET
+export interface StorageMirrorPlugin {
+	reflect(options: { keys: string[] }): Promise<void>
 }
 
-export class V2LatestAppBundle extends APIRequest<MobileBundleData> {
-	resource = '/mobile/latest-bundle'
-	method = Method.GET
+const StorageMirror = registerPlugin<StorageMirrorPlugin>('StorageMirror')
 
-	constructor(bundleVersion: number, nativeVersion: number, force: boolean = false) {
-		super()
-		this.resource += `?bundle_version=${bundleVersion}&native_version=${nativeVersion}&force=${force}`
-	}
-}
+export default StorageMirror

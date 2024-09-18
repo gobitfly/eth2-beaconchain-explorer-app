@@ -40,16 +40,15 @@ import { MerchantUtils } from '../utils/MerchantUtils'
 import { NotificationBase } from './notification-base'
 import { Router } from '@angular/router'
 
-import { App } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { Toast } from '@capacitor/toast'
 import { ClientsPage } from '../pages/clients/clients.page'
 import FlavorUtils from '../utils/FlavorUtils'
-import { Capacitor } from '@capacitor/core'
 import V2Migrator from '../utils/V2Migrator'
 import { DashboardUtils } from '../utils/DashboardUtils'
 import { AuthUser, AuthUserv2 } from '../models/StorageTypes'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
+import { AppUpdater } from '../utils/AppUpdater'
 @Component({
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
@@ -108,7 +107,8 @@ export class Tab3Page {
 		private router: Router,
 		private flavor: FlavorUtils,
 		protected v2migrator: V2Migrator,
-		protected validatorUtils: ValidatorUtils
+		protected validatorUtils: ValidatorUtils,
+		protected appUpdater: AppUpdater
 	) {}
 
 	ngOnInit() {
@@ -134,13 +134,9 @@ export class Tab3Page {
 			this.allTestNetworks = result
 		})
 
-		if (Capacitor.isNativePlatform()) {
-			App.getInfo().then((result) => {
-				this.appVersion = result.version
-			})
-		} else {
-			this.appVersion = 'dev'
-		}
+		this.appUpdater.getFormattedCurrentVersion().then((result) => {
+			this.appVersion = result
+		})
 
 		this.flavor.isBetaFlavor().then((result) => {
 			if (result) {

@@ -26,6 +26,8 @@ import { StorageService } from './services/storage.service'
 import BigNumber from 'bignumber.js'
 import V2Migrator from './utils/V2Migrator'
 import { App } from '@capacitor/app'
+import { CapacitorUpdater } from '@capgo/capacitor-updater'
+import { AppUpdater } from './utils/AppUpdater'
 
 @Component({
 	selector: 'app-root',
@@ -38,24 +40,26 @@ export class AppComponent {
 		private theme: ThemeUtils,
 		private modalController: ModalController,
 		private storage: StorageService,
-		private v2Migrator: V2Migrator
+		private v2Migrator: V2Migrator,
+		private appUpdater: AppUpdater
 	) {
 		this.initializeApp()
 	}
 
-	initializeApp() {
+	async initializeApp() {
 		BigNumber.config({ DECIMAL_PLACES: 25 })
-		this.platform.ready().then(() => {
-			this.storage.migrateToCapacitor3().then(() => {
-				this.v2Migrator.migrate().then(() => {
-					this.theme.init(() => {
-						SplashScreen.hide()
-					}) // just initialize the theme service
+		await this.platform.ready()
+		CapacitorUpdater.notifyAppReady() // call as soon as possible otherwise will rollback to last working bundle
 
-					this.setAndroidBackButtonBehavior()
-				})
-			})
-		})
+		await this.appUpdater.check() // should we continue without waiting? do try catch above rest so updater will not be affected by errors
+		await this.storage.migrateToCapacitor3()
+		await this.v2Migrator.migrate()
+
+		this.theme.init(() => {
+			SplashScreen.hide()
+		}) // just initialize the theme service
+		
+		this.setAndroidBackButtonBehavior()
 	}
 
 	private setAndroidBackButtonBehavior(): void {

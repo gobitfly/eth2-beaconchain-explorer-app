@@ -169,6 +169,8 @@ export class MerchantUtils implements OnInit {
 					this.api.setApiKey(this.userInfo().api_keys[0])
 				}
 			}
+		} else {
+			this.overridePerks('standard')
 		}
 		// check for override
 		const override = (await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')) as string

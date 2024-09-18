@@ -18,7 +18,8 @@
 		//"strict": true
 		"strictBindCallApply": true,
 		"noUncheckedIndexedAccess": true,
-		"noImplicitAny": true
+		"noImplicitAny": true,
+		"resolveJsonModule": true,
 	},
 	"angularCompilerOptions": {
 		"fullTemplateTypeCheck": true,

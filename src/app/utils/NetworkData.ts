@@ -125,7 +125,7 @@ export function findConfigForKey(key: string): ApiNetwork {
 
 export const CHAIN_NETWORKS: ChainNetwork[] = [
 	{
-		id: 0,
+		id: 1,
 		name: 'ethereum',
 		genesisTs: 1606824023,
 		clCurrency: NetworkMainCurrency.ETH,

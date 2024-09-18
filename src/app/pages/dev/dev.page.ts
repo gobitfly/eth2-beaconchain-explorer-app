@@ -5,7 +5,6 @@ import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page'
 import { Toast } from '@capacitor/toast'
 import { Clients } from '../../utils/ClientUpdateUtils'
 import { DevModeEnabled } from 'src/app/services/storage.service'
-import { MigrateV1AuthToV2 } from 'src/app/requests/v2-auth'
 import { V2Me, V2RegisterPushNotificationToken } from 'src/app/requests/v2-user'
 
 @Component({
@@ -275,18 +274,39 @@ export class DevPage extends Tab3Page implements OnInit {
 		//this.v2migrator.migrate()
 	}
 
-	async equivalentExchange() {
-		const user = await this.storage.getAuthUser()
-		if (!user || !user.refreshToken) {
-			console.warn('No refreshtoken, cannot refresh token')
-			return
-		}
-		console.log('refresh token', user.refreshToken)
+	async localBundleUpdate() {
+		const bundleURL = await this.storage.getItem('dev_bundle_url')
+		const alert = await this.alertController.create({
+			cssClass: 'my-custom-class',
+			header: 'Bundle URL',
+			inputs: [
+				{
+					name: 'url',
+					type: 'text',
+					placeholder: 'Bundle URL',
+					value: bundleURL,
+				},
+			],
+			buttons: [
+				{
+					text: 'Cancel',
+					role: 'cancel',
+					cssClass: 'secondary',
+					handler: () => {
+						return
+					},
+				},
+				{
+					text: 'Ok',
+					handler: async (alertData) => {
+						await this.storage.setItem('dev_bundle_url', alertData.url)
+						await this.appUpdater.updateBundle(alertData.url)
+					},
+				},
+			],
+		})
 
-		const result = await this.api.execute2(
-			new MigrateV1AuthToV2(user.refreshToken, await this.storage.getDeviceID(), await this.storage.getDeviceName())
-		)
-		console.log('migrate result', result)
+		await alert.present()
 	}
 
 	changeToV2Api() {
@@ -302,7 +322,7 @@ export class DevPage extends Tab3Page implements OnInit {
 	async registerV2Push() {
 		//const lastToken = await this.storage.getItem('last_firebase_token')
 		const deviceID = await this.storage.getDeviceID()
-		const result = this.api.execute2(new V2RegisterPushNotificationToken('hallo', deviceID))
+		const result = this.api.execute2(new V2RegisterPushNotificationToken('hallo', deviceID)) 
 		console.log('v2 register push', result)
 	}
 

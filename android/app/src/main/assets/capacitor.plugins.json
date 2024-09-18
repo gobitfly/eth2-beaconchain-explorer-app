@@ -52,6 +52,14 @@
 		"classpath": "com.capacitorjs.plugins.toast.ToastPlugin"
 	},
 	{
+		"pkg": "@capawesome/capacitor-app-update",
+		"classpath": "io.capawesome.capacitorjs.plugins.appupdate.AppUpdatePlugin"
+	},
+	{
+		"pkg": "@capgo/capacitor-updater",
+		"classpath": "ee.forgr.capacitor_updater.CapacitorUpdaterPlugin"
+	},
+	{
 		"pkg": "capacitor-navigationbarnx",
 		"classpath": "com.nikosdouvlis.navigationbar.NavigationBar"
 	}

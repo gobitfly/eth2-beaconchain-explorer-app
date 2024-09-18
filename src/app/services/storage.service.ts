@@ -18,9 +18,8 @@
  */
 
 import { Injectable, isDevMode, OnInit } from '@angular/core'
-import { Plugins } from '@capacitor/core'
 import * as StorageTypes from '../models/StorageTypes'
-import { MAP, findConfigForKey } from '../utils/NetworkData'
+import { findConfigForKey } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
 import { ModalController, Platform } from '@ionic/angular'
 
@@ -28,11 +27,13 @@ import { Preferences } from '@capacitor/preferences'
 import { LogviewPage } from '../pages/logview/logview.page'
 import { Device } from '@capacitor/device'
 import { Aggregation, dashboardID, Period } from '../requests/v2-dashboard'
-const { StorageMirror } = Plugins
+import StorageMirror from '../plugins/StorageMirror'
 
 const AUTH_USER = 'auth_user'
 const AUTH_USER_V2 = 'auth_user_v2'
 const PREFERENCES = 'network_preferences'
+const WIDGET_PREFERENCES = 'widget_network_preferences' 
+const DASHBOARD_ID = 'dashboard_id'
 
 export const SETTING_NOTIFY = 'setting_notify'
 export const CPU_THRESHOLD = 'cpu_usage_threshold'
@@ -43,7 +44,7 @@ export const DEBUG_SETTING_OVERRIDE_PACKAGE = 'debug_setting_override_package'
 @Injectable({
 	providedIn: 'root',
 })
-export class StorageService extends CacheModule implements OnInit{
+export class StorageService extends CacheModule implements OnInit {
 	constructor(private platform: Platform) {
 		super()
 	}
@@ -136,6 +137,14 @@ export class StorageService extends CacheModule implements OnInit{
 		return await this.setObject(PREFERENCES, value)
 	}
 
+	/**
+	 * Since v2 this is inferred at runtime so we write back the actual config for widget
+	 * @param network  
+	 */
+	async setWidgetNetworkConfig(network: StorageTypes.ApiNetwork) {
+		await this.setObject(WIDGET_PREFERENCES, network)
+	}
+
 	async loadPreferencesToggles(network: string): Promise<boolean> {
 		const notifyLocal = await this.getBooleanSetting(network + SETTING_NOTIFY, null)
 		return notifyLocal
@@ -167,7 +176,6 @@ export class StorageService extends CacheModule implements OnInit{
 			return defaultV
 		})
 	}
-
 
 	// async getStakingShare(): Promise<BigNumber> {
 	// 	const value = await this.getItem('staking_share')
@@ -242,16 +250,17 @@ export class StorageService extends CacheModule implements OnInit{
 		this.reflectiOSStorage()
 	}
 
-	// sigh
+	// iOS widget can't access app storage, so we need to reflect certain keys
+	// to a common shared space that the widget can access
 	private reflectiOSStorage() {
 		try {
 			if (!this.platform.is('ios')) return
-			const reflectKeys = ['CapacitorStorage.prefered_unit', 'CapacitorStorage.network_preferences', 'CapacitorStorage.' + AUTH_USER_V2]
-			for (let i = 0; i < MAP.length; i++) {
-				if (MAP[i].key.indexOf('invalid') > -1) continue
-				if (MAP[i].key.indexOf('local') > -1) continue
-				reflectKeys.push('CapacitorStorage.validators_' + MAP[i].key)
-			}
+			const reflectKeys = [
+				'CapacitorStorage.prefered_unit',
+				'CapacitorStorage.' + WIDGET_PREFERENCES,
+				'CapacitorStorage.' + AUTH_USER_V2,
+				'CapacitorStorage.' + DASHBOARD_ID,
+			]
 
 			StorageMirror.reflect({
 				keys: reflectKeys,
@@ -291,13 +300,13 @@ export class StorageService extends CacheModule implements OnInit{
 	}
 
 	async getDashboardID(): Promise<dashboardID> {
-		const data = (await this.getObject('dashboard_id')) as DashboardSetting
+		const data = (await this.getObject(DASHBOARD_ID)) as DashboardSetting
 		if (!data) return null
 		return data.id as dashboardID
 	}
 
 	async setDashboardID(id: dashboardID): Promise<void> {
-		await this.setObject('dashboard_id', {
+		await this.setObject(DASHBOARD_ID, {
 			id: id,
 		} as DashboardSetting)
 	}
@@ -321,8 +330,6 @@ export class StorageService extends CacheModule implements OnInit{
 	async setDashboardTimeframe(timeframe: Period): Promise<void> {
 		await this.setObject('dashboard_timeframe', timeframe)
 	}
-
-
 }
 
 interface DashboardSetting {

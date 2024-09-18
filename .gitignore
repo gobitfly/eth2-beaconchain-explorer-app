@@ -14,6 +14,8 @@ UserInterfaceState.xcuserstate
 $RECYCLE.BIN/
 .angular
 .env
+bundle.zip
+bundle-sourcemap.zip
 
 *.log
 log.txt
@@ -31,6 +33,7 @@ npm-debug.log*
 /platforms
 /plugins
 /www
+/www-sourcemap
 /android/app/src/prod/google-services.json
 /android/app/src/beta/google-services.json
 /ios/App/GoogleService-Info.plist

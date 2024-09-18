@@ -2,8 +2,6 @@
 //  StorageMirror.swift
 //  App
 //
-//  Created by Kai Pflaume on 28.04.21.
-//
 
 import Foundation
 import Capacitor

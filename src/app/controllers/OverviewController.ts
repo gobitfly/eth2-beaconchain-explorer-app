@@ -59,7 +59,7 @@ export class OverviewProvider {
 
 		let startTime = options.startTime
 		if (startTime == null) {
-			startTime = Date.now() / 1000 - 1 * 24 * 60 * 60
+			startTime = Date.now() / 1000 - 12 * 60 * 60
 			if (aggregation == Aggregation.Epoch) {
 				startTime = Date.now() / 1000 - 8 * 60 * 60
 			} else if (aggregation == Aggregation.Daily) {
@@ -153,7 +153,8 @@ export class OverviewData2 {
 
 	foreignValidator: boolean = false
 
-	chainNetwork: Signal<ChainNetwork> = computed(() => {	
+	chainNetwork: Signal<ChainNetwork> = computed(() => {
+		return findChainNetworkById(17000) // todo: wait for fix https://bitfly1.atlassian.net/browse/BEDS-476
 		if (!this.overviewData()) return findChainNetworkById(0)
 		return findChainNetworkById(this.overviewData().network)
 	})
