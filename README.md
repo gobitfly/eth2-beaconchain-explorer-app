@@ -50,7 +50,7 @@ NOTE: You need to provide your own google-services.json for Android and GoogleSe
 ### Browser
 To run the app in your browser, simply use
 
-`npm run-script serve`
+`npm run dev`
 
 to start a local webserver with livereload enabled.
 
@@ -77,7 +77,7 @@ Adapt the --host param to match your computers IP.
 
 #### Build for production
 
-`npm run-script build-android-for-production`
+`npm run build-android`
 
 #### Install via Android Studio
 To install the app on a real device, follow this guide: https://developer.android.com/studio/run/device
@@ -105,7 +105,7 @@ Adapt the --host param to match your macs IP.
 
 #### Build for production
 
-`npm run-script build-ios-for-production`
+`npm run build-ios`
 
 ### Best Practices
 

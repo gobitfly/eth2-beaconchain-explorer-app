@@ -89,7 +89,6 @@ export class HelpComponent implements OnInit {
 			this.storage,
 			this.api,
 			this.unit,
-			this.notificationBase,
 			this.theme,
 			this.alert,
 			this.merchant,

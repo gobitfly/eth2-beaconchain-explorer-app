@@ -1,9 +1,8 @@
-import { Component, OnInit, Input } from '@angular/core'
+import { Component, OnInit, Input, WritableSignal, signal } from '@angular/core'
 import { ModalController } from '@ionic/angular'
 import ClientUpdateUtils from '../../utils/ClientUpdateUtils'
 import { NotificationBase } from '../../tab-preferences/notification-base'
-import { SyncService } from '../../services/sync.service'
-
+import { StorageService } from 'src/app/services/storage.service'
 @Component({
 	selector: 'app-clients',
 	templateUrl: './clients.page.html',
@@ -12,14 +11,28 @@ import { SyncService } from '../../services/sync.service'
 export class ClientsPage implements OnInit {
 	@Input() clientIdentifier = ''
 
+	loading: WritableSignal<boolean> = signal(false)
+	online: WritableSignal<boolean> = signal(true)
+
 	constructor(
 		private modalCtrl: ModalController,
 		private updateUtils: ClientUpdateUtils,
-		private sync: SyncService,
-		public notificationBase: NotificationBase
+		public notificationBase: NotificationBase,
+		private storage: StorageService
 	) {}
 
-	ngOnInit() {
+	async doRefresh(force: boolean = false) {
+		if (!(await this.storage.isLoggedIn())) return
+		this.loading.set(true)
+		const result = await this.notificationBase.updateClientsFromRemote(force)
+		if (result.error) {
+			this.online.set(false)
+		}
+		this.loading.set(false)
+	}
+
+	async ngOnInit() {
+		await this.doRefresh()
 		this.updateUtils.getClient('LIGHTHOUSE').then((result) => {
 			this.notificationBase.setClientToggleState('LIGHTHOUSE', result && result != 'null')
 		})
@@ -59,7 +72,8 @@ export class ClientsPage implements OnInit {
 
 	closeModal() {
 		if (this.notificationBase.settingsChanged) {
-			this.sync.syncAllSettings(true)
+			//this.sync.syncAllSettings(true)
+			// todo save
 		}
 		this.modalCtrl.dismiss()
 	}

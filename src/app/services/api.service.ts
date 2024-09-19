@@ -101,6 +101,7 @@ export class ApiService extends CacheModule {
 		this.apiUserKey = await this.getApiKey()
 		this.apiAccessKey = this.use(environment.API_ACCESS_KEY)
 		console.log('API SERVICE INITIALISED', this.apiAccessKey)
+		return this
 	}
 
 	async loadNetworkConfig() {

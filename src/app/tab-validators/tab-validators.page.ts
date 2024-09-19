@@ -47,6 +47,7 @@ import { SearchResult } from '../requests/types/common'
 import { DashboardUtils, isLocalDashboard } from '../utils/DashboardUtils'
 import ThemeUtils from '../utils/ThemeUtils'
 import { APIError, APIForbiddenError, APINotFoundError, ApiResult, APIUnauthorizedError } from '../requests/requests'
+import { AppComponent } from '../app.component'
 
 const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = "validators_tab"
@@ -101,12 +102,15 @@ export class Tab2Page implements OnInit {
 		this.dashboardUtils.dashboardAwareListener.register(DASHBOARD_UPDATE)
 
 		// Back key on android should cancel select mode
-		this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+		this.platform.backButton.subscribe(() => {
+			console.info("BACKPRESS SELECTMODE", this.selectMode)
 			if (this.selectMode) {
-				this.cancelSelect()
-			} else {
-				processNextHandler()
-			}
+				this.cancelSelect(true)
+				// give a bit time for backpress to fully propagate and then disable the backpress prevention
+				setTimeout(() => {
+					AppComponent.PREVENT_BACK_PRESS = false
+				}, 500)
+			} 
 		})
 	}
 
@@ -131,6 +135,7 @@ export class Tab2Page implements OnInit {
 	}
 
 	ionViewWillLeave() {
+		this.cancelSelect()
 		if (this.validatorSetAltered) {
 			this.validatorSetAltered = false
 			this.dashboardUtils.dashboardAwareListener.notifyAll()
@@ -140,6 +145,7 @@ export class Tab2Page implements OnInit {
 	async setup() {
 		this.online = true
 		this.selectMode = false
+		AppComponent.PREVENT_BACK_PRESS = false
 		this.selected = new Map<number, boolean>()
 		this.searchResult = null
 		this.searchResultMode = false
@@ -472,6 +478,7 @@ export class Tab2Page implements OnInit {
 
 	selectValidator(item: Validator) {
 		this.selectMode = !this.selectMode
+		AppComponent.PREVENT_BACK_PRESS = this.selectMode
 		if (!this.selectMode) {
 			this.cancelSelect()
 		} else {
@@ -584,7 +591,15 @@ export class Tab2Page implements OnInit {
 		}
 	}
 
-	cancelSelect() {
+	cancelSelect(preventPreventBackPress = false) {
+		// cancelSelect is called when backpress is pressed,
+		// so it can lead to a scenario where prevent backpress  is changed here to false
+		// while the backpress hasn't fully propagated yet.
+		// hence preventPreventBackPress = true in this scenario
+		if (!preventPreventBackPress) {
+			AppComponent.PREVENT_BACK_PRESS = false
+		}
+		
 		this.selectMode = false
 		this.selected = new Map<number, boolean>()
 		this.themeUtils.revertStatusBarColor()

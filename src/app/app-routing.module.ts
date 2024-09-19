@@ -46,10 +46,6 @@ const routes: Routes = [
 		loadChildren: () => import('./pages/dev/dev.module').then((m) => m.DevPageModule),
 	},
 	{
-		path: 'notifications',
-		loadChildren: () => import('./pages/notifications/notifications.module').then((m) => m.NotificationsPageModule),
-	},
-	{
 		path: 'logview',
 		loadChildren: () => import('./pages/logview/logview.module').then((m) => m.LogviewPageModule),
 	},

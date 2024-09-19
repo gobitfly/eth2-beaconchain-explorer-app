@@ -85,10 +85,6 @@ export class AppModule {}
 
 export function initializeApp(apiService: ApiService, bootPreloadService: BootPreloadService): () => Promise<void> {
 	return async () => {
-		// Initialize ApiService first
-		await apiService.initialize()
-
-		// Now that ApiService is initialized, you can preload using BootPreloadService
-		bootPreloadService.preload()
+		bootPreloadService.preload(await apiService.initialize())
 	}
 }

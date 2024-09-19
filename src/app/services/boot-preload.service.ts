@@ -18,20 +18,45 @@
  */
 
 import { Injectable } from '@angular/core'
-import { ValidatorUtils } from '../utils/ValidatorUtils'
 import ClientUpdateUtils from '../utils/ClientUpdateUtils'
+import { ApiService } from './api.service'
+import { StorageService } from './storage.service'
+import { V2DashboardOverview, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
+
 
 @Injectable({
 	providedIn: 'root',
 })
 export class BootPreloadService {
-	constructor(private validatorUtils: ValidatorUtils, private clientUpdateUtils: ClientUpdateUtils) {}
+	constructor(
+		private clientUpdateUtils: ClientUpdateUtils,
+		private storage: StorageService
+	) {}
 
-	preload() {
+	preload(api: ApiService) {
 		try {
+			// This might seem weird but if there is no dashboard ID yet,
+			// stuff like validator search (post) won't work since we have no CSRF token yet.
+			// By getting latest state, we also get the csrf token.
+			api.getLatestState(true)
+
+			this.preloadDashboard(api)
+
 			this.clientUpdateUtils.checkAllUpdates()
 		} catch (e) {
 			console.warn('can not preload', e)
+		}
+	}
+
+	async preloadDashboard(api: ApiService) {
+		const id = await this.storage.getDashboardID()
+		if (id) {
+			const timeFrame = await this.storage.getDashboardTimeframe()
+
+			// preload the 3 calls needed for display
+			api.execute2(new V2DashboardOverview(id), 'dashboard')
+			api.execute2(new V2DashboardSummaryTable(id, timeFrame, null), 'dashboard')
+			api.execute2(new V2DashboardSummaryGroupTable(id, 0, timeFrame, null), 'dashboard')
 		}
 	}
 }

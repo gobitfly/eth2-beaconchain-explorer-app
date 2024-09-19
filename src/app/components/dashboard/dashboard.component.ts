@@ -200,18 +200,8 @@ export class DashboardComponent implements OnInit {
 	}
 
 	ngOnChanges(event: { data: { currentValue: unknown } }) {
-		console.log('event data', event.data)
 		if (event.data && event.data instanceof SimpleChange) {
 			if (event.data.currentValue) {
-				if (this.platform.is('ios') || this.platform.is('android')) {
-					this.firebaseUtils.hasNotificationConsent().then(async (result) => {
-						const loggedIn = await this.storage.isLoggedIn()
-						if (!loggedIn) return
-
-						this.notificationPermissionPending = !result
-					})
-				}
-
 				this.beaconChainUrl = this.api.getBaseUrl()
 			}
 		}
@@ -295,6 +285,14 @@ export class DashboardComponent implements OnInit {
 		getSuccessFailMode(this.storage).then((result) => {
 			this.successFailMode.set(result)
 		})
+		if (this.platform.is('ios') || this.platform.is('android')) {
+			this.firebaseUtils.hasNotificationConsent().then(async (result) => {
+				const loggedIn = await this.storage.isLoggedIn()
+				if (!loggedIn) return
+
+				this.notificationPermissionPending = !result
+			})
+		}
 		this.storage.getItem('rpl_pdisplay_mode').then((result) => (this.rplState = result ? result : 'rpl'))
 	}
 

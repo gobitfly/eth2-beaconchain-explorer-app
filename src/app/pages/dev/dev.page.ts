@@ -87,16 +87,6 @@ export class DevPage extends Tab3Page implements OnInit {
 		this.updateUtils.checkAllUpdates()
 	}
 
-	clearSyncQueue() {
-		this.sync.developDeleteQueue()
-		Toast.show({
-			text: 'Queue cleared',
-		})
-	}
-
-	forceSync() {
-		this.sync.fullSync()
-	}
 
 	updateFirebaseToken() {
 		this.firebaseUtils.pushLastTokenUpstream(true)

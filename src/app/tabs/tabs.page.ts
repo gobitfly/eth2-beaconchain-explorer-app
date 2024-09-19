@@ -31,7 +31,7 @@ import V2Migrator from '../utils/V2Migrator'
 	templateUrl: 'tabs.page.html',
 	styleUrls: ['tabs.page.scss'],
 })
-export class TabsPage implements OnInit {
+export class TabsPage {
 	constructor(
 		private firebaseUtils: FirebaseUtils,
 		private storage: StorageService,
@@ -41,23 +41,16 @@ export class TabsPage implements OnInit {
 		private v2Migrator: V2Migrator
 	) { }
 	
-	ngOnInit() {
-		console.log("force init latest state!")
-		// This might seem weird but if there is no dashboard ID yet,
-		// stuff like validator search (post) won't work since we have no CSRF token yet.
-		// By getting latest state, we also get the csrf token.
-		this.api.getLatestState(true)
-
-		setTimeout(() => {
-			this.v2Migrator.showDeprecationNotice()
-		}, 500)
-	}
 
 	ionViewDidEnter() {
 		setTimeout(() => this.preload(), 500)
 	}
 
 	private preload() {
+		setTimeout(() => {
+			this.v2Migrator.showDeprecationNotice()
+		}, 500)
+
 		// lazy initiating firebase token exchange
 		this.firebaseUtils.registerPush() // just initialize the firebaseutils service
 
@@ -68,15 +61,15 @@ export class TabsPage implements OnInit {
 			// await this.sync.syncAllSettings()
 		}, 5000)
 
-		// lazy ionic speed optimizations
-		setTimeout(() => {
-			this.hackyIonicPreloads()
-		}, 200)
-
 		// Validate licence and reset theme accordingly
 		setTimeout(() => {
 			this.validateTheming()
 		}, 600)
+
+		// lazy ionic speed optimizations
+		// setTimeout(() => {
+		// 	this.hackyIonicPreloads()
+		// }, 200)
 	}
 
 	private async validateTheming() {

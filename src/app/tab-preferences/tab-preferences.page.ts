@@ -33,12 +33,10 @@ import { AlertController } from '@ionic/angular'
 import FirebaseUtils from '../utils/FirebaseUtils'
 import { Platform } from '@ionic/angular'
 import { AlertService } from '../services/alert.service'
-import { SyncService } from '../services/sync.service'
 import { LicencesPage } from '../pages/licences/licences.page'
 import { SubscribePage } from '../pages/subscribe/subscribe.page'
 import { MerchantUtils } from '../utils/MerchantUtils'
 import { NotificationBase } from './notification-base'
-import { Router } from '@angular/router'
 
 import { Browser } from '@capacitor/browser'
 import { Toast } from '@capacitor/toast'
@@ -101,10 +99,8 @@ export class Tab3Page {
 		protected dashboardUtils: DashboardUtils,
 		public platform: Platform,
 		protected alerts: AlertService,
-		protected sync: SyncService,
 		protected merchant: MerchantUtils,
 		public notificationBase: NotificationBase,
-		private router: Router,
 		private flavor: FlavorUtils,
 		protected v2migrator: V2Migrator,
 		protected validatorUtils: ValidatorUtils,
@@ -151,18 +147,10 @@ export class Tab3Page {
 		})
 
 		this.notificationBase.disableToggleLock()
-
-		this.updateUtils.convertOldToNewClientSettings()
 	}
 
-	private loadingNotificationPage = false
 	async goToNotificationPage() {
-		if (this.loadingNotificationPage) return
-		this.loadingNotificationPage = true
-
-		await this.sync.syncAllSettings(true)
-		this.loadingNotificationPage = false
-		this.router.navigate(['/notifications'])
+		// todo
 	}
 
 	async openClientsPage(identifier: string) {
@@ -325,7 +313,6 @@ export class Tab3Page {
 			this.storage,
 			this.api,
 			this.unit,
-			this.notificationBase,
 			this.theme,
 			this.alerts,
 			this.merchant,
@@ -369,10 +356,6 @@ export class Tab3Page {
 			cssClass: 'my-custom-class',
 		})
 		return await modal.present()
-	}
-
-	ionViewDidLeave() {
-		this.sync.syncAllSettings()
 	}
 
 	manageSubs() {
@@ -429,7 +412,6 @@ export async function changeNetwork(
 	storage: StorageService,
 	api: ApiService,
 	unit: UnitconvService,
-	notificationBase: NotificationBase,
 	theme: ThemeUtils,
 	alertService: AlertService,
 	merchant: MerchantUtils,
@@ -444,7 +426,6 @@ export async function changeNetwork(
 
 	await storage.setNetworkPreferences(newConfig)
 	await api.initialize()
-	await notificationBase.loadAllToggles()
 	await unit.networkSwitchReload()
 	dashboardUtils.dashboardAwareListener.notifyAll()
 	//await this.unit.changeCurrency(this.currentFiatCurrency)

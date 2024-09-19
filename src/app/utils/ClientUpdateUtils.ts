@@ -130,7 +130,6 @@ const SETTINGS_UPDATECHANNEL = 'setting_client_updatechannel'
 	providedIn: 'root',
 })
 export default class ClientUpdateUtils {
-	private oldClientInfoConverted = false
 	updates: Release[] = null
 	lastTry = 0
 	private locked = false
@@ -315,37 +314,7 @@ export default class ClientUpdateUtils {
 		return new Release(client, temp.data[0])
 	}
 
-	async convertOldToNewClientSettings() {
-		if (this.oldClientInfoConverted) {
-			return
-		}
-
-		const oldEth1StorageKey = 'setting_client_eth1'
-
-		let oldClient = await this.storage.getItem(oldEth1StorageKey)
-		if (oldClient != null) {
-			console.log('Old ETH1/ETH2 client settings found, converting them')
-
-			if (oldClient != 'none') {
-				this.setClient(oldClient, oldClient)
-			}
-			this.storage.remove(oldEth1StorageKey)
-
-			// both ETH1 and ETH2 clients where used simultaneously
-			// so only if the ETH1 client was != null, there was a possibility for an ETH2 client too
-			const oldEth2StorageKey = 'setting_client_eth2'
-
-			oldClient = await this.storage.getItem(oldEth2StorageKey)
-			if (oldClient != null) {
-				if (oldClient != 'none') {
-					this.setClient(oldClient, oldClient)
-				}
-				this.storage.remove(oldEth2StorageKey)
-			}
-		}
-
-		this.oldClientInfoConverted = true
-	}
+	
 }
 
 interface LocalReleaseMark {

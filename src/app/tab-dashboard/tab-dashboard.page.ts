@@ -36,7 +36,7 @@ import { APIError, APINotFoundError, APIUnauthorizedError } from '../requests/re
 export const REAPPLY_KEY = 'reapply_notification2'
 
 const DASHBOARD_UPDATE = 'dashboard_update'
-const ASSOCIATED_CACHE_KEY = 'dashboard'
+export const ASSOCIATED_CACHE_KEY = 'dashboard'
 
 @Component({
 	selector: 'app-tab1',

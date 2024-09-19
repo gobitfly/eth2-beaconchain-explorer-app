@@ -20,7 +20,6 @@ import { Injectable } from '@angular/core'
 import MachineController, { ProcessedStats, StatsResponse } from '../controllers/MachineController'
 import { GetMyMachinesRequest } from '../requests/requests'
 import { StorageService } from '../services/storage.service'
-import { SyncService } from '../services/sync.service'
 import { CacheModule } from './CacheModule'
 
 const LOGTAG = '[MachineUtils] '
@@ -33,7 +32,10 @@ const MACHINE_CACHE = 'machine_'
 	providedIn: 'root',
 })
 export default class MachineUtils extends CacheModule {
-	constructor(private api: ApiService, private storage: StorageService, private sync: SyncService) {
+	constructor(
+		private api: ApiService,
+		private storage: StorageService
+	) {
 		super('machine', 4 * 60 * 1000)
 	}
 
@@ -58,22 +60,6 @@ export default class MachineUtils extends CacheModule {
 		return local
 	}
 
-	private async registerNewRemotesForSync(remote: string[]): Promise<boolean> {
-		const local = await this.getAllLocalMachineNames()
-		let returnOK = true
-		for (let i = 0; i < remote.length; i++) {
-			const it = remote[i] // TODO think about default scenario
-			if (!local || !local.includes(it)) {
-				console.log(LOGTAG + 'found a new machine, applying your notification preferences...')
-				returnOK = (await this.sync.reapplyNotifyEvent('monitoring_machine_offline', it)) && returnOK
-				returnOK = (await this.sync.reapplyNotifyEvent('monitoring_hdd_almostfull', it)) && returnOK
-				returnOK = (await this.sync.reapplyNotifyEvent('monitoring_cpu_load', it)) && returnOK
-				returnOK = (await this.sync.reapplyNotifyEvent('monitoring_memory_usage', it)) && returnOK
-			}
-		}
-		this.sync.syncAllSettings()
-		return returnOK
-	}
 
 	private registerAllLocalMachineNames(names: string[]) {
 		this.storage.setObject(MACHINES_STORAGE_KEY, names)
@@ -107,10 +93,6 @@ export default class MachineUtils extends CacheModule {
 		const result = await this.getAndProcessDataBase(timeslot)
 		const machineNames = this.getAllMachineNamesFrom(result)
 		console.log(LOGTAG + ' machine names', machineNames)
-
-		this.registerNewRemotesForSync(machineNames).then((remoteResult) => {
-			console.log(LOGTAG + ' registerNewRemotesForSync', remoteResult)
-		})
 
 		// Storing all machine names if
 		// Used for notification syncing

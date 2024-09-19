@@ -35,6 +35,8 @@ import { AppUpdater } from './utils/AppUpdater'
 	styleUrls: ['app.component.scss'],
 })
 export class AppComponent {
+	static PREVENT_BACK_PRESS = false
+
 	constructor(
 		private platform: Platform,
 		private theme: ThemeUtils,
@@ -58,7 +60,7 @@ export class AppComponent {
 		this.theme.init(() => {
 			SplashScreen.hide()
 		}) // just initialize the theme service
-		
+
 		this.setAndroidBackButtonBehavior()
 	}
 
@@ -66,7 +68,7 @@ export class AppComponent {
 		if (this.platform.is('android')) {
 			this.platform.backButton.subscribe(async () => {
 				const isModalOpened = await this.modalController.getTop()
-				if (window.location.pathname.startsWith('/tabs') && !isModalOpened) {
+				if (window.location.pathname.startsWith('/tabs') && !isModalOpened && !AppComponent.PREVENT_BACK_PRESS) {
 					App.exitApp()
 				}
 			})
