@@ -20,12 +20,6 @@
 import { ApiService } from '../services/api.service'
 import { StorageService, StoredShare } from '../services/storage.service'
 import { Injectable} from '@angular/core'
-import {
-	ValidatorResponse,
-	RocketPoolResponse,
-	ExecutionResponse,
-	SyncCommitteeResponse,
-} from '../requests/requests'
 import BigNumber from 'bignumber.js'
 import { UnitconvService } from '../services/unitconv.service'
 import { VDBManageValidatorsTableRow } from '../requests/types/validator_dashboard'
@@ -58,16 +52,11 @@ export interface Validator {
 	synced: boolean
 	version: number
 	//
-	data: ValidatorResponse
 	state: ValidatorState
 	attrEffectiveness: number
-	rocketpool: RocketPoolResponse
-	execution: ExecutionResponse
 	share: number
 	rplshare: number
 	execshare: number
-	currentSyncCommittee: SyncCommitteeResponse
-	nextSyncCommittee: SyncCommitteeResponse
 }
 
 @Injectable({

@@ -25,7 +25,7 @@ import { AlertService } from "../services/alert.service";
 import { OAuthUtils } from "./OAuthUtils";
 import { MerchantUtils } from "./MerchantUtils";
 import { SearchResult } from "../requests/types/common";
-import { searchType } from "../requests/search";
+import { searchType } from "../requests/v2-search";
 import { UnitconvService } from "../services/unitconv.service";
 import { APIError, APIUnauthorizedError } from "../requests/requests";
 

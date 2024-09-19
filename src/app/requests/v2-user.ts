@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
-import { APIRequest, Method, NoContent, SubscriptionData } from './requests'
+import { APIRequest, Method, NoContent } from './requests'
 import { Response } from '../services/api.service'
 import { UserInfo } from './types/user'
 import { UserDashboardsData } from './types/dashboard'
@@ -39,7 +39,7 @@ export class V2MyDashboards extends APIRequest<UserDashboardsData> {
 export class V2RegisterPushNotificationToken extends APIRequest<NoContent> {
 	resource = 'users/me/notifications/settings/paired-devices/{client_id}/token'
 	method = Method.PUT
-	
+
 	parse(response: Response): NoContent[] {
 		if (response && response.data) return response.data as NoContent[]
 		return null
@@ -55,9 +55,23 @@ export class V2RegisterPushNotificationToken extends APIRequest<NoContent> {
 export class V2PurchaseValidation extends APIRequest<NoContent> {
 	resource = 'mobile/purchase'
 	method = Method.POST
-	
+
 	constructor(subscriptionData: SubscriptionData) {
 		super()
 		this.postData = subscriptionData
 	}
+}
+
+export interface SubscriptionTransaction {
+	id: string
+	receipt: string
+	type: string
+}
+
+export interface SubscriptionData {
+	currency: string
+	id: string
+	priceMicros: number
+	transaction: SubscriptionTransaction
+	valid: boolean
 }

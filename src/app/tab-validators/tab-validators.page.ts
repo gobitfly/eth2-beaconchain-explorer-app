@@ -42,7 +42,7 @@ import {
 import { VDBManageValidatorsTableRow, VDBOverviewData, VDBOverviewGroup } from '../requests/types/validator_dashboard'
 import { Toast } from '@capacitor/toast'
 import { Haptics } from '@capacitor/haptics'
-import { searchType, V2SearchValidators } from '../requests/search'
+import { searchType, V2SearchValidators } from '../requests/v2-search'
 import { SearchResult } from '../requests/types/common'
 import { DashboardUtils, isLocalDashboard } from '../utils/DashboardUtils'
 import ThemeUtils from '../utils/ThemeUtils'

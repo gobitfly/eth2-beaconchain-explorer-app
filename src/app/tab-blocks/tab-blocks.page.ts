@@ -1,7 +1,7 @@
 import { Component, computed, OnInit, signal, ViewChild, WritableSignal } from '@angular/core'
 import { ModalController } from '@ionic/angular'
 import { BlockDetailPage } from '../pages/block-detail/block-detail.page'
-import { APINotFoundError, ApiResult, APIUnauthorizedError, BlockResponse } from '../requests/requests'
+import { APINotFoundError, ApiResult, APIUnauthorizedError } from '../requests/requests'
 import { AlertService } from '../services/alert.service'
 import { ApiService } from '../services/api.service'
 import { UnitconvService } from '../services/unitconv.service'
@@ -129,10 +129,11 @@ export class TabBlocksPage implements OnInit {
 					text: 'Could not load blocks',
 					duration: 'long',
 				})
-				if (!(result.error instanceof APIUnauthorizedError)) { // todo change to just if timeout?
+				if (!(result.error instanceof APIUnauthorizedError)) {
+					// todo change to just if timeout?
 					this.online = false
 				}
-				
+
 				console.error('Could not load blocks', result.error)
 				return {
 					data: undefined,
@@ -169,7 +170,7 @@ export class TabBlocksPage implements OnInit {
 		this.initialLoading = false
 	}
 
-	async clickBlock(item: BlockResponse) {
+	async clickBlock(item: VDBBlocksTableRow) {
 		const modal = await this.modalController.create({
 			component: BlockDetailPage,
 			cssClass: 'my-custom-class',
