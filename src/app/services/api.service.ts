@@ -202,8 +202,7 @@ export class ApiService extends CacheModule {
 		const req = new RefreshTokenRequest(user.refreshToken, Capacitor.getPlatform() == 'ios')
 
 		const resp = await this.execute(req)
-		const response = req.parse(resp)
-		const result = response[0]
+		const result = req.parse(resp)
 
 		// Intention to not log access token in app logs
 		if (this.debug) {
@@ -260,7 +259,7 @@ export class ApiService extends CacheModule {
 		return null
 	}
 
-	async execute2<T>(request: APIRequest<T>, associatedCacheKey: string = null): Promise<ApiResult<T[]>> {
+	async execute2<T>(request: APIRequest<T>, associatedCacheKey: string = null): Promise<ApiResult<T>> {
 		try {
 			const response = await this.executeUnhandled(request)
 			if (associatedCacheKey) {
@@ -592,7 +591,7 @@ export class ApiService extends CacheModule {
 			return null
 		}
 		const result = {
-			state: temp.data[0],
+			state: temp.data,
 			ts: Date.now(),
 		}
 
@@ -605,15 +604,6 @@ export class ApiService extends CacheModule {
 	}
 
 	set<T>(request: APIRequest<T>, s: WritableSignal<T>, associatedCacheKey: string = null) {
-		return this.execute2(request, associatedCacheKey).then((data) => {
-			if (data.error) {
-				return data
-			}
-			s.set(data.data[0])
-			return data
-		})
-	}
-	setArray<T>(request: APIRequest<T>, s: WritableSignal<T[]>, associatedCacheKey: string = null) {
 		return this.execute2(request, associatedCacheKey).then((data) => {
 			if (data.error) {
 				return data

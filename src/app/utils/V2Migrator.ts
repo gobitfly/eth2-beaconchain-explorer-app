@@ -202,18 +202,18 @@ export default class V2Migrator {
 		const result = await this.api.execute2(loginRequest)
 		console.log('migrator, v1SessionToV2 eq exchange', result) // todo remove
 
-		if (result.error || result.data.length != 1) {
+		if (result.error) {
 			console.warn('migrator, invalid response', result)
 			return false
 		}
 
-		if (!result.data[0].Session) {
+		if (!result.data.Session) {
 			console.warn('migrator, no session found', result)
 			return false
 		}
 
 		await this.storage.setAuthUserv2({
-			Session: result.data[0].Session,
+			Session: result.data.Session,
 		} as StorageTypes.AuthUserv2)
 		await this.api.initialize()
 		console.info("migrator, v1 session successfully migrated to v2")

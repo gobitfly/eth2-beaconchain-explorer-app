@@ -96,7 +96,7 @@ export class TabBlocksPage implements OnInit {
 		this.dataSource = new InfiniteScrollDataSource<VDBBlocksTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
 	}
 
-	private async loadSummaryGroup(recursiveMax = false): Promise<ApiResult<VDBGroupSummaryData[]>> {
+	private async loadSummaryGroup(recursiveMax = false): Promise<ApiResult<VDBGroupSummaryData>> {
 		const result = await this.api.set(
 			new V2DashboardSummaryGroupTable(this.dashboardID, 0, Period.AllTime, null),
 			this.summaryGroup,

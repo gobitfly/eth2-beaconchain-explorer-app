@@ -282,7 +282,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 				}
 				loading.dismiss()
 
-				const validatorCount = getValidatorCount(result.data[0])
+				const validatorCount = getValidatorCount(result.data)
 
 				if (validatorCount + index.length > this.merchant.getCurrentPlanMaxValidator()) {
 					Toast.show({
@@ -292,7 +292,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 					return
 				}
 
-				const allGroups = result.data[0].groups.map((g) => {
+				const allGroups = result.data.groups.map((g) => {
 					return {
 						name: 'group',
 						label: g.name + ' (' + g.count + ')',

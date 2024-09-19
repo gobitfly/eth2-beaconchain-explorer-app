@@ -269,7 +269,7 @@ export class Tab2Page implements OnInit {
 		await modal.onWillDismiss()
 	}
 
-	private async updateGroups(recursiveMax: boolean = false): Promise<ApiResult<VDBOverviewData[]> | null> {
+	private async updateGroups(recursiveMax: boolean = false): Promise<ApiResult<VDBOverviewData> | null> {
 		if (!this.isLoggedIn) {
 			return null
 		}
@@ -851,7 +851,7 @@ export class Tab2Page implements OnInit {
 								loading.dismiss()
 								return
 							}
-							this.selectedGroup = result.data[0].id
+							this.selectedGroup = result.data.id
 
 							this.updateValidators()
 						}

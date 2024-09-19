@@ -20,7 +20,7 @@ import { BlockOverview } from './types/block'
 import { VDBBlocksTableRow } from './types/validator_dashboard'
 import { dashboardID, networkID, setID } from './v2-dashboard'
 
-export class V2DashboardBlocks extends APIRequest<VDBBlocksTableRow> {
+export class V2DashboardBlocks extends APIRequest<VDBBlocksTableRow[]> {
 	resource = 'validator-dashboards/{id}/blocks'
 	method = Method.GET
 

@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core'
+import { Component } from '@angular/core'
 import { StorageService } from '../services/storage.service'
 import FirebaseUtils from '../utils/FirebaseUtils'
 import { MerchantUtils } from '../utils/MerchantUtils'

@@ -30,7 +30,7 @@ export enum searchType {
 	validatorsByGraffiti = 'validators_by_graffiti',
 }
 
-export class V2SearchValidators extends APIRequest<SearchResult> {
+export class V2SearchValidators extends APIRequest<SearchResult[]> {
 	resource = 'search'
 	method = Method.POST
 

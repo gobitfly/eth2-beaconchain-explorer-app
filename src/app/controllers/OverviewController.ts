@@ -36,6 +36,7 @@ import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/c
 import { ChartData } from '../requests/types/common'
 import { DashboardUtils } from '../utils/DashboardUtils'
 import { ChainNetwork, findChainNetworkById } from '../utils/NetworkData'
+import { sumBigInt } from '../utils/MathUtils'
 export interface SummaryChartOptions {
 	aggregation: Aggregation
 	startTime: number
@@ -86,7 +87,7 @@ export class OverviewProvider {
 		const period = timeframe
 
 		return Promise.all([
-			this.api.setArray(new V2DashboardSummaryTable(data.id, period, null).withAllowedCacheResponse(!force), data.summary, data.associatedCacheKey),
+			this.api.set(new V2DashboardSummaryTable(data.id, period, null).withAllowedCacheResponse(!force), data.summary, data.associatedCacheKey),
 			this.api.set(
 				new V2DashboardSummaryGroupTable(data.id, 0, period, null).withAllowedCacheResponse(!force),
 				data.summaryGroup,
@@ -140,7 +141,7 @@ export class OverviewData2 {
 	summary: WritableSignal<VDBSummaryTableRow[]> = signal(null)
 	summaryGroup: WritableSignal<VDBGroupSummaryData> = signal(null)
 	latestState: WritableSignal<LatestStateWithTime> = signal(null)
-	rocketpool: WritableSignal<VDBRocketPoolTableRow> = signal(null)
+	rocketpool: WritableSignal<VDBRocketPoolTableRow[]> = signal(null)
 	summaryChart: WritableSignal<ChartData<number, number>> = signal(null)
 	rewardChart: WritableSignal<ChartData<number, string>> = signal(null)
 
@@ -216,7 +217,10 @@ export class OverviewData2 {
 
 	rpTotalRPLClaimed: Signal<BigNumber> = computed(() => {
 		if (this.rocketpool() == null) return new BigNumber(0)
-		return new BigNumber(this.rocketpool().rpl.claimed).plus(new BigNumber(this.rocketpool().rpl.unclaimed))
+		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl.claimed))
+		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl.unclaimed))
+		
+		return claimed.plus(unclaimed)
 	})
 
 	avgNetworkEfficiency: Signal<number> = computed(() => {
@@ -234,12 +238,16 @@ export class OverviewData2 {
 
 	totalSmoothingPool: Signal<BigNumber> = computed(() => {
 		if (this.rocketpool() == null) return new BigNumber(0)
-		return new BigNumber(this.rocketpool().smoothing_pool.claimed).plus(new BigNumber(this.rocketpool().smoothing_pool.unclaimed))
+		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.smoothing_pool.claimed))
+		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.smoothing_pool.unclaimed))
+		return claimed.plus(unclaimed)
 	})
 
 	totalRPL: Signal<BigNumber> = computed(() => {
 		if (this.rocketpool() == null) return new BigNumber(0)
-		return new BigNumber(this.rocketpool().rpl.unclaimed).plus(this.rocketpool().rpl.claimed)
+		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl.claimed))
+		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl.unclaimed))
+		return claimed.plus(unclaimed)
 	})
 }
 

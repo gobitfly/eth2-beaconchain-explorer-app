@@ -235,11 +235,11 @@
 			</ion-item>
 		</ion-list>
 
-		<ion-list-header *ngIf="this.data?.rocketpool()?.smoothing_pool.is_opt_in">
+		<ion-list-header *ngIf="this.data?.rocketpool()?.[0].smoothing_pool.is_opt_in">
 			<ion-label>Rocket Pool Smoothing Pool</ion-label>
 		</ion-list-header>
 
-		<ion-list class="performance" *ngIf="this.data?.rocketpool()?.smoothing_pool.is_opt_in">
+		<ion-list class="performance" *ngIf="this.data?.rocketpool()?.[0].smoothing_pool.is_opt_in">
 			<ion-item lines="none">
 				<div class="grid">
 					<app-grid-cell-left
@@ -257,8 +257,8 @@
 						(valueClick)="unit.switchCurrencyPipe()"
 						tooltip="All smoothing pool rewards that have accumulated for your node but have not been claimed yet."
 						(valueClick)="unit.switchCurrencyPipe()">
-						<span [class]="this.data?.rocketpool()?.smoothing_pool.unclaimed | valuestyle : 0">
-							{{ this.data?.rocketpool()?.smoothing_pool.unclaimed | mcurrency : 'WEI' : unit.pref.Exec }}
+						<span [class]="this.data?.rocketpool()?.[0].smoothing_pool.unclaimed | valuestyle : 0">
+							{{ this.data?.rocketpool()?.[0].smoothing_pool.unclaimed | mcurrency : 'WEI' : unit.pref.Exec }}
 						</span>
 					</app-grid-cell-right>
 				</div>
@@ -293,11 +293,11 @@
 				<ion-item lines="none">
 					<div class="grid">
 						<app-grid-cell-left name="Next Claim" tooltip="Estimated claim amount based on current network state." (valueClick)="switchRplStake(true)">
-							<span *ngIf="rplState == 'rpl' || rplState == '%'" [class]="data.rocketpool().rpl_estimate | valuestyle : 0">
-								{{ data.rocketpool().rpl_estimate | mcurrency : 'WEI' : 'RPL_NAKED' }}
+							<span *ngIf="rplState == 'rpl' || rplState == '%'" [class]="data.rocketpool()[0].rpl_estimate | valuestyle : 0">
+								{{ data.rocketpool()[0].rpl_estimate | mcurrency : 'WEI' : 'RPL_NAKED' }}
 							</span>
-							<span *ngIf="rplState == 'conv'" [class]="data.rocketpool().rpl_estimate | valuestyle : 0">
-								{{ data.rocketpool().rpl_estimate | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
+							<span *ngIf="rplState == 'conv'" [class]="data.rocketpool()[0].rpl_estimate | valuestyle : 0">
+								{{ data.rocketpool()[0].rpl_estimate | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
 							</span>
 						</app-grid-cell-left>
 
@@ -317,11 +317,11 @@
 							name="Unclaimed"
 							tooltip="All RPL that have accumulated for your node but have not been claimed yet."
 							(valueClick)="switchRplStake()">
-							<span *ngIf="rplState == 'rpl' || rplState == '%'" [class]="data.rocketpool().rpl.unclaimed | valuestyle : 0">
-								{{ data.rocketpool().rpl.unclaimed | mcurrency : 'WEI' : 'RPL_NAKED' }}
+							<span *ngIf="rplState == 'rpl' || rplState == '%'" [class]="data.rocketpool()[0].rpl.unclaimed | valuestyle : 0">
+								{{ data.rocketpool()[0].rpl.unclaimed | mcurrency : 'WEI' : 'RPL_NAKED' }}
 							</span>
-							<span *ngIf="rplState == 'conv'" [class]="data.rocketpool().rpl.unclaimed | valuestyle : 0">
-								{{ data.rocketpool().rpl.unclaimed | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
+							<span *ngIf="rplState == 'conv'" [class]="data.rocketpool()[0].rpl.unclaimed | valuestyle : 0">
+								{{ data.rocketpool()[0].rpl.unclaimed | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
 							</span>
 						</app-grid-cell-left>
 
@@ -349,7 +349,7 @@
 						</app-grid-cell-left>
 
 						<app-grid-cell-right name="RPL APR" tooltip="Estimated yearly RPL returns, based on the last 7 days">
-							<span [class]="data.rocketpool().rpl_apr | valuestyle : 0">{{ data.rocketpool().rpl_apr | number : '1.0-2' }} %</span>
+							<span [class]="data.rocketpool()[0].rpl_apr | valuestyle : 0">{{ data.rocketpool()[0].rpl_apr | number : '1.0-2' }} %</span>
 						</app-grid-cell-right>
 
 						<app-grid-cell-left
@@ -358,28 +358,28 @@
 							<span
 								*ngIf="rplState == 'rpl'"
 								[class]="
-									data.rocketpool().staked.rpl | valuestyle : data.rocketpool().collateral.min_value : data.rocketpool().collateral.max_value : -1
+									data.rocketpool()[0].staked.rpl | valuestyle : data.rocketpool()[0].collateral.min_value : data.rocketpool()[0].collateral.max_value : -1
 								">
-								{{ data.rocketpool().staked.rpl | mcurrency : 'WEI' : 'RPL_NAKED' }}
+								{{ data.rocketpool()[0].staked.rpl | mcurrency : 'WEI' : 'RPL_NAKED' }}
 							</span>
 							<span
 								*ngIf="rplState == 'conv'"
 								[class]="
-									data.rocketpool().staked.rpl | valuestyle : data.rocketpool().collateral.min_value : data.rocketpool().collateral.max_value : -1
+									data.rocketpool()[0].staked.rpl | valuestyle : data.rocketpool()[0].collateral.min_value : data.rocketpool()[0].collateral.max_value : -1
 								">
-								{{ data.rocketpool().staked.rpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
+								{{ data.rocketpool()[0].staked.rpl | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
 							</span>
 							<span
 								*ngIf="rplState == '%'"
 								[class]="
-									data.rocketpool().staked.rpl | valuestyle : data.rocketpool().collateral.min_value : data.rocketpool().collateral.max_value : -1
+									data.rocketpool()[0].staked.rpl | valuestyle : data.rocketpool()[0].collateral.min_value : data.rocketpool()[0].collateral.max_value : -1
 								">
-								{{ data.rocketpool().collateral.percentage | number : '1.0-2' }} %
+								{{ data.rocketpool()[0].collateral.percentage | number : '1.0-2' }} %
 							</span>
 						</app-grid-cell-left>
 
 						<app-grid-cell-right name="Avg Fee" tooltip="Average of all your minipool commission fees">
-							{{ data.rocketpool().avg_commission | number : '1.0-2' }} %
+							{{ data.rocketpool()[0].avg_commission | number : '1.0-2' }} %
 						</app-grid-cell-right>
 
 						<app-grid-cell-left
@@ -387,12 +387,12 @@
 							(valueClick)="switchRplStake()"
 							tooltip="Your nodes collateral must be between this range to be eligible for RPL claims.">
 							<span *ngIf="rplState == 'rpl' || rplState == '%'">
-								{{ data.rocketpool().collateral.min_value | mcurrency : 'WEI' : 'NO_CURRENCY' }} -
-								{{ data.rocketpool().collateral.max_value | mcurrency : 'WEI' : 'NO_CURRENCY' }} RPL
+								{{ data.rocketpool()[0].collateral.min_value | mcurrency : 'WEI' : 'NO_CURRENCY' }} -
+								{{ data.rocketpool()[0].collateral.max_value | mcurrency : 'WEI' : 'NO_CURRENCY' }} RPL
 							</span>
 							<span *ngIf="rplState == 'conv'">
-								{{ data.rocketpool().collateral.min_value | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }} -
-								{{ data.rocketpool().collateral.max_value | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
+								{{ data.rocketpool()[0].collateral.min_value | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }} -
+								{{ data.rocketpool()[0].collateral.max_value | mcurrency : 'WEI' : 'RPL' : false | mcurrency : 'ETHER' : unit.pref.RPL }}
 							</span>
 						</app-grid-cell-left>
 

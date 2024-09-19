@@ -104,7 +104,7 @@ export abstract class APIRequest<T> {
 	endPoint = 'default'
 	postData?: unknown
 	expectedResponseStatus = 200
-	customCacheKey: string|null = null
+	customCacheKey: string | null = null
 	allowCachedResponse = true
 
 	withCustomCacheKey(key: string): this {
@@ -117,19 +117,19 @@ export abstract class APIRequest<T> {
 		return this
 	}
 
-	sortResultFn: ((a: T, b: T) => number) | null = null
+	sortResultFn: ((a: T extends Array<infer U> ? U : T, b: T extends Array<infer U> ? U : T) => number) | null = null
 
-	parse(response: Response): T[] | null {
+	parse(response: Response): T | null {
 		return this.parseBase(response)
 	}
 
-	parse2(response: Response): ApiResult<T[]> {
+	parse2(response: Response): ApiResult<T> {
 		if (this.wasSuccessful(response)) {
 			return {
 				data: this.parse(response),
 				error: null,
 				cached: response.cached,
-				paging: getProperty(response?.data, 'paging') as Paging || null,
+				paging: (getProperty(response?.data, 'paging') as Paging) || null,
 			}
 		}
 
@@ -137,7 +137,7 @@ export abstract class APIRequest<T> {
 		if (!response || response.status != this.expectedResponseStatus) {
 			error = getHTTPError(
 				response ? response.status : 0,
-				getProperty(response?.data, 'error') as string || response ? 'HTTP status code: ' + response.status : 'No response error'
+				(getProperty(response?.data, 'error') as string) || response ? 'HTTP status code: ' + response.status : 'No response error'
 			)
 		}
 
@@ -159,9 +159,9 @@ export abstract class APIRequest<T> {
 		return response && (response.status == 'OK' || response.status == this.expectedResponseStatus || !hasDataStatus)
 	}
 
-	protected parseBase(response: Response, hasDataStatus = true): T[] | null {
+	protected parseBase(response: Response, hasDataStatus = true): T | null {
 		if (!this.wasSuccessful(response, hasDataStatus)) {
-			return []
+			return null
 		}
 
 		if (response && response.data && getProperty(response?.data, 'data')) {
@@ -170,13 +170,10 @@ export abstract class APIRequest<T> {
 				if (this.sortResultFn) {
 					data.sort(this.sortResultFn)
 				}
-
-				return data as T[]
-			} else {
-				return [data as T]
 			}
+			return data as T
 		}
-		return []
+		return null
 	}
 
 	options: HttpOptions = {
@@ -273,9 +270,9 @@ export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 		},
 	}
 
-	parse(response: Response): ApiTokenResponse[] {
-		if (response && response.data) return [response.data] as ApiTokenResponse[]
-		else return []
+	parse(response: Response): ApiTokenResponse {
+		if (response && response.data) return response.data as ApiTokenResponse
+		else return null
 	}
 
 	constructor(refreshToken: string, isIOS: boolean) {
@@ -302,8 +299,8 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 	method = Method.POST
 	requiresAuth = true
 	
-	parse(response: Response): APIResponse[] | null {
-		if (response && response.data) return response.data as APIResponse[]
+	parse(response: Response): APIResponse | null {
+		if (response && response.data) return response.data as APIResponse
 		return null
 	}
 
@@ -315,7 +312,7 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 
 // ------------ Special external api requests -----------------
 
-export class BitflyAdRequest extends APIRequest<BitflyAdResponse> {
+export class BitflyAdRequest extends APIRequest<BitflyAdResponse[]> {
 	endPoint = 'https://ads.bitfly.at'
 
 	resource = '/www/delivery/asyncspc.php?zones={ZONE}&prefix={PREFIX}'
@@ -349,7 +346,7 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
 	method = Method.GET
 	maxCacheAge = 40 * 60 * 1000
 
-	parse(response: Response): CoinbaseExchangeResponse[] | null {
+	parse(response: Response): CoinbaseExchangeResponse | null {
 		return this.parseBase(response, false)
 	}
 
@@ -359,7 +356,7 @@ export class CoinbaseExchangeRequest extends APIRequest<CoinbaseExchangeResponse
 	}
 }
 
-export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse> {
+export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse[]> {
 	endPoint = 'https://api.github.com'
 
 	resource = 'repos/'

@@ -20,7 +20,7 @@ import { NotificationClientsTableRow } from './types/notifications'
 
 
 // TODO: wronng endpoint, use notifications/settings once done
-export class V2SubscribedClients extends APIRequest<NotificationClientsTableRow> {
+export class V2SubscribedClients extends APIRequest<NotificationClientsTableRow[]> {
 	resource = 'users/me/notifications/clients'
 	method = Method.GET
 

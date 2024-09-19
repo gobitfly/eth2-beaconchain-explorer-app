@@ -460,8 +460,8 @@ export class UnitconvService {
 	private async getExchangeRate(unitPair: string): Promise<CoinbaseExchangeResponse> {
 		const temp = await this.api.execute2(new CoinbaseExchangeRequest(unitPair))
 		if(temp.error) return null
-		console.log('requested exchange rate for ', unitPair, 'got', temp.data[0].amount, 'as response')
-		return temp.data[0]
+		console.log('requested exchange rate for ', unitPair, 'got', temp.data.amount, 'as response')
+		return temp.data
 	}
 }
 

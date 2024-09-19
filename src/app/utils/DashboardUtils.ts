@@ -251,8 +251,8 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 
 			let targetDashboard: dashboardID = null
 			// if user has a dashboard, pick the first one
-			if (result.data && result.data[0] && result.data[0].validator_dashboards && result.data[0].validator_dashboards.length > 0) {
-				targetDashboard = result.data[0].validator_dashboards[0].id
+			if (result.data && result.data && result.data.validator_dashboards && result.data.validator_dashboards.length > 0) {
+				targetDashboard = result.data.validator_dashboards[0].id
 				// todo improve and pick the one on current network first - if user has multiple dashboards
 				console.log('found a user dashboard, picking first one')
 			} else {
@@ -265,7 +265,7 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 						text: 'Error renaming dashboard, please try again later',
 					})
 				} else {
-					targetDashboard = createResult.data[0].id
+					targetDashboard = createResult.data.id
 				}
 			}
 

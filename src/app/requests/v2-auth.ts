@@ -36,14 +36,14 @@ export class MigrateV1AuthToV2 extends APIRequest<V2AuthResponse> {
 		}
 	}
 
-	parseBase(response: Response, hasDataStatus = true): V2AuthResponse[] | null {
+	parseBase(response: Response, hasDataStatus = true): V2AuthResponse | null {
 		if (!this.wasSuccessful(response, hasDataStatus)) {
-			return []
+			return null
 		}
 
 		if (response && response.data) {
-			return [response.data as V2AuthResponse]
+			return response.data as V2AuthResponse
 		}
-		return []
+		return null
 	}
 }

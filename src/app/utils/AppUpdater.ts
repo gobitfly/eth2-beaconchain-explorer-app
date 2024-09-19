@@ -61,15 +61,13 @@ export class AppUpdater {
 				return
 			}
 
-			const latestData = latest.data[0]
-
-			if (latestData.has_native_update_available) {
+			if (latest.data.has_native_update_available) {
 				console.warn('new native is available on server but not yet on system app store, ignoring for now')
 				return
 			}
 
-			if (latestData.bundle_url) {
-				await this.updateBundle(latestData.bundle_url)
+			if (latest.data.bundle_url) {
+				await this.updateBundle(latest.data.bundle_url)
 			}
 		}
 	}

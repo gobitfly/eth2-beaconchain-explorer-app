@@ -63,7 +63,7 @@ export class V2DashboardOverview extends APIRequest<VDBOverviewData> {
 	}
 }
 
-export class V2DashboardSummaryTable extends APIRequest<VDBSummaryTableRow> {
+export class V2DashboardSummaryTable extends APIRequest<VDBSummaryTableRow[]> {
 	resource = 'validator-dashboards/{id}/summary'
 	method = Method.GET
 	updatesLastRefreshState = true
@@ -149,7 +149,7 @@ export class V2AddValidatorToDashboard extends APIRequest<VDBPostValidatorsData>
 	}
 }
 
-export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsTableRow> {
+export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsTableRow[]> {
 	resource = 'validator-dashboards/{id}/validators'
 	method = Method.GET
 
@@ -271,7 +271,7 @@ export class V2UpdateDashboardGroup extends APIRequest<VDBPostCreateGroupData> {
 
 // Rocket Pool
 
-export class V2DashboardRocketPool extends APIRequest<VDBRocketPoolTableRow> {
+export class V2DashboardRocketPool extends APIRequest<VDBRocketPoolTableRow[]> {
 	resource = 'validator-dashboards/{id}/rocket-pool'
 	method = Method.GET
 

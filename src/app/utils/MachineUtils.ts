@@ -129,9 +129,9 @@ export default class MachineUtils extends CacheModule {
 		const cached = (await this.getCache(MACHINE_CACHE + timeslot)) as StatsResponse
 		if (cached) return cached
 		const result = await this.api.execute2(new GetMyMachinesRequest(0, timeslot))
-		if (result && result.data[0]) {
-			this.putCache(MACHINE_CACHE + timeslot, result.data[0])
+		if (result && result.data) {
+			this.putCache(MACHINE_CACHE + timeslot, result.data)
 		}
-		return result.data[0]
+		return result.data
 	}
 }
