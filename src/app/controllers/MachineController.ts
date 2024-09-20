@@ -495,7 +495,7 @@ export default class MachineController {
 	public combineByMachineName(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
 		const allKeys = this.findAllKeys(validator, node, system)
 
-		const result: ProcessedStats[] = []
+		const result: Map<string, ProcessedStats>= new Map()
 		for (const key in allKeys) {
 			const sortedVal = this.sortData(validator.get(key)) as StatsValidator[]
 			const sortedNode = this.sortData(node.get(key)) as StatsNode[]
@@ -510,7 +510,7 @@ export default class MachineController {
 				continue
 			}
 
-			result[key] = {
+			result.set(key, {
 				validator: sortedVal,
 				node: sortedNode,
 				system: sortedSystem,
@@ -522,7 +522,7 @@ export default class MachineController {
 				}),
 				formattedDate: unixTime ? new Date(unixTime) : null,
 				status: 'ONLINE',
-			}
+			})
 		}
 
 		return result

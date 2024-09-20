@@ -19,7 +19,7 @@
 
 import { Component, computed, OnInit, signal, ViewChild, WritableSignal } from '@angular/core'
 import { Validator }  from '../utils/ValidatorUtils'
-import { AlertController, IonSearchbar, ModalController, Platform } from '@ionic/angular'
+import { AlertController, IonSearchbar, ModalController, Platform, SearchbarCustomEvent } from '@ionic/angular'
 import { ApiService, capitalize } from '../services/api.service'
 import { StorageService } from '../services/storage.service'
 import { AlertService } from '../services/alert.service'
@@ -103,14 +103,14 @@ export class Tab2Page implements OnInit {
 
 		// Back key on android should cancel select mode
 		this.platform.backButton.subscribe(() => {
-			console.info("BACKPRESS SELECTMODE", this.selectMode)
+			console.info('BACKPRESS SELECTMODE', this.selectMode)
 			if (this.selectMode) {
 				this.cancelSelect(true)
 				// give a bit time for backpress to fully propagate and then disable the backpress prevention
 				setTimeout(() => {
 					AppComponent.PREVENT_BACK_PRESS = false
 				}, 500)
-			} 
+			}
 		})
 	}
 
@@ -256,7 +256,7 @@ export class Tab2Page implements OnInit {
 				dashboardChangedCallback: async () => {
 					const loading = await this.alerts.presentLoading('Loading...')
 					loading.present()
-					if (this.dashboardID() == await this.storage.getDashboardID()) {
+					if (this.dashboardID() == (await this.storage.getDashboardID())) {
 						this.clearRequestCache()
 					}
 					await this.setup()
@@ -331,7 +331,7 @@ export class Tab2Page implements OnInit {
 		}
 	}
 
-	async searchEvent(event: { target: { value: string } }, maxRecursive = false): Promise<void> {
+	async searchEvent(event: SearchbarCustomEvent, maxRecursive = false): Promise<void> {
 		const searchString = event.target.value
 		if (!searchString || searchString.length < 0) return
 		if (this.platform.is('ios') || this.platform.is('android')) {
@@ -599,7 +599,7 @@ export class Tab2Page implements OnInit {
 		if (!preventPreventBackPress) {
 			AppComponent.PREVENT_BACK_PRESS = false
 		}
-		
+
 		this.selectMode = false
 		this.selected = new Map<number, boolean>()
 		this.themeUtils.revertStatusBarColor()

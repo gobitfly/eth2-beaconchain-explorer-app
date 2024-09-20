@@ -57,7 +57,7 @@
 				title="Grant Notification Permission"
 				icon="notifications-outline"
 				iconStyle="warn"
-				notificationPermission="true"
+				[notificationPermission]="true"
 				*ngIf="notificationPermissionPending"></app-message>
 
 			<app-message
@@ -72,7 +72,7 @@
 				icon="bulb-outline"
 				dismissKey="withdrawal_info_dismissed"
 				iconStyle="info"
-				dismissAble="true"
+				[dismissAble]="true"
 				msgTitle="Enable Withdrawals"
 				openUrl="https://launchpad.ethereum.org/en/withdrawals"
 				*ngIf="showWithdrawalInfo"></app-message>
@@ -107,7 +107,7 @@
 				[openUrl]="beaconChainUrl"
 				*ngIf="earlyGenesis()"></app-message>
 
-			<app-message title="Happy Holidays!" icon="gift-outline" iconStyle="genesis" dismissAble="true" *ngIf="theme.isWinterSeason()"> </app-message>
+			<app-message title="Happy Holidays!" icon="gift-outline" iconStyle="genesis" [dismissAble]="true" *ngIf="theme.isWinterSeason()"> </app-message>
 
 			<app-message
 				title="Active Sync Committee"
@@ -131,9 +131,9 @@
 				title="Congrats on your first proposal!"
 				icon="ribbon-outline"
 				iconStyle="genesis"
-				dismissAble="true"
+				[dismissAble]="true"
 				dismissKey="first_proposal_executed"
-				confettiOnClick="true"
+				[confettiOnClick]="true"
 				*ngIf="showFirstProposalMsg() | async"></app-message>
 
 			<app-message
@@ -423,7 +423,7 @@
 		<!-- Income -->
 		<ion-list class="performances" *ngIf="selectedExtraTab() == 'chartIncome'">
 			<ion-item lines="none">
-				<ion-label class="stat-title" tooltip="Rewards missed by sub-optimal performance" trigger="click" hideDelayAfterClick="5000">Missed Rewards</ion-label>
+				<ion-label class="stat-title" tooltip="Rewards missed by sub-optimal performance" trigger="click" [hideDelayAfterClick]="5000">Missed Rewards</ion-label>
 				<span (click)="unit.switchCurrencyPipe()">
 					<ion-label class="value" style="color: var(--text-color)">
 						{{ data.getTotalMissedRewards() | mcurrency : 'WEI' : unit.pref.Cons }}
@@ -446,7 +446,7 @@
 				<span
 					tooltip="*Missed proposal execution rewards are calculated by taking the median reward from a 33-slot window around the missed block."
 					trigger="click"
-					hideDelayAfterClick="5000">
+					[hideDelayAfterClick]="5000">
 					<ion-label class="stat-title">&nbsp;&nbsp;&nbsp;Block Execution*</ion-label>
 				</span>
 				<ion-label class="value" style="color: var(--text-color)" (click)="unit.switchCurrencyPipe()">
@@ -463,7 +463,7 @@
 
 		<!-- Efficiency -->
 		<ion-list class="performances" *ngIf="selectedExtraTab() == 'chartSummary'">
-			<app-success-fail-view [data]="this.data.summary()?.[0].attestations || 0" name="Attestations" [mode]="successFailMode"></app-success-fail-view>
+			<app-success-fail-view [data]="this.data.summary()?.[0].attestations || { success: 0, failed: 0 }" name="Attestations" [mode]="successFailMode"></app-success-fail-view>
 			<app-success-fail-view
 				[data]="this.data.summaryGroup().attestations_source"
 				name="&nbsp;&nbsp;&nbsp;Source"
@@ -490,7 +490,7 @@
 				<ion-label>Blocks {{ data.timeframeDisplay() }}</ion-label>
 			</ion-list-header>
 			<ion-list class="performances">
-				<app-success-fail-view [data]="this.data.summary()?.[0].proposals || 0" name="Proposals" [mode]="successFailMode"></app-success-fail-view>
+				<app-success-fail-view [data]="this.data.summary()?.[0].proposals || { success: 0, failed: 0 }" name="Proposals" [mode]="successFailMode"></app-success-fail-view>
 
 				<ion-item lines="none" *ngIf="data.summaryGroup()?.luck.proposal.percent">
 					<ion-label class="stat-title">Luck</ion-label>
@@ -511,7 +511,7 @@
 
 			<ion-list class="performances">
 				<ion-item lines="none">
-					<span tooltip="Amount of sync committees all subcribed validators were part of" trigger="click" hideDelayAfterClick="5000">
+					<span tooltip="Amount of sync committees all subcribed validators were part of" trigger="click" [hideDelayAfterClick]="5000">
 						<ion-label class="stat-title">Total Committees</ion-label>
 					</span>
 					<ion-label class="value">{{ data.syncCount() }}</ion-label>
@@ -524,7 +524,7 @@
 							data.summaryGroup()?.sync.status_count.failed
 						}}"
 						trigger="click"
-						hideDelayAfterClick="5000">
+						[hideDelayAfterClick]="5000">
 						<ion-label class="value">{{ data.syncEfficiency() | number : '1.0-1' }}%</ion-label>
 					</span>
 				</ion-item>
@@ -535,7 +535,7 @@
 						[class]="data.summaryGroup()?.luck.sync.percent / 100 | valuestyle : 1"
 						tooltip="Sync committees expected: {{ data.summaryGroup()?.luck.sync.expected }}"
 						trigger="click"
-						hideDelayAfterClick="5000">
+						[hideDelayAfterClick]="5000">
 						<ion-label class="value" *ngIf="data.summaryGroup()?.luck.sync.percent > 0"
 							>{{ data.summaryGroup()?.luck.sync.percent | number : '1.0-1' }}%</ion-label
 						>
@@ -556,7 +556,7 @@
 						tooltip="Used to calculate rewards and penalties. Also influences luck on block proposals. Maximum is 32 per validator."
 						placement="right"
 						trigger="click"
-						hideDelayAfterClick="5000">
+						[hideDelayAfterClick]="5000">
 						Effective Balance
 					</span>
 				</ion-label>
@@ -567,7 +567,7 @@
 
 			<ion-item lines="none">
 				<ion-label class="stat-title">
-					<span tooltip="The amount deposited by you to become a validator." placement="right" trigger="click" hideDelayAfterClick="5000">
+					<span tooltip="The amount deposited by you to become a validator." placement="right" trigger="click" [hideDelayAfterClick]="5000">
 						Staked Balance
 					</span>
 				</ion-label>
@@ -592,7 +592,7 @@
 						tooltip="Last updated timestamp. New data is fetched every epoch (~6 minutes)"
 						placement="right"
 						trigger="click"
-						hideDelayAfterClick="5000">
+						[hideDelayAfterClick]="5000">
 						Updated
 					</span>
 				</ion-label>

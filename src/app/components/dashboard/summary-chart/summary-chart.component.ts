@@ -19,7 +19,7 @@ import {
 	timestampToEpoch,
 } from 'src/app/utils/TimeUtils'
 import { get } from 'lodash-es'
-import { ECharts } from 'echarts'
+import { ECharts, EChartsOption } from 'echarts'
 import { StorageService } from 'src/app/services/storage.service'
 
 const currentZoom = {
@@ -329,15 +329,17 @@ export class SummaryChartComponent implements OnInit {
 				trigger: 'axis',
 				padding: 3,
 				confine: true,
-				formatter: (params: { color: string; seriesName: string; value: number; axisValue: string}[]) => {
-					const ts = parseInt(params[0].axisValue)
-					return (
-						getTooltipHeader(ts, this.data.chainNetwork().id, this.data.summaryChartOptions().aggregation, (val) =>
-							formatTsToDateTime(val, getLocale())
-						) +
-						'<br/>' +
-						params.map((d) => `<span style="color: ${d.color};">●</span> ${d.seriesName}: ${d.value.toFixed(2)} % `).join('<br/>')
-					)
+				formatter: (params: { color: string; seriesName: string; value: number; axisValue: string }[]) => {
+					if (Array.isArray(params)) {
+						const ts = parseInt(params[0].axisValue)
+						return (
+							getTooltipHeader(ts, this.data.chainNetwork().id, this.data.summaryChartOptions().aggregation, (val) =>
+								formatTsToDateTime(val, getLocale())
+							) +
+							'<br/>' +
+							params.map((d) => `<span style="color: ${d.color};">●</span> ${d.seriesName}: ${d.value.toFixed(2)} % `).join('<br/>')
+						)
+					}
 				},
 			},
 			dataZoom: {
@@ -355,7 +357,7 @@ export class SummaryChartComponent implements OnInit {
 					lineStyle: { color: this.colors().background },
 				},
 			},
-		}
+		} as unknown as EChartsOption
 	}
 
 	colors = computed(() => {

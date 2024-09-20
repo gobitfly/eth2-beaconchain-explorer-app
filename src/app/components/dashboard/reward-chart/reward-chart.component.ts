@@ -8,6 +8,7 @@ import BigNumber from 'bignumber.js'
 import { getChartTextColor, getChartTooltipBackgroundColor, getRewardChartColors, getRewardsChartLineColor } from 'src/app/utils/ColorUtils'
 import { Currency, UnitconvService } from 'src/app/services/unitconv.service'
 import { Aggregation } from 'src/app/requests/v2-dashboard'
+import { EChartsOption } from 'echarts'
 
 @Component({
 	selector: 'app-reward-chart',
@@ -175,19 +176,22 @@ export class RewardChartComponent {
 			},
 			tooltip: {
 				borderColor: this.colors().background,
-				formatter: (params: {axisValue: string, color: string, seriesName: string, value: number}[]) => {
-					const startEpoch = parseInt(params[0].axisValue)
-					return (
-						getTooltipHeader(
-							epochToTimestamp(this.data.chainNetwork().id, startEpoch) / 1000,
-							this.data.chainNetwork().id,
-							Aggregation.Hourly,
-							(val) => formatTsToDateTime(val, getLocale())
-						) +
-						'<br/>' +
-						params.map((d) => `<span style="color: ${d.color};">●</span> ${d.seriesName}: ${d.value.toFixed(5)} ETH `).join('<br/>')
-						// todo gnosis
-					)
+				formatter: (params) => {
+					if (Array.isArray(params)) {
+						console.log("params", params)
+						const startEpoch = parseInt(params[0].name)
+						return (
+							getTooltipHeader(
+								epochToTimestamp(this.data.chainNetwork().id, startEpoch) / 1000,
+								this.data.chainNetwork().id,
+								Aggregation.Hourly,
+								(val) => formatTsToDateTime(val, getLocale())
+							) +
+							'<br/>' +
+							params.map((d) => `<span style="color: ${d.color};">●</span> ${d.seriesName}: ${(d.value as number).toFixed(5)} ETH `).join('<br/>')
+							// todo gnosis
+						)
+					}
 				},
 				order: 'seriesAsc',
 				confine: true,
@@ -224,7 +228,7 @@ export class RewardChartComponent {
 				// splitLine: { lineStyle: { color: this.colors().line } },
 				type: 'value',
 			},
-		}
+		} as EChartsOption
 	}
 }
 

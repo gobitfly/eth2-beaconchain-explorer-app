@@ -259,6 +259,43 @@ export class ApiService extends CacheModule {
 		return null
 	}
 
+	async clearAllAssociatedCacheKeys(associatedCacheKey: string) {
+		const keys = this.associatedCacheKeyMap.get(associatedCacheKey)
+		if (keys) {
+			for (const key of keys) {
+				await this.putCache(key, null, 0)
+				this.findAndClearAssociatedKeyInOtherKeys(associatedCacheKey)
+			}
+			this.associatedCacheKeyMap.delete(associatedCacheKey)
+		}
+	}
+
+	private findAndClearAssociatedKeyInOtherKeys(associatedCacheKey: string) {
+		for (const [_, value] of this.associatedCacheKeyMap) {
+			if (value.has(associatedCacheKey)) {
+				value.delete(associatedCacheKey)
+			}
+		}
+	}
+
+	/**
+	 * Shortcut to execute2(new Request()).then(data => writeableSignal.set(data.data))
+	 * Executes requests and writes the data to the signal
+	 * @param request ApiRequest<T>
+	 * @param s signal to write to
+	 * @param associatedCacheKey optional cache key to invalidate
+	 * @returns ApiResult<T>
+	 */
+	set<T>(request: APIRequest<T>, s: WritableSignal<T>, associatedCacheKey: string = null) {
+		return this.execute2(request, associatedCacheKey).then((data) => {
+			if (data.error) {
+				return data
+			}
+			s.set(data.data)
+			return data
+		})
+	}
+
 	async execute2<T>(request: APIRequest<T>, associatedCacheKey: string = null): Promise<ApiResult<T>> {
 		try {
 			const response = await this.executeUnhandled(request)
@@ -276,25 +313,6 @@ export class ApiService extends CacheModule {
 				data: null,
 				cached: false,
 				paging: null,
-			}
-		}
-	}
-
-	async clearAllAssociatedCacheKeys(associatedCacheKey: string) {
-		const keys = this.associatedCacheKeyMap.get(associatedCacheKey)
-		if (keys) {
-			for (const key of keys) {
-				await this.putCache(key, null, 0)
-				this.findAndClearAssociatedKeyInOtherKeys(associatedCacheKey)
-			}
-			this.associatedCacheKeyMap.delete(associatedCacheKey)
-		}
-	}
-
-	private findAndClearAssociatedKeyInOtherKeys(associatedCacheKey: string) {
-		for (const [_, value] of this.associatedCacheKeyMap) {
-			if (value.has(associatedCacheKey)) {
-				value.delete(associatedCacheKey)
 			}
 		}
 	}
@@ -336,17 +354,17 @@ export class ApiService extends CacheModule {
 						const headers = { ...options.headers, ...authHeader }
 						options.headers = headers
 					}
-					
+
 					options.headers = { ...options.headers, 'X-Csrf-Token': this.lastCsrfHeader }
-					
+
 					if (this.networkConfig.passXCookieDANGEROUS) {
 						let csrfCookieExtra = ''
 						if (this.csrfCookie) {
 							csrfCookieExtra = '; _gorilla_csrf=' + this.csrfCookie + '; '
 						}
 						options.headers = { ...options.headers, 'X-Cookie': csrfCookieExtra }
-					} 
-				} else if (await this.storage.isV2()) { 
+					}
+				} else if (await this.storage.isV2()) {
 					if (!this.sessionCookie) {
 						await this.initV2Cookies()
 					}
@@ -479,11 +497,13 @@ export class ApiService extends CacheModule {
 		}
 	}
 
+	/** @deprecated not needed in v2 any more */
 	private getContentTypeBasedOnData(data: unknown): string {
 		if (data instanceof FormData) return 'application/x-www-form-urlencoded'
 		return 'application/json'
 	}
 
+	/** @deprecated not needed in v2 any more, only json in v2 */
 	private formatPostData(data: unknown, resource: string): string | FormData {
 		if (data instanceof FormData || resource.indexOf('user/token') != -1) return data as FormData
 		return JSON.stringify(data)
@@ -601,16 +621,6 @@ export class ApiService extends CacheModule {
 			result.ts = await this.storage.getLastEpochRequestTime()
 		}
 		return result
-	}
-
-	set<T>(request: APIRequest<T>, s: WritableSignal<T>, associatedCacheKey: string = null) {
-		return this.execute2(request, associatedCacheKey).then((data) => {
-			if (data.error) {
-				return data
-			}
-			s.set(data.data)
-			return data
-		})
 	}
 
 	setApiKey(apiKey: string) {

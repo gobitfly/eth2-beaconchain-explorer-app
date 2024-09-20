@@ -19,7 +19,7 @@ import { getProperty } from 'src/app/requests/requests'
 	styleUrls: ['./machines.page.scss']
 })
 export class MachinesPage extends MachineController implements OnInit {
-	data: ProcessedStats[] = null
+	data: Map<string, ProcessedStats> = null
 	scrolling = false
 	selectedChart = 'cpu'
 	showData = true
@@ -196,7 +196,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	async getAndProcessData() {
 		this.loggedIn = await this.storage.isLoggedIn()
 		if (!this.loggedIn) {
-			this.data = []
+			this.data = new Map()
 			this.orderedKeys = []
 			this.showData = false
 			return
@@ -208,13 +208,13 @@ export class MachinesPage extends MachineController implements OnInit {
 		this.checkForLegacyApi(this.data)
 	}
 
-	private async getOrderedKeys(data: ProcessedStats[]): Promise<string[]> {
+	private async getOrderedKeys(data: Map<string, ProcessedStats>): Promise<string[]> {
 		const online = []
 		const attention = []
 		const offline = []
 
 		for (const key in data) {
-			const it = data[key]
+			const it = data.get(key)
 			const status = await this.getOnlineState(it)
 			if (status == 'online') {
 				online.push(key)
@@ -255,7 +255,7 @@ export class MachinesPage extends MachineController implements OnInit {
 		return await modal.present()
 	}
 
-	async checkForLegacyApi(data: ProcessedStats[]) {
+	async checkForLegacyApi(data: Map<string, ProcessedStats>) {
 		const dismissed = await this.storage.getBooleanSetting('legacy_monitoring_api_dismissed', false)
 		if (dismissed || !data) {
 			this.legacyApi = false
@@ -265,7 +265,7 @@ export class MachinesPage extends MachineController implements OnInit {
 		let offlineCount = 0
 		let count = 0
 		for (const key in data) {
-			const it = data[key]
+			const it = data.get(key)
 			const status = await this.getOnlineState(it)
 			if (status == 'offline') offlineCount++
 			count++

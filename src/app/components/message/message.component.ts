@@ -23,7 +23,6 @@ import { StorageService } from 'src/app/services/storage.service'
 import confetti from 'canvas-confetti'
 
 import { Browser } from '@capacitor/browser'
-import { MergeChecklistPage } from 'src/app/pages/merge-checklist/merge-checklist.page'
 import { Output, EventEmitter } from '@angular/core'
 import FirebaseUtils from 'src/app/utils/FirebaseUtils'
 
@@ -43,7 +42,6 @@ export class MessageComponent implements OnInit {
 	@Input() msgTitle: string
 	@Input() msgText: string
 	@Input() confettiOnClick = false
-	@Input() mergeChecklist = false
 	@Input() notificationPermission = false
 	@Output() onResult = new EventEmitter<string>()
 
@@ -88,8 +86,6 @@ export class MessageComponent implements OnInit {
 			} else {
 				await Browser.open({ url: this.openUrl, toolbarColor: '#2f2e42' })
 			}
-		} else if (this.mergeChecklist) {
-			this.openMergeChecklist()
 		} else if (this.notificationPermission) {
 			const alert = await this.alertController.create({
 				header: 'Notifications',
@@ -144,14 +140,4 @@ export class MessageComponent implements OnInit {
 		this.storage.setBooleanSetting(this.dismissKey, true)
 	}
 
-	async openMergeChecklist() {
-		const modal = await this.modalController.create({
-			component: MergeChecklistPage,
-			cssClass: 'my-custom-class',
-		})
-		modal.onDidDismiss().then(() => {
-			this.onResult.emit('reload-dismiss')
-		})
-		return await modal.present()
-	}
 }

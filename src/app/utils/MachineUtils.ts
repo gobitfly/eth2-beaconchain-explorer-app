@@ -60,7 +60,6 @@ export default class MachineUtils extends CacheModule {
 		return local
 	}
 
-
 	private registerAllLocalMachineNames(names: string[]) {
 		this.storage.setObject(MACHINES_STORAGE_KEY, names)
 	}
@@ -69,7 +68,7 @@ export default class MachineUtils extends CacheModule {
 		return this.storage.getObject(MACHINES_STORAGE_KEY) as Promise<string[]>
 	}
 
-	private getAllMachineNamesFrom(data: ProcessedStats[]): string[] {
+	private getAllMachineNamesFrom(data: Map<string, ProcessedStats>): string[] {
 		const result: string[] = []
 		for (const key in data) {
 			result.push(key)
@@ -77,10 +76,10 @@ export default class MachineUtils extends CacheModule {
 		return result
 	}
 
-	private unsupportedPrysmVersion(data: ProcessedStats[], machineController: MachineController): boolean {
+	private unsupportedPrysmVersion(data: Map<string, ProcessedStats>, machineController: MachineController): boolean {
 		let result = false
 		for (const key in data) {
-			const machine = data[key]
+			const machine = data.get(key)
 
 			if (machineController.isBuggyPrysmVersion(machine)) {
 				result = true
@@ -107,7 +106,7 @@ export default class MachineUtils extends CacheModule {
 		})) as StatsResponse
 		console.log('machine data', data)
 		if (data == null) {
-			return []
+			return new Map()
 		}
 
 		const machineController = new MachineController(this.storage)

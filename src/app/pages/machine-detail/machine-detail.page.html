@@ -44,13 +44,13 @@
 			[hidden]="selectedTab != 'cpu'"
 			title="CPU Processes"
 			[key]="key"
-			priority="true"
+			[priority]="true"
 			[chartData]="data | delegate: cpuDelegate"
 			[subtitleLeft]="cpuProcessLabelNode"
 			[subtitleRight]="cpuProcessLabelVal">
 		</app-machinechart>
 
-		<app-machinechart title="CPU System" [key]="key" [chartData]="data | delegate: cpuSystemDelegate" priority="true" [subtitleLeft]="cpuLabelTotal">
+		<app-machinechart title="CPU System" [key]="key" [chartData]="data | delegate: cpuSystemDelegate" [priority]="true" [subtitleLeft]="cpuLabelTotal">
 		</app-machinechart>
 
 		<div class="bottomFiller"></div>

@@ -70,12 +70,6 @@ export class ValidatorUtils {
 	) {}
 
 	/**@deprecated */
-	async hasLocalValdiators() {
-		return true // todo remove
-		return (await this.getMap(this.getStorageKey())).size > 0
-	}
-
-	/**@deprecated */
 	async localValidatorCount() {
 		return (await this.getMap(this.getStorageKey())).size
 	}

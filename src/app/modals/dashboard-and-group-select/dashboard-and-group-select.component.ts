@@ -175,7 +175,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 		this.initLoading = false
 	}
 
-	async addDashboard(network: string) {
+	async addDashboard(network: number) {
 		if (!this.isLoggedIn) {
 			this.alert.showInfo('Login required', 'You must be logged in to your beaconcha.in account to create or manage dashboards.')
 			return
@@ -197,9 +197,11 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 			return
 		}
 
+		const networkName = findChainNetworkById(network).name
+
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
-			header: 'New ' + capitalize(network) + ' Dashboard',
+			header: 'New ' + capitalize(networkName) + ' Dashboard',
 			inputs: [
 				{
 					name: 'newName',

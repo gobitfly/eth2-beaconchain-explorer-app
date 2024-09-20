@@ -8,21 +8,28 @@
 		"noImplicitThis": false,
 		"esModuleInterop": true,
 		"declaration": false,
-		"downlevelIteration": true,
 		"experimentalDecorators": true,
 		"module": "esnext",
 		"moduleResolution": "node",
 		"importHelpers": true,
+		"noEmitHelpers": true,
 		"target": "ES2022",
-		"lib": ["es2018", "dom"],
+		"lib": ["dom"],
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"removeComments": true,
 		//"strict": true
 		"strictBindCallApply": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitAny": true,
-		"resolveJsonModule": true,
+	
 	},
 	"angularCompilerOptions": {
 		"fullTemplateTypeCheck": true,
-		"strictInjectionParameters": true
+		"strictInjectionParameters": true,
+		"strictTemplates": true,
+		"strictInputAccessModifiers": true,
+		"strictDomEventTypes": true,
+		"preserveWhitespaces": false
 	},
 }

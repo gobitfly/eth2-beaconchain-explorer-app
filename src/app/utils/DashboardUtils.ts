@@ -277,7 +277,7 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 }
     
 class SeachResultHandler {
-	formatSearchType(type: searchType) {
+	formatSearchType(type: searchType | string) {
 		switch (type) {
 			case searchType.validatorByIndex:
 				return 'Validator Index'
