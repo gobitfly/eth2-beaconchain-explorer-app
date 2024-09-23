@@ -42,7 +42,7 @@
 		</ion-list>
 
 		<div style="background: var(--ion-background-color); height: 100%;">
-			<app-full-page-loading [renderWait]="0" [loading]="initialLoading && online">
+			<app-full-page-loading  [loading]="initialLoading && online">
 				<app-full-page-offline (retry)="this.getOverview()" [online]="online">
 
 					<div *ngIf="overview() || !this.block.block">

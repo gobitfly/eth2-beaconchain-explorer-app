@@ -18,7 +18,7 @@
     along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
- <app-full-page-loading [renderWait]="250" [loading]="(!data || !data.isReadyToDisplay()) && online">
+ <app-full-page-loading [renderWait]="300" [loading]="(!data || !data.isReadyToDisplay()) && online">
 
 	<div class="container" *ngIf="data && data.isReadyToDisplay()">
 		<ion-list class="status">

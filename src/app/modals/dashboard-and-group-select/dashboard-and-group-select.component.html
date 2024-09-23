@@ -28,7 +28,7 @@
 </ion-header>
 
 <ion-content>
-	<app-full-page-loading [renderWait]="20" [loading]="initLoading">
+	<app-full-page-loading [loading]="initLoading">
 		<app-full-page-offline (retry)="this.doRefresh()" [online]="online || dashboards()?.validator_dashboards ? true : false || legacyDashboard.length > 0">
 
 			<div class="message" *ngIf="!infoDismissed">

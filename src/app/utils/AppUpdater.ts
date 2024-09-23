@@ -89,6 +89,10 @@ export class AppUpdater {
 	}
 
 	async updateBundle(bundleURL: string) {
+		if (bundleURL.indexOf('http') <= 0) {
+			console.warn("invalid bundle url", bundleURL)
+			return
+		}
 		this.loading = await this.alert.presentLoading('Updating...')
 		this.loading.present()
 

@@ -33,7 +33,7 @@
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher>
 
-	<app-full-page-loading [fixInfiniteScroll]="true" [renderWait]="20" [loading]="initialLoading">
+	<app-full-page-loading [fixInfiniteScroll]="true" [loading]="initialLoading">
 		<app-full-page-offline (retry)="this.doRefresh(null)" [fixInfiniteScroll]="true" [online]="online || dataSource?.hasItems()">
 
 			<p class="next-block-hint" *ngIf="summaryGroup() && !initialLoading && dataSource && dataSource.hasItems()">

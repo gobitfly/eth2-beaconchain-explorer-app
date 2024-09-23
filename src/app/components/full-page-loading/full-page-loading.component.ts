@@ -26,9 +26,9 @@ export class FullPageLoadingComponent implements OnChanges {
 	@Input() loading: boolean // the real loading state
 	showLoading = false // the fake loading state, is only shown if loading is still true after SKIP_LOADING_IF_FASTER_THAN
 
-	// Wait 20ms before triggering fade in, this is so view can pre render in opacity state preventing flicker
+	// Wait ms before triggering fade in, this is so view can pre render in opacity state preventing flicker
 	// some big components like dashboard need more time to render, consider increasing this value on a per component basis
-	@Input() renderWait: number = 20
+	@Input() renderWait: number = 40
 
 	showContent = false
 	fadeInComplete: 'wait' | 'done' | 'fading' = 'wait'

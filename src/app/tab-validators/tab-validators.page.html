@@ -97,7 +97,7 @@
 		*ngIf="((dataSource && dataSource.length() >= this.merchant.getCurrentPlanMaxValidator()) || reachedMaxValidators) && this.merchant.getCurrentPlanMaxValidator() < 280">
 	</app-message>
 	
-	<app-full-page-loading [fixInfiniteScroll]="true" [renderWait]="20" [loading]="initialLoading">
+	<app-full-page-loading [fixInfiniteScroll]="true" [loading]="initialLoading">
 		<app-full-page-offline (retry)="this.doRefresh(null)" [fixInfiniteScroll]="true" [online]="online || dataSource?.hasItems()">
 			<app-ad location="validator" *ngIf="dataSource && dataSource.hasItems() && !initialLoading"></app-ad>
 
