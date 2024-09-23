@@ -9,15 +9,21 @@
 			"launchAutoHide": false,
 			"androidScaleType": "CENTER_CROP"
 		},
+		"CapacitorCookies": {
+			"enabled": true
+		},
 		"CapacitorHttp": {
 			"enabled": true
+		},
+		"CapacitorUpdater": {
+			"autoUpdate": false
 		}
-	},
-	"server": {
-		"androidScheme": "http"
 	},
 	"android": {
 		"flavor": "prod"
+	},
+	"server": {
+		"androidScheme": "http"
 	},
 	"packageClassList": [
 		"OAuth2ClientPlugin",
@@ -33,6 +39,8 @@
 		"SplashScreenPlugin",
 		"StatusBarPlugin",
 		"ToastPlugin",
+		"AppUpdatePlugin",
+		"CapacitorUpdaterPlugin",
 		"NavigationBar",
 		"CDVPlugin"
 	]

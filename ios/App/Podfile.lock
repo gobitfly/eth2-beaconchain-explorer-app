@@ -1,37 +1,46 @@
 PODS:
+  - Alamofire (5.9.1)
   - ByteowlsCapacitorOauth2 (5.0.0):
     - Capacitor
     - OAuthSwift (= 2.2.0)
-  - Capacitor (5.4.2):
+  - Capacitor (6.1.2):
     - CapacitorCordova
-  - CapacitorApp (5.0.6):
+  - CapacitorApp (6.0.1):
     - Capacitor
-  - CapacitorBrowser (5.1.0):
+  - CapacitorBrowser (6.0.2):
     - Capacitor
-  - CapacitorClipboard (5.0.6):
+  - CapacitorClipboard (6.0.1):
     - Capacitor
-  - CapacitorCordova (5.4.2)
-  - CapacitorDevice (5.0.6):
+  - CapacitorCordova (6.1.2)
+  - CapacitorDevice (6.0.1):
     - Capacitor
-  - CapacitorHaptics (5.0.6):
+  - CapacitorHaptics (6.0.1):
     - Capacitor
-  - CapacitorKeyboard (5.0.6):
+  - CapacitorKeyboard (6.0.2):
     - Capacitor
-  - CapacitorLocalNotifications (5.0.6):
+  - CapacitorLocalNotifications (6.1.0):
     - Capacitor
   - CapacitorNavigationbarnx (0.0.2):
     - Capacitor
-  - CapacitorPreferences (5.0.6):
+  - CapacitorPreferences (6.0.2):
     - Capacitor
-  - CapacitorPushNotifications (5.1.0):
+  - CapacitorPushNotifications (6.0.2):
     - Capacitor
-  - CapacitorSplashScreen (5.0.6):
+  - CapacitorSplashScreen (6.0.2):
     - Capacitor
-  - CapacitorStatusBar (5.0.6):
+  - CapacitorStatusBar (6.0.1):
     - Capacitor
-  - CapacitorToast (5.0.6):
+  - CapacitorToast (6.0.2):
     - Capacitor
-  - CordovaPlugins (5.4.2):
+  - CapawesomeCapacitorAppUpdate (6.0.0):
+    - Capacitor
+  - CapgoCapacitorUpdater (6.1.32):
+    - Alamofire
+    - Capacitor
+    - SSZipArchive
+    - SwiftyRSA
+    - Version
+  - CordovaPlugins (6.1.2):
     - CapacitorCordova
   - Firebase/CoreOnly (9.2.0):
     - FirebaseCore (= 9.2.0)
@@ -92,6 +101,11 @@ PODS:
   - nanopb/encode (2.30909.0)
   - OAuthSwift (2.2.0)
   - PromisesObjC (2.1.1)
+  - SSZipArchive (2.4.3)
+  - SwiftyRSA (1.7.0):
+    - SwiftyRSA/ObjC (= 1.7.0)
+  - SwiftyRSA/ObjC (1.7.0)
+  - Version (0.8.0)
 
 DEPENDENCIES:
   - "ByteowlsCapacitorOauth2 (from `../../node_modules/@byteowls/capacitor-oauth2`)"
@@ -110,12 +124,15 @@ DEPENDENCIES:
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapacitorToast (from `../../node_modules/@capacitor/toast`)"
+  - "CapawesomeCapacitorAppUpdate (from `../../node_modules/@capawesome/capacitor-app-update`)"
+  - "CapgoCapacitorUpdater (from `../../node_modules/@capgo/capacitor-updater`)"
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - Firebase/Messaging
   - FirebaseCore
 
 SPEC REPOS:
   trunk:
+    - Alamofire
     - Firebase
     - FirebaseCore
     - FirebaseCoreDiagnostics
@@ -127,6 +144,9 @@ SPEC REPOS:
     - nanopb
     - OAuthSwift
     - PromisesObjC
+    - SSZipArchive
+    - SwiftyRSA
+    - Version
 
 EXTERNAL SOURCES:
   ByteowlsCapacitorOauth2:
@@ -161,27 +181,34 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
   CapacitorToast:
     :path: "../../node_modules/@capacitor/toast"
+  CapawesomeCapacitorAppUpdate:
+    :path: "../../node_modules/@capawesome/capacitor-app-update"
+  CapgoCapacitorUpdater:
+    :path: "../../node_modules/@capgo/capacitor-updater"
   CordovaPlugins:
     :path: "../capacitor-cordova-ios-plugins"
 
 SPEC CHECKSUMS:
+  Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
   ByteowlsCapacitorOauth2: dde6b8fdf2995bc7872434c407ee2492ce562638
-  Capacitor: 8a9db42d105f55843cd8ed2a3cb54e2b78e7f102
-  CapacitorApp: 963d90cb449803d58efc33bb515c81151e69159d
-  CapacitorBrowser: 31371ef981e378cb592be8cc203a9a4cbf43c486
-  CapacitorClipboard: ae6864d6b4ff2243fc7ce19124df307d8d1bb78d
-  CapacitorCordova: cfcc06b698481da655415985eeb2b8da363f8451
-  CapacitorDevice: 9233ba5f0c8f601bf4992006f5d2b2a86b7abc2e
-  CapacitorHaptics: 186982679c5f4005d1e6d2c719b8251c0d3a6df8
-  CapacitorKeyboard: 2f3296af2bc929a5069f02ed264fdce58ed62028
-  CapacitorLocalNotifications: 7ed607db672dc2834f22a25422b86e74129a032a
+  Capacitor: 679f9673fdf30597493a6362a5d5bf233d46abc2
+  CapacitorApp: 0bc633b4eae40a1f32cd2834788fad3bc42da6a1
+  CapacitorBrowser: 83ec661a9ccd56c28a6851e4dd1ac33b181227ec
+  CapacitorClipboard: 756cd7e83e8d5d19b0c74f40b57517c287bd5fe2
+  CapacitorCordova: f48c89f96c319101cd2f0ce8a2b7449b5fb8b3dd
+  CapacitorDevice: 7097a1deb4224b77fd13a6e60a355d0062a5d772
+  CapacitorHaptics: fe689ade56ef20ec9b041a753c6da70c5d8ec9a9
+  CapacitorKeyboard: 2700f9b18687be021e28b5a09b59eb151a46d5e0
+  CapacitorLocalNotifications: 6bac9e948b2b8852506c6d74abb2cde140250f86
   CapacitorNavigationbarnx: a22badd7d90d9715ecc08f3ae3824a57a37724b0
-  CapacitorPreferences: 8053abfef3bd11e3e83834792a97e5a6387bf591
-  CapacitorPushNotifications: 14425a66891d4134e73b6abe1932eeff37e4389d
-  CapacitorSplashScreen: f3c7de5468a52893e90f49d033772984270241b4
-  CapacitorStatusBar: a73a9ae0dd2ca30ee429782d5d3ae82dcfa80207
-  CapacitorToast: 61a9bec819ad3aeccc1ebe3fcbff565c22969c71
-  CordovaPlugins: 13d1f5b0b81c2eba67b8f70432c3edb07483877c
+  CapacitorPreferences: e8284bf740cf8c6d3f25409af3c01df87dfeb5a1
+  CapacitorPushNotifications: ccd797926c030acad3d5498ef452c735c90a2c89
+  CapacitorSplashScreen: 250df9ef8014fac5c7c1fd231f0f8b1d8f0b5624
+  CapacitorStatusBar: b81d4fb5d4e0064c712018071b3ab4b810b39a63
+  CapacitorToast: cfd82cd5afdc3f027ad4a8859f909ae4a327f3c3
+  CapawesomeCapacitorAppUpdate: 3c05b5c8e42f9c6a88d666093406e9336d9bfdb1
+  CapgoCapacitorUpdater: f286378946eae7e06e54bd135815f3c5d939dfcc
+  CordovaPlugins: 584b5df0e1bde7be088e132f0efb476ab8f8bcfa
   Firebase: 4ba896cb8e5105d4b9e247e1c1b6222b548df55a
   FirebaseCore: 0e27f2a15d8f7b7ef11e7d93e23b1cbab55d748c
   FirebaseCoreDiagnostics: ad3f6c68b7c5b63b7cf15b0785d7137f05f32268
@@ -193,7 +220,10 @@ SPEC CHECKSUMS:
   nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
   OAuthSwift: 75efbb5bd9a4b2b71a37bd7e986bf3f55ddd54c6
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
+  SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
+  SwiftyRSA: 8c6dd1ea7db1b8dc4fb517a202f88bb1354bc2c6
+  Version: de5907f2c5d0f3cf21708db7801d1d5401139486
 
-PODFILE CHECKSUM: 0abccb83d0d503da1628c7d1ca5579739161bb33
+PODFILE CHECKSUM: 73b670351243fb0f12d2ac67eaab836b42cc209d
 
-COCOAPODS: 1.14.2
+COCOAPODS: 1.15.2

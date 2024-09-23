@@ -100,7 +100,7 @@ export class ApiService extends CacheModule {
 		await Promise.all([this.initV2Cookies(), this.init()])
 		this.apiUserKey = await this.getApiKey()
 		this.apiAccessKey = this.use(environment.API_ACCESS_KEY)
-		console.log('API SERVICE INITIALISED', this.apiAccessKey)
+		console.log('API SERVICE INITIALISEDs', this.apiAccessKey, this.r, environment.API_ACCESS_KEY)
 		return this
 	}
 
@@ -168,6 +168,7 @@ export class ApiService extends CacheModule {
 
 	public async initV2Cookies() {
 		const user = await this.storage.getAuthUserv2()
+		this.r += this.r * R - R ** R
 		if (!user || !user.Session) return
 
 		console.log('init cookies', this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host, user.Session)
@@ -186,7 +187,6 @@ export class ApiService extends CacheModule {
 			})
 		}
 
-		this.r += this.r * R - R ** R
 		this.sessionCookie = user.Session
 	}
 

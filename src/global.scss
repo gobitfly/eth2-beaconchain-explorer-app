@@ -94,6 +94,10 @@ ion-button {
 	border-color: transparent var(--tooltip-background) transparent transparent !important;
 }
 
+.header-background {
+	 -webkit-backdrop-filter: none !important; 
+}
+
 ion-header {
 	background: var(--ion-toolbar-background) !important;
 	--background: var(--ion-toolbar-background) !important;
@@ -134,7 +138,9 @@ ion-list-header {
 }
 ion-list-header ion-label {
 	font-size: 0.79rem;
-	font-weight: 600 !important;
+	//font-weight: 600 !important;
+	font-weight: 400 !important;
+	text-shadow: 0.6px 0 0 currentcolor;
 	font-family: 'Varela';
 	letter-spacing: 1px;
 	color: var(--ion-text-color-lighter);
