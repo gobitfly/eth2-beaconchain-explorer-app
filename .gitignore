@@ -42,3 +42,4 @@ npm-debug.log*
 android/.idea/jarRepositories.xml
 android/.idea/misc.xml
 /src/environments/environment.prod.ts
+ios/GoogleService-Info.plist

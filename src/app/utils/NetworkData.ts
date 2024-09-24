@@ -71,7 +71,7 @@ export const MAP: ApiNetwork[] = [
 		active: true,
 		supportedChainIds: [17000],
 		name: 'Ethereum',
-		v2NetworkConfigKey: 'holesky_v2',
+		v2NetworkConfigKey: 'holesky_v2_prod',
 	},
 	{
 		key: 'holesky_v2',

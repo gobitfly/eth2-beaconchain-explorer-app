@@ -102,6 +102,8 @@ PODS:
   - OAuthSwift (2.2.0)
   - PromisesObjC (2.1.1)
   - SSZipArchive (2.4.3)
+  - StorageMirror (0.0.1):
+    - Capacitor
   - SwiftyRSA (1.7.0):
     - SwiftyRSA/ObjC (= 1.7.0)
   - SwiftyRSA/ObjC (1.7.0)
@@ -129,6 +131,7 @@ DEPENDENCIES:
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - Firebase/Messaging
   - FirebaseCore
+  - StorageMirror (from `../../../storage-mirror`)
 
 SPEC REPOS:
   trunk:
@@ -187,6 +190,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capgo/capacitor-updater"
   CordovaPlugins:
     :path: "../capacitor-cordova-ios-plugins"
+  StorageMirror:
+    :path: "../../../storage-mirror"
 
 SPEC CHECKSUMS:
   Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
@@ -221,9 +226,10 @@ SPEC CHECKSUMS:
   OAuthSwift: 75efbb5bd9a4b2b71a37bd7e986bf3f55ddd54c6
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
   SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
+  StorageMirror: 29856c6eceb244679e713a6517dbfaa0ba12bffe
   SwiftyRSA: 8c6dd1ea7db1b8dc4fb517a202f88bb1354bc2c6
   Version: de5907f2c5d0f3cf21708db7801d1d5401139486
 
-PODFILE CHECKSUM: 73b670351243fb0f12d2ac67eaab836b42cc209d
+PODFILE CHECKSUM: ed31ada3d8e08e4b1de73612fa1b0723180f0590
 
 COCOAPODS: 1.15.2

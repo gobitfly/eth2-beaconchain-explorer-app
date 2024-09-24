@@ -100,7 +100,7 @@ export class ApiService extends CacheModule {
 		await Promise.all([this.initV2Cookies(), this.init()])
 		this.apiUserKey = await this.getApiKey()
 		this.apiAccessKey = this.use(environment.API_ACCESS_KEY)
-		console.log('API SERVICE INITIALISEDs', this.apiAccessKey, this.r, environment.API_ACCESS_KEY)
+		console.log('API SERVICE INITIALISEDs', this.apiAccessKey)
 		return this
 	}
 

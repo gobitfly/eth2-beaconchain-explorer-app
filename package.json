@@ -66,6 +66,7 @@
 		"ngx-echarts": "^17.2.0",
 		"ngx-timeago": "^3.0.0",
 		"rxjs": "~7.8.1",
+		"storage-mirror": "file:../storage-mirror",
 		"tslib": "^2.7.0"
 	},
 	"devDependencies": {

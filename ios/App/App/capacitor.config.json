@@ -42,6 +42,7 @@
 		"AppUpdatePlugin",
 		"CapacitorUpdaterPlugin",
 		"NavigationBar",
+		"StorageMirrorPlugin",
 		"CDVPlugin"
 	]
 }
