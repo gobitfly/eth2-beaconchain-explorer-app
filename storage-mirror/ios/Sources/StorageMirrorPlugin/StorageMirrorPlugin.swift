@@ -16,9 +16,7 @@ public class StorageMirrorPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func reflect(_ call: CAPPluginCall) {
         let keysToReflect = call.getArray("keys", String.self) ?? []
-        
-        call.resolve([
-            "value": implementation.reflect(keysToReflect)
-        ])
+        implementation.reflect(keysToReflect)
+        call.resolve()
     }
 }
