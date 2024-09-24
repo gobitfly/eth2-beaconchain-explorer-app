@@ -131,7 +131,7 @@ DEPENDENCIES:
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - Firebase/Messaging
   - FirebaseCore
-  - StorageMirror (from `../../../storage-mirror`)
+  - StorageMirror (from `../../storage-mirror`)
 
 SPEC REPOS:
   trunk:
@@ -191,7 +191,7 @@ EXTERNAL SOURCES:
   CordovaPlugins:
     :path: "../capacitor-cordova-ios-plugins"
   StorageMirror:
-    :path: "../../../storage-mirror"
+    :path: "../../storage-mirror"
 
 SPEC CHECKSUMS:
   Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
@@ -230,6 +230,6 @@ SPEC CHECKSUMS:
   SwiftyRSA: 8c6dd1ea7db1b8dc4fb517a202f88bb1354bc2c6
   Version: de5907f2c5d0f3cf21708db7801d1d5401139486
 
-PODFILE CHECKSUM: ed31ada3d8e08e4b1de73612fa1b0723180f0590
+PODFILE CHECKSUM: a7181fdf0c40eae25759aa2b27c893186f8a69dd
 
 COCOAPODS: 1.15.2

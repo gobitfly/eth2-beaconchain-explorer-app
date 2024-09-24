@@ -235,11 +235,11 @@
 			</ion-item>
 		</ion-list>
 
-		<ion-list-header *ngIf="this.data?.rocketpool()?.[0].smoothing_pool.is_opt_in">
+		<ion-list-header *ngIf="this.data?.rocketpool()?.[0]?.smoothing_pool.is_opt_in">
 			<ion-label>Rocket Pool Smoothing Pool</ion-label>
 		</ion-list-header>
 
-		<ion-list class="performance" *ngIf="this.data?.rocketpool()?.[0].smoothing_pool.is_opt_in">
+		<ion-list class="performance" *ngIf="this.data?.rocketpool()?.[0]?.smoothing_pool.is_opt_in">
 			<ion-item lines="none">
 				<div class="grid">
 					<app-grid-cell-left
@@ -257,8 +257,8 @@
 						(valueClick)="unit.switchCurrencyPipe()"
 						tooltip="All smoothing pool rewards that have accumulated for your node but have not been claimed yet."
 						(valueClick)="unit.switchCurrencyPipe()">
-						<span [class]="this.data?.rocketpool()?.[0].smoothing_pool.unclaimed | valuestyle : 0">
-							{{ this.data?.rocketpool()?.[0].smoothing_pool.unclaimed | mcurrency : 'WEI' : unit.pref.Exec }}
+						<span [class]="this.data?.rocketpool()?.[0]?.smoothing_pool.unclaimed | valuestyle : 0">
+							{{ this.data?.rocketpool()?.[0]?.smoothing_pool.unclaimed | mcurrency : 'WEI' : unit.pref.Exec }}
 						</span>
 					</app-grid-cell-right>
 				</div>

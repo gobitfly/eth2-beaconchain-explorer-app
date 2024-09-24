@@ -29,6 +29,7 @@ import { Device } from '@capacitor/device'
 import { OAuth2AuthenticateOptions, OAuth2Client } from '@byteowls/capacitor-oauth2'
 import FlavorUtils from './FlavorUtils'
 import { mergeLocalDashboardToRemote } from './DashboardUtils'
+import { getProperty } from '../requests/requests'
 
 @Injectable({
 	providedIn: 'root',
@@ -53,33 +54,40 @@ export class OAuthUtils {
 			authOptions = await this.getOAuthOptionsv2()
 		}
 		return OAuth2Client.authenticate(authOptions)
-			.then(async (response: AccessTokenResponse) => {
+			.then(async (response: unknown) => {
 				const loadingScreen = await this.presentLoading()
 				loadingScreen.present()
 
-				if (isV2) {
-					let result = response.authorization_response
-					if (typeof result === 'string') {
-						result = JSON.parse(response.access_token_response as string)
-					}
-					result = result as Token
+				let obj = response
+				if(typeof response === 'string'){
+					obj = JSON.parse(response as string)
+				}
 
+				// different responses based on the platform yay
+				let accessToken = getProperty(obj, "access_token")
+				if(!accessToken){ 
+					accessToken = getProperty(obj, "access_token_response") ? getProperty(getProperty(obj, "access_token_response"), "access_token") :
+					getProperty(obj, "authorization_response") ? getProperty(getProperty(obj, "authorization_response"), "access_token") : undefined
+				}
+				let refreshToken = getProperty(obj, "refresh_token")
+				if(!refreshToken) {
+					refreshToken = getProperty(obj, "access_token_response") ? getProperty(getProperty(obj, "access_token_response"), "refresh_token") :
+					getProperty(obj, "authorization_response") ? getProperty(getProperty(obj, "authorization_response"), "refresh_token") : undefined
+				}
+
+				if(!accessToken){
+					throw new Error("invalid access token")
+				}
+
+				if (isV2) {
 					console.log('successful v2 auth')
 
 					await this.storage.setAuthUserv2({
-						Session: result.access_token,
+						Session: accessToken as string,
 					})
 
 					await this.api.initV2Cookies()
 				} else {
-					let result = response.access_token_response
-					if (typeof result === 'string') {
-						result = JSON.parse(response.access_token_response as string)
-					}
-					result = result as Token
-					const accessToken = result.access_token
-					const refreshToken = result.refresh_token
-
 					// inconsistent on ios, just assume a 10min lifetime for first token and then just refresh it
 					// and kick off real expiration times
 					const expiresIn = Date.now() + 10 * 60 * 1000
@@ -87,8 +95,8 @@ export class OAuthUtils {
 					console.log('successful', accessToken, refreshToken, expiresIn)
 
 					await this.storage.setAuthUser({
-						accessToken: accessToken,
-						refreshToken: refreshToken,
+						accessToken: accessToken as string,
+						refreshToken: refreshToken as string,
 						expiresIn: expiresIn,
 					})
 				}
@@ -233,14 +241,4 @@ export class OAuthUtils {
 			},
 		}
 	}
-}
-
-interface AccessTokenResponse {
-	access_token_response: Token | string
-	authorization_response: Token | string // v2
-}
-
-interface Token {
-	access_token: string
-	refresh_token: string
 }
