@@ -146,48 +146,53 @@
 		<ion-label>Firebase</ion-label>
 	</ion-list-header>
 
-	<ion-item lines="none" (click)="updateFirebaseToken()">
-		<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
-		<ion-label>Update firebase token</ion-label>
-	</ion-item>
+	<ion-list>
+		<ion-item lines="none" (click)="updateFirebaseToken()">
+			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+			<ion-label>Update firebase token</ion-label>
+		</ion-item>
 
-	<ion-item lines="none" (click)="triggerNotificationConsent()">
-		<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
-		<ion-label>Notification Consent</ion-label>
-	</ion-item>
+		<ion-item lines="none" (click)="triggerNotificationConsent()">
+			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+			<ion-label>Notification Consent</ion-label>
+		</ion-item>
 
-	<ion-item lines="none" (click)="resetLastFirebaseToken()">
-		<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
-		<ion-label>Reset saved firebase token</ion-label>
-	</ion-item>
+		<ion-item lines="none" (click)="resetLastFirebaseToken()">
+			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+			<ion-label>Reset saved firebase token</ion-label>
+		</ion-item>
 
-	<ion-item lines="none">
-		<p>Notification Consent: {{ notificationConsent }}</p>
-	</ion-item>
+		<ion-item lines="none">
+			<p>Notification Consent: {{ notificationConsent }}</p>
+		</ion-item>
 
-	<ion-item lines="none">
-		<p>Firebase Token: {{ firebaseToken }}</p>
-	</ion-item>
+		<ion-item lines="none">
+			<p>Firebase Token: {{ firebaseToken }}</p>
+		</ion-item>
 
-	<ion-item lines="none">
-		<p>Device ID: {{ deviceID }}</p>
-	</ion-item>
+		<ion-item lines="none">
+			<p>Device ID: {{ deviceID }}</p>
+		</ion-item>
+	</ion-list>
 
 	<ion-list-header>
 		<ion-label>Logs</ion-label>
 	</ion-list-header>
-	<ion-item lines="none" (click)="openLogSession(0)">
-		<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
-		<ion-label>Current</ion-label>
-	</ion-item>
-	<ion-item lines="none" (click)="openLogSession(1)">
-		<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
-		<ion-label>Current - 1</ion-label>
-	</ion-item>
-	<ion-item lines="none" (click)="openLogSession(2)">
-		<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
-		<ion-label>Current - 2</ion-label>
-	</ion-item>
+
+	<ion-list>
+		<ion-item lines="none" (click)="openLogSession(0)">
+			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+			<ion-label>Current</ion-label>
+		</ion-item>
+		<ion-item lines="none" (click)="openLogSession(1)">
+			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+			<ion-label>Current - 1</ion-label>
+		</ion-item>
+		<ion-item lines="none" (click)="openLogSession(2)">
+			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+			<ion-label>Current - 2</ion-label>
+		</ion-item>
+	</ion-list>
 
 	<div class="bottomFiller"></div>
 </ion-content>
