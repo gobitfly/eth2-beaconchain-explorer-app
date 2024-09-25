@@ -155,8 +155,7 @@ export class OverviewData2 {
 	foreignValidator: boolean = false
 
 	chainNetwork: Signal<ChainNetwork> = computed(() => {
-		return findChainNetworkById(17000) // todo: wait for fix https://bitfly1.atlassian.net/browse/BEDS-476
-		if (!this.overviewData()) return findChainNetworkById(0)
+		if (!this.overviewData()) return findChainNetworkById(1)
 		return findChainNetworkById(this.overviewData().network)
 	})
 
