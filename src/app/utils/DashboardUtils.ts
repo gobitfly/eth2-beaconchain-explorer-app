@@ -279,6 +279,8 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 class SeachResultHandler {
 	formatSearchType(type: searchType | string) {
 		switch (type) {
+			case searchType.validatorByIndexBatch: 
+				return 'Validator Indices'
 			case searchType.validatorByIndex:
 				return 'Validator Index'
 			case searchType.validatorsByDepositEnsName:
@@ -301,6 +303,10 @@ class SeachResultHandler {
 	}
 
 	getAddByIndex(searchResult: SearchResult) {
+		if (searchResult.type == searchType.validatorByIndexBatch) {
+			return searchResult.str_value.split(',').map((i) => parseInt(i))
+		}
+
 		if (searchResult.type == searchType.validatorByIndex || searchResult.type == searchType.validatorByPublicKey) {
 			return [searchResult.num_value]
 		}
@@ -337,11 +343,15 @@ class SeachResultHandler {
 			searchResult.type == searchType.validatorsByDepositEnsName ||
 			searchResult.type == searchType.validatorsByDepositAddress ||
 			searchResult.type == searchType.validatorsByWithdrawalAddress ||
-			searchResult.type == searchType.validatorsByWithdrawalCredential
+			searchResult.type == searchType.validatorsByWithdrawalCredential ||
+			searchResult.type == searchType.validatorByIndexBatch
 		)
 	}
 
-    resultCount(searchResult: SearchResult) {
+	resultCount(searchResult: SearchResult) {
+		if (searchResult.type == searchType.validatorByIndexBatch) {
+			return searchResult.str_value.split(',').length	
+		}
         if (searchResult.type == searchType.validatorByIndex || searchResult.type == searchType.validatorByPublicKey) {
             return 1
         }

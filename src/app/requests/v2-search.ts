@@ -28,6 +28,8 @@ export enum searchType {
 	validatorsByWithdrawalAddress = 'validators_by_withdrawal_address',
 	validatorsByWithdrawalEns = 'validators_by_withdrawal_ens_name',
 	validatorsByGraffiti = 'validators_by_graffiti',
+
+	validatorByIndexBatch = 'validator_by_index_batch', // app only
 }
 
 export class V2SearchValidators extends APIRequest<SearchResult[]> {

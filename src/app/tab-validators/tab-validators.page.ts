@@ -346,6 +346,10 @@ export class Tab2Page implements OnInit {
 
 		const isAllHexadecimal = /^[0-9a-fA-F]+$/.test(searchString) && searchString.length % 2 == 0 && searchString.length > 10
 
+		const isIndexList = /^(\d+,)+\d+$/.test(searchString)
+
+		const chainID = await this.api.getCurrentDashboardChainID()
+
 		// a bit of optimization so search is faster than just scanning for all types
 		let searchTypes: searchType[] = undefined
 		if (isETH1Address) {
@@ -361,11 +365,21 @@ export class Tab2Page implements OnInit {
 				searchType.validatorsByWithdrawalCredential,
 				searchType.validatorByPublicKey,
 			]
+		} else if (isIndexList) {
+			const indexes = searchString.split(',').map((i) => parseInt(i))
+			this.searchResult = [
+				{
+					type: searchType.validatorByIndexBatch,
+					chain_id: chainID,
+					str_value: searchString,
+					num_value: indexes.length,
+				} as SearchResult,
+			]
+			return
 		} else {
 			searchTypes = [searchType.validatorByIndex, searchType.validatorsByDepositEnsName, searchType.validatorsByWithdrawalEns]
 		}
 
-		const chainID = await this.api.getCurrentDashboardChainID()
 		const result = await this.api.execute2(new V2SearchValidators(searchString, [chainID], searchTypes), ASSOCIATED_CACHE_KEY)
 		if (result.error) {
 			// If we get a cors forbidden error, try a get call and then retry
@@ -395,7 +409,7 @@ export class Tab2Page implements OnInit {
 		const dashboardValidatorCount = this.isLoggedIn
 			? this.groups().reduce((acc, group) => acc + group.count, 0)
 			: await this.dashboardUtils.getLocalValidatorCount()
-
+		
 		const resultValidatorCount = this.dashboardUtils.searchResultHandler.resultCount(item)
 		if (resultValidatorCount + dashboardValidatorCount > this.merchant.getCurrentPlanMaxValidator()) {
 			if (this.isLoggedIn && this.dashboardUtils.searchResultHandler.resultCount(item) > 1) {
