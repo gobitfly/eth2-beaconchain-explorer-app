@@ -149,8 +149,8 @@ export class Tab3Page {
 		this.notificationBase.disableToggleLock()
 	}
 
-	async goToNotificationPage() {
-		// todo
+	goToNotificationPage() {
+		this.openBrowser(this.api.getBaseUrl() + "/notifications#dashboards", false)
 	}
 
 	async openClientsPage(identifier: string) {
