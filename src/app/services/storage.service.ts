@@ -27,7 +27,7 @@ import { Preferences } from '@capacitor/preferences'
 import { LogviewPage } from '../pages/logview/logview.page'
 import { Device } from '@capacitor/device'
 import { Aggregation, dashboardID, Period } from '../requests/v2-dashboard'
-import { StorageMirror } from 'storage-mirror'
+import { StorageMirror } from 'storage-mirror'
 
 const AUTH_USER = 'auth_user'
 const AUTH_USER_V2 = 'auth_user_v2'

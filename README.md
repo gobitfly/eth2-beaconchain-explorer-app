@@ -42,6 +42,9 @@ Beaconchain Dashboard is an Angular app written in Typescript, HTML & CSS. It ut
 2. Install dependencies
 ```
 npm install -g @ionic/cli native-run cordova-res
+cd storage-mirror
+npm i
+cd ..
 npm i
 ```
   

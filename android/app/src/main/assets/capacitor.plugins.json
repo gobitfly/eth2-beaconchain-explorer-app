@@ -62,5 +62,9 @@
 	{
 		"pkg": "capacitor-navigationbarnx",
 		"classpath": "com.nikosdouvlis.navigationbar.NavigationBar"
+	},
+	{
+		"pkg": "storage-mirror",
+		"classpath": "at.bitfly.storagemirror.StorageMirrorPlugin"
 	}
 ]

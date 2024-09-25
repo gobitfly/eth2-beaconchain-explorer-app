@@ -49,3 +49,6 @@ project(':capgo-capacitor-updater').projectDir = new File('../node_modules/@capg
 
 include ':capacitor-navigationbarnx'
 project(':capacitor-navigationbarnx').projectDir = new File('../node_modules/capacitor-navigationbarnx/android')
+
+include ':storage-mirror'
+project(':storage-mirror').projectDir = new File('../storage-mirror/android')
