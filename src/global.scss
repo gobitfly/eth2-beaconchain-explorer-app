@@ -140,7 +140,7 @@ ion-list-header ion-label {
 	font-size: 0.79rem;
 	//font-weight: 600 !important;
 	font-weight: 400 !important;
-	text-shadow: 0.6px 0 0 currentcolor;
+	text-shadow: 0.65px 0 0 currentcolor; // was 0.6 on ios
 	font-family: 'Varela';
 	letter-spacing: 1px;
 	color: var(--ion-text-color-lighter);
