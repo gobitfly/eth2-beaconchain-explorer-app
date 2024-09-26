@@ -176,7 +176,7 @@ export class Tab3Page {
 	}
 
 	widgetSetupInfo() {
-		if (this.merchant.getUsersSubscription() == null) {
+		if (this.merchant.userInfo()?.premium_perks.mobile_app_widget != true) {
 			this.openUpgrades()
 			return
 		}

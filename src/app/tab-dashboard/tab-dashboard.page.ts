@@ -54,6 +54,7 @@ export class Tab1Page implements OnInit {
 	dashboardID: dashboardID = null
 
 	loading: boolean = true
+	fadeInCompleted: boolean = false
 
 	online: boolean = true
 

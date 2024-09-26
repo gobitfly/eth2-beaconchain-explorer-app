@@ -69,15 +69,16 @@
 </ion-header>
 
 <ion-content
+	[ngClass]="{'ios-background': (!dashboardID || fadeInCompleted) && online}"
 	[fullscreen]="true"
 	[scrollEvents]="true"
 	(ionScroll)="onScroll($event)"
 	(ionScrollStart)="onScrollStarted()"
 	(ionScrollEnd)="onScrollEnded()">
 
-	<ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" *ngIf="!scrolling" [disabled]="!overallData">
+	<!-- <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" *ngIf="!scrolling" [disabled]="!overallData">
 		<ion-refresher-content></ion-refresher-content>
-	</ion-refresher>
+	</ion-refresher> -->
 
 	<app-full-page-offline (retry)="this.doRefresh(null)" [online]="online || (overallData && overallData.isReadyToDisplay())">
 
@@ -88,7 +89,7 @@
 			</div>
 		</div>
 
-		<app-validator-dashboard [online]="online" [data]="overallData" [currentY]="currentY" [scrolling]="scrolling" [updates]="updates.updates" *ngIf="loading || (overallData && !overallData.isEmpty() && dashboardID)">
+		<app-validator-dashboard (fadeInCompleted)="fadeInCompleted=true" [online]="online" [data]="overallData" [currentY]="currentY" [scrolling]="scrolling" [updates]="updates.updates" *ngIf="loading || (overallData && !overallData.isEmpty() && dashboardID)">
 		</app-validator-dashboard>
 
 		<app-help *ngIf="!loading && (!overallData || overallData.isEmpty())"></app-help>

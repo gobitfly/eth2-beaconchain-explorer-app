@@ -28,7 +28,7 @@ ion-list-header {
 	display: inline-block;
 	color: var(--ion-text-color-secondary);
 	
-	margin-left: 45px;
+	margin: var(--edge-padding-left-plus-15px);
 	font-size: var(--smaller-info-size);
 	font-weight: var(--smaller-label-weight);
 	line-height: 1.25em !important;
@@ -53,6 +53,10 @@ ion-list-header {
     margin-top: 0px;
 }
 
+.ios .prem-title {
+	padding-top: 5px;
+}
+
 .prem-x {
 	padding: 0px;
     margin: 1px;
@@ -63,4 +67,8 @@ ion-list-header {
 .message {
 	margin-top: 10px;
 	margin-bottom: 10px;
+}
+
+.ios .message ion-list {
+	padding: 4px 0px;
 }

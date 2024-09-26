@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, Input, SimpleChange, signal, WritableSignal, computed, Signal, effect } from '@angular/core'
+import { Component, OnInit, Input, SimpleChange, signal, WritableSignal, computed, Signal, effect, Output, EventEmitter } from '@angular/core'
 import { UnitconvService } from '../../services/unitconv.service'
 import { ApiService } from '../../services/api.service'
 import { OverviewData2 } from '../../controllers/OverviewController'
@@ -51,6 +51,7 @@ export class DashboardComponent implements OnInit {
 	@Input() currentY: number
 	@Input() scrolling: boolean
 	@Input() online: boolean
+	@Output() fadeInCompleted = new EventEmitter<void>() 
 
 	beaconChainUrl: string = null
 

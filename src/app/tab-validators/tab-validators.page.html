@@ -67,8 +67,8 @@
 			</ion-select-option>
 		</ion-select>
 		<ion-icon class="opacity-icon" slot="end" name="add-circle-outline" (click)="addGroupDialog()" *ngIf="!selectMode"> </ion-icon>
-		<ion-icon class="opacity-icon" slot="end" name="remove-circle-outline" (click)="removeGroupDialog()" *ngIf="!selectMode"> </ion-icon>
-		<ion-icon class="opacity-icon last-icon" slot="end" name="ellipsis-vertical-circle-outline" id="options-group-more" *ngIf="!selectMode"> </ion-icon>
+		<ion-icon class="opacity-icon action-icon" slot="end" name="remove-circle-outline" (click)="removeGroupDialog()" *ngIf="!selectMode"> </ion-icon>
+		<ion-icon class="opacity-icon last-icon action-icon" slot="end" name="ellipsis-vertical-circle-outline" id="options-group-more" *ngIf="!selectMode"> </ion-icon>
 		<ion-popover trigger="options-group-more" triggerAction="click" [dismissOnSelect]="true" *ngIf="!selectMode">
 			<ng-template>
 				<ion-content>

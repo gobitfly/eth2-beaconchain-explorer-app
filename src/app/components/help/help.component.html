@@ -21,12 +21,12 @@
 <ion-list *ngIf="!onlyGuides" class="first-item-group" class="primary">
 	<ion-item lines="none" [routerLink]="['/tabs/validators']">
 		<ion-icon slot="start" name="add-circle-outline"></ion-icon>
-		<ion-label>Add Validators to your Dashboard</ion-label>
+		<ion-label>Add Validators to Dashboard</ion-label>
 	</ion-item>
 
 	<ion-item lines="none" (click)="login()" *ngIf="!isAlreadyLoggedIn">
 		<ion-icon slot="start" name="log-in-outline"></ion-icon>
-		<ion-label>Or login with {{ api.getHostName() }} </ion-label>
+		<ion-label>Or login with {{ isGnosis ? "gnosischa.in" :  "beaconcha.in" }} </ion-label>
 	</ion-item>
 
 	<ion-item lines="none" (click)="switchNetwork()" *ngIf="false"> <!-- todo gnosis -->

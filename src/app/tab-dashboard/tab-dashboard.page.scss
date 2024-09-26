@@ -49,17 +49,14 @@
 ion-content {
   width: calc(100% + 15px);
 }
+// Makes the iOS top bounce in our primary color
+// and the bottom bounce in main themes color
+.ios-background {
+	--background: linear-gradient(0deg, var(--ion-background-color) 60%, var(--ion-toolbar-background) 40%);
+}
+
 ion-content::part(scroll) {
   padding-right: 15px;
-}
-
-ion-refresher-content {
-	--color: #fff !important;
-}
-
-.selected {
-	font-weight: bold;
-	color: var(--ion-color-primary);
 }
 
 
@@ -80,3 +77,13 @@ ion-refresher-content {
 .ion-content-scroll-host::after {
   top: -1px;
 }
+
+ion-refresher-content {
+	--color: #fff !important;
+}
+
+.selected {
+	font-weight: bold;
+	color: var(--ion-color-primary);
+}
+

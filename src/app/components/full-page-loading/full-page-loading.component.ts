@@ -1,6 +1,6 @@
 import { animate, state, style, transition, trigger } from '@angular/animations'
 import { CommonModule } from '@angular/common'
-import { Component, Input, ChangeDetectorRef, OnChanges } from '@angular/core'
+import { Component, Input, ChangeDetectorRef, OnChanges, Output, EventEmitter } from '@angular/core'
 import { IonLabel, IonSpinner } from '@ionic/angular/standalone'
 
 const SKIP_LOADING_IF_FASTER_THAN = 30 //ms
@@ -30,6 +30,8 @@ export class FullPageLoadingComponent implements OnChanges {
 	// some big components like dashboard need more time to render, consider increasing this value on a per component basis
 	@Input() renderWait: number = 40
 
+	@Output() fadeInCompleted = new EventEmitter<void>()
+
 	showContent = false
 	fadeInComplete: 'wait' | 'done' | 'fading' = 'wait'
 
@@ -52,7 +54,7 @@ export class FullPageLoadingComponent implements OnChanges {
 					this.cdr.detectChanges()
 				} else {
 					this.loadingDoneStartPreRender()
-					this.onLoadingAnimationDone('done') // just skip to done if all is available from cache, no animation
+					this.onLoadingAnimationDone() // just skip to done if all is available from cache, no animation
 				}
 			}, SKIP_LOADING_IF_FASTER_THAN)
 		} else {
@@ -78,13 +80,14 @@ export class FullPageLoadingComponent implements OnChanges {
 	}
 
 	// Called after showLoading animation is faded out, we may display the content now after waiting the render wait
-	onLoadingAnimationDone(targetFadeInComplete: 'done' | 'fading' = 'fading') {
+	onLoadingAnimationDone() {
 		if (!this.loading) {
 			// If the time it took to render up to now is bigger than renderWait, display immediately else wait the difference
 			const diff = Date.now() - this.startRenderTime
 
 			this.mayRenderWait(() => {
-				this.fadeInComplete = targetFadeInComplete
+				this.fadeInComplete = 'done'
+				this.fadeInCompleted.emit()
 				this.cdr.detectChanges()
 			}, diff)
 		}

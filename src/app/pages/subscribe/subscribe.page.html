@@ -24,11 +24,11 @@
 		<ion-segment [(ngModel)]="renewalFrame" (ionChange)="monthlyYearlySwitch()" value="monthly" mode="md">
 			<ion-segment-button value="monthly">
 				<ion-label class="white" [ngStyle]="{'opacity': currentY | fadeoutpipe: 140 }">Monthly</ion-label>
-				<ion-label class="white smallest-info" [ngStyle]="{'opacity': currentY | fadeoutpipe: 160 }">Try it out</ion-label>
+				<ion-label class="white smallest-info segment-label" [ngStyle]="{'opacity': currentY | fadeoutpipe: 160 }">Try it out</ion-label>
 			</ion-segment-button>
 			<ion-segment-button value="yearly">
 				<ion-label class="white" [ngStyle]="{'opacity': currentY | fadeoutpipe: 140 }">Yearly</ion-label>
-				<ion-label class="white smallest-info" [ngStyle]="{'opacity': currentY | fadeoutpipe: 160 }">Save up to 20%</ion-label>
+				<ion-label class="white smallest-info segment-label" [ngStyle]="{'opacity': currentY | fadeoutpipe: 160 }">Save up to 20%</ion-label>
 			</ion-segment-button>
 		</ion-segment>
 

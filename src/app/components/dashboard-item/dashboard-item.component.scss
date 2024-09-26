@@ -63,4 +63,13 @@ ion-badge {
 	font-size: 0.63rem;
 	padding: 5px 8px;
 	padding-top: 6px; // seems to be off by 1px?
+	border-radius: 5px;
+}
+
+.ios .title {
+	padding-top: 9px;
+}
+
+.title {
+	padding-top: 5px;
 }
