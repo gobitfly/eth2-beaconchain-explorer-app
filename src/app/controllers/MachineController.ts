@@ -19,6 +19,7 @@
 
 import { Options } from 'highcharts'
 import { HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from '../services/storage.service'
+import { MachineMetricNode, MachineMetricSystem, MachineMetricValidator } from '../requests/types/machine_metrics'
 
 const OFFLINE_THRESHOLD = 8 * 60 * 1000
 
@@ -93,33 +94,33 @@ export default class MachineController {
 	public doMemoryCharts(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
-		if (current && current.system) {
+		if (current && current.system_metrics) {
 			chartData.push({
 				name: 'Memory: System',
 				color: '#7cb5ec',
-				data: this.timeAxisChanges(current.system, (value) => {
+				data: this.timeAxisChanges(current.system_metrics, (value) => {
 					return value.memory_node_bytes_total
 				}),
 				pointWidth: 25,
 			})
 		}
 
-		if (current && current.node) {
+		if (current && current.node_metrics) {
 			chartData.push({
 				name: 'Memory: Beaconnode',
 				color: '#Dcb5ec',
-				data: this.timeAxisChanges(current.node, (value) => {
+				data: this.timeAxisChanges(current.node_metrics, (value) => {
 					return value.memory_process_bytes
 				}),
 				pointWidth: 25,
 			})
 		}
 
-		if (current && current.validator) {
+		if (current && current.validator_metrics) {
 			chartData.push({
 				name: 'Memory: Validator',
 				color: '#3FF5ec',
-				data: this.timeAxisChanges(current.validator, (value) => {
+				data: this.timeAxisChanges(current.validator_metrics, (value) => {
 					return value.memory_process_bytes
 				}),
 				pointWidth: 25,
@@ -136,19 +137,19 @@ export default class MachineController {
 		const chartData: { name: string; color: string; data: unknown[][]; pointWidth: number }[] = []
 
 		if (!current) return { Data: chartData } as unknown as MachineChartData
-		if (!current.system) return { Error: 'system_missing' } as MachineChartData
+		if (!current.system_metrics) return { Error: 'system_missing' } as MachineChartData
 
 		const cpuSystemTotal = this.timeAxisChanges(
-			current.system,
+			current.system_metrics,
 			(value) => {
 				return value.cpu_node_system_seconds_total
 			},
 			true
 		)
 
-		if (current && current.validator) {
+		if (current && current.validator_metrics) {
 			const cpuValidator = this.timeAxisChanges(
-				current.validator,
+				current.validator_metrics,
 				(value) => {
 					return value.cpu_process_seconds_total
 				},
@@ -162,9 +163,9 @@ export default class MachineController {
 			})
 		}
 
-		if (current && current.node) {
+		if (current && current.node_metrics) {
 			const cpuNode = this.timeAxisChanges(
-				current.node,
+				current.node_metrics,
 				(value) => {
 					return value.cpu_process_seconds_total
 				},
@@ -207,12 +208,12 @@ export default class MachineController {
 	public doSyncCharts(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
-		if (current && current.node) {
+		if (current && current.node_metrics) {
 			chartData.push({
 				name: 'Exec Connected',
 				color: '#3335FF',
 				data: this.timeAxisChanges(
-					current.node,
+					current.node_metrics,
 					(value) => {
 						return value.sync_eth1_connected ? 1.2 : 0
 					},
@@ -222,12 +223,12 @@ export default class MachineController {
 			})
 		}
 
-		if (current && current.node) {
+		if (current && current.node_metrics) {
 			chartData.push({
 				name: 'Cons Synced',
 				color: '#3FF5ec',
 				data: this.timeAxisChanges(
-					current.node,
+					current.node_metrics,
 					(value) => {
 						return value.sync_eth2_synced ? 1.3 : 0
 					},
@@ -266,7 +267,7 @@ export default class MachineController {
 	}
 
 	isBuggyPrysmVersion(data: ProcessedStats): boolean {
-		return data.client == 'prysm' && (!data.system || data.system.length <= 2 || data.system[0].cpu_cores == 0)
+		return data.client == 'prysm' && (!data.system_metrics || data.system_metrics.length <= 2 || data.system_metrics[0].cpu_cores == 0)
 	}
 
 	async getAnyAttention(data: ProcessedStats) {
@@ -278,8 +279,8 @@ export default class MachineController {
 	}
 
 	protected async getDiskAttention(data: ProcessedStats): Promise<string> {
-		if (!data || !data.system) return null
-		const freePercentage = this.getLastFrom(data.system, (array) => array.disk_node_bytes_free / array.disk_node_bytes_total)
+		if (!data || !data.system_metrics) return null
+		const freePercentage = this.getLastFrom(data.system_metrics, (array) => array.disk_node_bytes_free / array.disk_node_bytes_total)
 		const threshold = 100 - ((await this.store.getSetting(HDD_THRESHOLD, 90)) as number)
 		console.log('HDD threshold', threshold)
 
@@ -291,11 +292,11 @@ export default class MachineController {
 	}
 
 	protected async getMemoryAttention(data: ProcessedStats): Promise<string> {
-		if (!data || !data.system) return null
+		if (!data || !data.system_metrics) return null
 		const usagePercentage =
 			1 -
 			this.getLastFrom(
-				data.system,
+				data.system_metrics,
 				(array) => (array.memory_node_bytes_free + array.memory_node_bytes_buffers + array.memory_node_bytes_cached) / array.memory_node_bytes_total
 			)
 		const threshold = (await this.store.getSetting(RAM_THRESHOLD, 80)) as number
@@ -321,16 +322,16 @@ export default class MachineController {
 	}
 
 	protected getSyncAttention(data: ProcessedStats): string {
-		const synced = this.getLastFrom(data.node, (array) => array.sync_eth2_synced)
-		const eth1Connected = this.getLastFrom(data.node, (array) => array.sync_eth1_connected)
+		const synced = this.getLastFrom(data.node_metrics, (array) => array.sync_eth2_synced)
+		const eth1Connected = this.getLastFrom(data.node_metrics, (array) => array.sync_eth1_connected)
 
-		if (!data.node) {
+		if (!data.node_metrics) {
 			return "No beaconnode data found. If you wish to track this data, make sure to configure metric tracking on your beaconnode machine too. <a target='_blank' href='https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node'>Learn more here</a>."
 		} else if (!eth1Connected) {
 			return 'No execution client connection, make sure you have configured an execution endpoint and it is currently active and synced.'
 		} else if (!synced) {
 			return 'Your beaconnode is currently syncing. It might take some time to get fully synced.'
-		} else if (!data.validator) {
+		} else if (!data.validator_metrics) {
 			return "No validator data found. If you wish to track this data, make sure to configure metric tracking on your validator machine too. <a target='_blank' href='https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node'>Learn more here</a>."
 		}
 		return null
@@ -494,12 +495,13 @@ export default class MachineController {
 
 	public combineByMachineName(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
 		const allKeys = this.findAllKeys(validator, node, system)
+		console.log("allKeys", allKeys)
 
 		const result: Map<string, ProcessedStats>= new Map()
-		for (const key in allKeys) {
-			const sortedVal = this.sortData(validator.get(key)) as StatsValidator[]
-			const sortedNode = this.sortData(node.get(key)) as StatsNode[]
-			const sortedSystem = this.sortData(system.get(key)) as StatsSystem[]
+		for (const key of allKeys) {
+			const sortedVal = this.sortData(validator.get(key))
+			const sortedNode = this.sortData(node.get(key)) 
+			const sortedSystem = this.sortData(system.get(key)) 
 
 			const unixTime = this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => {
 				return value.timestamp
@@ -511,9 +513,9 @@ export default class MachineController {
 			}
 
 			result.set(key, {
-				validator: sortedVal,
-				node: sortedNode,
-				system: sortedSystem,
+				validator_metrics: sortedVal,
+				node_metrics: sortedNode,
+				system_metrics: sortedSystem,
 				client: this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => {
 					return (value as ProcessBase).client_name
 				}),
@@ -582,7 +584,6 @@ export default class MachineController {
 			array.push(data[i])
 			result.set(data[i].machine, array)
 		}
-
 		return result
 	}
 
@@ -636,57 +637,26 @@ export interface ProcessedStats extends StatsResponse {
 }
 
 export interface StatsBase {
-	machine: string
-	timestamp: number
-	row: number
+	machine?: string
+	timestamp?: number
+	//row: number
 }
 
 export interface ProcessBase extends StatsBase {
-	client_name: string
-	client_version: string
-	cpu_process_seconds_total: number
-	memory_process_bytes: number
+	client_name?: string
+	client_version?: string
+	cpu_process_seconds_total?: number
+	memory_process_bytes?: number
 }
 
 export interface StatsResponse {
-	validator: StatsValidator[]
-	node: StatsNode[]
-	system: StatsSystem[]
+	validator_metrics: StatsValidator[]
+	node_metrics: StatsNode[]
+	system_metrics: StatsSystem[]
 }
 
-export interface StatsValidator extends ProcessBase {
-	validator_active: number
-	validator_total: number
-}
+export interface StatsValidator extends MachineMetricValidator, ProcessBase {}
 
-export interface StatsNode extends ProcessBase {
-	disk_beaconchain_bytes_total: number
-	network_libp2p_bytes_total_receive: number
-	network_libp2p_bytes_total_transmit: number
-	network_peers_connected: number
-	sync_eth1_connected: boolean
-	sync_eth2_synced: boolean
-	sync_beacon_head_slot: number
-}
+export interface StatsNode extends MachineMetricNode, ProcessBase {}
 
-export interface StatsSystem extends StatsBase {
-	cpu_cores: number
-	cpu_node_idle_seconds_total: number
-	cpu_node_iowait_seconds_total: number
-	cpu_node_system_seconds_total: number
-	cpu_node_user_seconds_total: number
-	cpu_threads: number
-	disk_node_bytes_free: number
-	disk_node_bytes_total: number
-	disk_node_io_seconds: number
-	disk_node_reads_total: number
-	disk_node_writes_total: number
-	memory_node_bytes_buffers: number
-	memory_node_bytes_cached: number
-	memory_node_bytes_free: number
-	memory_node_bytes_total: number
-	misc_node_boot_ts_seconds: number
-	misc_os: string
-	network_node_bytes_total_receive: number
-	network_node_bytes_total_transmit: number
-}
+export interface StatsSystem extends MachineMetricSystem, StatsBase {}

@@ -9,9 +9,11 @@ import { MachinesPage } from './machines.page'
 import { MachineChartComponentModule } from 'src/app/components/machinechart/machinechart.module'
 import { PipesModule } from 'src/app/pipes/pipes.module'
 import { AdComponentModule } from 'src/app/components/ad/ad.module'
+import { FullPageLoadingComponent } from "../components/full-page-loading/full-page-loading.component";
+import { FullPageOfflineComponent } from "../components/full-page-offline/full-page-offline.component";
 
 @NgModule({
-	imports: [CommonModule, FormsModule, IonicModule, MachinesPageRoutingModule, MachineChartComponentModule, PipesModule, AdComponentModule],
+	imports: [CommonModule, FormsModule, IonicModule, MachinesPageRoutingModule, MachineChartComponentModule, PipesModule, AdComponentModule, FullPageLoadingComponent, FullPageOfflineComponent],
 	declarations: [MachinesPage],
 })
 export class MachinesPageModule {}

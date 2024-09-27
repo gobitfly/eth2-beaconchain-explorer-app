@@ -40,7 +40,7 @@ const routes: Routes = [
 			},
 			{
 				path: 'machines',
-				loadChildren: () => import('../pages/machines/machines.module').then((m) => m.MachinesPageModule),
+				loadChildren: () => import('../tab-machines/machines.module').then((m) => m.MachinesPageModule),
 			},
 			{
 				path: 'blocks',

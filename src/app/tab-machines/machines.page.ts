@@ -1,22 +1,21 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core'
 import { ModalController } from '@ionic/angular'
-import { MachineDetailPage } from '../machine-detail/machine-detail.page'
-import MachineController, { ProcessedStats } from '../../controllers/MachineController'
+import { MachineDetailPage } from '../pages/machine-detail/machine-detail.page'
+import MachineController, { ProcessedStats } from '../controllers/MachineController'
 import { AlertService } from 'src/app/services/alert.service'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
-import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import { StorageService } from 'src/app/services/storage.service'
 import { OAuthUtils } from 'src/app/utils/OAuthUtils'
-import MachineUtils from 'src/app/utils/MachineUtils'
 
 import { Browser } from '@capacitor/browser'
 import { ApiService } from 'src/app/services/api.service'
-import { getProperty } from 'src/app/requests/requests'
+import { APIUnauthorizedError, getProperty } from 'src/app/requests/requests'
+import { V2MyMachines } from '../requests/v2-user'
 
 @Component({
 	selector: 'app-machines',
 	templateUrl: './machines.page.html',
-	styleUrls: ['./machines.page.scss']
+	styleUrls: ['./machines.page.scss'],
 })
 export class MachinesPage extends MachineController implements OnInit {
 	data: Map<string, ProcessedStats> = null
@@ -29,6 +28,9 @@ export class MachinesPage extends MachineController implements OnInit {
 
 	orderedKeys: string[] = []
 	legacyApi = false
+
+	initialLoading: boolean = true
+	online: boolean = true
 
 	cpuDelegate = (data: ProcessedStats) => {
 		return this.doCPUCharts(data)
@@ -55,10 +57,8 @@ export class MachinesPage extends MachineController implements OnInit {
 		private modalController: ModalController,
 		private alertService: AlertService,
 		public merchant: MerchantUtils,
-		private validatorUtils: ValidatorUtils,
 		private storage: StorageService,
 		private oauthUtils: OAuthUtils,
-		private machineUtils: MachineUtils,
 		private ref: ChangeDetectorRef,
 		protected api: ApiService
 	) {
@@ -74,7 +74,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	async doRefresh(event: { target: { complete: () => void } }) {
 		await this.getAndProcessData()
 		setTimeout(() => {
-			event.target.complete()
+			if (event) event.target.complete()
 			this.ref.detectChanges()
 		}, 500)
 	}
@@ -199,13 +199,54 @@ export class MachinesPage extends MachineController implements OnInit {
 			this.data = new Map()
 			this.orderedKeys = []
 			this.showData = false
+			this.initialLoading = false
 			return
 		}
 
-		this.data = await this.machineUtils.getAndProcessData(this.getTimeSelectionLimit())
+		this.data = await this.getAndProcessDataBase(this.getTimeSelectionLimit())
+		const machineNames = this.getAllMachineNamesFrom(this.data)
+		console.log('data result', this.data)
+		console.log('machine names', machineNames)
+
 		this.orderedKeys = await this.getOrderedKeys(this.data)
 		this.showData = Object.keys(this.data).length > 0
-		this.checkForLegacyApi(this.data)
+		this.initialLoading = false
+
+		// todo online
+	}
+
+	private getAllMachineNamesFrom(data: Map<string, ProcessedStats>): string[] {
+		const result: string[] = []
+		for (const key in data) {
+			result.push(key)
+		}
+		return result
+	}
+
+	private async getAndProcessDataBase(timeslot = 180) {
+		const apiResult = await this.api.execute2(new V2MyMachines(0, timeslot))
+		if (apiResult.error) {
+			//this.dashboardUtils.defaultDashboardErrorHandler(apiResult.error)
+			if (!(apiResult.error instanceof APIUnauthorizedError)) {
+				this.online = false
+			}
+			return
+		}
+
+		console.log('machine data', apiResult.data)
+		if (apiResult.data == null) {
+			return new Map()
+		}
+
+		const machineController = new MachineController(this.storage)
+
+		const result = machineController.combineByMachineName(
+			machineController.filterMachines(apiResult.data.validator_metrics),
+			machineController.filterMachines(apiResult.data.node_metrics),
+			machineController.filterMachines(apiResult.data.system_metrics)
+		)
+
+		return result
 	}
 
 	private async getOrderedKeys(data: Map<string, ProcessedStats>): Promise<string[]> {
@@ -253,42 +294,6 @@ export class MachinesPage extends MachineController implements OnInit {
 			},
 		})
 		return await modal.present()
-	}
-
-	async checkForLegacyApi(data: Map<string, ProcessedStats>) {
-		const dismissed = await this.storage.getBooleanSetting('legacy_monitoring_api_dismissed', false)
-		if (dismissed || !data) {
-			this.legacyApi = false
-			return
-		}
-
-		let offlineCount = 0
-		let count = 0
-		for (const key in data) {
-			const it = data.get(key)
-			const status = await this.getOnlineState(it)
-			if (status == 'offline') offlineCount++
-			count++
-		}
-
-		this.legacyApi = offlineCount == count
-	}
-
-	closeLegacyApiDialog() {
-		this.legacyApi = false
-		this.storage.setBooleanSetting('legacy_monitoring_api_dismissed', true)
-	}
-
-	legacyApiMigrateDialog() {
-		this.alertService.showInfo(
-			'How to Migrate',
-			'1. Head over to https://beaconcha.in and go to settings.<br/>' +
-				'2. Go to "Mobile App".<br/>' +
-				'3. Make sure, the URL matches those in your clients config.<br/><br/>' +
-				'-) If not, use the new URL presented on beaconcha.in and restart your staking services.<br/><br/>' +
-				'-) If the URL matches, you can ignore this warning and dismiss it. Make sure the URL is exactly the same since they both start the same way.<br/>',
-			'bigger-alert'
-		)
 	}
 
 	onScrollStarted() {

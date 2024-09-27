@@ -19,6 +19,7 @@ import { APIRequest, Method, NoContent } from './requests'
 import { Response } from '../services/api.service'
 import { UserInfo } from './types/user'
 import { UserDashboardsData } from './types/dashboard'
+import { StatsResponse } from '../controllers/MachineController'
 
 // export class V2GetDashboards extends APIRequest<V2GetDashboardResponse> {
 // 	resource = 'users/me/dashboards'
@@ -49,6 +50,16 @@ export class V2RegisterPushNotificationToken extends APIRequest<NoContent> {
 		super()
 		this.resource = this.resource.replace('{client_id}', clientID)
 		this.postData = { token: token }
+	}
+}
+
+export class V2MyMachines extends APIRequest<StatsResponse> {
+	resource = '/users/me/machine-metrics'
+	method = Method.GET
+
+	constructor(offset: number, limit: number) {
+		super()
+		this.resource += `?offset=${offset}&limit=${limit}`
 	}
 }
 
