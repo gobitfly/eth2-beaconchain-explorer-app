@@ -13,7 +13,7 @@
 		"moduleResolution": "node",
 		"importHelpers": true,
 		"noEmitHelpers": true,
-		"target": "ES2022",
+		"target": "es2020",
 		"lib": ["dom"],
 		"resolveJsonModule": true,
 		"skipLibCheck": true,

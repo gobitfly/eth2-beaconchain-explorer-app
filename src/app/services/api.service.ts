@@ -130,6 +130,15 @@ export class ApiService extends CacheModule {
 		return temp
 	}
 
+	findParentNetworkKey(key: string): string {
+		for (const entry of MAP) {
+			if(entry.v2NetworkConfigKey == key) {
+				return entry.key
+			}
+		}
+		return key
+	}
+
 	getNetwork(): ApiNetwork {
 		const temp = this.networkConfig
 		return temp

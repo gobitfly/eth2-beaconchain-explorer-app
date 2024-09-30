@@ -45,7 +45,6 @@ export const MAP: ApiNetwork[] = [
 		active: true,
 		supportedChainIds: [0, 100],
 		name: 'Gnosis',
-		v2NetworkConfigKey: 'main_v2',
 	},
 	{
 		key: 'sepolia',
@@ -58,7 +57,6 @@ export const MAP: ApiNetwork[] = [
 		active: true,
 		supportedChainIds: [11155111],
 		name: 'Ethereum',
-		v2NetworkConfigKey: 'holesky_v2_prod',
 	},
 	{
 		key: 'holesky',

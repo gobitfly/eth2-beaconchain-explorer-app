@@ -105,6 +105,9 @@ export class MachinesPage extends MachineController implements OnInit {
 		if (!result) return result
 
 		if (data.clientVersion) result += ' v' + data.clientVersion
+		if(result.length > 22) {
+			return result.substring(0,20)+"..."
+		}
 		return result
 	}
 
@@ -235,12 +238,15 @@ export class MachinesPage extends MachineController implements OnInit {
 		}
 
 		const machineController = new MachineController(this.storage)
+		
 
 		const result = await machineController.combineByMachineName(
 			machineController.filterMachines(apiResult.data.validator_metrics),
 			machineController.filterMachines(apiResult.data.node_metrics),
 			machineController.filterMachines(apiResult.data.system_metrics)
 		)
+
+		console.log("baum", result.size, machineController.filterMachines(apiResult.data.system_metrics))
 
 		return result
 	}
@@ -252,7 +258,7 @@ export class MachinesPage extends MachineController implements OnInit {
 		const attention = []
 		const offline = []
 
-		for (const key of data.keys()) {
+		for (const key of Array.from(data.keys())) {
 			const it = data.get(key)
 			const status = await this.getOnlineState(it)
 			if (status == 'online') {

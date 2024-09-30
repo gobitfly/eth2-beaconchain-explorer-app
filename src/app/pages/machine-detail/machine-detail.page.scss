@@ -46,3 +46,11 @@ ion-segment {
 .alert-text {
 	color: var(--ion-text-color) !important;
 }
+
+ion-card-title {
+	font-size: 1.1rem;
+}
+
+ion-card-content {
+	font-size: var(--smaller-info-size);
+}

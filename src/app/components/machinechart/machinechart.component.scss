@@ -24,12 +24,20 @@
 	margin-right: 6%;
 }
 
+.card-header ion-label {
+	font-size: 1.1rem;
+}
+
 .circle {
-	margin-top: 6px;
+	margin-top: 10px;
 	width: 9px;
 	height: 9px;
 	border-radius: 50%;
 	opacity: var(--default-secondary-transparency);
+}
+
+.ios .circle {
+	margin-top: 16px;
 }
 
 .offline {
@@ -60,5 +68,11 @@ ion-card-subtitle {
 }
 
 .more-icon {
+	margin-top: 10px;
 	opacity: 0.7;
 }
+
+.ios .more-icon {
+	margin-top: 16px;
+}
+

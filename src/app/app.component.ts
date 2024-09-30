@@ -67,14 +67,18 @@ export class AppComponent {
 		try {
 			await this.storage.migrateToCapacitor3()
 			if (environment.debug_set_default_network.length > 0) {
-				const newConfig = findConfigForKey(environment.debug_set_default_network)
+				const completed = await this.storage.getBooleanSetting("debug_change_network", false)
+				if(!completed) {
+					this.storage.setBooleanSetting("debug_change_network", true)
+					const newConfig = findConfigForKey(environment.debug_set_default_network)
 
-				await this.storage.setNetworkPreferences(newConfig)
-				await this.api.initialize()
-				Toast.show({
-					text: `Beta: Network changed to ${newConfig.name} v2`,
-					duration: 'long',
-				})
+					await this.storage.setNetworkPreferences(newConfig)
+					await this.api.initialize()
+					Toast.show({
+						text: `Beta: Network changed to ${newConfig.name} v2`,
+						duration: 'long',
+					})
+				}
 			}
 			await this.v2Migrator.migrate()
 

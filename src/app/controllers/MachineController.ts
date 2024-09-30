@@ -497,7 +497,7 @@ export default class MachineController {
 	public async combineByMachineName(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
 		const allKeys = this.findAllKeys(validator, node, system)
 		const debugShowOldMachines = await this.store.getBooleanSetting('debug_show_old_machines', false)
-
+		
 		const result: Map<string, ProcessedStats>= new Map()
 		for (const key of allKeys) {
 			const sortedVal = this.sortData(validator.get(key))
@@ -509,7 +509,7 @@ export default class MachineController {
 			})
 
 			// do not display machines that have not been online for more than 4 days
-			if (!debugShowOldMachines && unixTime && Date.now() - unixTime > 96 * 60 * 60 * 1000) {
+			if (!debugShowOldMachines && !environment.mock_combine_machines && unixTime && Date.now() - unixTime > 96 * 60 * 60 * 1000) {
 				continue
 			}
 
@@ -555,13 +555,13 @@ export default class MachineController {
 	public findAnyDataIn<T, V>(current: T[], dataCallback: (value: T) => V) {
 		if (!current || current.length <= 0) return null
 		const result = dataCallback(current[current.length - 1])
-		if (result && result != '') {
+		if (result) {
 			return result
 		}
 		return null
 	}
 
-	public findAllKeys(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
+	public findAllKeys(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>): string[] {
 		const set = new Set<string>()
 		for (const key of validator.keys()) {
 			set.add(key)
@@ -575,21 +575,17 @@ export default class MachineController {
 		return Array.from(set)
 	}
 
-	public filterMachines<Type extends StatsBase>(data: Type[]): Map<string, Type[]> {
-		const result = new Map()
-		for (let i = 0; i < data.length; i++) {
-			const current = data[i]
+	public filterMachines<T extends StatsBase>(data: T[]): Map<string, T[]> {
+		return data.reduce((result, current) => {
 			if (environment.mock_combine_machines) {
 				current.machine = 'test'
 			}
-			let array = result.get(current.machine)
-			if (array == null) {
-				array = []
-			}
-			array.push(current)
-			result.set(current.machine, array)
-		}
-		return result
+
+			const existingArray = result.get(current.machine) || [];
+			existingArray.push(current)
+			result.set(current.machine, existingArray)
+			return result
+		}, new Map<string, T[]>())
 	}
 
 	public hashCode(string: string) {
