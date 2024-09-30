@@ -9,7 +9,7 @@ import { OAuthUtils } from 'src/app/utils/OAuthUtils'
 
 import { Browser } from '@capacitor/browser'
 import { ApiService } from 'src/app/services/api.service'
-import { APIUnauthorizedError, getProperty } from 'src/app/requests/requests'
+import { APIUnauthorizedError } from 'src/app/requests/requests'
 import { V2MyMachines } from '../requests/v2-user'
 
 @Component({
@@ -110,7 +110,7 @@ export class MachinesPage extends MachineController implements OnInit {
 
 	openTimeSelection() {
 		if (this.merchant.hasMachineMonitoringPremium()) {
-			this.alertService.showInfo('Premium Feature', 'For more machine history upgrade to a premium version.')
+			this.alertService.showInfo('Limit Reached', 'Upgrade to premium to get up to 30 days of monitoring data')
 			return
 		}
 
@@ -204,24 +204,21 @@ export class MachinesPage extends MachineController implements OnInit {
 		}
 
 		this.data = await this.getAndProcessDataBase(this.getTimeSelectionLimit())
-		const machineNames = this.getAllMachineNamesFrom(this.data)
-		console.log('data result', this.data)
-		console.log('machine names', machineNames)
+		// const machineNames = this.getAllMachineNamesFrom(this.data)
+		// console.log('machine names', machineNames)
 
 		this.orderedKeys = await this.getOrderedKeys(this.data)
-		this.showData = Object.keys(this.data).length > 0
+		this.showData = this.data.size > 0
 		this.initialLoading = false
-
-		// todo online
 	}
 
-	private getAllMachineNamesFrom(data: Map<string, ProcessedStats>): string[] {
-		const result: string[] = []
-		for (const key in data) {
-			result.push(key)
-		}
-		return result
-	}
+	// private getAllMachineNamesFrom(data: Map<string, ProcessedStats>): string[] {
+	// 	const result: string[] = []
+	// 	for (const key of data.keys()) {
+	// 		result.push(key)
+	// 	}
+	// 	return result
+	// }
 
 	private async getAndProcessDataBase(timeslot = 180) {
 		const apiResult = await this.api.execute2(new V2MyMachines(0, timeslot))
@@ -233,14 +230,13 @@ export class MachinesPage extends MachineController implements OnInit {
 			return
 		}
 
-		console.log('machine data', apiResult.data)
 		if (apiResult.data == null) {
 			return new Map()
 		}
 
 		const machineController = new MachineController(this.storage)
 
-		const result = machineController.combineByMachineName(
+		const result = await machineController.combineByMachineName(
 			machineController.filterMachines(apiResult.data.validator_metrics),
 			machineController.filterMachines(apiResult.data.node_metrics),
 			machineController.filterMachines(apiResult.data.system_metrics)
@@ -250,11 +246,13 @@ export class MachinesPage extends MachineController implements OnInit {
 	}
 
 	private async getOrderedKeys(data: Map<string, ProcessedStats>): Promise<string[]> {
+		if(!data) return []
+
 		const online = []
 		const attention = []
 		const offline = []
 
-		for (const key in data) {
+		for (const key of data.keys()) {
 			const it = data.get(key)
 			const status = await this.getOnlineState(it)
 			if (status == 'online') {
@@ -278,7 +276,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	}
 
 	async openMachineDetail(key: string) {
-		const processedStats = getProperty(this.data, key) as ProcessedStats
+		const processedStats = this.data.get(key) as ProcessedStats
 		const attention = this.getSyncAttention(processedStats)
 		const diskAttention = await this.getDiskAttention(processedStats)
 		const memoryAttention = await this.getMemoryAttention(processedStats)

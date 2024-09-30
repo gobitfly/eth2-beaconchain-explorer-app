@@ -269,7 +269,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 
 		this.alert.confirmDialog(
 			'Migrate from Legacy Dashboard',
-			`Do you want to add ${index.length} validator${index.length > 1 ? "s": ""} from your legacy dashboard to your new dashboard "${this.defaultDashboardData()?.name}"?`,
+			`Do you want to add ${index.length} validator${index.length > 1 ? 's' : ''} from your legacy dashboard to your new dashboard "${this.defaultDashboardData()?.name}"?`,
 			'OK',
 			async () => {
 				let loading = await this.alert.presentLoading('Loading...')

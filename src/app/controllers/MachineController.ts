@@ -20,6 +20,7 @@
 import { Options } from 'highcharts'
 import { HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from '../services/storage.service'
 import { MachineMetricNode, MachineMetricSystem, MachineMetricValidator } from '../requests/types/machine_metrics'
+import { environment } from 'src/environments/environment'
 
 const OFFLINE_THRESHOLD = 8 * 60 * 1000
 
@@ -493,9 +494,9 @@ export default class MachineController {
 		return array
 	}
 
-	public combineByMachineName(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
+	public async combineByMachineName(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
 		const allKeys = this.findAllKeys(validator, node, system)
-		console.log("allKeys", allKeys)
+		const debugShowOldMachines = await this.store.getBooleanSetting('debug_show_old_machines', false)
 
 		const result: Map<string, ProcessedStats>= new Map()
 		for (const key of allKeys) {
@@ -508,7 +509,7 @@ export default class MachineController {
 			})
 
 			// do not display machines that have not been online for more than 4 days
-			if (unixTime && Date.now() - unixTime > 96 * 60 * 60 * 1000) {
+			if (!debugShowOldMachines && unixTime && Date.now() - unixTime > 96 * 60 * 60 * 1000) {
 				continue
 			}
 
@@ -577,12 +578,16 @@ export default class MachineController {
 	public filterMachines<Type extends StatsBase>(data: Type[]): Map<string, Type[]> {
 		const result = new Map()
 		for (let i = 0; i < data.length; i++) {
-			let array = result.get(data[i].machine)
+			const current = data[i]
+			if (environment.mock_combine_machines) {
+				current.machine = 'test'
+			}
+			let array = result.get(current.machine)
 			if (array == null) {
 				array = []
 			}
-			array.push(data[i])
-			result.set(data[i].machine, array)
+			array.push(current)
+			result.set(current.machine, array)
 		}
 		return result
 	}

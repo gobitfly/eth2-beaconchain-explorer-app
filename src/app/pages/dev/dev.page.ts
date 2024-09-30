@@ -19,6 +19,7 @@ export class DevPage extends Tab3Page implements OnInit {
 	deviceID = ''
 	usev2api = false
 	allowHttp = false
+	showOldMachines = false
 
 	ngOnInit() {
 		this.notificationBase.disableToggleLock()
@@ -44,9 +45,17 @@ export class DevPage extends Tab3Page implements OnInit {
 			console.log('v2 auth', result)
 		})
 
+		this.storage.getBooleanSetting("debug_show_old_machines", false).then((result) => {
+			this.showOldMachines = result
+		})
+
 		this.storage.isHttpAllowed().then((result) => {
 			this.allowHttp = result
 		})
+	}
+
+	changeOldMachines() {
+		this.storage.setBooleanSetting("debug_show_old_machines", this.showOldMachines)
 	}
 
 	toastTest() {
@@ -86,7 +95,6 @@ export class DevPage extends Tab3Page implements OnInit {
 
 		this.updateUtils.checkAllUpdates()
 	}
-
 
 	updateFirebaseToken() {
 		this.firebaseUtils.pushLastTokenUpstream(true)
@@ -312,7 +320,7 @@ export class DevPage extends Tab3Page implements OnInit {
 	async registerV2Push() {
 		//const lastToken = await this.storage.getItem('last_firebase_token')
 		const deviceID = await this.storage.getDeviceID()
-		const result = this.api.execute2(new V2RegisterPushNotificationToken('hallo', deviceID)) 
+		const result = this.api.execute2(new V2RegisterPushNotificationToken('hallo', deviceID))
 		console.log('v2 register push', result)
 	}
 

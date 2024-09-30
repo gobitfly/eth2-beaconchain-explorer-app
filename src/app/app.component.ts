@@ -28,6 +28,10 @@ import V2Migrator from './utils/V2Migrator'
 import { App } from '@capacitor/app'
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { AppUpdater } from './utils/AppUpdater'
+import { environment } from 'src/environments/environment'
+import { findConfigForKey } from './utils/NetworkData'
+import { ApiService } from './services/api.service'
+import { Toast } from '@capacitor/toast'
 
 @Component({
 	selector: 'app-root',
@@ -43,7 +47,8 @@ export class AppComponent {
 		private modalController: ModalController,
 		private storage: StorageService,
 		private v2Migrator: V2Migrator,
-		private appUpdater: AppUpdater
+		private appUpdater: AppUpdater,
+		private api: ApiService
 	) {
 		this.initializeApp()
 	}
@@ -53,15 +58,34 @@ export class AppComponent {
 		await this.platform.ready()
 		CapacitorUpdater.notifyAppReady() // call as soon as possible otherwise will rollback to last working bundle
 
-		await this.appUpdater.check() // should we continue without waiting? do try catch above rest so updater will not be affected by errors
-		await this.storage.migrateToCapacitor3()
-		await this.v2Migrator.migrate()
+		try {
+			await this.appUpdater.check() // should we continue without waiting? do try catch above rest so updater will not be affected by errors
+		} catch (e) {
+			console.error('Failed to check for updates', e)
+		}
 
-		this.theme.init(() => {
-			SplashScreen.hide()
-		}) // just initialize the theme service
+		try {
+			await this.storage.migrateToCapacitor3()
+			if (environment.debug_set_default_network.length > 0) {
+				const newConfig = findConfigForKey(environment.debug_set_default_network)
 
-		this.setAndroidBackButtonBehavior()
+				await this.storage.setNetworkPreferences(newConfig)
+				await this.api.initialize()
+				Toast.show({
+					text: `Beta: Network changed to ${newConfig.name} v2`,
+					duration: 'long',
+				})
+			}
+			await this.v2Migrator.migrate()
+
+			this.theme.init(() => {
+				SplashScreen.hide()
+			}) // just initialize the theme service
+
+			this.setAndroidBackButtonBehavior()
+		} catch (e) {
+			console.error('Failed to initialize app', e)
+		}
 	}
 
 	private setAndroidBackButtonBehavior(): void {
