@@ -76,14 +76,18 @@ export default class MachineController {
 						color: 'var(--text-color)',
 						fontWeight: 'bold',
 					},
+					// @ts-expect-error: noImplicitThis disabled for this line
 					pointFormatter: function () {
+						// @ts-expect-error: noImplicitThis disabled for this line
 						return '<span style="color:' + this.color + '">\u25CF</span> ' + this.series.name + ': <b>' + this.y.toFixed(0) + postFix + '</b>'
 					},
 				},
 				yAxis: {
 					labels: {
 						x: -5,
+						// @ts-expect-error: noImplicitThis disabled for this line
 						formatter: function () {
+							// @ts-expect-error: noImplicitThis disabled for this line
 							return this.value
 						},
 					},

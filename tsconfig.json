@@ -5,7 +5,7 @@
 		"outDir": "./dist/out-tsc",
 		"sourceMap": true,
 		"allowSyntheticDefaultImports": true,
-		"noImplicitThis": false,
+		"noImplicitThis": true,
 		"esModuleInterop": true,
 		"declaration": false,
 		"experimentalDecorators": true,
@@ -22,7 +22,6 @@
 		"strictBindCallApply": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitAny": true,
-	
 	},
 	"angularCompilerOptions": {
 		"fullTemplateTypeCheck": true,

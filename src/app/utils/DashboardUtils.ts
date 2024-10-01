@@ -258,7 +258,7 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 			} else {
 				console.log('user has no dashboards, creating default dashboard')
 				// create a new dashboard
-				const chainID = await this.api.getCurrentDashboardChainID()
+				const chainID = await api.getCurrentDashboardChainID()
 				const createResult = await api.execute2(new V2CreateDashboard('Default Dashboard', chainID)) 
 				if (createResult.error) {
 					Toast.show({

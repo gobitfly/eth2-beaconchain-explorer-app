@@ -28,6 +28,7 @@ import { LogviewPage } from '../pages/logview/logview.page'
 import { Device } from '@capacitor/device'
 import { Aggregation, dashboardID, Period } from '../requests/v2-dashboard'
 import { StorageMirror } from 'storage-mirror'
+import { environment } from 'src/environments/environment'
 
 const AUTH_USER = 'auth_user'
 const AUTH_USER_V2 = 'auth_user_v2'
@@ -120,7 +121,7 @@ export class StorageService extends CacheModule implements OnInit {
 
 	public async isDebugMode() {
 		const devMode = isDevMode()
-		if (devMode) return true
+		if (devMode || environment.debug) return true
 		const permanentDevMode = (await this.getObject('dev_mode')) as DevModeEnabled
 		return permanentDevMode && permanentDevMode.enabled
 	}
@@ -337,6 +338,7 @@ interface DashboardSetting {
 }
 
 export function replacer(key: string, value: unknown) {
+	// @ts-expect-error: noImplicitThis disabled for this line
 	const originalObject = this[key]
 	if (originalObject instanceof Map) {
 		return {
