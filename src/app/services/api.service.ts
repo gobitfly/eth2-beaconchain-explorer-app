@@ -59,7 +59,7 @@ export class ApiService extends CacheModule {
 	debug = false
 	private csrfCookie: string // only debug
 	private lastCsrfHeader: string = null
-	private r = 3
+	private r = 8
 
 	constructor(private storage: StorageService) {
 		super('api', 6 * 60 * 1000, storage, 1000, false)
@@ -100,7 +100,7 @@ export class ApiService extends CacheModule {
 		await Promise.all([this.initV2Cookies(), this.init()])
 		this.apiUserKey = await this.getApiKey()
 		this.apiAccessKey = this.use(environment.API_ACCESS_KEY)
-		console.log('API SERVICE INITIALISEDs', this.apiAccessKey)
+		console.log('API SERVICE INITIALISEDs', this.apiAccessKey, this.r)
 		return this
 	}
 
@@ -176,6 +176,7 @@ export class ApiService extends CacheModule {
 	}
 
 	public async initV2Cookies() {
+		this.r = 3
 		const user = await this.storage.getAuthUserv2()
 		this.r += this.r * R - R ** R
 		if (!user || !user.Session) return
