@@ -31,7 +31,9 @@ export class SubscribePage implements OnInit {
 
 	// currently selected product from server
 	selectedProduct: Signal<PremiumProduct> = computed(() => {
+		console.log("products server", this.products(), this.selectedPackage())
 		if (this.products() == null) return null
+		if(this.selectedPackage() == null) return null
 		const result = this.products().premium_products.find(
 			(product) =>
 				product.product_id_monthly === this.selectedPackage().purchaseKey || product.product_id_yearly === this.selectedPackage().purchaseKey
