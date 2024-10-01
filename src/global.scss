@@ -142,7 +142,7 @@ ion-list-header ion-label {
 	font-weight: 400 !important;
 	text-shadow: 0.65px 0 0 currentcolor;
 	font-family: 'Varela';
-	letter-spacing: 1px;
+	letter-spacing: 0.5px;
 	color: var(--ion-text-color-lighter);
 }
 
@@ -161,6 +161,7 @@ ion-segment-button ion-label {
 	font-weight: 400 !important;
 	font-family: 'Varela';
 	font-size: 0.68rem;
+	letter-spacing: 0.5px;
 }
 
 .header-md::after {
