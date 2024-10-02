@@ -43,7 +43,7 @@
 	<ion-toolbar [style.--background]="selectMode ? 'var(--ion-color-primary)' : 'var(--ion-toolbar-background)'">
 		<ion-searchbar
 			class="top-bar-inner"
-			style="padding: 0px; margin-left: -2px;"
+			style="padding: 0px; "
 			#searchbarRef
 			[class.hidden]="selectMode"
 			showCancelButton="focus"
@@ -83,7 +83,7 @@
 			</ion-item>
 		</div>
 	
-		<ion-item class="search-result-container" *ngFor="let item of searchResult;">
+		<ion-item class="search-result-container top-bar" style="padding-bottom: 10px !important;" *ngFor="let item of searchResult;">
 			<div slot="start" class="search-result-icon-container">
 				<ion-icon class="search-result-icon opacity-icon" name="search-outline"></ion-icon>
 			</div>
@@ -102,15 +102,15 @@
 			<ion-icon slot="end" name="diamond-outline" style="color: var(--ion-color-primary); font-size: 20px;"
 				(click)="premiumInfo()"
 				*ngIf="!merchant.canBulkAdd() && dashboardUtils.searchResultHandler.requiresPremium(item)"></ion-icon>
-			<ion-icon slot="end" name="add-circle-outline" (click)="addSearchResult(item)"> </ion-icon>
+			<ion-icon slot="end" style="margin: var(--edge-padding-left-minus-5px);" name="add-circle-outline" (click)="addSearchResult(item)"> </ion-icon>
 		</ion-item>
 	
-		<ion-list-header *ngIf="dataSource && dataSource.hasItems()"><ion-label>My Validators</ion-label></ion-list-header>
+		<ion-list-header><ion-label>My Validators</ion-label></ion-list-header>
 	</ion-list>
 	
 	
 	<ion-item [hidden]="!dataSource || !dashboardID()" class="top-bar">
-		<span style="margin-right: 5px; font-weight: bold">Group:</span>
+		<span style="margin: var(--edge-padding); margin-right: 5px !important; font-weight: bold">Group:</span>
 		<ion-select class="top-bar-inner" [disabled]="selectMode" placeholder="My groups" interface="popover"
 			(ionChange)="selectGroup()" [(ngModel)]="selectedGroup" [compareWith]="ionSelectCompareWith">
 			<ion-select-option *ngFor="let group of groups()" [value]="group.id">

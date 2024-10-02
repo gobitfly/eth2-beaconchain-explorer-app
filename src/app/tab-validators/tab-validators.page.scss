@@ -37,7 +37,20 @@ ion-searchbar {
 	--icon-color: var(--x-toolbar-title-color);
 	--placeholder-color: var(--x-toolbar-title-color);
 	--placeholder-opacity: 0.8;
-	width: 92%;
+	width: 100%;
+	margin: var(--edge-padding);
+}
+
+@media (min-width: 360px) {
+  ion-searchbar{
+    padding-right: 30px !important;
+  }
+}
+
+@media (min-width: 480px) {
+  ion-searchbar {
+    padding-right: 50px !important;
+  }
 }
 
 .toolbar-btn::part(native) {
