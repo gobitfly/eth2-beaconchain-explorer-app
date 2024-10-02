@@ -173,6 +173,11 @@ ion-segment-button ion-label {
 	display: none;
 }
 
+.ios .popover-viewport{ width: 720px; }
+.popover-viewport ion-content ion-list ion-item {
+	margin: 0px 10px 0px 0px;
+}
+
 .header-md {
 	-webkit-box-shadow: none !important;
 	box-shadow: none !important;

@@ -36,7 +36,7 @@
 			<ion-content>
 				<ion-list>
 					<ion-item *ngIf="legacyDashboard" [button]="true" [detail]="false" (click)="legacyAddToCurrent()">Migrate dashboard</ion-item>
-					<ion-item *ngIf="legacyDashboard" [button]="true" [detail]="false" (click)="legacyCopyToClipboard()">Validators to clipboard</ion-item>
+					<ion-item *ngIf="legacyDashboard" [button]="true" [detail]="false" (click)="legacyCopyToClipboard()">Copy to clipboard</ion-item>
 					<ion-item *ngIf="!legacyDashboard" [button]="true" [detail]="false" (click)="rename()">Rename</ion-item>
 					<ion-item [button]="true" [detail]="false" (click)="remove()">Delete</ion-item>
 					
