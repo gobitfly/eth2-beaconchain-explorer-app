@@ -23,7 +23,6 @@ import { ApiService } from './api.service'
 import { StorageService } from './storage.service'
 import { V2DashboardOverview, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
 
-
 @Injectable({
 	providedIn: 'root',
 })

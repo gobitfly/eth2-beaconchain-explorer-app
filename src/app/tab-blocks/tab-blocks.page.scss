@@ -37,14 +37,14 @@
 
 .top-bar {
 	padding: 0px !important;
-    background: var(--ion-item-background);
+	background: var(--ion-item-background);
 	margin-bottom: 0px !important;
 }
 
 .next-block-hint {
 	opacity: 0.6;
 	font-size: var(--smaller-info-size);
-	font-weight: 400;//var(--smaller-label-weight);
+	font-weight: 400; //var(--smaller-label-weight);
 
 	text-align: center;
 	margin: 6px 6px 6px 6px;
@@ -86,4 +86,3 @@ cdk-virtual-scroll-viewport {
 	margin-top: 7px;
 	font-size: 69px;
 }
-

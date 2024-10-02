@@ -59,24 +59,30 @@ export class OAuthUtils {
 				loadingScreen.present()
 
 				let obj = response
-				if(typeof response === 'string'){
+				if (typeof response === 'string') {
 					obj = JSON.parse(response as string)
 				}
 
 				// different responses based on the platform yay
-				let accessToken = getProperty(obj, "access_token")
-				if(!accessToken){ 
-					accessToken = getProperty(obj, "access_token_response") ? getProperty(getProperty(obj, "access_token_response"), "access_token") :
-					getProperty(obj, "authorization_response") ? getProperty(getProperty(obj, "authorization_response"), "access_token") : undefined
+				let accessToken = getProperty(obj, 'access_token')
+				if (!accessToken) {
+					accessToken = getProperty(obj, 'access_token_response')
+						? getProperty(getProperty(obj, 'access_token_response'), 'access_token')
+						: getProperty(obj, 'authorization_response')
+							? getProperty(getProperty(obj, 'authorization_response'), 'access_token')
+							: undefined
 				}
-				let refreshToken = getProperty(obj, "refresh_token")
-				if(!refreshToken) {
-					refreshToken = getProperty(obj, "access_token_response") ? getProperty(getProperty(obj, "access_token_response"), "refresh_token") :
-					getProperty(obj, "authorization_response") ? getProperty(getProperty(obj, "authorization_response"), "refresh_token") : undefined
+				let refreshToken = getProperty(obj, 'refresh_token')
+				if (!refreshToken) {
+					refreshToken = getProperty(obj, 'access_token_response')
+						? getProperty(getProperty(obj, 'access_token_response'), 'refresh_token')
+						: getProperty(obj, 'authorization_response')
+							? getProperty(getProperty(obj, 'authorization_response'), 'refresh_token')
+							: undefined
 				}
 
-				if(!accessToken){
-					throw new Error("invalid access token")
+				if (!accessToken) {
+					throw new Error('invalid access token')
 				}
 
 				if (isV2) {

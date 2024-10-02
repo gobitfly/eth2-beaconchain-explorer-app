@@ -18,14 +18,14 @@
  */
 
 .content {
-    display:block; 
-    height:100%;
-    position: relative;
+	display: block;
+	height: 100%;
+	position: relative;
 }
 
 .container {
 	background-color: var(--ion-background-color);
-    height: 100vh;
+	height: 100vh;
 }
 
 .center {
@@ -33,23 +33,23 @@
 	// display: flex;
 	// justify-content: center;
 	// text-align: center;
-    //padding-top: 42.5vh;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: var(--ion-background-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+	//padding-top: 42.5vh;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background-color: var(--ion-background-color);
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-ion-icon  {
-    font-size: 4rem;
+ion-icon {
+	font-size: 4rem;
 }
 
 .link {
 	color: var(--ion-color-primary);
 	font-weight: bold;
-    font-size: var(--smaller-info-size);
+	font-size: var(--smaller-info-size);
 }

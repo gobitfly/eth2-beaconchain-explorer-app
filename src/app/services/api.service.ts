@@ -143,7 +143,6 @@ export class ApiService extends CacheModule {
 		return this.findParentNetworkKey(this.networkConfig)
 	}
 
-
 	getNetwork(): ApiNetwork {
 		const temp = this.networkConfig
 		return temp

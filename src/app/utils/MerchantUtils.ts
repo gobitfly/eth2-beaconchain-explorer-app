@@ -89,14 +89,14 @@ export class MerchantUtils implements OnInit {
 				}
 			}
 		})
-		this.initPackages() 
+		this.initPackages()
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
 			console.info('merchant is not supported on this platform')
 			return
 		}
 	}
 
-	initPackages(appendix: string = "") {
+	initPackages(appendix: string = '') {
 		this.PACKAGES = [
 			{
 				name: 'Free',
@@ -329,12 +329,12 @@ export class MerchantUtils implements OnInit {
 
 	private async initProducts() {
 		let platform = CdvPurchase.Platform.GOOGLE_PLAY
-		let appendix = ""
+		let appendix = ''
 		if (this.platform.is('ios')) {
 			platform = CdvPurchase.Platform.APPLE_APPSTORE
-			appendix = ".apple"
+			appendix = '.apple'
 		}
-	
+
 		for (let i = 0; i < this.PACKAGES.length; i++) {
 			if (this.PACKAGES[i].purchaseKey) {
 				CdvPurchase.store.register({
@@ -401,8 +401,9 @@ export class MerchantUtils implements OnInit {
 	}
 
 	async purchase(product: string) {
-		if(this.platform.is('ios')) { // you don't wanna know :)
-			product += ".apple"
+		if (this.platform.is('ios')) {
+			// you don't wanna know :)
+			product += '.apple'
 		}
 		console.log('purchasing product', product)
 		const storeProduct = CdvPurchase.store.get(product)
@@ -443,10 +444,9 @@ export class MerchantUtils implements OnInit {
 			valid: true,
 			transaction: {
 				id: product.id,
-				receipt: isIOS ?
-					(product.transaction as CdvPurchase.Validator.Request.ApiValidatorBodyTransactionApple).id
-					:
-					(product.transaction as CdvPurchase.Validator.Request.ApiValidatorBodyTransactionGoogle).purchaseToken,
+				receipt: isIOS
+					? (product.transaction as CdvPurchase.Validator.Request.ApiValidatorBodyTransactionApple).id
+					: (product.transaction as CdvPurchase.Validator.Request.ApiValidatorBodyTransactionGoogle).purchaseToken,
 				type: product.transaction.type,
 			},
 		}

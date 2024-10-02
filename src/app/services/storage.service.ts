@@ -33,7 +33,7 @@ import { environment } from 'src/environments/environment'
 const AUTH_USER = 'auth_user'
 const AUTH_USER_V2 = 'auth_user_v2'
 const PREFERENCES = 'network_preferences'
-const WIDGET_PREFERENCES = 'widget_network_preferences' 
+const WIDGET_PREFERENCES = 'widget_network_preferences'
 const DASHBOARD_ID = 'dashboard_id'
 
 export const SETTING_NOTIFY = 'setting_notify'
@@ -140,7 +140,7 @@ export class StorageService extends CacheModule implements OnInit {
 
 	/**
 	 * Since v2 this is inferred at runtime so we write back the actual config for widget
-	 * @param network  
+	 * @param network
 	 */
 	async setWidgetNetworkConfig(network: StorageTypes.ApiNetwork) {
 		await this.setObject(WIDGET_PREFERENCES, network)

@@ -41,7 +41,7 @@ type RewardTabs = 'combined' | 'cons' | 'exec'
 @Component({
 	selector: 'app-validator-dashboard',
 	templateUrl: './dashboard.component.html',
-	styleUrls: ['./dashboard.component.scss']
+	styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit {
 	public classReference = UnitconvService
@@ -51,7 +51,7 @@ export class DashboardComponent implements OnInit {
 	@Input() currentY: number
 	@Input() scrolling: boolean
 	@Input() online: boolean
-	@Output() fadeInCompleted = new EventEmitter<void>() 
+	@Output() fadeInCompleted = new EventEmitter<void>()
 
 	beaconChainUrl: string = null
 
@@ -178,9 +178,7 @@ export class DashboardComponent implements OnInit {
 			const opening = plural ? `${this.data.summaryGroup().sync_count.current_validators} of your validators` : 'Your validator'
 			return {
 				title: 'Sync Committee Soon',
-				text: `${opening}  ${
-					plural ? 'are' : 'is'
-				} part of the <strong>next</strong> sync committee.
+				text: `${opening}  ${plural ? 'are' : 'is'} part of the <strong>next</strong> sync committee.
 					<br/><br/>This duty starts at ${new Date(startTs).toLocaleString(getLocale(), options)} (Epoch ${startEpoch}) and 
 					will end at ${new Date(endTs).toLocaleString(getLocale(), options)} (Epoch ${endEpoch - 1}). 
 					<br/><br/>You'll earn extra rewards during this period if you are online and attesting.

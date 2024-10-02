@@ -30,8 +30,7 @@ export class TabsPage {
 	constructor(
 		private firebaseUtils: FirebaseUtils,
 		private v2Migrator: V2Migrator
-	) { }
-	
+	) {}
 
 	ionViewDidEnter() {
 		setTimeout(() => this.preload(), 500)
@@ -51,6 +50,5 @@ export class TabsPage {
 			// await this.sync.mightSyncUpAndSyncDelete()
 			// await this.sync.syncAllSettings()
 		}, 5000)
-
 	}
 }

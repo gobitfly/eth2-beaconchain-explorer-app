@@ -17,12 +17,12 @@
  * along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
  */
 
- @import '../../../theme/variables.scss';
+@import '../../../theme/variables.scss';
 
 .check {
-    color: var(--ion-color-success);
+	color: var(--ion-color-success);
 }
 
 .nocheck {
-    color: var(--ion-color-danger);
+	color: var(--ion-color-danger);
 }

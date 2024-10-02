@@ -51,8 +51,8 @@ export class SummaryChartComponent implements OnInit {
 		private alert: AlertService,
 		private storage: StorageService,
 		private overviewProvider: OverviewProvider
-	) { }
-	
+	) {}
+
 	ngOnInit() {
 		this.merchant.getUserInfo(false).then(() => {
 			this.initChips()
@@ -254,7 +254,7 @@ export class SummaryChartComponent implements OnInit {
 		const chartDefaultColor = getComputedStyle(root).getPropertyValue('--chart-default').trim()
 
 		const newSeries: SeriesObject[] = this.rawDataToSeries(data)
-		const dataCategories = data ? data.categories ?? [] : []
+		const dataCategories = data ? (data.categories ?? []) : []
 
 		return {
 			grid: {
@@ -363,7 +363,7 @@ export class SummaryChartComponent implements OnInit {
 	colors = computed(() => {
 		return {
 			background: getChartTooltipBackgroundColor(),
-			groups: getSummaryChartGroupColors("light"), // todo
+			groups: getSummaryChartGroupColors('light'), // todo
 			label: getChartTextColor(),
 		}
 	})

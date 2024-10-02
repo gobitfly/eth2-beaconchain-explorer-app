@@ -39,7 +39,7 @@ export default class V2Migrator {
 		private dashboardUtils: DashboardUtils,
 		private alert: AlertService,
 		private merchant: MerchantUtils
-	) { }
+	) {}
 
 	async switchToV2(useV2: boolean) {
 		await this.storage.setV2(useV2)
@@ -216,7 +216,7 @@ export default class V2Migrator {
 			Session: result.data.Session,
 		} as StorageTypes.AuthUserv2)
 		await this.api.initialize()
-		console.info("migrator, v1 session successfully migrated to v2")
+		console.info('migrator, v1 session successfully migrated to v2')
 
 		return true
 	}

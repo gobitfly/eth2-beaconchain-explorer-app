@@ -53,7 +53,10 @@ const LOGTAG = '[AdUtils] '
 	providedIn: 'root',
 })
 export default class AdUtils {
-	constructor(private api: ApiService, private merchantUtils: MerchantUtils) {}
+	constructor(
+		private api: ApiService,
+		private merchantUtils: MerchantUtils
+	) {}
 
 	async get(location: AdLocation): Promise<BitflyAdResponse> {
 		await this.merchantUtils.initialize
@@ -66,7 +69,7 @@ export default class AdUtils {
 		const request = new BitflyAdRequest(map.get(location))
 		const result = await this.api.execute2(request)
 		console.log('Bitfly ad response', result)
-		
+
 		if (!result.error && result.data.length > 0 && result.data[0].height != '0') {
 			return result.data[0]
 		}

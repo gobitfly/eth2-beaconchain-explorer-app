@@ -105,8 +105,8 @@ export class MachinesPage extends MachineController implements OnInit {
 		if (!result) return result
 
 		if (data.clientVersion) result += ' v' + data.clientVersion
-		if(result.length > 22) {
-			return result.substring(0,20)+"..."
+		if (result.length > 22) {
+			return result.substring(0, 20) + '...'
 		}
 		return result
 	}
@@ -238,7 +238,6 @@ export class MachinesPage extends MachineController implements OnInit {
 		}
 
 		const machineController = new MachineController(this.storage)
-		
 
 		const result = await machineController.combineByMachineName(
 			machineController.filterMachines(apiResult.data.validator_metrics),
@@ -246,13 +245,13 @@ export class MachinesPage extends MachineController implements OnInit {
 			machineController.filterMachines(apiResult.data.system_metrics)
 		)
 
-		console.log("baum", result.size, machineController.filterMachines(apiResult.data.system_metrics))
+		console.log('baum', result.size, machineController.filterMachines(apiResult.data.system_metrics))
 
 		return result
 	}
 
 	private async getOrderedKeys(data: Map<string, ProcessedStats>): Promise<string[]> {
-		if(!data) return []
+		if (!data) return []
 
 		const online = []
 		const attention = []

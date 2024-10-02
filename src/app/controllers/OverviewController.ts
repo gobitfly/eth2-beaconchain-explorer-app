@@ -46,11 +46,13 @@ export interface SummaryChartOptions {
 
 @Injectable({ providedIn: 'root' })
 export class OverviewProvider {
+	constructor(
+		private api: ApiService,
+		private dashboardUtils: DashboardUtils
+	) {}
 
-	constructor(private api: ApiService, private dashboardUtils: DashboardUtils) { }
-	
 	clearRequestCache(data: OverviewData2) {
-		if(!data) return
+		if (!data) return
 		return this.api.clearAllAssociatedCacheKeys(data.associatedCacheKey)
 	}
 
@@ -96,7 +98,12 @@ export class OverviewProvider {
 		])
 	}
 
-	async create(id: dashboardID, timeframe: Period, summaryChartOptions: SummaryChartOptions, associatedCacheKey: string = null): Promise<OverviewData2> {
+	async create(
+		id: dashboardID,
+		timeframe: Period,
+		summaryChartOptions: SummaryChartOptions,
+		associatedCacheKey: string = null
+	): Promise<OverviewData2> {
 		if (!id) return null
 
 		const temp = new OverviewData2(id, associatedCacheKey)
@@ -218,7 +225,7 @@ export class OverviewData2 {
 		if (this.rocketpool() == null) return new BigNumber(0)
 		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl.claimed))
 		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl.unclaimed))
-		
+
 		return claimed.plus(unclaimed)
 	})
 

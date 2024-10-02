@@ -227,9 +227,13 @@ export class MachineDetailPage extends MachineController implements OnInit {
 				'%'
 
 			this.diskUsageLabelReads =
-				'Reads: ' + Math.round(this.getAvgFrom(this.data.system_metrics, (array) => array.disk_node_reads_total / this.magicGapNumber, true)) + ' iops'
+				'Reads: ' +
+				Math.round(this.getAvgFrom(this.data.system_metrics, (array) => array.disk_node_reads_total / this.magicGapNumber, true)) +
+				' iops'
 			this.diskUsageLabelWrites =
-				'Writes: ' + Math.round(this.getAvgFrom(this.data.system_metrics, (array) => array.disk_node_writes_total / this.magicGapNumber, true)) + ' iops'
+				'Writes: ' +
+				Math.round(this.getAvgFrom(this.data.system_metrics, (array) => array.disk_node_writes_total / this.magicGapNumber, true)) +
+				' iops'
 
 			const eth1Connected = this.getLastFrom(this.data.node_metrics, (array) => array.sync_eth1_connected)
 			this.syncLabelEth1Connected = eth1Connected ? 'Exec Connected' : 'Exec Offline'

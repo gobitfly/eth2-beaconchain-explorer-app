@@ -6,7 +6,7 @@ import type { ApiDataResponse } from './common'
 // source: mobile.go
 
 export interface MobileBundleData {
-  bundle_url?: string;
-  has_native_update_available: boolean;
+	bundle_url?: string
+	has_native_update_available: boolean
 }
-export type GetMobileLatestBundleResponse = ApiDataResponse<MobileBundleData>;
+export type GetMobileLatestBundleResponse = ApiDataResponse<MobileBundleData>

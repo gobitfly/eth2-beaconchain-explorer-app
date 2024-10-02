@@ -6,7 +6,7 @@
 		<ion-title>Blocks</ion-title>
 		<ion-buttons slot="end">
 			<ion-button
-				style="margin: 0px;"
+				style="margin: 0px"
 				(click)="unit.switchCurrencyPipe()"
 				*ngIf="(unit.pref.Exec.value != 'ETHER' && unit.pref.Exec.value != 'FINNEY') || classReference.currencyPipe.Exec != null ">
 				<ion-icon name="swap-vertical-outline"></ion-icon>
@@ -16,8 +16,11 @@
 
 	<ion-item class="top-bar" [hidden]="!dataSource || !dataSource.hasItems()">
 		<ion-label class="top-bar-inner"
-			>Proposal Luck: 
-			<span style="padding-left: 2px;" *ngIf="summaryGroup() && summaryGroup().luck.proposal.percent" [class]="summaryGroup().luck.proposal.percent | valuestyle: 100"
+			>Proposal Luck:
+			<span
+				style="padding-left: 2px"
+				*ngIf="summaryGroup() && summaryGroup().luck.proposal.percent"
+				[class]="summaryGroup().luck.proposal.percent | valuestyle: 100"
 				>{{ summaryGroup().luck.proposal.percent | number:'1.0-1' }}%</span
 			>
 			<span *ngIf="!summaryGroup()">-</span>
@@ -35,7 +38,6 @@
 
 	<app-full-page-loading [fixInfiniteScroll]="true" [loading]="initialLoading">
 		<app-full-page-offline (retry)="this.doRefresh(null)" [fixInfiniteScroll]="true" [online]="online || dataSource?.hasItems()">
-
 			<p class="next-block-hint" *ngIf="summaryGroup() && !initialLoading && dataSource && dataSource.hasItems()">
 				<span *ngIf="!(expectedNextBlockTs() | timeago).includes('ago')">On average, next block expected in</span>
 				<span *ngIf="(expectedNextBlockTs() | timeago).includes('ago')">On average, next block was expected</span>
@@ -58,7 +60,13 @@
 				class="ion-content-scroll-host"
 				[hidden]="!dataSource || !dataSource.hasItems() || initialLoading">
 				<div *cdkVirtualFor="let item of dataSource; index as idx " style="background-color: var(--ion-card-background)">
-					<app-block [chainID]="chainID" [block]="item" [first]="idx == 0" [last]="idx == dataSource.cachedData.length - 1" (click)="clickBlock(item)" role="article"></app-block>
+					<app-block
+						[chainID]="chainID"
+						[block]="item"
+						[first]="idx == 0"
+						[last]="idx == dataSource.cachedData.length - 1"
+						(click)="clickBlock(item)"
+						role="article"></app-block>
 				</div>
 				<div style="text-align: center; padding-top: 10px; padding-bottom: 70px" *ngIf="loadMore">
 					<i style="letter-spacing: 0.9px; opacity: 0.8">Loading...</i>

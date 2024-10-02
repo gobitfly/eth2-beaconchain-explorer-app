@@ -38,7 +38,7 @@ ion-segment-button {
 
 ion-segment {
 	background-color: var(--ion-toolbar-background);
-		padding-top: 10px;
+	padding-top: 10px;
 	padding-bottom: 10px;
 }
 
@@ -47,7 +47,6 @@ ion-segment {
 }
 
 .packages {
-
 }
 
 .first-item-group {
@@ -87,7 +86,7 @@ h2 {
 .white {
 	color: var(--x-toolbar-title-color);
 	padding: 0px;
-    margin: 0px;
+	margin: 0px;
 }
 
 .package {
@@ -148,7 +147,7 @@ ion-content {
 }
 
 .smallest-info {
-	font-size: 0.5rem !important
+	font-size: 0.5rem !important;
 }
 
 @media only screen and (max-width: 380px) {
@@ -162,18 +161,18 @@ ion-content {
 
 .pkg-name {
 	font-size: 1rem;
-	display:block;
+	display: block;
 }
 
 .pkg-price {
 	font-size: var(--smaller-info-size);
-	display:block;
+	display: block;
 }
 
 .pkg-price-yearly {
 	font-size: var(--smallest-info-size);
 	opacity: 0.8;
-	display:block;
+	display: block;
 }
 
 .segment-label {

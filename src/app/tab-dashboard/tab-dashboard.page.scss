@@ -47,7 +47,7 @@
 }
 
 ion-content {
-  width: calc(100% + 15px);
+	width: calc(100% + 15px);
 }
 // Makes the iOS top bounce in our primary color
 // and the bottom bounce in main themes color
@@ -56,26 +56,25 @@ ion-content {
 }
 
 ion-content::part(scroll) {
-  padding-right: 15px;
+	padding-right: 15px;
 }
-
 
 .ion-content-scroll-host::before,
 .ion-content-scroll-host::after {
-  position: absolute;
-  
-  width: 1px;
-  height: 1px;
-  
-  content: "";
+	position: absolute;
+
+	width: 1px;
+	height: 1px;
+
+	content: '';
 }
 
 .ion-content-scroll-host::before {
-  bottom: -1px;
+	bottom: -1px;
 }
 
 .ion-content-scroll-host::after {
-  top: -1px;
+	top: -1px;
 }
 
 ion-refresher-content {
@@ -86,4 +85,3 @@ ion-refresher-content {
 	font-weight: bold;
 	color: var(--ion-color-primary);
 }
-

@@ -28,8 +28,7 @@ import { VDBManageValidatorsTableRow } from 'src/app/requests/types/validator_da
 	templateUrl: './validator.component.html',
 	styleUrls: ['./validator.component.scss'],
 })
-export class ValidatorComponent  {
-
+export class ValidatorComponent {
 	@Input() validator: VDBManageValidatorsTableRow
 	@Input() first: boolean
 	@Input() last: boolean

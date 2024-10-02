@@ -501,12 +501,12 @@ export default class MachineController {
 	public async combineByMachineName(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
 		const allKeys = this.findAllKeys(validator, node, system)
 		const debugShowOldMachines = await this.store.getBooleanSetting('debug_show_old_machines', false)
-		
-		const result: Map<string, ProcessedStats>= new Map()
+
+		const result: Map<string, ProcessedStats> = new Map()
 		for (const key of allKeys) {
 			const sortedVal = this.sortData(validator.get(key))
-			const sortedNode = this.sortData(node.get(key)) 
-			const sortedSystem = this.sortData(system.get(key)) 
+			const sortedNode = this.sortData(node.get(key))
+			const sortedSystem = this.sortData(system.get(key))
 
 			const unixTime = this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => {
 				return value.timestamp
@@ -585,7 +585,7 @@ export default class MachineController {
 				current.machine = 'test'
 			}
 
-			const existingArray = result.get(current.machine) || [];
+			const existingArray = result.get(current.machine) || []
 			existingArray.push(current)
 			result.set(current.machine, existingArray)
 			return result

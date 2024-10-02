@@ -27,7 +27,7 @@ ion-list-header {
 .hint {
 	display: inline-block;
 	color: var(--ion-text-color-secondary);
-	
+
 	margin: var(--edge-padding-left-plus-15px);
 	font-size: var(--smaller-info-size);
 	font-weight: var(--smaller-label-weight);
@@ -43,14 +43,14 @@ ion-list-header {
 
 .prem-icon {
 	padding: 0px;
-    margin-right: 10px;
-    margin-top: 3px;
-    font-size: 18px;
+	margin-right: 10px;
+	margin-top: 3px;
+	font-size: 18px;
 }
 
 .prem-title {
 	padding-top: 0px;
-    margin-top: 0px;
+	margin-top: 0px;
 }
 
 .ios .prem-title {
@@ -59,9 +59,9 @@ ion-list-header {
 
 .prem-x {
 	padding: 0px;
-    margin: 1px;
-    font-size: 19px;
-    padding-bottom: 11px;
+	margin: 1px;
+	font-size: 19px;
+	padding-bottom: 11px;
 }
 
 .message {

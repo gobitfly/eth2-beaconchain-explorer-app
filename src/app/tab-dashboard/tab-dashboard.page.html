@@ -27,7 +27,6 @@
 		<ion-buttons slot="primary" id="options-dashboard" *ngIf="overallData && !overallData.isEmpty()">
 			<ion-icon slot="icon-only" ios="ellipsis-horizontal-outline" md="ellipsis-vertical-outline"></ion-icon>
 		</ion-buttons>
-		
 	</ion-toolbar>
 	<ion-popover trigger="options-dashboard" triggerAction="click" [dismissOnSelect]="true" *ngIf="overallData && !overallData.isEmpty()">
 		<ng-template>
@@ -75,13 +74,11 @@
 	(ionScroll)="onScroll($event)"
 	(ionScrollStart)="onScrollStarted()"
 	(ionScrollEnd)="onScrollEnded()">
-
 	<!-- <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" *ngIf="!scrolling" [disabled]="!overallData">
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher> -->
 
 	<app-full-page-offline (retry)="this.doRefresh(null)" [online]="online || (overallData && overallData.isReadyToDisplay())">
-
 		<div class="setup-head" *ngIf="!loading && (!overallData || overallData.isEmpty())">
 			<div class="inner-setup-head">
 				<ion-icon class="setup-icon" name="color-wand-outline" [ngStyle]="{'opacity': currentY | fadeoutpipe: 100 }"> </ion-icon>
@@ -89,7 +86,14 @@
 			</div>
 		</div>
 
-		<app-validator-dashboard (fadeInCompleted)="fadeInCompleted=true" [online]="online" [data]="overallData" [currentY]="currentY" [scrolling]="scrolling" [updates]="updates.updates" *ngIf="loading || (overallData && !overallData.isEmpty() && dashboardID)">
+		<app-validator-dashboard
+			(fadeInCompleted)="fadeInCompleted=true"
+			[online]="online"
+			[data]="overallData"
+			[currentY]="currentY"
+			[scrolling]="scrolling"
+			[updates]="updates.updates"
+			*ngIf="loading || (overallData && !overallData.isEmpty() && dashboardID)">
 		</app-validator-dashboard>
 
 		<app-help *ngIf="!loading && (!overallData || overallData.isEmpty())"></app-help>

@@ -95,7 +95,7 @@ ion-button {
 }
 
 .header-background {
-	 -webkit-backdrop-filter: none !important; 
+	-webkit-backdrop-filter: none !important;
 }
 
 ion-popover .popover-viewport {
@@ -173,7 +173,9 @@ ion-segment-button ion-label {
 	display: none;
 }
 
-.ios .popover-viewport{ width: 720px; }
+.ios .popover-viewport {
+	width: 720px;
+}
 .popover-viewport ion-content ion-list ion-item {
 	margin: 0px 10px 0px 0px;
 }

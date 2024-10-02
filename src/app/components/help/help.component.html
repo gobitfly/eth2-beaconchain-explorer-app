@@ -26,10 +26,11 @@
 
 	<ion-item lines="none" (click)="login()" *ngIf="!isAlreadyLoggedIn">
 		<ion-icon slot="start" name="log-in-outline"></ion-icon>
-		<ion-label>Or login with {{ isGnosis ? "gnosischa.in" :  "beaconcha.in" }} </ion-label>
+		<ion-label>Or login with {{ isGnosis ? 'gnosischa.in' : 'beaconcha.in' }} </ion-label>
 	</ion-item>
 
-	<ion-item lines="none" (click)="switchNetwork()" *ngIf="false"> <!-- todo gnosis -->
+	<ion-item lines="none" (click)="switchNetwork()" *ngIf="false">
+		<!-- todo gnosis -->
 		<ion-icon slot="start" name="repeat-outline"></ion-icon>
 		<ion-label
 			>{{ api.getNetwork().name }} Network

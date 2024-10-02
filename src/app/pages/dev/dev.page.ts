@@ -45,7 +45,7 @@ export class DevPage extends Tab3Page implements OnInit {
 			console.log('v2 auth', result)
 		})
 
-		this.storage.getBooleanSetting("debug_show_old_machines", false).then((result) => {
+		this.storage.getBooleanSetting('debug_show_old_machines', false).then((result) => {
 			this.showOldMachines = result
 		})
 
@@ -55,7 +55,7 @@ export class DevPage extends Tab3Page implements OnInit {
 	}
 
 	changeOldMachines() {
-		this.storage.setBooleanSetting("debug_show_old_machines", this.showOldMachines)
+		this.storage.setBooleanSetting('debug_show_old_machines', this.showOldMachines)
 	}
 
 	toastTest() {

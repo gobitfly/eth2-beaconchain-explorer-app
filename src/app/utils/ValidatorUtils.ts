@@ -19,7 +19,7 @@
 
 import { ApiService } from '../services/api.service'
 import { StorageService, StoredShare } from '../services/storage.service'
-import { Injectable} from '@angular/core'
+import { Injectable } from '@angular/core'
 import BigNumber from 'bignumber.js'
 import { UnitconvService } from '../services/unitconv.service'
 import { VDBManageValidatorsTableRow } from '../requests/types/validator_dashboard'
@@ -167,7 +167,6 @@ export class ValidatorUtils {
 		return [...local.values()].map((item) => item.index)
 	}
 
-
 	async debugSetMyLocalValidators(networkName: string = undefined, validators: number[]) {
 		let storageKey = this.getStorageKey()
 		if (networkName) {
@@ -207,7 +206,7 @@ export class ValidatorUtils {
 			})
 		}
 
-		return await hasStakeShareEnabled('main') || await hasStakeShareEnabled('holesky')
+		return (await hasStakeShareEnabled('main')) || (await hasStakeShareEnabled('holesky'))
 	}
 
 	async wasGnosisUser() {

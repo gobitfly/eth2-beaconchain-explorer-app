@@ -27,20 +27,20 @@ import { OfflineComponentModule } from '../components/offline/offline.module'
 import { HelpComponentModule } from '../components/help/help.module'
 import { Tab1PageRoutingModule } from './tab-dashboard-routing.module'
 import { PipesModule } from '../pipes/pipes.module'
-import { FullPageOfflineComponent } from "../components/full-page-offline/full-page-offline.component";
+import { FullPageOfflineComponent } from '../components/full-page-offline/full-page-offline.component'
 
 @NgModule({
 	imports: [
-    IonicModule,
-    CommonModule,
-    FormsModule,
-    DashboardComponentModule,
-    OfflineComponentModule,
-    Tab1PageRoutingModule,
-    HelpComponentModule,
-    PipesModule,
-    FullPageOfflineComponent
-],
+		IonicModule,
+		CommonModule,
+		FormsModule,
+		DashboardComponentModule,
+		OfflineComponentModule,
+		Tab1PageRoutingModule,
+		HelpComponentModule,
+		PipesModule,
+		FullPageOfflineComponent,
+	],
 	declarations: [Tab1Page],
 })
 export class Tab1PageModule {}

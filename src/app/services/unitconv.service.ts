@@ -52,7 +52,10 @@ export class UnitconvService {
 	*/
 	static currencyPipe: CurrencyPipe = { Cons: null, Exec: null, RPL: null }
 
-	constructor(private storage: StorageService, private api: ApiService) {
+	constructor(
+		private storage: StorageService,
+		private api: ApiService
+	) {
 		this.init()
 	}
 
@@ -376,7 +379,7 @@ export class UnitconvService {
 				}
 				this.storage.setBooleanSetting('migrated_gnosis', true)
 			} catch (e) {
-				console.warn('could not migrate to gnosis',e)
+				console.warn('could not migrate to gnosis', e)
 			}
 		}
 	}
@@ -459,7 +462,7 @@ export class UnitconvService {
 
 	private async getExchangeRate(unitPair: string): Promise<CoinbaseExchangeResponse> {
 		const temp = await this.api.execute2(new CoinbaseExchangeRequest(unitPair))
-		if(temp.error) return null
+		if (temp.error) return null
 		console.log('requested exchange rate for ', unitPair, 'got', temp.data.amount, 'as response')
 		return temp.data
 	}

@@ -150,7 +150,7 @@ export class Tab3Page {
 	}
 
 	goToNotificationPage() {
-		this.openBrowser(this.api.getBaseUrl() + "/notifications#dashboards", false)
+		this.openBrowser(this.api.getBaseUrl() + '/notifications#dashboards', false)
 	}
 
 	async openClientsPage(identifier: string) {
@@ -308,17 +308,7 @@ export class Tab3Page {
 	}
 
 	async changeNetwork() {
-		await changeNetwork(
-			this.network,
-			this.storage,
-			this.api,
-			this.unit,
-			this.theme,
-			this.alerts,
-			this.merchant,
-			false,
-			this.dashboardUtils
-		)
+		await changeNetwork(this.network, this.storage, this.api, this.unit, this.theme, this.alerts, this.merchant, false, this.dashboardUtils)
 		this.network = this.api.getParentNetwork().key
 		this.currentFiatCurrency = await this.unit.getCurrentConsFiat()
 	}

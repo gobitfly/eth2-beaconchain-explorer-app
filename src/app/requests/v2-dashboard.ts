@@ -110,11 +110,11 @@ export class V2DashboardSummaryChart extends APIRequest<ChartData<number, number
 	) {
 		super()
 		this.resource = setID(this.resource, id)
-		this.resource = this.resource + '?group_ids=' + groupIds.join(',');
-		this.resource = this.resource + '&after_ts=' + Math.floor(afterTs);
-		this.resource = this.resource + '&before_ts=' + Math.floor(beforeTs);
-		this.resource = this.resource + '&efficiency_type=' + efficiencyType;
-		this.resource = this.resource + '&aggregation=' + aggregation;
+		this.resource = this.resource + '?group_ids=' + groupIds.join(',')
+		this.resource = this.resource + '&after_ts=' + Math.floor(afterTs)
+		this.resource = this.resource + '&before_ts=' + Math.floor(beforeTs)
+		this.resource = this.resource + '&efficiency_type=' + efficiencyType
+		this.resource = this.resource + '&aggregation=' + aggregation
 	}
 }
 
@@ -156,7 +156,7 @@ export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsT
 	constructor(
 		id: dashboardID,
 		groupID: number | undefined = undefined,
-		cursor: string | undefined  = undefined,
+		cursor: string | undefined = undefined,
 		limit: number = 10,
 		sort: string = 'index:asc'
 	) {

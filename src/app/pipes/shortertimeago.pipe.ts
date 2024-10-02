@@ -50,16 +50,16 @@ const defaultFormattter = function (then: number): { value: number; unit: Unit; 
 		seconds < MINUTE
 			? [Math.round(seconds), 's']
 			: seconds < HOUR
-			? [Math.round(seconds / MINUTE), 'min']
-			: seconds < DAY
-			? [Math.round(seconds / HOUR), 'h']
-			: seconds < WEEK
-			? [Math.round(seconds / DAY), 'd']
-			: seconds < MONTH
-			? [Math.round(seconds / WEEK), 'w']
-			: seconds < YEAR
-			? [Math.round(seconds / MONTH), 'm']
-			: [Math.round(seconds / YEAR), 'y']
+				? [Math.round(seconds / MINUTE), 'min']
+				: seconds < DAY
+					? [Math.round(seconds / HOUR), 'h']
+					: seconds < WEEK
+						? [Math.round(seconds / DAY), 'd']
+						: seconds < MONTH
+							? [Math.round(seconds / WEEK), 'w']
+							: seconds < YEAR
+								? [Math.round(seconds / MONTH), 'm']
+								: [Math.round(seconds / YEAR), 'y']
 
 	return { value, unit, suffix }
 }

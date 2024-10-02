@@ -13,11 +13,11 @@ import { StorageService } from 'src/app/services/storage.service'
 import { DashboardUtils } from 'src/app/utils/DashboardUtils'
 import { OAuthUtils } from 'src/app/utils/OAuthUtils'
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
-import { FullPageLoadingComponent } from "../../components/full-page-loading/full-page-loading.component";
+import { FullPageLoadingComponent } from '../../components/full-page-loading/full-page-loading.component'
 import { findChainNetworkById, findChainNetworkByName } from 'src/app/utils/NetworkData'
 import { fromEvent, Subscription } from 'rxjs'
-import { FullPageOfflineComponent } from "../../components/full-page-offline/full-page-offline.component";
-import { OfflineComponentModule } from "../../components/offline/offline.module";
+import { FullPageOfflineComponent } from '../../components/full-page-offline/full-page-offline.component'
+import { OfflineComponentModule } from '../../components/offline/offline.module'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import { getValidatorCount } from 'src/app/controllers/OverviewController'
 import { APIUnauthorizedError } from 'src/app/requests/requests'

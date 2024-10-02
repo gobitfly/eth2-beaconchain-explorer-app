@@ -1,29 +1,29 @@
 // Copyright (C) 2024 Bitfly GmbH
-// 
+//
 // This file is part of Beaconchain Dashboard.
-// 
+//
 // Beaconchain Dashboard is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Beaconchain Dashboard is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Injectable } from "@angular/core"
-import { CapacitorUpdater, DownloadOptions } from "@capgo/capacitor-updater"
-import { ApiService } from "../services/api.service"
-import { V2LatestAppBundle } from "../requests/v2-general"
-import { AlertService } from "../services/alert.service"
+import { Injectable } from '@angular/core'
+import { CapacitorUpdater, DownloadOptions } from '@capgo/capacitor-updater'
+import { ApiService } from '../services/api.service'
+import { V2LatestAppBundle } from '../requests/v2-general'
+import { AlertService } from '../services/alert.service'
 import { AppUpdate, AppUpdateAvailability } from '@capawesome/capacitor-app-update'
-import { App } from "@capacitor/app"
+import { App } from '@capacitor/app'
 import versionInfo from '../../version.json'
-import { Capacitor } from "@capacitor/core"
+import { Capacitor } from '@capacitor/core'
 
 @Injectable({
 	providedIn: 'root',
@@ -34,7 +34,7 @@ export class AppUpdater {
 	constructor(
 		private api: ApiService,
 		private alert: AlertService
-	) { }
+	) {}
 
 	async check() {
 		const currentBundle = this.getCurrentBundleCode()
@@ -46,10 +46,7 @@ export class AppUpdater {
 			return false
 		}
 
-		const [hasNativeUpdate, latest] = await Promise.all([
-			this.updateNative(),
-			this.api.execute2(new V2LatestAppBundle(currentBundle, currentNative))
-		])
+		const [hasNativeUpdate, latest] = await Promise.all([this.updateNative(), this.api.execute2(new V2LatestAppBundle(currentBundle, currentNative))])
 
 		// Does it make sense to have a minimal api here so checking for updates still works even if
 		// an update breaks the api service?
@@ -90,7 +87,7 @@ export class AppUpdater {
 
 	async updateBundle(bundleURL: string) {
 		if (bundleURL.indexOf('http') < 0) {
-			console.warn("invalid bundle url", bundleURL)
+			console.warn('invalid bundle url', bundleURL)
 			return
 		}
 		this.loading = await this.alert.presentLoading('Updating...')
@@ -100,11 +97,11 @@ export class AppUpdater {
 			this.loading.message = 'Updating ' + event.percent + '%'
 		})
 
-		await  CapacitorUpdater.addListener('downloadComplete', () => {
+		await CapacitorUpdater.addListener('downloadComplete', () => {
 			this.loading.message = 'Processing Update...'
 		})
 
-		await  CapacitorUpdater.addListener('updateFailed', () => {
+		await CapacitorUpdater.addListener('updateFailed', () => {
 			this.loading.dismiss()
 			this.alert.showInfo('Update failed', 'Could not update the app, please try again later')
 		})
@@ -113,7 +110,7 @@ export class AppUpdater {
 			this.loading.dismiss()
 			this.alert.showInfo('Download failed', 'Could not download the update, please try again later')
 		})
-		
+
 		try {
 			const version = await CapacitorUpdater.download({
 				url: bundleURL,

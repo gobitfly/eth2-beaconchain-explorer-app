@@ -18,7 +18,7 @@
  */
 
 import { Component, computed, OnInit, signal, ViewChild, WritableSignal } from '@angular/core'
-import { Validator }  from '../utils/ValidatorUtils'
+import { Validator } from '../utils/ValidatorUtils'
 import { AlertController, IonSearchbar, ModalController, Platform, SearchbarCustomEvent } from '@ionic/angular'
 import { ApiService, capitalize } from '../services/api.service'
 import { StorageService } from '../services/storage.service'
@@ -50,9 +50,8 @@ import { APIError, APIForbiddenError, APINotFoundError, ApiResult, APIUnauthoriz
 import { AppComponent } from '../app.component'
 
 const PAGE_SIZE = 25
-const DASHBOARD_UPDATE = "validators_tab"
+const DASHBOARD_UPDATE = 'validators_tab'
 const ASSOCIATED_CACHE_KEY = 'validators'
-
 
 @Component({
 	selector: 'app-tab2',
@@ -699,13 +698,13 @@ export class Tab2Page implements OnInit {
 	})
 
 	ionSelectCompareWith = (a: number, b: number) => {
-		if(a >= this.NEW_GROUP_OFFSET) {
+		if (a >= this.NEW_GROUP_OFFSET) {
 			a -= this.NEW_GROUP_OFFSET
 		}
-		if(b >= this.NEW_GROUP_OFFSET) {
+		if (b >= this.NEW_GROUP_OFFSET) {
 			b -= this.NEW_GROUP_OFFSET
 		}
-		
+
 		return a == b
 	}
 
@@ -963,9 +962,14 @@ export class Tab2Page implements OnInit {
 	}
 }
 
-
 class ValidatorLoader {
-	constructor(private api: ApiService, private dashboard: dashboardID, private groupID: number, private sort: string, private offlineCallback: (online: boolean) => void) {}
+	constructor(
+		private api: ApiService,
+		private dashboard: dashboardID,
+		private groupID: number,
+		private sort: string,
+		private offlineCallback: (online: boolean) => void
+	) {}
 
 	public getDefaultDataRetriever(): loadMoreType<VDBManageValidatorsTableRow> {
 		return async (cursor) => {
@@ -976,14 +980,16 @@ class ValidatorLoader {
 				}
 			}
 			const result = await this.api.execute2(
-				new V2GetValidatorFromDashboard(this.dashboard, this.groupID, cursor, PAGE_SIZE, this.sort), ASSOCIATED_CACHE_KEY
+				new V2GetValidatorFromDashboard(this.dashboard, this.groupID, cursor, PAGE_SIZE, this.sort),
+				ASSOCIATED_CACHE_KEY
 			)
 			if (result.error) {
 				Toast.show({
 					text: 'Could not load validators',
 					duration: 'long',
 				})
-				if (!(result.error instanceof APIUnauthorizedError)) { // todo change to just if timeout?
+				if (!(result.error instanceof APIUnauthorizedError)) {
+					// todo change to just if timeout?
 					this.offlineCallback(false)
 				}
 				return {

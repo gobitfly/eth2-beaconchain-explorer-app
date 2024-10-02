@@ -134,7 +134,10 @@ export default class ClientUpdateUtils {
 	lastTry = 0
 	private locked = false
 
-	constructor(private api: ApiService, private storage: StorageService) {}
+	constructor(
+		private api: ApiService,
+		private storage: StorageService
+	) {}
 
 	getClientInfo(clientKey: string): ClientInfo {
 		if (clientKey == null) {
@@ -309,12 +312,10 @@ export default class ClientUpdateUtils {
 	private async getReleases(client: ClientInfo): Promise<Release> {
 		const req = new GithubReleaseRequest(client.repo, !(await this.isPreReleaseAllowed()))
 		const temp = await this.api.execute2(req)
-		if(temp.error) return null
+		if (temp.error) return null
 		console.log('Client updates data', temp)
 		return new Release(client, temp.data[0])
 	}
-
-	
 }
 
 interface LocalReleaseMark {

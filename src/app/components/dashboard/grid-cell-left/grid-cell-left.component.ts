@@ -19,6 +19,5 @@ export class GridCellLeftComponent {
 	onClick($event: { stopPropagation: () => void }) {
 		$event.stopPropagation()
 		this.valueClick.emit()
-		
 	}
 }

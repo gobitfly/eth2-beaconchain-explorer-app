@@ -207,7 +207,6 @@ export function getHTTPError(code: number, msg: string): APIError {
 	return new APIUnknownError(msg, code)
 }
 
-
 // ------------- Responses -------------
 
 export interface ApiTokenResponse {
@@ -233,23 +232,19 @@ export interface CoinbaseExchangeResponse {
 	amount: string
 }
 
-
 export interface BitflyAdResponse {
 	html: string
 	width: string
 	height: string
 }
 
-
-
 // ------------ Authorized Calls -----------------
-
 
 export class GetMyMachinesRequest extends APIRequest<StatsResponse> {
 	resource = 'user/stats'
 	method = Method.GET
 	requiresAuth = true
-	
+
 	constructor(offset = 0, limit = 180) {
 		super()
 		this.resource += '/' + offset + '/' + limit
@@ -298,7 +293,7 @@ export class UpdateTokenRequest extends APIRequest<APIResponse> {
 	resource = 'user/mobile/notify/register'
 	method = Method.POST
 	requiresAuth = true
-	
+
 	parse(response: Response): APIResponse | null {
 		if (response && response.data) return response.data as APIResponse
 		return null

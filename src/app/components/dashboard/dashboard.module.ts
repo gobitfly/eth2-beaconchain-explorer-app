@@ -35,28 +35,28 @@ import { GridCellLeftComponent } from './grid-cell-left/grid-cell-left.component
 import { GridCellRightComponent } from './grid-cell-right/grid-cell-right.component'
 import { SummaryChartModule } from './summary-chart/summary-chart.module'
 import { RewardChartModule } from './reward-chart/reward-chart.module'
-import { FullPageLoadingComponent } from "../full-page-loading/full-page-loading.component";
-import { FullPageOfflineComponent } from "../full-page-offline/full-page-offline.component";
+import { FullPageLoadingComponent } from '../full-page-loading/full-page-loading.component'
+import { FullPageOfflineComponent } from '../full-page-offline/full-page-offline.component'
 
 @NgModule({
 	imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    PipesModule,
-    ClientupdateComponentModule,
-    MessageComponentModule,
-    TooltipModule,
-    AdComponentModule,
-    PerformanceItemComponentModule,
-    SummaryChartModule,
-    SuccessFailViewComponent,
-    GridCellLeftComponent,
-    GridCellRightComponent,
-    RewardChartModule,
-    FullPageLoadingComponent,
-    FullPageOfflineComponent
-],
+		CommonModule,
+		FormsModule,
+		IonicModule,
+		PipesModule,
+		ClientupdateComponentModule,
+		MessageComponentModule,
+		TooltipModule,
+		AdComponentModule,
+		PerformanceItemComponentModule,
+		SummaryChartModule,
+		SuccessFailViewComponent,
+		GridCellLeftComponent,
+		GridCellRightComponent,
+		RewardChartModule,
+		FullPageLoadingComponent,
+		FullPageOfflineComponent,
+	],
 	declarations: [DashboardComponent],
 	exports: [DashboardComponent],
 })

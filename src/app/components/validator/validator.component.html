@@ -18,17 +18,17 @@
     along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<div class="infi-item-container" [ngClass]="{'infi-item-first': first}">
+<div class="infi-item-container" [ngClass]="{ 'infi-item-first': first }">
 	<div class="inner">
 		<ion-item lines="none">
 			<div slot="start">
 				<img class="infi-item-blockie" src="{{ imgData }}" />
-				<ion-label class="infi-item-container-below-blockie smaller-info">{{ validator.public_key | slice : 0 : 7 }}</ion-label>
+				<ion-label class="infi-item-container-below-blockie smaller-info">{{ validator.public_key | slice: 0 : 7 }}</ion-label>
 			</div>
 
 			<div class="infi-item-middle-container">
 				<ion-text class="title">{{ name }}</ion-text>
-				<ion-label class="smaller-info smaller-pad"> Balance: {{ validator.balance | mcurrency : 'WEI' : unit.pref.Cons }} </ion-label>
+				<ion-label class="smaller-info smaller-pad"> Balance: {{ validator.balance | mcurrency: 'WEI' : unit.pref.Cons }} </ion-label>
 				<ion-label class="smaller-info smaller-pad"> Labels: Solo</ion-label>
 			</div>
 			<div slot="end" class="status-container">
@@ -37,4 +37,4 @@
 		</ion-item>
 	</div>
 </div>
-<div [ngClass]="{'infi-item-last-padding': last}"></div>
+<div [ngClass]="{ 'infi-item-last-padding': last }"></div>

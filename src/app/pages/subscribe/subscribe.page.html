@@ -53,15 +53,15 @@
 				[class]="equalPackage(selectedPackage(), package) ? 'packages-selected' : ''">
 				<div class="slide-container package-inner">
 					<ion-label class="pkg-name white">{{ package.name }}</ion-label>
-					<ion-label class="pkg-price white ">{{ calculateMonthlyPrice(package) }} / m </ion-label>
-					<ion-label class="pkg-price-yearly white ">{{ package.price }} / y</ion-label>
+					<ion-label class="pkg-price white">{{ calculateMonthlyPrice(package) }} / m </ion-label>
+					<ion-label class="pkg-price-yearly white">{{ package.price }} / y</ion-label>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<div style="background-color: var(--ion-background-color);">
-		<app-full-page-loading  [loading]="!products() && online">
+	<div style="background-color: var(--ion-background-color)">
+		<app-full-page-loading [loading]="!products() && online">
 			<app-full-page-offline (retry)="this.ngOnInit()" [online]="online">
 				<ion-list class="first-item-group">
 					<ion-list-header>
@@ -109,7 +109,7 @@
 
 					<ion-item lines="none">
 						<ion-label> Bulk Adding </ion-label>
-					
+
 						<ion-label class="value">
 							<app-bool-checked [value]="selectedProduct()?.premium_perks.bulk_adding"></app-bool-checked>
 						</ion-label>
@@ -121,33 +121,50 @@
 
 					<ion-item lines="none">
 						<ion-label> Epoch </ion-label>
-						<app-bool-checked class="value" slot="end" *ngIf="!selectedProduct()?.premium_perks.chart_history_seconds.epoch" [value]="false"></app-bool-checked>
-						<ion-label class="value" slot="end" *ngIf="selectedProduct()?.premium_perks.chart_history_seconds.epoch"> {{ 
-							selectedProduct()?.premium_perks.chart_history_seconds.epoch | subSecondsToTime }} </ion-label>
+						<app-bool-checked
+							class="value"
+							slot="end"
+							*ngIf="!selectedProduct()?.premium_perks.chart_history_seconds.epoch"
+							[value]="false"></app-bool-checked>
+						<ion-label class="value" slot="end" *ngIf="selectedProduct()?.premium_perks.chart_history_seconds.epoch">
+							{{ selectedProduct()?.premium_perks.chart_history_seconds.epoch | subSecondsToTime }}
+						</ion-label>
 					</ion-item>
 
 					<ion-item lines="none">
 						<ion-label> Hourly </ion-label>
-						<app-bool-checked class="value" slot="end" *ngIf="!selectedProduct()?.premium_perks.chart_history_seconds.hourly"
+						<app-bool-checked
+							class="value"
+							slot="end"
+							*ngIf="!selectedProduct()?.premium_perks.chart_history_seconds.hourly"
 							[value]="false"></app-bool-checked>
-						<ion-label class="value" slot="end" *ngIf="selectedProduct()?.premium_perks.chart_history_seconds.hourly"> {{
-							selectedProduct()?.premium_perks.chart_history_seconds.hourly | subSecondsToTime }} </ion-label>
+						<ion-label class="value" slot="end" *ngIf="selectedProduct()?.premium_perks.chart_history_seconds.hourly">
+							{{ selectedProduct()?.premium_perks.chart_history_seconds.hourly | subSecondsToTime }}
+						</ion-label>
 					</ion-item>
 
 					<ion-item lines="none">
 						<ion-label> Daily </ion-label>
-						<app-bool-checked class="value" slot="end" *ngIf="!selectedProduct()?.premium_perks.chart_history_seconds.daily"
+						<app-bool-checked
+							class="value"
+							slot="end"
+							*ngIf="!selectedProduct()?.premium_perks.chart_history_seconds.daily"
 							[value]="false"></app-bool-checked>
-						<ion-label class="value" slot="end" *ngIf="selectedProduct()?.premium_perks.chart_history_seconds.daily"> {{
-							selectedProduct()?.premium_perks.chart_history_seconds.daily | subSecondsToTime }} </ion-label>
+						<ion-label class="value" slot="end" *ngIf="selectedProduct()?.premium_perks.chart_history_seconds.daily">
+							{{ selectedProduct()?.premium_perks.chart_history_seconds.daily | subSecondsToTime }}
+						</ion-label>
 					</ion-item>
 
 					<ion-item lines="none">
 						<ion-label> Weekly </ion-label>
-						<app-bool-checked class="value" slot="end" *ngIf="!selectedProduct()?.premium_perks.chart_history_seconds.weekly"
+						<app-bool-checked
+							class="value"
+							slot="end"
+							*ngIf="!selectedProduct()?.premium_perks.chart_history_seconds.weekly"
 							[value]="false"></app-bool-checked>
-						<ion-label class="value" slot="end" *ngIf="selectedProduct()?.premium_perks.chart_history_seconds.weekly"> {{
-							selectedProduct()?.premium_perks.chart_history_seconds.weekly | subSecondsToTime }} </ion-label>
+						<ion-label class="value" slot="end" *ngIf="selectedProduct()?.premium_perks.chart_history_seconds.weekly">
+							{{ selectedProduct()?.premium_perks.chart_history_seconds.weekly | subSecondsToTime }}
+						</ion-label>
 					</ion-item>
 
 					<ion-list-header>
@@ -156,16 +173,14 @@
 
 					<ion-item lines="none">
 						<ion-label> Device Monitoring </ion-label>
-						<ion-label class="value">
-							{{ selectedProduct()?.premium_perks.machine_monitoring_history_seconds | subSecondsToTime }}
-						</ion-label>
+						<ion-label class="value"> {{ selectedProduct()?.premium_perks.machine_monitoring_history_seconds | subSecondsToTime }} </ion-label>
 					</ion-item>
 
 					<ion-item lines="none">
 						<ion-label> Monitoring Setups </ion-label>
 						<ion-label class="value" slot="end"> {{ selectedProduct()?.premium_perks.monitor_machines }} </ion-label>
 					</ion-item>
-					
+
 					<ion-item lines="none">
 						<ion-label> Custom Themes </ion-label>
 						<ion-label class="value">
@@ -179,7 +194,6 @@
 							<app-bool-checked [value]="selectedProduct()?.premium_perks.mobile_app_widget"></app-bool-checked>
 						</ion-label>
 					</ion-item>
-					
 				</ion-list>
 
 				<div class="detail-container" *ngIf="selectedPackage()?.purchaseKey != null">
@@ -188,16 +202,10 @@
 					>
 
 					<div>
-						<ion-button
-							class="purchase-btn"
-							(click)="purchase()"
-							*ngIf="!equalProduct(this.merchant.getUsersSubscription(), selectedPackage())"
+						<ion-button class="purchase-btn" (click)="purchase()" *ngIf="!equalProduct(this.merchant.getUsersSubscription(), selectedPackage())"
 							>Subscribe for {{ selectedPackage()?.price }} / month</ion-button
 						>
-						<ion-button
-							class="purchase-btn"
-							*ngIf="equalProduct(this.merchant.getUsersSubscription(), selectedPackage())"
-							disabled
+						<ion-button class="purchase-btn" *ngIf="equalProduct(this.merchant.getUsersSubscription(), selectedPackage())" disabled
 							>You own this package
 						</ion-button>
 					</div>
@@ -205,7 +213,9 @@
 					<ion-label class="grey-link" (click)="restore()">Restore purchase</ion-label>
 					<br /><br />
 
-					<span class="hint">After the free trial, you'll be charged the full amount if not canceled. You can cancel the subscription at any time.</span>
+					<span class="hint"
+						>After the free trial, you'll be charged the full amount if not canceled. You can cancel the subscription at any time.</span
+					>
 					<span class="hint" *ngIf="isiOS">*¹ Requires iOS 14 or newer.</span>
 				</div>
 

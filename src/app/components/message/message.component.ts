@@ -139,5 +139,4 @@ export class MessageComponent implements OnInit {
 		this.notDismissed = false
 		this.storage.setBooleanSetting(this.dismissKey, true)
 	}
-
 }

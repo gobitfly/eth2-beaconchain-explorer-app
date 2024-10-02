@@ -43,16 +43,16 @@ const defaultFormattter = function (then: number): { value: number; unit: Unit; 
 		seconds < MINUTE
 			? [Math.round(seconds), 'second']
 			: seconds < HOUR
-			? [Math.round(seconds / MINUTE), 'minute']
-			: seconds < DAY
-			? [Math.round(seconds / HOUR), 'hour']
-			: seconds < WEEK
-			? [Math.round(seconds / DAY), 'day']
-			: seconds < MONTH
-			? [Math.round(seconds / WEEK), 'week']
-			: seconds < YEAR
-			? [Math.round(seconds / MONTH), 'month']
-			: [Math.round(seconds / YEAR), 'year']
+				? [Math.round(seconds / MINUTE), 'minute']
+				: seconds < DAY
+					? [Math.round(seconds / HOUR), 'hour']
+					: seconds < WEEK
+						? [Math.round(seconds / DAY), 'day']
+						: seconds < MONTH
+							? [Math.round(seconds / WEEK), 'week']
+							: seconds < YEAR
+								? [Math.round(seconds / MONTH), 'month']
+								: [Math.round(seconds / YEAR), 'year']
 
 	return { value, unit, suffix }
 }

@@ -67,9 +67,9 @@ export class AppComponent {
 		try {
 			await this.storage.migrateToCapacitor3()
 			if (environment.debug_set_default_network.length > 0) {
-				const completed = await this.storage.getBooleanSetting("debug_change_network", false)
-				if(!completed) {
-					this.storage.setBooleanSetting("debug_change_network", true)
+				const completed = await this.storage.getBooleanSetting('debug_change_network', false)
+				if (!completed) {
+					this.storage.setBooleanSetting('debug_change_network', true)
 					const newConfig = findConfigForKey(environment.debug_set_default_network)
 
 					await this.storage.setNetworkPreferences(newConfig)

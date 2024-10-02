@@ -27,7 +27,7 @@ export const environment = {
 	mock_combine_machines: true, // should be false in production
 	debug_set_default_network: '', // todo remove in production
 	debug: true, // false for prod
-} 
+}
 
 /*
  * For easier debugging in development mode, you can import the following file

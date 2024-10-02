@@ -45,7 +45,7 @@
 	--edge-padding-left-minus-5px: 0px 0px;
 	--default-secondary-transparency: 0.83;
 	--smaller-info-size: 0.82rem;
-	--smallest-info-size: 0.75rem;	
+	--smallest-info-size: 0.75rem;
 	--text-below-blockie-margin: 45px;
 	--block-ts-padding: 1px 0px 0px 0px;
 
@@ -134,25 +134,25 @@
 
 :root .ios {
 	--smaller-info-size: 0.79rem;
-	--smallest-info-size: 0.72rem;	
+	--smallest-info-size: 0.72rem;
 	--text-below-blockie-margin: 50px;
 	--block-ts-padding: 0px 0px 0px 0px;
 }
 
 @media (min-width: 360px) {
-  :root {
-	--edge-padding: 0px 15px;
-	--edge-padding-left-plus-15px: 0px 30px;
-	--edge-padding-left-minus-5px: 0px 10px;
-  }
+	:root {
+		--edge-padding: 0px 15px;
+		--edge-padding-left-plus-15px: 0px 30px;
+		--edge-padding-left-minus-5px: 0px 10px;
+	}
 }
 
 @media (min-width: 480px) {
-  :root {
-	--edge-padding: 0px 25px;
-	--edge-padding-left-plus-15px: 0px 40px;
-	--edge-padding-left-minus-5px: 0px 20px;
-  }
+	:root {
+		--edge-padding: 0px 25px;
+		--edge-padding-left-plus-15px: 0px 40px;
+		--edge-padding-left-minus-5px: 0px 20px;
+	}
 }
 
 body {

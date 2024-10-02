@@ -1,33 +1,39 @@
 // Copyright (C) 2024 Bitfly GmbH
-// 
+//
 // This file is part of Beaconchain Dashboard.
-// 
+//
 // Beaconchain Dashboard is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Beaconchain Dashboard is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Injectable } from "@angular/core";
-import { StorageService } from "../services/storage.service";
-import { ApiService } from "../services/api.service";
-import { V2MyDashboards } from "../requests/v2-user";
-import { dashboardID, V2AddValidatorToDashboard, V2AddValidatorToDashboardData, V2CreateDashboard, V2DeleteValidatorFromDashboard } from "../requests/v2-dashboard";
-import { Toast } from "@capacitor/toast";
-import { AlertService } from "../services/alert.service";
-import { OAuthUtils } from "./OAuthUtils";
-import { MerchantUtils } from "./MerchantUtils";
-import { SearchResult } from "../requests/types/common";
-import { searchType } from "../requests/v2-search";
-import { UnitconvService } from "../services/unitconv.service";
-import { APIError, APIUnauthorizedError } from "../requests/requests";
+import { Injectable } from '@angular/core'
+import { StorageService } from '../services/storage.service'
+import { ApiService } from '../services/api.service'
+import { V2MyDashboards } from '../requests/v2-user'
+import {
+	dashboardID,
+	V2AddValidatorToDashboard,
+	V2AddValidatorToDashboardData,
+	V2CreateDashboard,
+	V2DeleteValidatorFromDashboard,
+} from '../requests/v2-dashboard'
+import { Toast } from '@capacitor/toast'
+import { AlertService } from '../services/alert.service'
+import { OAuthUtils } from './OAuthUtils'
+import { MerchantUtils } from './MerchantUtils'
+import { SearchResult } from '../requests/types/common'
+import { searchType } from '../requests/v2-search'
+import { UnitconvService } from '../services/unitconv.service'
+import { APIError, APIUnauthorizedError } from '../requests/requests'
 
 @Injectable({
 	providedIn: 'root',
@@ -170,22 +176,22 @@ export class DashboardUtils {
 }
 
 export function isLocalDashboard(id: dashboardID): id is number[] {
-    return id && Array.isArray(id) && id.every((element) => typeof element === 'number')
+	return id && Array.isArray(id) && id.every((element) => typeof element === 'number')
 }
 
 class PullEventListener {
 	private updateMap: Map<string, boolean> = new Map()
 
 	private push: () => void
-	constructor(push: () => void = null) { 
-		this.push = push 
+	constructor(push: () => void = null) {
+		this.push = push
 	}
 
 	notifyAll() {
 		this.updateMap.forEach((_, key) => {
 			this.updateMap.set(key, true)
 		})
-		if(this.push) this.push()
+		if (this.push) this.push()
 	}
 
 	register(key: string) {
@@ -201,85 +207,86 @@ class PullEventListener {
 	}
 }
 
-export async function mergeLocalDashboardToRemote(
-    api: ApiService,
-    storage: StorageService
-) {
-    const localDashboard = await storage.getDashboardID()
-    if (!isLocalDashboard(localDashboard)) {
-        await initDashboard(api, storage)
-        return
-    }
+export async function mergeLocalDashboardToRemote(api: ApiService, storage: StorageService) {
+	const localDashboard = await storage.getDashboardID()
+	if (!isLocalDashboard(localDashboard)) {
+		await initDashboard(api, storage)
+		return
+	}
 
-    // store local dashboard to inactive slot just in case something goes wrong
-    await storage.setObject('local_dashboard_backup', localDashboard)
-    console.log('merge do merge', localDashboard)
-    
-    storage.setDashboardID(null) // clear local dashboard
-    const remoteDashboard = await initDashboard(api, storage)
+	// store local dashboard to inactive slot just in case something goes wrong
+	await storage.setObject('local_dashboard_backup', localDashboard)
+	console.log('merge do merge', localDashboard)
 
-    const result = await api.execute2(new V2AddValidatorToDashboard(remoteDashboard, {
-        group_id: 0, 
-        validators: localDashboard
-    }))
-    if (result.error) {
-        Toast.show({
-            text: 'Error merging dashboards',
-        })
-        return
-    }
-    await storage.setObject('local_dashboard_backup', null) // done
+	storage.setDashboardID(null) // clear local dashboard
+	const remoteDashboard = await initDashboard(api, storage)
+
+	const result = await api.execute2(
+		new V2AddValidatorToDashboard(remoteDashboard, {
+			group_id: 0,
+			validators: localDashboard,
+		})
+	)
+	if (result.error) {
+		Toast.show({
+			text: 'Error merging dashboards',
+		})
+		return
+	}
+	await storage.setObject('local_dashboard_backup', null) // done
 }
 
 // Call after login or when dashboard id is null
 // will check if the user has dashboards and select the first one
 // or else create a dashboard and select it
 export async function initDashboard(api: ApiService, storage: StorageService, dashboardChangedListener: () => void = null) {
-		const dashID = await storage.getDashboardID()
-		const isLoggedIn = await storage.isLoggedIn()
+	const dashID = await storage.getDashboardID()
+	const isLoggedIn = await storage.isLoggedIn()
 
-		// check if user has dashboards
-		if (!dashID && isLoggedIn) {
-			const result = await api.execute2(new V2MyDashboards())
-			if (result.error) {
-				console.warn('dashboards can not be loaded', result.error)
-				Toast.show({
-					text: 'Error loading dashboards',
-				})
-				return
-			}
-
-			let targetDashboard: dashboardID = null
-			// if user has a dashboard, pick the first one
-			if (result.data && result.data && result.data.validator_dashboards && result.data.validator_dashboards.length > 0) {
-				targetDashboard = result.data.validator_dashboards[0].id
-				// todo improve and pick the one on current network first - if user has multiple dashboards
-				console.log('found a user dashboard, picking first one')
-			} else {
-				console.log('user has no dashboards, creating default dashboard')
-				// create a new dashboard
-				const chainID = await api.getCurrentDashboardChainID()
-				const createResult = await api.execute2(new V2CreateDashboard('Default Dashboard', chainID)) 
-				if (createResult.error) {
-					Toast.show({
-						text: 'Error renaming dashboard, please try again later',
-					})
-				} else {
-					targetDashboard = createResult.data.id
-				}
-			}
-
-            await storage.setDashboardID(targetDashboard)
-            if(dashboardChangedListener) { dashboardChangedListener() }
-			return targetDashboard
+	// check if user has dashboards
+	if (!dashID && isLoggedIn) {
+		const result = await api.execute2(new V2MyDashboards())
+		if (result.error) {
+			console.warn('dashboards can not be loaded', result.error)
+			Toast.show({
+				text: 'Error loading dashboards',
+			})
+			return
 		}
-		return dashID
+
+		let targetDashboard: dashboardID = null
+		// if user has a dashboard, pick the first one
+		if (result.data && result.data && result.data.validator_dashboards && result.data.validator_dashboards.length > 0) {
+			targetDashboard = result.data.validator_dashboards[0].id
+			// todo improve and pick the one on current network first - if user has multiple dashboards
+			console.log('found a user dashboard, picking first one')
+		} else {
+			console.log('user has no dashboards, creating default dashboard')
+			// create a new dashboard
+			const chainID = await api.getCurrentDashboardChainID()
+			const createResult = await api.execute2(new V2CreateDashboard('Default Dashboard', chainID))
+			if (createResult.error) {
+				Toast.show({
+					text: 'Error renaming dashboard, please try again later',
+				})
+			} else {
+				targetDashboard = createResult.data.id
+			}
+		}
+
+		await storage.setDashboardID(targetDashboard)
+		if (dashboardChangedListener) {
+			dashboardChangedListener()
+		}
+		return targetDashboard
+	}
+	return dashID
 }
-    
+
 class SeachResultHandler {
 	formatSearchType(type: searchType | string) {
 		switch (type) {
-			case searchType.validatorByIndexBatch: 
+			case searchType.validatorByIndexBatch:
 				return 'Validator Indices'
 			case searchType.validatorByIndex:
 				return 'Validator Index'
@@ -350,11 +357,11 @@ class SeachResultHandler {
 
 	resultCount(searchResult: SearchResult) {
 		if (searchResult.type == searchType.validatorByIndexBatch) {
-			return searchResult.str_value.split(',').length	
+			return searchResult.str_value.split(',').length
 		}
-        if (searchResult.type == searchType.validatorByIndex || searchResult.type == searchType.validatorByPublicKey) {
-            return 1
-        }
-        return searchResult.num_value
-    }
+		if (searchResult.type == searchType.validatorByIndex || searchResult.type == searchType.validatorByPublicKey) {
+			return 1
+		}
+		return searchResult.num_value
+	}
 }

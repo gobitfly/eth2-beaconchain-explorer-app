@@ -105,12 +105,20 @@
 				(click)="openUpgrades()">
 			</ion-icon>
 		</ion-item>
-		
+
 		<ion-item lines="none" (click)="widgetSetupInfo()">
 			<ion-icon class="opacity-icon" slot="start" name="shapes-outline"> </ion-icon>
 			<ion-label>Widgets</ion-label>
-			<ion-icon slot="end" class="opacity-icon" name="lock-closed-outline" *ngIf="merchant.userInfo()?.premium_perks.mobile_app_widget != true"></ion-icon>
-			<ion-icon slot="end" class="opacity-icon" name="information-circle-outline" *ngIf="merchant.userInfo()?.premium_perks.mobile_app_widget == true"></ion-icon>
+			<ion-icon
+				slot="end"
+				class="opacity-icon"
+				name="lock-closed-outline"
+				*ngIf="merchant.userInfo()?.premium_perks.mobile_app_widget != true"></ion-icon>
+			<ion-icon
+				slot="end"
+				class="opacity-icon"
+				name="information-circle-outline"
+				*ngIf="merchant.userInfo()?.premium_perks.mobile_app_widget == true"></ion-icon>
 		</ion-item>
 
 		<ion-list (click)="openUpgrades()" *ngIf="this.merchant.getUsersSubscription()">
@@ -197,7 +205,6 @@
 	</ion-list-header>
 
 	<ion-list>
-
 		<ion-item lines="none">
 			<ion-icon class="opacity-icon" slot="start" name="planet-outline"></ion-icon>
 			<ion-select label="Network" value="main" [(ngModel)]="network" (ionChange)="changeNetwork()" interface="popover">

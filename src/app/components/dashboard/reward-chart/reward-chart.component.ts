@@ -21,7 +21,10 @@ export class RewardChartComponent {
 	fontSize = '12px'
 	groupsEnabled = false
 
-	constructor(private api: ApiService, private unit: UnitconvService) {}
+	constructor(
+		private api: ApiService,
+		private unit: UnitconvService
+	) {}
 
 	rewardChart = computed(() => {
 		return this.createRewardChart(this.series(), this.data.rewardChart()?.categories)
@@ -33,7 +36,7 @@ export class RewardChartComponent {
 
 	colors = computed(() => {
 		return {
-			background: getChartTooltipBackgroundColor(), 
+			background: getChartTooltipBackgroundColor(),
 			data: getRewardChartColors(),
 			label: getChartTextColor(),
 			line: getRewardsChartLineColor(),
@@ -178,7 +181,7 @@ export class RewardChartComponent {
 				borderColor: this.colors().background,
 				formatter: (params) => {
 					if (Array.isArray(params)) {
-						console.log("params", params)
+						console.log('params', params)
 						const startEpoch = parseInt(params[0].name)
 						return (
 							getTooltipHeader(

@@ -31,7 +31,7 @@ export class BlockComponent {
 		this.timestamp = slotToSecondsTimestamp(this.chainID, this.block.slot) * 1000
 		if (this.block.reward) {
 			this.producerReward = new BigNumber(this.block.reward.el).plus(new BigNumber(this.block.reward.cl))
-		} 
+		}
 		this.resolvedName = null
 
 		this.feeRecipient = this.block.reward_recipient?.hash

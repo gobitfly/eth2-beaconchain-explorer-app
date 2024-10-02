@@ -18,19 +18,17 @@
 <ion-content [fullscreen]="true" [scrollEvents]="true" (ionScrollStart)="onScrollStarted()" (ionScrollEnd)="onScrollEnded()">
 	<app-full-page-loading [fixInfiniteScroll]="true" [loading]="initialLoading">
 		<app-full-page-offline (retry)="this.doRefresh(null)" [online]="online">
-	
 			<ion-item class="top-bar" *ngIf="!this.data || showData" (click)="openTimeSelection()">
 				<ion-label>Last {{ this.selectedTimeFrame }}</ion-label>
 				<ion-icon class="opacity-icon" slot="end" name="time-outline"></ion-icon>
 			</ion-item>
 
 			<div *ngIf="this.data && showData">
-
 				<div style="margin-top: 0px; margin-bottom: 10px" *ngIf="!this.merchant.hasMachineMonitoringPremium()">
 					<app-ad location="machines"></app-ad>
 				</div>
 
-				<div  *ngFor="let key of orderedKeys" class="card">
+				<div *ngFor="let key of orderedKeys" class="card">
 					<app-machinechart
 						[priority]="true"
 						[title]="key ? key : 'Machine'"
