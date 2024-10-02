@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { computed, Injectable, OnInit, Signal, signal, WritableSignal } from '@angular/core'
+import { computed, effect, Injectable, OnInit, Signal, signal, WritableSignal } from '@angular/core'
 import 'cordova-plugin-purchase/www/store.d'
 import { Platform } from '@ionic/angular'
 import { AlertService, PURCHASEUTILS } from '../services/alert.service'
@@ -29,6 +29,7 @@ import { SubscriptionData, V2Me, V2PurchaseValidation } from '../requests/v2-use
 import { UserInfo, UserSubscription } from '../requests/types/user'
 import { Aggregation } from '../requests/v2-dashboard'
 import { ONE_DAY, ONE_HOUR } from './TimeUtils'
+import ThemeUtils from './ThemeUtils'
 
 export const PRODUCT_STANDARD = 'standard'
 
@@ -76,8 +77,18 @@ export class MerchantUtils implements OnInit {
 		private alertService: AlertService,
 		private api: ApiService,
 		private platform: Platform,
-		private storage: StorageService
+		private storage: StorageService,
+		private theme: ThemeUtils
 	) {
+		effect(() => {
+			if (this.userInfo()) {
+				console.log('validate theming', this.userInfo(), this.userInfo()?.premium_perks?.mobile_app_custom_themes)
+				const hasTheming = this.userInfo()?.premium_perks?.mobile_app_custom_themes == true
+				if (!hasTheming && this.theme.currentThemeColor != 'gnosis') {
+					this.theme.resetTheming()
+				}
+			}
+		})
 		this.initPackages() 
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
 			console.info('merchant is not supported on this platform')
@@ -494,18 +505,6 @@ export class MerchantUtils implements OnInit {
 			}
 		)
 	}
-
-	async getDefaultTheme(): Promise<string> {
-		const authUser = await this.storage.getAuthUser()
-		if (!authUser || !authUser.accessToken) return ''
-		const jwtParts = authUser.accessToken.split('.')
-		const claims: ClaimParts = JSON.parse(atob(jwtParts[1]))
-		if (claims && Object.prototype.hasOwnProperty.call(claims, 'theme') && claims.theme) {
-			return claims.theme
-		}
-		return ''
-	}
-
 	findProduct(name: string): Package {
 		console.log('find product', name, this.PACKAGES)
 		for (let i = 0; i < this.PACKAGES.length; i++) {
@@ -595,16 +594,6 @@ export class MerchantUtils implements OnInit {
 		if (appSubs.length == 0) return none
 		return appSubs[0]
 	})
-}
-
-interface ClaimParts {
-	userID: number
-	appID: number
-	deviceID: number
-	package: string
-	exp: number
-	iss: string
-	theme: string
 }
 
 export interface Package {

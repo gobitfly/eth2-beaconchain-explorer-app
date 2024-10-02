@@ -26,7 +26,7 @@ export class DashboardItemComponent implements OnChanges {
 	@Input() legacyDashboard: boolean = false
 
 	@Output() refresh = new EventEmitter<void>()
-	@Output() legacyAdd = new EventEmitter<number[]>()
+	@Output() legacyAdd = new EventEmitter<LegacyAdd>()
 	triggerID: string
 
 	selected: boolean
@@ -64,12 +64,44 @@ export class DashboardItemComponent implements OnChanges {
 		})
 	}
 
-	ngOnChanges() {	
+	ngOnChanges() {
 		this.triggerID = 'click-trigger-' + this.data.id
 	}
 
-	setAsDefault() {
-		if (this.legacyDashboard) return
+	async setAsDefault() {
+		if (this.legacyDashboard) {
+			const alert = await this.alertController.create({
+				cssClass: 'my-custom-class',
+				header: 'Legacy Dashboard',
+				message: `Legacy dashboards were created using an older version of this app 
+				and can not be viewed nor set as default.<br/><br/> You can migrate your dashboard to the new version
+					or get a list of all validators of that dashboard.`,
+				buttons: [
+					{
+						text: 'Show',
+						handler: () => {
+							this.legacyCopyToClipboard()
+						},
+					},
+					{
+						text: 'Migrate',
+						handler: () => {
+							this.legacyAddToCurrent()
+						},
+					},
+					{
+						text: 'Cancel',
+						role: 'cancel',
+						cssClass: 'secondary',
+						handler: () => {
+							return
+						},
+					},
+				],
+			})
+			await alert.present()
+			return
+		}
 		this.defaultDashboard.set(this.data.id)
 	}
 
@@ -134,7 +166,8 @@ export class DashboardItemComponent implements OnChanges {
 			string: (await this.validatorUtils.getMyLocalValidators(this.legacyGetNetwork())).sort().join(','),
 		})
 		Toast.show({
-			text: 'All validator indexes copied to clipboard',
+			text: 'All validator indices copied to clipboard',
+			duration: 'long',
 		})
 	}
 
@@ -147,7 +180,10 @@ export class DashboardItemComponent implements OnChanges {
 	}
 
 	async legacyAddToCurrent() {
-		this.legacyAdd.emit(await this.validatorUtils.getMyLocalValidators(this.legacyGetNetwork()))
+		this.legacyAdd.emit({
+			indices: await this.validatorUtils.getMyLocalValidators(this.legacyGetNetwork()),
+			network: this.legacyGetNetwork(),
+		} as LegacyAdd)
 	}
 
 	removeLegacy() {
@@ -225,4 +261,9 @@ export class DashboardItemComponent implements OnChanges {
 		if (this.legacyDashboard) this.removeLegacy()
 		else this.removev2()
 	}
+}
+
+export interface LegacyAdd {
+	indices: number[]
+	network: string
 }

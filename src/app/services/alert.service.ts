@@ -42,11 +42,34 @@ export class AlertService {
 		await alert.present()
 	}
 
-	async showSelect(title: string, inputs: unknown[], callback: (data:unknown) => void) {
+	async showSelect(title: string, inputs: unknown[], callback: (data: unknown) => void) {
 		const alert = await this.alertController.create({
 			header: title,
 			inputs: inputs,
 			buttons: [
+				{
+					text: 'OK',
+					handler: callback,
+				},
+			],
+		})
+
+		await alert.present()
+	}
+
+	async showSelectWithCancel(title: string, inputs: unknown[], callback: (data: unknown) => void) {
+		const alert = await this.alertController.create({
+			header: title,
+			inputs: inputs,
+			buttons: [
+				{
+					text: 'Cancel',
+					role: 'cancel',
+					cssClass: 'secondary',
+					handler: () => {
+						return
+					},
+				},
 				{
 					text: 'OK',
 					handler: callback,
@@ -77,8 +100,8 @@ export class AlertService {
 			buttons: [
 				{
 					text: 'OK',
-					handler: action
-				}
+					handler: action,
+				},
 			],
 		})
 

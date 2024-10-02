@@ -206,7 +206,7 @@ export class Tab3Page {
 	ionViewWillEnter() {
 		this.storage.getAuthUserv2().then((result) => (this.authUser = result))
 		this.debug = this.api.debug
-		this.network = this.api.findParentNetworkKey(this.api.getNetworkName())
+		this.network = this.api.getParentNetwork().key
 	}
 
 	private getAllCurrencies() {
@@ -319,7 +319,7 @@ export class Tab3Page {
 			false,
 			this.dashboardUtils
 		)
-		this.network = this.api.findParentNetworkKey(this.api.getNetworkName())
+		this.network = this.api.getParentNetwork().key
 		this.currentFiatCurrency = await this.unit.getCurrentConsFiat()
 	}
 

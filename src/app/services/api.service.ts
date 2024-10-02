@@ -130,14 +130,19 @@ export class ApiService extends CacheModule {
 		return temp
 	}
 
-	findParentNetworkKey(key: string): string {
+	findParentNetworkKey(childNetwork: ApiNetwork): ApiNetwork {
 		for (const entry of MAP) {
-			if(entry.v2NetworkConfigKey == key) {
-				return entry.key
+			if (entry.v2NetworkConfigKey == childNetwork.key) {
+				return entry
 			}
 		}
-		return key
+		return childNetwork
 	}
+
+	getParentNetwork(): ApiNetwork {
+		return this.findParentNetworkKey(this.networkConfig)
+	}
+
 
 	getNetwork(): ApiNetwork {
 		const temp = this.networkConfig
@@ -434,7 +439,6 @@ export class ApiService extends CacheModule {
 				const temp = result.headers.get('x-csrf-token')
 				if (temp) {
 					this.lastCsrfHeader = temp
-					console.log('set csrf token', temp)
 				}
 
 				// workaround for non native development

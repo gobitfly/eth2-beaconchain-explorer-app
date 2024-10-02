@@ -156,6 +156,7 @@
 }
 
 body {
+	--popover-border: none;
 	--loading-opacity: 0.55;
 	--bar-transparency: 0.92;
 	--tab-top-border: 1px;
@@ -205,6 +206,7 @@ body {
 }
 
 body.dark {
+	--popover-border: 1px solid #393939;
 	--loading-opacity: 0.7;
 	--bar-transparency: 0.79;
 	--ion-color-primary: #ee7112;
@@ -712,7 +714,7 @@ body.rocketpool {
 
 	--ion-tab-bar-background: #f76f75; // f8f8f8
 	--ion-tab-button-color-selected: #fff;
-	--ion-tab-button-color: #fff;
+	--ion-tab-button-color: #1f1f1f;
 
 	--status-ok: white;
 	--status-warn: white;

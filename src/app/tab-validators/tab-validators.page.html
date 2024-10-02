@@ -43,7 +43,7 @@
 	<ion-toolbar [style.--background]="selectMode ? 'var(--ion-color-primary)' : 'var(--ion-toolbar-background)'">
 		<ion-searchbar
 			class="top-bar-inner"
-			style="padding: 0px;"
+			style="padding: 0px; margin-left: -2px;"
 			#searchbarRef
 			[class.hidden]="selectMode"
 			showCancelButton="focus"
@@ -60,22 +60,78 @@
 	</ion-toolbar>
 	<app-offline *ngIf="!online"></app-offline>
 
+	<ion-list *ngIf="searchResultMode" style="padding: 0px">
+		<ion-list-header><ion-label>Search Results</ion-label></ion-list-header>
+	
+		<div *ngIf="!searchResult">
+			<div class="center">
+				<ion-spinner class="status-icon" style="margin: 21px 0px 22px 0px"></ion-spinner>
+			</div>
+		</div>
+	
+		<div *ngIf="searchResult && searchResult.length == 0 && !initialLoading">
+			<ion-item class="search-result-container">
+				<div slot="start" class="search-result-icon-container">
+					<ion-icon class="search-result-icon opacity-icon" name="telescope-outline"></ion-icon>
+				</div>
+	
+				<div>
+					<ion-label class="search-result-title">Nothing found</ion-label>
+					<ion-label style="opacity: 0.7; font-size: 0.68rem" slot="start">Try searching for public key, validator
+						index, ENS, deposit address or withdrawal address / credential.</ion-label>
+				</div>
+			</ion-item>
+		</div>
+	
+		<ion-item class="search-result-container" *ngFor="let item of searchResult;">
+			<div slot="start" class="search-result-icon-container">
+				<ion-icon class="search-result-icon opacity-icon" name="search-outline"></ion-icon>
+			</div>
+	
+			<div>
+				<ion-label class="search-result-title"
+					*ngIf="!dashboardUtils.searchResultHandler.searchNumFieldIsIndex(item)">{{item.num_value}}
+					Validators</ion-label>
+				<ion-label class="search-result-title"
+					*ngIf="dashboardUtils.searchResultHandler.searchNumFieldIsIndex(item)">Validator
+					{{item.num_value}}</ion-label>
+				<ion-label slot="start" class="smaller-info">Found via {{
+					dashboardUtils.searchResultHandler.formatSearchType(item.type) }}</ion-label>
+			</div>
+	
+			<ion-icon slot="end" name="diamond-outline" style="color: var(--ion-color-primary); font-size: 20px;"
+				(click)="premiumInfo()"
+				*ngIf="!merchant.canBulkAdd() && dashboardUtils.searchResultHandler.requiresPremium(item)"></ion-icon>
+			<ion-icon slot="end" name="add-circle-outline" (click)="addSearchResult(item)"> </ion-icon>
+		</ion-item>
+	
+		<ion-list-header *ngIf="dataSource && dataSource.hasItems()"><ion-label>My Validators</ion-label></ion-list-header>
+	</ion-list>
+	
+	
 	<ion-item [hidden]="!dataSource || !dashboardID()" class="top-bar">
-		<ion-select class="top-bar-inner" [disabled]="selectMode" placeholder="My groups" interface="popover" (ionChange)="selectGroup()" [(ngModel)]="selectedGroup">
+		<span style="margin-right: 5px; font-weight: bold">Group:</span>
+		<ion-select class="top-bar-inner" [disabled]="selectMode" placeholder="My groups" interface="popover"
+			(ionChange)="selectGroup()" [(ngModel)]="selectedGroup" [compareWith]="ionSelectCompareWith">
 			<ion-select-option *ngFor="let group of groups()" [value]="group.id">
 				{{group.name}} ({{group.count}})
 			</ion-select-option>
+			<ion-select-option [value]="NEW_GROUP_OFFSET+selectedGroup">
+				Create New Group
+			</ion-select-option>
 		</ion-select>
-		<ion-icon class="opacity-icon" slot="end" name="add-circle-outline" (click)="addGroupDialog()" *ngIf="!selectMode"> </ion-icon>
-		<ion-icon class="opacity-icon action-icon" slot="end" name="remove-circle-outline" (click)="removeGroupDialog()" *ngIf="!selectMode"> </ion-icon>
-		<ion-icon class="opacity-icon last-icon action-icon" slot="end" name="ellipsis-vertical-circle-outline" id="options-group-more" *ngIf="!selectMode"> </ion-icon>
+		<ion-icon class="opacity-icon last-icon action-icon" slot="end" name="ellipsis-vertical-circle-outline"
+			id="options-group-more" *ngIf="!selectMode"> </ion-icon>
 		<ion-popover trigger="options-group-more" triggerAction="click" [dismissOnSelect]="true" *ngIf="!selectMode">
 			<ng-template>
 				<ion-content>
 					<ion-list>
-						<ion-item [button]="true" [detail]="false" (click)="selectSort()">Sort Validators</ion-item>
+						<ion-item [button]="true" [detail]="false" (click)="addGroupDialog()">Add Group</ion-item>
+						<ion-item [button]="true" [detail]="false" (click)="removeGroupDialog()">Delete Group</ion-item>
 						<ion-item [button]="true" [detail]="false" (click)="renameGroupDialog()">Rename Group</ion-item>
-						<ion-item [disabled]="!dataSource.hasItems()" [button]="true" [detail]="false" (click)="selectMode = true">Edit Validators</ion-item>
+						<ion-item [button]="true" [detail]="false" (click)="selectSort()">Sort Validators</ion-item>
+						<ion-item [disabled]="!dataSource.hasItems()" [button]="true" [detail]="false"
+							(click)="enableSelectMode()">Edit Validators</ion-item>
 					</ion-list>
 				</ion-content>
 			</ng-template>
@@ -89,14 +145,10 @@
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher>
 
-	<app-message
-		title="Upgrade for more validators."
-		icon="rocket-outline"
-		iconStyle="genesis"
-		(click)="upgrade()"
+	<app-message title="Upgrade for more validators." icon="rocket-outline" iconStyle="genesis" (click)="upgrade()"
 		*ngIf="((dataSource && dataSource.length() >= this.merchant.getCurrentPlanMaxValidator()) || reachedMaxValidators) && this.merchant.getCurrentPlanMaxValidator() < 280">
 	</app-message>
-	
+
 	<app-full-page-loading [fixInfiniteScroll]="true" [loading]="initialLoading">
 		<app-full-page-offline (retry)="this.doRefresh(null)" [fixInfiniteScroll]="true" [online]="online || dataSource?.hasItems()">
 			<app-ad location="validator" *ngIf="dataSource && dataSource.hasItems() && !initialLoading"></app-ad>
@@ -108,49 +160,6 @@
 					You can add your validators by searching for a public key, validator index, your deposit / withdrawal address / withdrawal credential or ENS.
 				</ion-label>
 			</div>
-
-
-			<ion-list *ngIf="searchResultMode" style="padding: 0px">
-				<ion-list-header><ion-label>Search Results</ion-label></ion-list-header>
-
-				<div *ngIf="!searchResult">
-					<div class="center">
-						<ion-spinner class="status-icon" style="margin: 21px 0px 22px 0px"></ion-spinner>
-					</div>
-				</div>
-
-				<div *ngIf="searchResult && searchResult.length == 0 && !initialLoading">
-					<ion-item class="search-result-container">
-						<div slot="start" class="search-result-icon-container">
-							<ion-icon class="search-result-icon opacity-icon" name="telescope-outline"></ion-icon>
-						</div>
-
-						<div>
-							<ion-label class="search-result-title">Nothing found</ion-label>
-							<ion-label style="opacity: 0.7; font-size: 0.68rem" slot="start"
-								>Try searching for public key, validator index, ENS, deposit address or withdrawal address / credential.</ion-label
-							>
-						</div>
-					</ion-item>
-				</div>
-
-				<ion-item class="search-result-container" *ngFor="let item of searchResult;">
-					<div slot="start" class="search-result-icon-container">
-						<ion-icon class="search-result-icon opacity-icon" name="search-outline"></ion-icon>
-					</div>
-
-					<div>
-						<ion-label class="search-result-title" *ngIf="!dashboardUtils.searchResultHandler.searchNumFieldIsIndex(item)">{{item.num_value}} Validators</ion-label>
-						<ion-label class="search-result-title" *ngIf="dashboardUtils.searchResultHandler.searchNumFieldIsIndex(item)">Validator {{item.num_value}}</ion-label>
-						<ion-label slot="start" class="smaller-info">Found via {{ dashboardUtils.searchResultHandler.formatSearchType(item.type) }}</ion-label>
-					</div>
-
-					<ion-icon slot="end" name="diamond-outline" style="color: var(--ion-color-primary); font-size: 20px;" (click)="premiumInfo()" *ngIf="!merchant.canBulkAdd() && dashboardUtils.searchResultHandler.requiresPremium(item)"></ion-icon>
-					<ion-icon slot="end" name="add-circle-outline" (click)="addSearchResult(item)"> </ion-icon>
-				</ion-item>
-
-				<ion-list-header *ngIf="dataSource && dataSource.hasItems()"><ion-label>My Validators</ion-label></ion-list-header>
-			</ion-list>
 
 			<cdk-virtual-scroll-viewport
 				itemSize="89"

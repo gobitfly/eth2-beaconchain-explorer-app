@@ -160,10 +160,10 @@
 					<app-grid-cell-right
 						[name]="'Efficiency ' + data.timeframeDisplay()"
 						tooltip="The attestation inclusion efficiency should be 80% or higher to minimize reward penalties.">
-						<span [class]="(data.summary()?.[0].efficiency || 0) | valuestyle : 95 : this.data.avgNetworkEfficiency()" *ngIf="data.summary()[0].efficiency">
-							{{ (data.summary()?.[0].efficiency || 0) !== -1 ? ((data.summary()?.[0].efficiency || 0) | number : '1.0-2') + ' %' : 'NaN' }}
+						<span [class]="(data.summary()?.[0]?.efficiency || 0) | valuestyle : 95 : this.data.avgNetworkEfficiency()" *ngIf="data.summary()?.[0]?.efficiency">
+							{{ (data.summary()?.[0]?.efficiency || 0) !== -1 ? ((data.summary()?.[0]?.efficiency || 0) | number : '1.0-2') + ' %' : 'NaN' }}
 						</span>
-						<span *ngIf="!(data.summary()?.[0].efficiency || 0)">-</span>
+						<span *ngIf="!(data.summary()?.[0]?.efficiency || 0)">-</span>
 					</app-grid-cell-right>
 				</div>
 			</ion-item>
@@ -463,7 +463,7 @@
 
 		<!-- Efficiency -->
 		<ion-list class="performances" *ngIf="selectedExtraTab() == 'chartSummary'">
-			<app-success-fail-view [data]="this.data.summary()?.[0].attestations || { success: 0, failed: 0 }" name="Attestations" [mode]="successFailMode"></app-success-fail-view>
+			<app-success-fail-view [data]="this.data.summary()?.[0]?.attestations || { success: 0, failed: 0 }" name="Attestations" [mode]="successFailMode"></app-success-fail-view>
 			<app-success-fail-view
 				[data]="this.data.summaryGroup().attestations_source"
 				name="&nbsp;&nbsp;&nbsp;Source"
@@ -485,12 +485,12 @@
 			</ion-item>
 		</ion-list>
 
-		<div *ngIf="this.data.summary()?.[0].proposals || 0">
+		<div *ngIf="this.data.summary()?.[0]?.proposals || 0">
 			<ion-list-header>
 				<ion-label>Blocks {{ data.timeframeDisplay() }}</ion-label>
 			</ion-list-header>
 			<ion-list class="performances">
-				<app-success-fail-view [data]="this.data.summary()?.[0].proposals || { success: 0, failed: 0 }" name="Proposals" [mode]="successFailMode"></app-success-fail-view>
+				<app-success-fail-view [data]="this.data.summary()?.[0]?.proposals || { success: 0, failed: 0 }" name="Proposals" [mode]="successFailMode"></app-success-fail-view>
 
 				<ion-item lines="none" *ngIf="data.summaryGroup()?.luck.proposal.percent">
 					<ion-label class="stat-title">Luck</ion-label>

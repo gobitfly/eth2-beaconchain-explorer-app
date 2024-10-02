@@ -29,7 +29,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		supportedChainIds: [0, 100],
+		supportedChainIds: [1, 100],
 		name: 'Ethereum',
 		v2NetworkConfigKey: 'main_v2',
 	},
@@ -43,7 +43,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		supportedChainIds: [0, 100],
+		supportedChainIds: [1, 100],
 		name: 'Gnosis',
 	},
 	{
@@ -125,6 +125,7 @@ export const CHAIN_NETWORKS: ChainNetwork[] = [
 	{
 		id: 1,
 		name: 'ethereum',
+		legacyKey: 'main',
 		genesisTs: 1606824023,
 		clCurrency: NetworkMainCurrency.ETH,
 		elCurrency: NetworkMainCurrency.ETH,
@@ -135,6 +136,7 @@ export const CHAIN_NETWORKS: ChainNetwork[] = [
 	{
 		id: 17000,
 		name: 'holesky',
+		legacyKey: 'holesky',
 		genesisTs: 1695902400,
 		clCurrency: NetworkMainCurrency.ETH,
 		elCurrency: NetworkMainCurrency.ETH,
@@ -145,6 +147,7 @@ export const CHAIN_NETWORKS: ChainNetwork[] = [
 	{
 		id: 100,
 		name: 'gnosis',
+		legacyKey: 'gnosis',
 		genesisTs: 1638993340,
 		clCurrency: NetworkMainCurrency.GNO,
 		elCurrency: NetworkMainCurrency.xDAI,
@@ -155,6 +158,7 @@ export const CHAIN_NETWORKS: ChainNetwork[] = [
 	{
 		id: 11155111,
 		name: 'sepolia',
+		legacyKey: 'sepolia',
 		genesisTs: 1655733600,
 		clCurrency: NetworkMainCurrency.ETH,
 		elCurrency: NetworkMainCurrency.ETH,
@@ -185,6 +189,7 @@ export function findChainNetworkByName(name: string): ChainNetwork | null {
 export interface ChainNetwork {
 	id: number
 	name: string // do not change once set
+	legacyKey: string // pre 5.0.0 network key associated with that chain
 	genesisTs: number
 	elCurrency: NetworkMainCurrency
 	clCurrency: NetworkMainCurrency

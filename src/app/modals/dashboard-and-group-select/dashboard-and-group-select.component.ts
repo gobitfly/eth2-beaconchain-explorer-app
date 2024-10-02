@@ -3,7 +3,7 @@ import { AlertController, IonicModule, ModalController } from '@ionic/angular'
 import { UserDashboardsData, ValidatorDashboard } from 'src/app/requests/types/dashboard'
 import { V2MyDashboards } from 'src/app/requests/v2-user'
 import { ApiService, capitalize } from 'src/app/services/api.service'
-import { DashboardItemComponent } from '../../components/dashboard-item/dashboard-item.component'
+import { DashboardItemComponent, LegacyAdd } from '../../components/dashboard-item/dashboard-item.component'
 import { CommonModule } from '@angular/common'
 import { dashboardID, V2CreateDashboard, V2DashboardOverview } from 'src/app/requests/v2-dashboard'
 import { AlertService } from 'src/app/services/alert.service'
@@ -175,7 +175,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 		this.initLoading = false
 	}
 
-	async addDashboard(network: number) {
+	async addDashboard(network: number, onSuccessCallback: (id: dashboardID) => void = null) {
 		if (!this.isLoggedIn) {
 			this.alert.showInfo('Login required', 'You must be logged in to your beaconcha.in account to create or manage dashboards.')
 			return
@@ -237,6 +237,11 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 								text: 'Error creating dashboard, please try again later',
 							})
 						} else {
+							if (onSuccessCallback) {
+								loading.dismiss()
+								onSuccessCallback(result.data.id)
+								return
+							}
 							Toast.show({
 								text: 'Dashboard created',
 							})
@@ -261,71 +266,131 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 		return this.modalCtrl.dismiss(null, 'cancel')
 	}
 
-	legacyAddToDashboard(index: number[]) {
+	legacyAddToDashboard(legacyAddData: LegacyAdd) {
 		if (!this.isLoggedIn) {
 			this.alert.showInfo('Login required', 'You must be logged in to your beaconcha.in account to add validators to your dashboard.')
 			return
 		}
 
-		this.alert.confirmDialog(
-			'Migrate from Legacy Dashboard',
-			`Do you want to add ${index.length} validator${index.length > 1 ? 's' : ''} from your legacy dashboard to your new dashboard "${this.defaultDashboardData()?.name}"?`,
-			'OK',
-			async () => {
-				let loading = await this.alert.presentLoading('Loading...')
-				loading.present()
-				const result = await this.api.execute2(new V2DashboardOverview(this.defaultDashboard()), ASSOCIATED_CACHE_KEY)
-				if (result.error) {
-					Toast.show({
-						text: 'Can not add validators right now, please try again later',
-					})
-					loading.dismiss()
-					return
-				}
-				loading.dismiss()
+		const index = legacyAddData.indices
 
-				const validatorCount = getValidatorCount(result.data)
-
-				if (validatorCount + index.length > this.merchant.getCurrentPlanMaxValidator()) {
-					Toast.show({
-						text: 'You dashboard is full or does not fit all legacy validators',
-					})
-					loading.dismiss()
-					return
-				}
-
-				const allGroups = result.data.groups.map((g) => {
-					return {
-						name: 'group',
-						label: g.name + ' (' + g.count + ')',
-						value: g.id,
-						type: 'radio',
-						disabled: g.count + index.length >= this.merchant.getCurrentPlanMaxValidator(),
-					}
-				})
-
-				this.alert.showSelect('Add to Group', allGroups, async (groupID: number) => {
-					loading = await this.alert.presentLoading('Migrating...')
+		const add = (id: dashboardID) => {
+			this.alert.confirmDialog(
+				'Migrate from Legacy Dashboard',
+				`Do you want to add ${index.length} validator${index.length > 1 ? 's' : ''} from your legacy dashboard to your new dashboard "${this.defaultDashboardData()?.name}"?`,
+				'OK',
+				async () => {
+					let loading = await this.alert.presentLoading('Loading...')
 					loading.present()
-					const ok = await this.dashboardUtils.addValidators(index, groupID, this.defaultDashboard())
-					if (!ok) {
+					const result = await this.api.execute2(new V2DashboardOverview(id), ASSOCIATED_CACHE_KEY)
+					if (result.error) {
 						Toast.show({
 							text: 'Can not add validators right now, please try again later',
 						})
 						loading.dismiss()
 						return
 					}
-
-					await this.doRefresh()
-					this.dashboardUtils.dashboardAwareListener.notifyAll()
 					loading.dismiss()
-					this.dashboardChangedCallback()
-					Toast.show({
-						text: 'Validators added to group',
+
+					const validatorCount = getValidatorCount(result.data)
+
+					if (validatorCount + index.length > this.merchant.getCurrentPlanMaxValidator()) {
+						Toast.show({
+							text: 'You dashboard is full or does not fit all legacy validators',
+						})
+						loading.dismiss()
+						return
+					}
+
+					const allGroups = result.data.groups.map((g) => {
+						return {
+							name: 'group',
+							label: g.name + ' (' + g.count + ')',
+							value: g.id,
+							type: 'radio',
+							disabled: g.count + index.length >= this.merchant.getCurrentPlanMaxValidator(),
+						}
 					})
-				})
+
+					this.alert.showSelect('Add to Group', allGroups, async (groupID: number) => {
+						loading = await this.alert.presentLoading('Migrating...')
+						loading.present()
+						const ok = await this.dashboardUtils.addValidators(index, groupID, this.defaultDashboard())
+						if (!ok) {
+							Toast.show({
+								text: 'Can not add validators right now, please try again later',
+							})
+							loading.dismiss()
+							return
+						}
+
+						await this.doRefresh()
+						this.dashboardUtils.dashboardAwareListener.notifyAll()
+						loading.dismiss()
+						this.dashboardChangedCallback()
+						Toast.show({
+							text: 'Validators added to group',
+						})
+					})
+				}
+			)
+		}
+
+		const allDashboardOptions = () => {
+			const result = this.dashboards().validator_dashboards.map((d) => {
+				return {
+					name: 'dashboard',
+					label: d.name,
+					value: d.id,
+					type: 'radio',
+					checked: d.id == this.defaultDashboard(),
+				}
+			})
+
+			result.push({
+				name: 'dashboard',
+				label: 'Create new dashboard',
+				value: -1,
+				type: 'radio',
+				checked: false,
+			})
+			return result
+		}
+
+		this.alert.showSelectWithCancel('Select Dashboard', allDashboardOptions(), async (selectedDashboardID: dashboardID) => {
+			const checkNetwork = (id: dashboardID) => {
+				const formatNetwork = (network: string) => {
+					if (network == 'main') return 'Ethereum'
+					return capitalize(network)
+				}
+
+				const targetNetwork = findChainNetworkById(this.defaultDashboardData().network).legacyKey
+				if (legacyAddData.network != targetNetwork) {
+					const originName = formatNetwork(legacyAddData.network)
+					const targetName = formatNetwork(targetNetwork)
+
+					this.alert.confirmDialog(
+						'Network mismatch',
+						`This legacy dashboard is from the network "${originName}" but your target dashboard is from the network "${targetName}".<br/><br/> Do you want to add them anyway?`,
+						'OK (NOT RECOMMENDED)',
+						() => {
+							add(id)
+						},
+						'error-btn'
+					)
+				} else {
+					add(id)
+				}
 			}
-		)
+
+			if (selectedDashboardID == -1) {
+				await this.addDashboard(this.dashboardAddButtons[0].network, (id: dashboardID) => {
+					checkNetwork(id)
+				})
+			} else {
+				checkNetwork(selectedDashboardID)
+			}
+		})
 	}
 
 	defaultDashboardData = computed(() => {

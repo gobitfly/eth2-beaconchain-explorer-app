@@ -52,12 +52,16 @@ import { AppComponent } from '../app.component'
 const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = "validators_tab"
 const ASSOCIATED_CACHE_KEY = 'validators'
+
+
 @Component({
 	selector: 'app-tab2',
 	templateUrl: 'tab-validators.page.html',
 	styleUrls: ['tab-validators.page.scss'],
 })
 export class Tab2Page implements OnInit {
+	NEW_GROUP_OFFSET = 900
+
 	public classReference = UnitconvService
 	@ViewChild('searchbarRef', { static: true }) searchbarRef: IonSearchbar
 	dataSource: InfiniteScrollDataSource<VDBManageValidatorsTableRow>
@@ -409,7 +413,7 @@ export class Tab2Page implements OnInit {
 		const dashboardValidatorCount = this.isLoggedIn
 			? this.groups().reduce((acc, group) => acc + group.count, 0)
 			: await this.dashboardUtils.getLocalValidatorCount()
-		
+
 		const resultValidatorCount = this.dashboardUtils.searchResultHandler.resultCount(item)
 		if (resultValidatorCount + dashboardValidatorCount > this.merchant.getCurrentPlanMaxValidator()) {
 			if (this.isLoggedIn && this.dashboardUtils.searchResultHandler.resultCount(item) > 1) {
@@ -439,15 +443,10 @@ export class Tab2Page implements OnInit {
 	}
 
 	addSearchResultRemoteDialog(item: SearchResult) {
-		let addInfo = ''
-		let title = 'Add validator'
-		if (this.dashboardUtils.searchResultHandler.searchNumFieldIsIndex(item)) {
-			addInfo = 'validator with index ' + item.num_value
-		} else if (item.num_value > 1) {
-			addInfo = item.num_value + ' validators'
-			title = 'Add validators'
-		} else {
-			addInfo = item.num_value + ' validator'
+		const addCount = this.dashboardUtils.searchResultHandler.resultCount(item)
+		let title = 'Add to Group'
+		if (addCount > 1) {
+			title = 'Add all to Group'
 		}
 
 		const targetGroup = this.findGroupById(this.selectedGroup)
@@ -459,9 +458,59 @@ export class Tab2Page implements OnInit {
 			return
 		}
 
-		this.alerts.confirmDialog(title, 'Do you want to add ' + addInfo + ' to group "' + targetGroup.name + '"?', 'Add', () => {
-			this.confirmAddSearchResult(item, targetGroup.id)
+		const allGroups = this.groups().map((g) => {
+			return {
+				name: 'group',
+				label: g.name + ' (' + g.count + ')',
+				value: g.id,
+				type: 'radio',
+				checked: g.id == targetGroup.id,
+				disabled: g.count + addCount >= this.merchant.getCurrentPlanMaxValidator(),
+			}
 		})
+
+		const maxGroupReached = this.groups().length >= this.merchant.userInfo().premium_perks.validator_groups_per_dashboard
+
+		allGroups.push({
+			name: 'group',
+			label: 'Create New Group' + (maxGroupReached ? ' (maxed)' : ''),
+			value: -1,
+			type: 'radio',
+			checked: false,
+			disabled: maxGroupReached,
+		})
+
+		const addToGroup = async (groupID: number) => {
+			await this.confirmAddSearchResult(item, groupID)
+			if (groupID != targetGroup.id) {
+				this.selectedGroup = groupID
+				this.updateValidators()
+			}
+		}
+
+		this.alerts.showSelectWithCancel(title, allGroups, async (groupID: number) => {
+			if (groupID == -1) {
+				// create new group
+				await this.addGroupDialog((newGroupID) => {
+					addToGroup(newGroupID)
+				})
+				return
+			}
+			addToGroup(groupID)
+		})
+
+		// const targetGroup = this.findGroupById(this.selectedGroup)
+		// if (!targetGroup) {
+		// 	Toast.show({
+		// 		text: 'Could not find target group',
+		// 		duration: 'long',
+		// 	})
+		// 	return
+		// }
+
+		// this.alerts.confirmDialog(title, 'Do you want to add ' + addInfo + ' to group "' + targetGroup.name + '"?', 'Add', () => {
+		// 	this.confirmAddSearchResult(item, targetGroup.id)
+		// })
 	}
 
 	async confirmAddSearchResult(item: SearchResult, groupID: number) {
@@ -497,8 +546,7 @@ export class Tab2Page implements OnInit {
 			this.cancelSelect()
 		} else {
 			this.blockClick(330)
-			const color = getComputedStyle(document.body).getPropertyValue('--ion-color-primary')
-			this.themeUtils.setStatusBarColor(color)
+			this.enableSelectMode()
 			Haptics.selectionStart()
 
 			if (item) {
@@ -506,6 +554,12 @@ export class Tab2Page implements OnInit {
 				Haptics.selectionChanged()
 			}
 		}
+	}
+
+	enableSelectMode() {
+		this.selectMode = true
+		const color = getComputedStyle(document.body).getPropertyValue('--ion-color-primary')
+		this.themeUtils.setStatusBarColor(color)
 	}
 
 	deleteSelected() {
@@ -630,12 +684,12 @@ export class Tab2Page implements OnInit {
 					return {
 						id: group.id,
 						count: group.count,
-						name: group.name == 'default' && group.id == 0 ? 'Default Group' : capitalize(group.name),
+						name: group.name == 'default' && group.id == 0 ? 'Default' : capitalize(group.name),
 						realName: group.name,
 					}
 				}) || [
 				{
-					id: null,
+					id: 0,
 					count: isLocalDashboard(this.dashboardID()) ? (this.dashboardID() as number[]).length : 0,
 					name: 'Default',
 					realName: 'default',
@@ -644,7 +698,24 @@ export class Tab2Page implements OnInit {
 		)
 	})
 
+	ionSelectCompareWith = (a: number, b: number) => {
+		if(a >= this.NEW_GROUP_OFFSET) {
+			a -= this.NEW_GROUP_OFFSET
+		}
+		if(b >= this.NEW_GROUP_OFFSET) {
+			b -= this.NEW_GROUP_OFFSET
+		}
+		
+		return a == b
+	}
+
 	selectGroup() {
+		// special case for adding new group, it is current group id + NEW_GROUP_OFFSET
+		if (this.selectedGroup >= this.NEW_GROUP_OFFSET) {
+			this.selectedGroup -= this.NEW_GROUP_OFFSET // stay on last selected group
+			this.addGroupDialog()
+			return false
+		}
 		this.updateValidators()
 	}
 
@@ -653,7 +724,7 @@ export class Tab2Page implements OnInit {
 	}
 
 	async renameGroupDialog() {
-		if (!this.notLoggedInGroupInfoDialog()) {
+		if (!this.notLoggedInGroupInfoDialog('Rename Group')) {
 			return
 		}
 		const renameGroup = this.findGroupById(this.selectedGroup)
@@ -721,7 +792,7 @@ export class Tab2Page implements OnInit {
 	}
 
 	removeGroupDialog() {
-		if (!this.notLoggedInGroupInfoDialog()) {
+		if (!this.notLoggedInGroupInfoDialog('Remove Group')) {
 			return
 		}
 		const deleteGroup = this.findGroupById(this.selectedGroup)
@@ -779,10 +850,10 @@ export class Tab2Page implements OnInit {
 		loading.dismiss()
 	}
 
-	notLoggedInGroupInfoDialog() {
+	notLoggedInGroupInfoDialog(title: string) {
 		if (!this.isLoggedIn) {
 			this.alerts.showInfo(
-				'Log in',
+				title,
 				'Groups allow you to better manage your validators and get deep insight on how they perform against each other.<br/><br/> You need a beaconcha.in account and a premium subscription to use groups.'
 			)
 			return false
@@ -790,8 +861,8 @@ export class Tab2Page implements OnInit {
 		return true
 	}
 
-	async addGroupDialog() {
-		if (!this.notLoggedInGroupInfoDialog()) {
+	async addGroupDialog(creationSuccessCallback: (id: number) => void = null) {
+		if (!this.notLoggedInGroupInfoDialog('Add Group')) {
 			return
 		}
 		if (this.merchant.userInfo()?.premium_perks?.validator_groups_per_dashboard == 1) {
@@ -853,6 +924,11 @@ export class Tab2Page implements OnInit {
 								text: 'Error creating group, please try again later',
 							})
 						} else {
+							if (creationSuccessCallback) {
+								loading.dismiss()
+								creationSuccessCallback(result.data.id)
+								return
+							}
 							Toast.show({
 								text: 'Group created',
 							})

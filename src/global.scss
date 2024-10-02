@@ -98,6 +98,11 @@ ion-button {
 	 -webkit-backdrop-filter: none !important; 
 }
 
+ion-popover .popover-viewport {
+	border: var(--popover-border);
+	border-radius: 10px;
+}
+
 ion-header {
 	background: var(--ion-toolbar-background) !important;
 	--background: var(--ion-toolbar-background) !important;
