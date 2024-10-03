@@ -18,12 +18,13 @@
 import { Injectable } from '@angular/core'
 import { CapacitorUpdater, DownloadOptions } from '@capgo/capacitor-updater'
 import { ApiService } from '../services/api.service'
-import { V2LatestAppBundle } from '../requests/v2-general'
+import { V2AckBundleUpdate, V2LatestAppBundle } from '../requests/v2-general'
 import { AlertService } from '../services/alert.service'
 import { AppUpdate, AppUpdateAvailability } from '@capawesome/capacitor-app-update'
 import { App } from '@capacitor/app'
 import versionInfo from '../../version.json'
 import { Capacitor } from '@capacitor/core'
+import { StorageService } from '../services/storage.service'
 
 @Injectable({
 	providedIn: 'root',
@@ -33,13 +34,15 @@ export class AppUpdater {
 
 	constructor(
 		private api: ApiService,
-		private alert: AlertService
+		private alert: AlertService,
+		private storage: StorageService
 	) {}
 
 	async check() {
 		const currentBundle = this.getCurrentBundleCode()
 		const currentNative = await this.getCurrentNativeVersionCode()
 		console.log('Current App Version', versionInfo.buildNumber, currentNative)
+		this.ackCurrentBundle(currentBundle)
 
 		if (!Capacitor.isNativePlatform()) {
 			console.info('non native, skipping updates')
@@ -66,6 +69,25 @@ export class AppUpdater {
 			if (latest.data.bundle_url) {
 				await this.updateBundle(latest.data.bundle_url)
 			}
+		}
+	}
+
+	async ackCurrentBundle(currentBundle: number) {
+		const ackLocalKey = 'bundle_acknowledged_' + currentBundle
+		if (await this.storage.getBooleanSetting(ackLocalKey, false)) {
+			return
+		}
+		try {
+			await this.api.getLatestState() // get csrf token
+			const result = await this.api.execute2(new V2AckBundleUpdate(currentBundle))
+			if (result.error) {
+				console.warn('could not ack bundle', result.error)
+				return
+			}
+			await this.storage.setBooleanSetting(ackLocalKey, true)
+			console.log("update ack'd")
+		} catch (e) {
+			console.warn('could not ack bundle', e)
 		}
 	}
 
@@ -116,6 +138,7 @@ export class AppUpdater {
 				url: bundleURL,
 				version: versionInfo.formattedVersion, // even though this is the current version, this just needs to be present for reasons
 			} as DownloadOptions)
+			CapacitorUpdater.removeAllListeners()
 			await CapacitorUpdater.set(version)
 		} catch (e) {
 			console.warn('could not update bundle', e)

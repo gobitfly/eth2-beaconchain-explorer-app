@@ -82,7 +82,6 @@ export class MerchantUtils implements OnInit {
 	) {
 		effect(() => {
 			if (this.userInfo()) {
-				console.log('validate theming', this.userInfo(), this.userInfo()?.premium_perks?.mobile_app_custom_themes)
 				const hasTheming = this.userInfo()?.premium_perks?.mobile_app_custom_themes == true
 				if (!hasTheming && this.theme.currentThemeColor != 'gnosis') {
 					this.theme.resetTheming()

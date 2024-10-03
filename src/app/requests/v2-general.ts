@@ -20,16 +20,27 @@ import { MobileBundleData } from './types/mobile'
 import { ProductSummary } from './types/user'
 
 export class V2ProductSummary extends APIRequest<ProductSummary> {
-	resource = '/product-summary'
+	resource = 'product-summary'
 	method = Method.GET
 }
 
 export class V2LatestAppBundle extends APIRequest<MobileBundleData> {
-	resource = '/mobile/latest-bundle'
+	resource = 'mobile/latest-bundle'
 	method = Method.GET
 
 	constructor(bundleVersion: number, nativeVersion: number, force: boolean = false) {
 		super()
 		this.resource += `?bundle_version=${bundleVersion}&native_version=${nativeVersion}&force=${force}`
+	}
+}
+
+export class V2AckBundleUpdate extends APIRequest<void> {
+	resource = 'mobile/bundles/{bundle_version}/deliveries'
+	method = Method.POST
+	expectedResponseStatus: number = 204
+
+	constructor(bundleVersion: number) {
+		super()
+		this.resource = this.resource.replace('{bundle_version}', bundleVersion.toString())
 	}
 }

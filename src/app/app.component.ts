@@ -56,10 +56,10 @@ export class AppComponent {
 	async initializeApp() {
 		BigNumber.config({ DECIMAL_PLACES: 25 })
 		await this.platform.ready()
-		CapacitorUpdater.notifyAppReady() // call as soon as possible otherwise will rollback to last working bundle
+		await CapacitorUpdater.notifyAppReady() // call as soon as possible otherwise will rollback to last working bundle
 
 		try {
-			await this.appUpdater.check() // should we continue without waiting? do try catch above rest so updater will not be affected by errors
+			this.appUpdater.check()
 		} catch (e) {
 			console.error('Failed to check for updates', e)
 		}

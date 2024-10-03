@@ -1,7 +1,20 @@
 const fs = require('fs');
 const path = require('path');
 const { zip } = require('zip-a-folder');
-const fse = require('fs-extra'); 
+const fse = require('fs-extra');
+
+const versionFilePath = path.join('./src', 'version.json');
+
+// Function to read version.json and return its data
+async function getVersionInfo() {
+    try {
+        const data = fs.readFileSync(versionFilePath, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error reading version file:', error);
+        process.exit(1);
+    }
+}
 
 async function moveSourceMaps() {
     const wwwFolder = path.join("./", 'www');
@@ -27,16 +40,18 @@ async function moveSourceMaps() {
     });
 }
 
-async function zipFolders() {
+async function zipFolders(buildNumber, formattedVersion) {
     const wwwFolder = path.join("./", 'www');
     const sourcemapFolder = path.join("./", 'www-sourcemap');
-    const wwwZipPath = path.join("./", 'bundle.zip');
-    const sourcemapZipPath = path.join("./", 'bundle-sourcemap.zip');
+    // Dynamically create zip file names based on the version info
+    const wwwZipPath = path.join("./", `bundle_${buildNumber}_${formattedVersion}.zip`);
+    const sourcemapZipPath = path.join("./", `bundle_sourcemap_${buildNumber}_${formattedVersion}.zip`);
+
 
     // Zip the www folder
     try {
         await zip(wwwFolder, wwwZipPath);
-        console.log('Zipped www folder to bundle.zip');
+        console.log(`Zipped www folder to ${wwwZipPath}`);
     } catch (error) {
         console.error('Error zipping www folder:', error);
     }
@@ -44,7 +59,7 @@ async function zipFolders() {
     // Zip the www-sourcemap folder
     try {
         await zip(sourcemapFolder, sourcemapZipPath);
-        console.log('Zipped www-sourcemap folder to bundle-sourcemap.zip');
+        console.log(`Zipped www-sourcemap folder to ${sourcemapZipPath}`);
     } catch (error) {
         console.error('Error zipping www-sourcemap folder:', error);
     }
@@ -53,8 +68,11 @@ async function zipFolders() {
 // Execute the functions in sequence
 async function main() {
     try {
+        const versionInfo = await getVersionInfo();
+        const { buildNumber, formattedVersion } = versionInfo;
+
         await moveSourceMaps();
-        await zipFolders();
+        await zipFolders(buildNumber, formattedVersion);
     } catch (error) {
         console.error('Error during operation:', error);
     }

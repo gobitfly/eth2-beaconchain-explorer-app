@@ -54,7 +54,7 @@ export class V2RegisterPushNotificationToken extends APIRequest<NoContent> {
 }
 
 export class V2MyMachines extends APIRequest<StatsResponse> {
-	resource = '/users/me/machine-metrics'
+	resource = 'users/me/machine-metrics'
 	method = Method.GET
 
 	constructor(offset: number, limit: number) {

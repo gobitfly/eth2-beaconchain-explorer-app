@@ -14,8 +14,7 @@ UserInterfaceState.xcuserstate
 $RECYCLE.BIN/
 .angular
 .env
-bundle.zip
-bundle-sourcemap.zip
+bundle*.zip
 
 *.log
 log.txt
