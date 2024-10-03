@@ -46,7 +46,7 @@
 		"@capacitor/toast": "^6.0.2",
 		"@capawesome/capacitor-app-update": "^6.0.0",
 		"@capgo/capacitor-updater": "^6.1.32",
-		"@ionic/angular": "^8.3.0",
+		"@ionic/angular": "^8.3.1",
 		"async-mutex": "^0.2.6",
 		"bignumber.js": "^9.1.2",
 		"canvas-confetti": "^1.9.3",
