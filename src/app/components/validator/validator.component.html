@@ -18,7 +18,10 @@
     along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<div class="infi-item-container" [ngClass]="{ 'infi-item-first': first }">
+<div
+	class="infi-item-container"
+	[ngClass]="{ 'infi-item-first': first }"
+	[ngStyle]="{ 'border-left': selected ? '6px solid var(--ion-color-primary)' : 'none' }">
 	<div class="inner">
 		<ion-item lines="none">
 			<div slot="start">

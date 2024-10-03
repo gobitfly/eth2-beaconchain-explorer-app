@@ -30,6 +30,7 @@ import { AdComponentModule } from '../components/ad/ad.module'
 import { ScrollingModule } from '@angular/cdk/scrolling'
 import { FullPageLoadingComponent } from '../components/full-page-loading/full-page-loading.component'
 import { FullPageOfflineComponent } from '../components/full-page-offline/full-page-offline.component'
+import { LoadingComponent } from '../components/loading/loading.component'
 
 @NgModule({
 	imports: [
@@ -44,6 +45,7 @@ import { FullPageOfflineComponent } from '../components/full-page-offline/full-p
 		AdComponentModule,
 		FullPageLoadingComponent,
 		FullPageOfflineComponent,
+		LoadingComponent,
 	],
 	declarations: [Tab2Page],
 })

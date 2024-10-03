@@ -32,6 +32,7 @@ export class ValidatorComponent {
 	@Input() validator: VDBManageValidatorsTableRow
 	@Input() first: boolean
 	@Input() last: boolean
+	@Input() selected: boolean
 
 	name: string
 	imgData: string

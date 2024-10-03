@@ -166,7 +166,6 @@ export class Tab2Page implements OnInit {
 			this.initialLoading = false
 			return
 		}
-		console.log('dashboard id', this.dashboardID)
 
 		const updateGroupsResult = await this.updateGroups()
 		if (updateGroupsResult && updateGroupsResult.error) {
@@ -178,6 +177,10 @@ export class Tab2Page implements OnInit {
 		}
 
 		if (!this.selectedGroup) {
+			// todo save selected group but reset when switching dashboard
+			// fall back to first group
+
+			// todo test local only "all groups" - is it working?
 			this.selectedGroup = this.groups()?.[0]?.id ?? 0
 		}
 
@@ -403,18 +406,14 @@ export class Tab2Page implements OnInit {
 		this.searchResult = result.data
 	}
 
-	async addSearchResult(item: SearchResult) {
+	addSearchResult(item: SearchResult) {
 		if (!this.merchant.canBulkAdd() && this.dashboardUtils.searchResultHandler.requiresPremium(item)) {
 			this.premiumInfo()
 			return
 		}
 
-		const dashboardValidatorCount = this.isLoggedIn
-			? this.groups().reduce((acc, group) => acc + group.count, 0)
-			: await this.dashboardUtils.getLocalValidatorCount()
-
 		const resultValidatorCount = this.dashboardUtils.searchResultHandler.resultCount(item)
-		if (resultValidatorCount + dashboardValidatorCount > this.merchant.getCurrentPlanMaxValidator()) {
+		if (resultValidatorCount + this.validatorCountAcrossAllGroups() > this.merchant.getCurrentPlanMaxValidator()) {
 			if (this.isLoggedIn && this.dashboardUtils.searchResultHandler.resultCount(item) > 1) {
 				this.alerts.confirmDialog(
 					'Maximum validators reached',
@@ -497,19 +496,6 @@ export class Tab2Page implements OnInit {
 			}
 			addToGroup(groupID)
 		})
-
-		// const targetGroup = this.findGroupById(this.selectedGroup)
-		// if (!targetGroup) {
-		// 	Toast.show({
-		// 		text: 'Could not find target group',
-		// 		duration: 'long',
-		// 	})
-		// 	return
-		// }
-
-		// this.alerts.confirmDialog(title, 'Do you want to add ' + addInfo + ' to group "' + targetGroup.name + '"?', 'Add', () => {
-		// 	this.confirmAddSearchResult(item, targetGroup.id)
-		// })
 	}
 
 	async confirmAddSearchResult(item: SearchResult, groupID: number) {
@@ -697,9 +683,36 @@ export class Tab2Page implements OnInit {
 		)
 	})
 
+	validatorCountAcrossAllGroups = computed(() => {
+		if (this.isLoggedIn) {
+			return this.groups().reduce((acc, group) => acc + group.count, 0)
+		} else {
+			const id = this.dashboardID()
+			if (isLocalDashboard(id)) {
+				return id.length
+			}
+			return 0
+		}
+	})
+
+	private opened = false
+	openAddGroupOnce() {
+		if (this.opened) return
+		this.opened = true
+		this.addGroupDialog()
+		setTimeout(() => {
+			this.opened = false
+		}, 300)
+	}
+
 	ionSelectCompareWith = (a: number, b: number) => {
 		if (a >= this.NEW_GROUP_OFFSET) {
 			a -= this.NEW_GROUP_OFFSET
+			// special case for adding new group, it is current group id + NEW_GROUP_OFFSET
+			if (this.selectedGroup >= this.NEW_GROUP_OFFSET) {
+				this.selectedGroup -= this.NEW_GROUP_OFFSET // stay on last selected group
+				this.openAddGroupOnce()
+			}
 		}
 		if (b >= this.NEW_GROUP_OFFSET) {
 			b -= this.NEW_GROUP_OFFSET
@@ -711,9 +724,7 @@ export class Tab2Page implements OnInit {
 	selectGroup() {
 		// special case for adding new group, it is current group id + NEW_GROUP_OFFSET
 		if (this.selectedGroup >= this.NEW_GROUP_OFFSET) {
-			this.selectedGroup -= this.NEW_GROUP_OFFSET // stay on last selected group
-			this.addGroupDialog()
-			return false
+			return
 		}
 		this.updateValidators()
 	}
@@ -919,9 +930,16 @@ export class Tab2Page implements OnInit {
 
 						const result = await this.api.execute2(new V2AddDashboardGroup(this.dashboardID(), alertData.newName))
 						if (result.error) {
-							Toast.show({
-								text: 'Error creating group, please try again later',
-							})
+							console.log('error', result.error?.message)
+							if ((result.error.message?.indexOf('has incorrect format') || -1) > -1) {
+								Toast.show({
+									text: 'Special characters are not allowed in group names.',
+								})
+							} else {
+								Toast.show({
+									text: 'Error creating group, please try again later',
+								})
+							}
 						} else {
 							if (creationSuccessCallback) {
 								loading.dismiss()
