@@ -116,7 +116,7 @@ export class AppUpdater {
 		this.loading.present()
 
 		await CapacitorUpdater.addListener('download', (event) => {
-			this.loading.message = 'Updating ' + event.percent + '%'
+			this.loading.message = 'Updating ' + event.percent + '%<br/>Do not close the app.'
 		})
 
 		await CapacitorUpdater.addListener('downloadComplete', () => {

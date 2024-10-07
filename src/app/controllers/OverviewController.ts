@@ -133,7 +133,7 @@ export class OverviewProvider {
 }
 
 function getPeriodDisplayable(period: Period): string {
-	if (period == Period.AllTime) return 'Total'
+	if (period == Period.AllTime) return 'All'
 	if (period == Period.Last24h) return '24h'
 	if (period == Period.Last7d) return '7d'
 	if (period == Period.Last30d) return '30d'

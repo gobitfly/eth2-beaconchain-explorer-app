@@ -465,12 +465,13 @@ export class Tab2Page implements OnInit {
 			title = 'Add all to Group'
 		}
 
-		const targetGroup = this.findGroupById(this.selectedGroup)
-		if (!targetGroup) {
-			Toast.show({
-				text: 'Could not find target group',
-				duration: 'long',
-			})
+		const targetGroup = this.findGroupById(this.selectedGroup) || this.groups()[0]
+
+		const maxGroupReached = this.groups().length >= this.merchant.userInfo().premium_perks.validator_groups_per_dashboard
+		const skipGroupSelectModal = this.groups().length == 1 && maxGroupReached // only default group anyway
+
+		if (skipGroupSelectModal) {
+			this.confirmAddSearchResult(item, targetGroup.id)
 			return
 		}
 
@@ -485,8 +486,6 @@ export class Tab2Page implements OnInit {
 			}
 		})
 
-		const maxGroupReached = this.groups().length >= this.merchant.userInfo().premium_perks.validator_groups_per_dashboard
-
 		allGroups.push({
 			name: 'group',
 			label: 'Create New Group' + (maxGroupReached ? ' (maxed)' : ''),
@@ -496,7 +495,7 @@ export class Tab2Page implements OnInit {
 			disabled: maxGroupReached,
 		})
 
-		const addToGroup = async (groupID: number) => {
+		const addSearchResultToGroup = async (groupID: number) => {
 			await this.confirmAddSearchResult(item, groupID)
 			if (groupID != targetGroup.id) {
 				this.selectedGroup = groupID
@@ -507,12 +506,12 @@ export class Tab2Page implements OnInit {
 		this.alerts.showSelectWithCancel(title, allGroups, async (groupID: number) => {
 			if (groupID == -1) {
 				// create new group
-				await this.addGroupDialog((newGroupID) => {
-					addToGroup(newGroupID)
+				await this.addNewGroupDialog((newGroupID) => {
+					addSearchResultToGroup(newGroupID)
 				})
 				return
 			}
-			addToGroup(groupID)
+			addSearchResultToGroup(groupID)
 		})
 	}
 
@@ -717,7 +716,7 @@ export class Tab2Page implements OnInit {
 	openAddGroupOnce() {
 		if (this.opened) return
 		this.opened = true
-		this.addGroupDialog()
+		this.addNewGroupDialog()
 		setTimeout(() => {
 			this.opened = false
 		}, 300)
@@ -890,7 +889,7 @@ export class Tab2Page implements OnInit {
 		return true
 	}
 
-	async addGroupDialog(creationSuccessCallback: (id: number) => void = null) {
+	async addNewGroupDialog(creationSuccessCallback: (id: number) => void = null) {
 		if (!this.notLoggedInGroupInfoDialog('Add Group')) {
 			return
 		}

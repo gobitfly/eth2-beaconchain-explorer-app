@@ -121,7 +121,7 @@
 			(ionChange)="selectGroup()"
 			[(ngModel)]="selectedGroup"
 			[compareWith]="ionSelectCompareWith">
-			<ion-select-option [value]="-1"> All Groups ({{ validatorCountAcrossAllGroups() }})</ion-select-option>
+			<ion-select-option [value]="-1" *ngIf="groups().length > 1"> All Groups ({{ validatorCountAcrossAllGroups() }})</ion-select-option>
 			<ion-select-option *ngFor="let group of groups()" [value]="group.id"> {{group.name}} ({{group.count}}) </ion-select-option>
 			<ion-select-option [value]="NEW_GROUP_OFFSET+selectedGroup"> Create New Group </ion-select-option>
 		</ion-select>
@@ -136,7 +136,7 @@
 			<ng-template>
 				<ion-content>
 					<ion-list>
-						<ion-item [button]="true" [detail]="false" (click)="addGroupDialog()">Add Group</ion-item>
+						<ion-item [button]="true" [detail]="false" (click)="addNewGroupDialog()">Add Group</ion-item>
 						<ion-item [button]="true" [detail]="false" (click)="removeGroupDialog()">Delete Group</ion-item>
 						<ion-item [button]="true" [detail]="false" (click)="renameGroupDialog()">Rename Group</ion-item>
 						<ion-item [button]="true" [detail]="false" (click)="selectSort()">Sort Validators</ion-item>

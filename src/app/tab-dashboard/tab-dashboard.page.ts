@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from '@angular/core'
+import { Component, computed, OnInit } from '@angular/core'
 import { ApiService } from '../services/api.service'
 import { OverviewData2, OverviewProvider, SummaryChartOptions } from '../controllers/OverviewController'
 import ClientUpdateUtils from '../utils/ClientUpdateUtils'
@@ -234,4 +234,9 @@ export class Tab1Page implements OnInit {
 		await this.unitConv.updatePriceData()
 		if (event) event.target.complete()
 	}
+
+	formattedSelectedTimeframe = computed(() => {
+		if (!this.overallData) return ''
+		return this.overallData.timeframeDisplay()
+	})
 }

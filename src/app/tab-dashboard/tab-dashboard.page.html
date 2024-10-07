@@ -25,45 +25,9 @@
 		</ion-buttons>
 		<ion-title> Dashboard </ion-title>
 		<ion-buttons slot="primary" id="options-dashboard" *ngIf="overallData && !overallData.isEmpty()">
-			<ion-icon slot="icon-only" ios="time-outline" md="time-outline"></ion-icon>
+			<ion-label>{{formattedSelectedTimeframe()}}</ion-label>
 		</ion-buttons>
 	</ion-toolbar>
-	<ion-popover trigger="options-dashboard" triggerAction="click" [dismissOnSelect]="true" *ngIf="overallData && !overallData.isEmpty()">
-		<ng-template>
-			<ion-content>
-				<ion-list>
-					<ion-item
-						[button]="true"
-						[detail]="false"
-						[class]="overallData.timeframe() == Period.AllTime ? 'selected':''"
-						(click)="changeTimeframe(Period.AllTime)"
-						>Show all time</ion-item
-					>
-					<ion-item
-						[button]="true"
-						[detail]="false"
-						[class]="overallData.timeframe() == Period.Last24h ? 'selected':''"
-						(click)="changeTimeframe(Period.Last24h)"
-						>Show last 24h</ion-item
-					>
-					<ion-item
-						[button]="true"
-						[detail]="false"
-						[class]="overallData.timeframe() == Period.Last7d ? 'selected':''"
-						(click)="changeTimeframe(Period.Last7d)"
-						>Show last 7d</ion-item
-					>
-					<ion-item
-						[button]="true"
-						[detail]="false"
-						[class]="overallData.timeframe() == Period.Last30d ? 'selected':''"
-						(click)="changeTimeframe(Period.Last30d)"
-						>Show last 30d</ion-item
-					>
-				</ion-list>
-			</ion-content>
-		</ng-template>
-	</ion-popover>
 	<app-offline *ngIf="!online"></app-offline>
 </ion-header>
 
@@ -74,6 +38,42 @@
 	(ionScroll)="onScroll($event)"
 	(ionScrollStart)="onScrollStarted()"
 	(ionScrollEnd)="onScrollEnded()">
+	<ion-popover trigger="options-dashboard" triggerAction="click" [dismissOnSelect]="true" *ngIf="overallData && !overallData.isEmpty()">
+		<ng-template>
+			<ion-content>
+				<ion-list>
+					<ion-item
+						[button]="true"
+						[detail]="false"
+						[class]="overallData.timeframe() == Period.AllTime ? 'selected':''"
+						(click)="changeTimeframe(Period.AllTime)"
+						>Show All Time</ion-item
+					>
+					<ion-item
+						[button]="true"
+						[detail]="false"
+						[class]="overallData.timeframe() == Period.Last24h ? 'selected':''"
+						(click)="changeTimeframe(Period.Last24h)"
+						>Show Last 24h</ion-item
+					>
+					<ion-item
+						[button]="true"
+						[detail]="false"
+						[class]="overallData.timeframe() == Period.Last7d ? 'selected':''"
+						(click)="changeTimeframe(Period.Last7d)"
+						>Show Last 7d</ion-item
+					>
+					<ion-item
+						[button]="true"
+						[detail]="false"
+						[class]="overallData.timeframe() == Period.Last30d ? 'selected':''"
+						(click)="changeTimeframe(Period.Last30d)"
+						>Show Last 30d</ion-item
+					>
+				</ion-list>
+			</ion-content>
+		</ng-template>
+	</ion-popover>
 	<!-- <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" *ngIf="!scrolling" [disabled]="!overallData">
 		<ion-refresher-content></ion-refresher-content>
 	</ion-refresher> -->

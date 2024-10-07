@@ -92,6 +92,30 @@ export class AppComponent {
 		}
 	}
 
+	ngAfterViewInit() {
+		// Set up a mutation observer
+		const observer = new MutationObserver((mutationsList) => {
+			mutationsList.forEach((mutation) => {
+				if (mutation.addedNodes.length > 0) {
+					this.cleanUpPopoverContainers()
+				}
+			})
+		})
+
+		// Start observing the entire body for any DOM changes
+		observer.observe(document.body, { childList: true, subtree: true })
+	}
+
+	cleanUpPopoverContainers() {
+		// Fix ionic bug of popover-viewport inside popover-viewport
+		const popoverContainers = document.querySelectorAll('.popover-viewport')
+
+		popoverContainers.forEach((popover) => {
+			const viewPort1 = popover?.querySelector('.popover-viewport')
+			viewPort1?.remove()
+		})
+	}
+
 	private setAndroidBackButtonBehavior(): void {
 		if (this.platform.is('android')) {
 			this.platform.backButton.subscribe(async () => {
