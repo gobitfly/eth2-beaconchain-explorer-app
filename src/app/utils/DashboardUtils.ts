@@ -271,6 +271,7 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 				})
 			} else {
 				targetDashboard = createResult.data.id
+				api.clearSpecificCache(new V2MyDashboards())
 			}
 		}
 

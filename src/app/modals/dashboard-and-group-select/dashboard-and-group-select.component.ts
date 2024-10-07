@@ -82,7 +82,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 		})
 		const event = fromEvent(document, 'backbutton')
 		this.backbuttonSubscription = event.subscribe(() => {
-			this.modalCtrl.dismiss()
+			this.cancel()
 		})
 	}
 
@@ -94,6 +94,14 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 	maxAllowedDashboards = computed(() => {
 		if (!this.merchant.userInfo()) return 1
 		return this.merchant.userInfo().premium_perks.validator_dashboards
+	})
+
+	sortedValidatorDashboards = computed(() => {
+		return (
+			this.dashboards()?.validator_dashboards?.sort((a, b) => {
+				return a.id - b.id
+			}) || []
+		)
 	})
 
 	async getLegacyDashboard() {
@@ -181,7 +189,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 			return
 		}
 
-		if (this.dashboards().validator_dashboards.length >= this.merchant.highestPackageDashboardsAllowed()) {
+		if (this.sortedValidatorDashboards().length >= this.merchant.highestPackageDashboardsAllowed()) {
 			this.alert.showInfo(
 				'Maximum dashboards reached',
 				'You reached the highest possible number of dashboards we currently support. <br/><br/>If you feel like you need more, let us know!'
@@ -189,7 +197,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 			return
 		}
 
-		if (this.dashboards().validator_dashboards.length >= this.maxAllowedDashboards()) {
+		if (this.sortedValidatorDashboards().length >= this.maxAllowedDashboards()) {
 			this.alert.showInfo(
 				'Upgrade to premium',
 				'You have reached the maximum number of dashboards allowed for your plan. <br/><br/>You can create more dashboards by upgrading to a premium plan.'
@@ -257,8 +265,31 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 		await alert.present()
 	}
 
-	cancel() {
-		if (this.defaultDashboard() != this.dashboardIDWhenEntered) {
+	async cancel() {
+		const setDefault = (id: dashboardID) => {
+			this.defaultDashboard.set(id)
+			if (this.dashboardChangedCallback) {
+				this.dashboardChangedCallback()
+			}
+		}
+
+		// When the current default dashboard has been deleted, we must either pick another or create a new one
+		if (this.isLoggedIn && this.sortedValidatorDashboards().find((item) => item.id == this.defaultDashboard()) == null) {
+			// if there's at least one other, pick the first
+			if (this.sortedValidatorDashboards().length >= 1) {
+				setDefault(this.sortedValidatorDashboards()[0].id)
+			} else {
+				// else we must create one
+				const result = await this.api.execute2(new V2CreateDashboard('Default Dashboard', this.api.networkConfig.supportedChainIds[0]))
+				if (result.error) {
+					Toast.show({
+						text: 'Error creating dashboard, please try again later',
+					})
+				}
+				this.api.clearSpecificCache(new V2MyDashboards())
+				setDefault(result.data.id)
+			}
+		} else if (this.defaultDashboard() != this.dashboardIDWhenEntered) {
 			if (this.dashboardChangedCallback) {
 				this.dashboardChangedCallback()
 			}

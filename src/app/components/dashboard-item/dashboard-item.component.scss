@@ -8,6 +8,15 @@
 	//color: var(--ion-color-primary);
 }
 
+.opacity-icon {
+	color: var(--ion-tab-button-color);
+	opacity: 0.95;
+}
+
+.touch-icon-padding {
+	padding: 0px 0px 9px 9px;
+}
+
 ion-badge {
 	--padding-end: 8px;
 	--padding-start: 8px;
@@ -36,10 +45,6 @@ ion-badge {
 	color: var(--ion-color-primary);
 }
 
-.opac-star {
-	opacity: 0.35;
-}
-
 .network {
 	//font-size: small;
 }
@@ -55,7 +60,7 @@ ion-badge {
 .action {
 	// height: 25px;
 	// width: 25px;
-	font-size: 23px;
+	font-size: 21px;
 }
 
 .badge {

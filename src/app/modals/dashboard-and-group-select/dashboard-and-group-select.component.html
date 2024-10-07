@@ -9,10 +9,10 @@
 		<ion-label class="top-bar-inner"
 			>My Dashboards
 			<span style="padding-left: 5px; opacity: 0.7"
-				>{{ dashboards() ? dashboards().validator_dashboards.length : '-' }} / {{ maxAllowedDashboards() }}
+				>{{ dashboards() ? sortedValidatorDashboards().length : '-' }} / {{ maxAllowedDashboards() }}
 			</span></ion-label
 		>
-		<ion-icon class="opacity-icon top-bar-inner" slot="end" name="add-circle-outline" id="add-dashboard"></ion-icon>
+		<ion-icon class="opacity-icon top-bar-inner touch-icon-padding" slot="end" name="add-circle-outline" id="add-dashboard"></ion-icon>
 	</ion-item>
 	<ion-popover trigger="add-dashboard" triggerAction="click" [dismissOnSelect]="true">
 		<ng-template>
@@ -72,10 +72,19 @@
 			</div>
 
 			<app-dashboard-item
-				*ngFor="let item of dashboards()?.validator_dashboards"
+				*ngFor="let item of sortedValidatorDashboards()"
 				[data]="item"
 				[defaultDashboard]="defaultDashboard"
 				(refresh)="doRefresh()"></app-dashboard-item>
+
+			<div class="nothingfound" *ngIf="sortedValidatorDashboards().length == 0">
+				<ion-icon name="telescope-outline"></ion-icon>
+				<h2>No Dashboards</h2>
+				<div style="padding-bottom: 10px">
+					<ion-label> Do you want to create a new one?</ion-label>
+				</div>
+				<ion-label class="link" (click)="addDashboard(dashboardAddButtons[0].network)">Create Dashboard</ion-label>
+			</div>
 
 			<div *ngIf="legacyDashboard.length > 0">
 				<ion-list-header>

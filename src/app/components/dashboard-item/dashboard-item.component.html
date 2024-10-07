@@ -1,11 +1,11 @@
 <div class="dashboard-card">
-	<ion-item>
+	<ion-item *ngIf="data">
 		<div style="height: 50px; margin-right: 20px">
 			<ion-badge class="badge" (click)="setAsDefault()" slot="start" [class]="networkColor()">{{ networkName() }}</ion-badge>
 		</div>
 		<ion-label (click)="setAsDefault()" class="title">
 			<div>
-				{{ data.name }}
+				{{ nameTruncated() }}
 			</div>
 			<div>
 				<ion-label class="smaller-info"
@@ -25,16 +25,15 @@
 		<div style="height: 56px">
 			<ion-icon
 				*ngIf="!legacyDashboard"
-				class="action opacity-icon"
+				class="action opacity-icon touch-icon-padding"
 				(click)="setAsDefault()"
 				aria-hidden="true"
-				name="star"
+				[name]="selected ? 'star' : 'star-outline'"
 				slot="end"
-				[class]="selected ? 'star' : 'opac-star'"></ion-icon>
+				[class]="selected ? 'star' : 'opacity-icon'"></ion-icon>
 			<ion-icon
-				class="action opacity-icon"
+				class="action opacity-icon touch-icon-padding"
 				aria-hidden="true"
-				style="margin-left: 5px"
 				name="ellipsis-vertical-outline"
 				slot="end"
 				[id]="triggerID"></ion-icon>

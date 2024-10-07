@@ -65,7 +65,7 @@ export class NotificationBase {
 		}
 
 		Clients.forEach((client) => {
-			const found = result.data.find((remoteClient) => remoteClient.client_name == client.key) ? true : false
+			const found = result.data.clients.find((remoteClient) => remoteClient.name == client.key) ? true : false
 			this.setClientToggleState(client.key, found)
 		})
 		this.settingsChanged = false

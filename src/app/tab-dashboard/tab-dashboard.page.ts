@@ -181,6 +181,8 @@ export class Tab1Page implements OnInit {
 					})
 					return
 				}
+				await this.storage.setDashboardID(null)
+
 				// if dashboard is not available any more (maybe user deleted it) reinit and try again
 				this.dashboardID = await this.dashboardUtils.initDashboard()
 				return this.setup(false, force, true)

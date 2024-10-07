@@ -429,8 +429,8 @@
 			</ion-list>
 		</ion-list>
 
-		<!-- Income -->
-		<ion-list class="performances" *ngIf="selectedExtraTab() == 'chartIncome'">
+		<!-- Missed rewards: Disabled for now until supported by api -->
+		<ion-list class="performances" *ngIf="false && selectedExtraTab() == 'chartIncome'">
 			<ion-item lines="none">
 				<ion-label class="stat-title" tooltip="Rewards missed by sub-optimal performance" trigger="click" [hideDelayAfterClick]="5000"
 					>Missed Rewards</ion-label

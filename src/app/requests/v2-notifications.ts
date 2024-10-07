@@ -16,11 +16,11 @@
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
 import { APIRequest, Method } from './requests'
-import { NotificationClientsTableRow } from './types/notifications'
+import { NotificationSettings } from './types/notifications'
 
 // TODO: wronng endpoint, use notifications/settings once done
-export class V2SubscribedClients extends APIRequest<NotificationClientsTableRow[]> {
-	resource = 'users/me/notifications/clients'
+export class V2SubscribedClients extends APIRequest<NotificationSettings> {
+	resource = 'users/me/notifications/settings'
 	method = Method.GET
 
 	constructor(limit: number = 25) {

@@ -366,7 +366,7 @@ ion-buttons {
 }
 
 .bottomFiller {
-	height: 40px;
+	height: 80px;
 }
 
 @keyframes fadein {
@@ -428,6 +428,10 @@ ion-buttons {
 
 .smaller-pad {
 	padding: 2px 0px 0px 0px;
+}
+
+.touch-icon-padding {
+	padding: 9px 0px 9px 9px;
 }
 
 .top-bar {

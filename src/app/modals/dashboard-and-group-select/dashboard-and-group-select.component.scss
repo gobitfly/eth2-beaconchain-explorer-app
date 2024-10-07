@@ -58,7 +58,7 @@ ion-list-header {
 }
 
 .prem-x {
-	padding: 0px;
+	padding: 0px 0px 8px 8px;
 	margin: 1px;
 	font-size: 19px;
 	padding-bottom: 11px;
@@ -71,4 +71,31 @@ ion-list-header {
 
 .ios .message ion-list {
 	padding: 4px 0px;
+}
+
+.nothingfound ion-icon {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	padding-bottom: 12px;
+	font-size: 55px;
+	color: var(--ion-text-color-lighter);
+}
+
+.nothingfound {
+	text-align: center;
+	padding: 50px;
+
+	padding-top: 45px;
+	color: var(--ion-text-color-lighter);
+	background-color: var(--background-color);
+}
+
+.nothingfound ion-label {
+}
+
+.link {
+	color: var(--ion-color-primary);
+	font-weight: bold;
 }

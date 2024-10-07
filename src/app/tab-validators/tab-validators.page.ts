@@ -48,6 +48,7 @@ import { DashboardUtils, isLocalDashboard } from '../utils/DashboardUtils'
 import ThemeUtils from '../utils/ThemeUtils'
 import { APIError, APIForbiddenError, APINotFoundError, ApiResult, APIUnauthorizedError } from '../requests/requests'
 import { AppComponent } from '../app.component'
+import { V2MyDashboards } from '../requests/v2-user'
 
 const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = 'validators_tab'
@@ -291,6 +292,7 @@ export class Tab2Page implements OnInit {
 					})
 					return
 				}
+				this.storage.setDashboardID(null)
 				// if dashboard is not available any more (maybe user deleted it) reinit and try again
 				this.dashboardID.set(await this.dashboardUtils.initDashboard())
 				return this.updateGroups(true)
@@ -307,11 +309,26 @@ export class Tab2Page implements OnInit {
 		return result
 	}
 
-	private async updateValidators() {
+	private async updateValidators(recursiveMax: boolean = false) {
 		this.initialLoading = true
 		this.reachedMaxValidators = false
-		this.validatorLoader = new ValidatorLoader(this.api, this.dashboardID(), this.selectedGroup, this.sort, (result) => {
-			this.online = result
+		this.validatorLoader = new ValidatorLoader(this.api, this.dashboardID(), this.selectedGroup, this.sort, async (error) => {
+			if (!(error instanceof APIUnauthorizedError)) {
+				// todo change to just if timeout?
+				this.online = false
+			}
+			if (error instanceof APINotFoundError) {
+				if (recursiveMax) {
+					Toast.show({
+						text: 'Dashboard not found',
+					})
+					return
+				}
+				this.storage.setDashboardID(null)
+				// if dashboard is not available any more (maybe user deleted it) reinit and try again
+				this.dashboardID.set(await this.dashboardUtils.initDashboard())
+				return this.updateValidators(true)
+			}
 		})
 		this.dataSource = new InfiniteScrollDataSource<VDBManageValidatorsTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
 
@@ -393,6 +410,7 @@ export class Tab2Page implements OnInit {
 				await this.api.getLatestState(true)
 				return this.searchEvent(event, true)
 			}
+			this.dashboardUtils.defaultDashboardErrorHandler(result.error)
 
 			this.searchResultMode = false
 			this.online = false
@@ -845,6 +863,7 @@ export class Tab2Page implements OnInit {
 
 			this.validatorSetAltered = true
 			await this.clearRequestCache()
+			await this.api.clearSpecificCache(new V2MyDashboards()) // clear dashboard select view cache
 			const updateGroupsResult = await this.updateGroups()
 			if (updateGroupsResult.error) {
 				Toast.show({
@@ -941,6 +960,7 @@ export class Tab2Page implements OnInit {
 								})
 							}
 						} else {
+							await this.api.clearSpecificCache(new V2MyDashboards()) // clear dashboard select view cache
 							if (creationSuccessCallback) {
 								loading.dismiss()
 								creationSuccessCallback(result.data.id)
@@ -986,7 +1006,7 @@ class ValidatorLoader {
 		private dashboard: dashboardID,
 		private groupID: number,
 		private sort: string,
-		private offlineCallback: (online: boolean) => void
+		private errorHandler: (error: Error) => Promise<void>
 	) {}
 
 	public getDefaultDataRetriever(): loadMoreType<VDBManageValidatorsTableRow> {
@@ -1006,9 +1026,8 @@ class ValidatorLoader {
 					text: 'Could not load validators',
 					duration: 'long',
 				})
-				if (!(result.error instanceof APIUnauthorizedError)) {
-					// todo change to just if timeout?
-					this.offlineCallback(false)
+				if (this.errorHandler) {
+					await this.errorHandler(result.error)
 				}
 				return {
 					data: undefined,

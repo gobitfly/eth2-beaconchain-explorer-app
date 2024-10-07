@@ -19,7 +19,7 @@
 
 import { ApiService } from '../services/api.service'
 import { StorageService } from '../services/storage.service'
-import { Injectable } from '@angular/core'
+import { Injectable, OnInit } from '@angular/core'
 import { GithubReleaseRequest, GithubReleaseResponse } from '../requests/requests'
 
 interface ClientInfo {
@@ -129,7 +129,7 @@ const SETTINGS_UPDATECHANNEL = 'setting_client_updatechannel'
 @Injectable({
 	providedIn: 'root',
 })
-export default class ClientUpdateUtils {
+export default class ClientUpdateUtils implements OnInit {
 	updates: Release[] = null
 	lastTry = 0
 	private locked = false
@@ -138,6 +138,19 @@ export default class ClientUpdateUtils {
 		private api: ApiService,
 		private storage: StorageService
 	) {}
+
+	ngOnInit() {
+		this.storage.getBooleanSetting('migrated_uu_5_0_0', false).then(async (migrated) => {
+			if (!migrated) {
+				const updateChannel = await this.getUpdateChannel()
+				if (updateChannel == 'PRERELEASE') {
+					this.setUpdateChannel('STABLE')
+				}
+				console.info('migrated update channel to stable')
+				this.storage.setBooleanSetting('migrated_uu_5_0_0', true)
+			}
+		})
+	}
 
 	getClientInfo(clientKey: string): ClientInfo {
 		if (clientKey == null) {
@@ -197,10 +210,6 @@ export default class ClientUpdateUtils {
 			this.remove(clientKey)
 			this.append(update)
 		}
-	}
-
-	private async isPreReleaseAllowed() {
-		return (await this.getUpdateChannel()) == 'PRERELEASE'
 	}
 
 	private append(info: Release) {
@@ -310,7 +319,7 @@ export default class ClientUpdateUtils {
 	}
 
 	private async getReleases(client: ClientInfo): Promise<Release> {
-		const req = new GithubReleaseRequest(client.repo, !(await this.isPreReleaseAllowed()))
+		const req = new GithubReleaseRequest(client.repo)
 		const temp = await this.api.execute2(req)
 		if (temp.error) return null
 		console.log('Client updates data', temp)

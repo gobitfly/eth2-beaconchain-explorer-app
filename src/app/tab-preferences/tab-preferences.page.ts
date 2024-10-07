@@ -258,11 +258,6 @@ export class Tab3Page {
 		}
 	}
 
-	changeUpdateChannel() {
-		this.updateUtils.setUpdateChannel(this.updateChannel)
-		this.updateUtils.checkAllUpdates()
-	}
-
 	async openBrowser(link: string, native = false) {
 		if (native) {
 			window.open(link, '_system', 'location=yes')
@@ -272,9 +267,14 @@ export class Tab3Page {
 	}
 
 	logout() {
-		this.alerts.confirmDialog('Confirm logout', 'Notifications will stop working if you sign out. Continue?', 'Logout', () => {
-			this.confirmLogout()
-		})
+		this.alerts.confirmDialog(
+			'Confirm Logout',
+			`You are signed in as ${this.merchant.userInfo()?.email}.<br/><br/>` + 'Notifications will stop working if you sign out. Continue?',
+			'Logout',
+			() => {
+				this.confirmLogout()
+			}
+		)
 	}
 
 	count = 0

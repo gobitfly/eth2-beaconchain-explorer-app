@@ -31,6 +31,10 @@ export class DashboardItemComponent implements OnChanges {
 
 	selected: boolean
 
+	nameTruncated = computed(() => {
+		return this.data.name.length > 18 ? this.data.name.substring(0, 18) + '...' : this.data.name
+	})
+
 	networkName = computed(() => {
 		const network = findChainNetworkById(this.data.network)
 		return network.name.toUpperCase().substring(0, 3)
