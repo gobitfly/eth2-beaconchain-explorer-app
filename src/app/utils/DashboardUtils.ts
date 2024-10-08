@@ -351,8 +351,7 @@ class SeachResultHandler {
 			searchResult.type == searchType.validatorsByDepositEnsName ||
 			searchResult.type == searchType.validatorsByDepositAddress ||
 			searchResult.type == searchType.validatorsByWithdrawalAddress ||
-			searchResult.type == searchType.validatorsByWithdrawalCredential ||
-			searchResult.type == searchType.validatorByIndexBatch
+			searchResult.type == searchType.validatorsByWithdrawalCredential 
 		)
 	}
 
