@@ -38,10 +38,25 @@ export class AppUpdater {
 		private storage: StorageService
 	) {}
 
+	async checkForNewNative() {
+		const currentNative = await this.getCurrentNativeVersionCode()
+		// New native version is always shipped with a new bundle
+		// if we don't reset it to the buildin bundle, the old bundle may still be used
+		const didBundleResetOnThisNative = await this.storage.getBooleanSetting('native_reset_' + currentNative, false)
+		if (!didBundleResetOnThisNative) {
+			await this.storage.setBooleanSetting('native_reset_' + currentNative, true)
+			CapacitorUpdater.reset({
+				// back to native bundle
+				toLastSuccessful: false,
+			})
+		}
+	}
+
 	async check() {
 		const currentBundle = this.getCurrentBundleCode()
 		const currentNative = await this.getCurrentNativeVersionCode()
 		console.log('Current App Version', versionInfo.buildNumber, currentNative)
+
 		this.ackCurrentBundle(currentBundle)
 
 		if (!Capacitor.isNativePlatform()) {

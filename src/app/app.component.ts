@@ -59,7 +59,8 @@ export class AppComponent {
 		await CapacitorUpdater.notifyAppReady() // call as soon as possible otherwise will rollback to last working bundle
 
 		try {
-			this.appUpdater.check()
+			await this.appUpdater.checkForNewNative()
+			this.appUpdater.check() // do not wait
 		} catch (e) {
 			console.error('Failed to check for updates', e)
 		}

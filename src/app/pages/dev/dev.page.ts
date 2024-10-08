@@ -6,6 +6,8 @@ import { Toast } from '@capacitor/toast'
 import { Clients } from '../../utils/ClientUpdateUtils'
 import { DevModeEnabled } from 'src/app/services/storage.service'
 import { V2Me, V2RegisterPushNotificationToken } from 'src/app/requests/v2-user'
+import { CapacitorUpdater } from '@capgo/capacitor-updater'
+import versionInfo from '../../../version.json'
 
 @Component({
 	selector: 'app-dev',
@@ -20,6 +22,7 @@ export class DevPage extends Tab3Page implements OnInit {
 	usev2api = false
 	allowHttp = false
 	showOldMachines = false
+	bundleCode = ''
 
 	ngOnInit() {
 		this.notificationBase.disableToggleLock()
@@ -52,6 +55,8 @@ export class DevPage extends Tab3Page implements OnInit {
 		this.storage.isHttpAllowed().then((result) => {
 			this.allowHttp = result
 		})
+
+		this.bundleCode = versionInfo.buildNumber + ' - ' + versionInfo.formattedVersion
 	}
 
 	changeOldMachines() {
@@ -322,6 +327,13 @@ export class DevPage extends Tab3Page implements OnInit {
 		const deviceID = await this.storage.getDeviceID()
 		const result = this.api.execute2(new V2RegisterPushNotificationToken('hallo', deviceID))
 		console.log('v2 register push', result)
+	}
+
+	resetBundleToBuildIn() {
+		CapacitorUpdater.reset({
+			// back to native bundle
+			toLastSuccessful: false,
+		})
 	}
 
 	changeAllowHttp() {

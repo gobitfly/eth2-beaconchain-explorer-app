@@ -27,6 +27,11 @@
 			<ion-label>Local Bundle Update</ion-label>
 		</ion-item>
 
+		<ion-item lines="none" (click)="resetBundleToBuildIn()">
+			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
+			<ion-label>Reset Bundle to Buildin</ion-label>
+		</ion-item>
+
 		<ion-item lines="none" (click)="registerV2Push()">
 			<ion-icon class="opacity-icon" slot="start" name="bug-outline"></ion-icon>
 			<ion-label>Register Push</ion-label>
@@ -179,6 +184,10 @@
 
 		<ion-item lines="none">
 			<p>Device ID: {{ deviceID }}</p>
+		</ion-item>
+
+		<ion-item lines="none">
+			<p>Bundle Code: {{ bundleCode }}</p>
 		</ion-item>
 	</ion-list>
 

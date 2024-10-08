@@ -104,6 +104,7 @@
 				*ngIf="merchant.userInfo()?.premium_perks.mobile_app_custom_themes != true"
 				(click)="openUpgrades()">
 			</ion-icon>
+			<ion-label *ngIf="merchant.userInfo()?.premium_perks.mobile_app_custom_themes != true">Themes</ion-label>
 		</ion-item>
 
 		<ion-item lines="none" (click)="widgetSetupInfo()">

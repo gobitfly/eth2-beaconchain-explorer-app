@@ -99,8 +99,25 @@ ion-button {
 }
 
 ion-popover .popover-viewport {
-	border: var(--popover-border);
 	border-radius: 10px;
+}
+
+body.dark ion-popover ion-content ion-list ion-item {
+	--background: #222 !important;
+}
+
+body.dark ion-popover ion-select-popover ion-list ion-item {
+	--background: #222 !important;
+}
+
+ion-popover ion-content ion-list ion-item {
+	padding: 0px !important;
+	margin: 0px !important;
+}
+
+ion-popover ion-select-popover ion-list ion-item {
+	padding: 0px !important;
+	margin: 0px !important;
 }
 
 ion-header {
@@ -173,8 +190,10 @@ ion-segment-button ion-label {
 	display: none;
 }
 
-.ios .popover-viewport {
-	width: 720px;
+ion-popover {
+	&::part(content) {
+		min-width: 230px;
+	}
 }
 .popover-viewport ion-content ion-list ion-item {
 	margin: 0px 10px 0px 0px;

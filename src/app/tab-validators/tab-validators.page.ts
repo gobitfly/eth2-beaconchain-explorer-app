@@ -559,6 +559,12 @@ export class Tab2Page implements OnInit {
 	}
 
 	enableSelectMode() {
+		if (!this.dataSource.hasItems()) {
+			Toast.show({
+				text: 'Your validator list is empty.',
+			})
+			return
+		}
 		this.selectMode = true
 		const color = getComputedStyle(document.body).getPropertyValue('--ion-color-primary')
 		this.themeUtils.setStatusBarColor(color)
