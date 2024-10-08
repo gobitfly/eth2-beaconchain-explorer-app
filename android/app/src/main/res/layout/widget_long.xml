@@ -72,7 +72,7 @@
                     android:id="@+id/txt_description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Today"
+                    android:text="Last 24h"
                     android:textColor="?attr/descriptionTextColor"
                     android:textSize="13sp"
                     android:textStyle="normal" />
@@ -99,7 +99,7 @@
                     android:id="@+id/txt_description3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Effectiveness"
+                    android:text="Efficiency"
                     android:textColor="?attr/descriptionTextColor"
                     android:textSize="13sp"
                     android:textStyle="normal" />
