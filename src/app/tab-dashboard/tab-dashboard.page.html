@@ -52,6 +52,13 @@
 					<ion-item
 						[button]="true"
 						[detail]="false"
+						[class]="overallData.timeframe() == Period.Last1h ? 'selected':''"
+						(click)="changeTimeframe(Period.Last1h)"
+						>Show Last Hour</ion-item
+					>
+					<ion-item
+						[button]="true"
+						[detail]="false"
 						[class]="overallData.timeframe() == Period.Last24h ? 'selected':''"
 						(click)="changeTimeframe(Period.Last24h)"
 						>Show Last 24h</ion-item

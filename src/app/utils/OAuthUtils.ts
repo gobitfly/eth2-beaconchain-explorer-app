@@ -30,6 +30,7 @@ import { OAuth2AuthenticateOptions, OAuth2Client } from '@byteowls/capacitor-oau
 import FlavorUtils from './FlavorUtils'
 import { mergeLocalDashboardToRemote } from './DashboardUtils'
 import { getProperty } from '../requests/requests'
+import { AlertService } from '../services/alert.service'
 
 @Injectable({
 	providedIn: 'root',
@@ -42,7 +43,8 @@ export class OAuthUtils {
 		private loadingController: LoadingController,
 		private merchantUtils: MerchantUtils,
 		private flavor: FlavorUtils,
-		private platform: Platform
+		private platform: Platform,
+		private alert: AlertService
 	) {
 		//registerWebPlugin(OAuth2Client);
 	}
@@ -98,8 +100,6 @@ export class OAuthUtils {
 					// and kick off real expiration times
 					const expiresIn = Date.now() + 10 * 60 * 1000
 
-					console.log('successful', accessToken, refreshToken, expiresIn)
-
 					await this.storage.setAuthUser({
 						accessToken: accessToken as string,
 						refreshToken: refreshToken as string,
@@ -124,9 +124,11 @@ export class OAuthUtils {
 			.catch((reason: unknown) => {
 				if (statusCallback) statusCallback(true)
 				console.error('OAuth rejected', reason)
-				Toast.show({
-					text: 'Could not log in, please try again later.',
-				})
+				this.alert.showError(
+					'Login Failed',
+					'Your credentials are correct but there has been a problem signing you in at this moment. Please try again in 20min. If this error persists please reach out to us.',
+					100
+				)
 				return false
 			})
 	}

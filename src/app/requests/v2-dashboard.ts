@@ -33,6 +33,7 @@ export type dashboardID = string | number | number[]
 export type networkID = string | number
 export enum Period {
 	AllTime = 'all_time',
+	Last1h = 'last_1h',
 	Last24h = 'last_24h',
 	Last7d = 'last_7d',
 	Last30d = 'last_30d',
