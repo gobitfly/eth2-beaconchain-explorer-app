@@ -500,7 +500,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 118;
+				CURRENT_PROJECT_VERSION = 120;
 				DEVELOPMENT_TEAM = M6RLJ8D785;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -531,7 +531,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/AppRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 118;
+				CURRENT_PROJECT_VERSION = 120;
 				DEVELOPMENT_TEAM = M6RLJ8D785;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -562,7 +562,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Beaconchain WidgetExtension.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 117;
+				CURRENT_PROJECT_VERSION = 120;
 				DEVELOPMENT_TEAM = M6RLJ8D785;
 				INFOPLIST_FILE = "Beaconchain Widget/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -594,7 +594,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Beaconchain WidgetExtension.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 117;
+				CURRENT_PROJECT_VERSION = 120;
 				DEVELOPMENT_TEAM = M6RLJ8D785;
 				INFOPLIST_FILE = "Beaconchain Widget/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
