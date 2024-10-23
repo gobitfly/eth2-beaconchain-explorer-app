@@ -135,8 +135,7 @@ export default class FirebaseUtils {
 		PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
 			//alert("Push action performed: " + JSON.stringify(notification));
 			console.log(LOGTAG + 'Push action performed: ', notification)
-			if (notification && notification.notification && Object.prototype.hasOwnProperty.call(notification.notification.data, 'epoch')) {
-				console.log('open browser')
+			if (notification && notification.notification && Object.prototype.hasOwnProperty.call(notification.notification.data, 'dashboard_id')) {
 				Browser.open({ url: 'https://v2-beta-mainnet.beaconcha.in/notifications#dashboards', toolbarColor: '#2f2e42' })
 			}
 			//
