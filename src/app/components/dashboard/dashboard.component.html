@@ -548,11 +548,7 @@
 
 				<ion-item lines="none">
 					<ion-label class="stat-title">Luck</ion-label>
-					<span
-						[class]="data.summaryGroup()?.luck.sync.percent / 100 | valuestyle: 1"
-						tooltip="Sync committees expected: {{ data.summaryGroup()?.luck.sync.expected }}"
-						trigger="click"
-						[hideDelayAfterClick]="5000">
+					<span [class]="data.summaryGroup()?.luck.sync.percent / 100 | valuestyle: 1">
 						<ion-label class="value" *ngIf="data.summaryGroup()?.luck.sync.percent > 0"
 							>{{ data.summaryGroup()?.luck.sync.percent | number: '1.0-1' }}%</ion-label
 						>
