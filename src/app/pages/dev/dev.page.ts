@@ -317,9 +317,8 @@ export class DevPage extends Tab3Page implements OnInit {
 		this.v2migrator.switchToV2(this.usev2api)
 	}
 
-	async getMyDashboards() {
-		const result = await this.api.execute2(new V2Me())
-		console.log('v2 dashboards', result)
+	syncClients() {
+		this.notificationBase.syncClientUpdates()
 	}
 
 	async registerV2Push() {

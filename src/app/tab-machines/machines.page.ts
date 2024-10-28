@@ -112,7 +112,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	}
 
 	openTimeSelection() {
-		if (this.merchant.hasMachineMonitoringPremium()) {
+		if (!this.merchant.hasMachineMonitoringPremium()) {
 			this.alertService.showInfo('Limit Reached', 'Upgrade to premium to get up to 30 days of monitoring data')
 			return
 		}

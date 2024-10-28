@@ -31,6 +31,7 @@ import FlavorUtils from './FlavorUtils'
 import { mergeLocalDashboardToRemote } from './DashboardUtils'
 import { getProperty } from '../requests/requests'
 import { AlertService } from '../services/alert.service'
+import { NotificationBase } from '../tab-preferences/notification-base'
 
 @Injectable({
 	providedIn: 'root',
@@ -44,7 +45,8 @@ export class OAuthUtils {
 		private merchantUtils: MerchantUtils,
 		private flavor: FlavorUtils,
 		private platform: Platform,
-		private alert: AlertService
+		private alert: AlertService,
+		private notificationBase: NotificationBase
 	) {
 		//registerWebPlugin(OAuth2Client);
 	}
@@ -145,6 +147,8 @@ export class OAuthUtils {
 		})
 
 		await mergeLocalDashboardToRemote(this.api, this.storage)
+
+		await this.notificationBase.syncClientUpdates()
 	}
 
 	private async presentLoading() {

@@ -22,104 +22,133 @@ import { StorageService } from '../services/storage.service'
 import { Injectable, OnInit } from '@angular/core'
 import { GithubReleaseRequest, GithubReleaseResponse } from '../requests/requests'
 
-interface ClientInfo {
+export interface ClientInfo {
 	key: string
+	remoteKey: string // remote uses different keys now, acts more as a name
+	remoteId?: number // used to subscribe/unsubscribe on remote
 	name: string
 	repo: string
 	storageKey: string
+	type: 'cons' | 'exec' | '3rdparty'
 }
 
 export const Clients: ClientInfo[] = [
 	// Consensus
 	{
 		key: 'LIGHTHOUSE',
+		remoteKey: 'Lighthouse',
 		name: 'Lighthouse',
 		repo: 'sigp/lighthouse',
 		storageKey: 'client_updates_lighthouse',
+		type: 'cons',
 	},
 
 	{
 		key: 'LODESTAR',
+		remoteKey: 'Lodestar',
 		name: 'Lodestar',
 		repo: 'chainsafe/lodestar',
 		storageKey: 'client_updates_lodestar',
+		type: 'cons',
 	},
 
 	{
 		key: 'PRYSM',
+		remoteKey: 'Prysm',
 		name: 'Prysm',
 		repo: 'prysmaticlabs/prysm',
 		storageKey: 'client_updates_prysm',
+		type: 'cons',
 	},
 
 	{
 		key: 'NIMBUS',
+		remoteKey: 'Nimbus',
 		name: 'Nimbus',
 		repo: 'status-im/nimbus-eth2',
 		storageKey: 'client_updates_nimbus',
+		type: 'cons',
 	},
 
 	{
 		key: 'TEKU',
+		remoteKey: 'Teku',
 		name: 'Teku',
 		repo: 'ConsenSys/teku',
 		storageKey: 'client_updates_teku',
+		type: 'cons',
 	},
 
-	{
-		key: 'GRANDINE',
-		name: 'Grandine',
-		repo: 'grandinetech/grandine',
-		storageKey: 'client_updates_grandine',
-	},
+	// {
+	// 	key: 'GRANDINE',
+	// 	remoteKey: 'Grandine',
+	// 	name: 'Grandine',
+	// 	repo: 'grandinetech/grandine',
+	// 	storageKey: 'client_updates_grandine',
+	// 	type: 'cons',
+	// },
 
 	// Execution
 	{
 		key: 'BESU',
+		remoteKey: 'Besu',
 		name: 'Besu',
 		repo: 'hyperledger/besu',
 		storageKey: 'client_updates_besu',
+		type: 'exec',
 	},
 
 	{
 		key: 'ERIGON',
+		remoteKey: 'Erigon',
 		name: 'Erigon',
 		repo: 'erigontech/erigon',
 		storageKey: 'client_updates_erigon',
+		type: 'exec',
 	},
 
 	{
 		key: 'GETH',
+		remoteKey: 'Geth',
 		name: 'Geth',
 		repo: 'ethereum/go-ethereum',
 		storageKey: 'client_updates_geth',
+		type: 'exec',
 	},
 
 	{
 		key: 'NETHERMIND',
+		remoteKey: 'Nethermind',
 		name: 'Nethermind',
 		repo: 'NethermindEth/nethermind',
 		storageKey: 'client_updates_nethermind',
+		type: 'exec',
 	},
 
 	{
 		key: 'RETH',
+		remoteKey: 'Reth',
 		name: 'Reth',
 		repo: 'paradigmxyz/reth',
 		storageKey: 'client_updates_reth',
+		type: 'exec',
 	},
 	// Various
 	{
 		key: 'ROCKETPOOL',
+		remoteKey: 'Rocketpool Smart Node',
 		name: 'Rocketpool',
 		repo: 'rocket-pool/smartnode-install',
 		storageKey: 'smart_node_updates',
+		type: '3rdparty',
 	},
 	{
 		key: 'MEV-BOOST',
+		remoteKey: 'MEV-Boost',
 		name: 'MEV-Boost',
 		repo: 'flashbots/mev-boost',
 		storageKey: 'mev_boost_updates',
+		type: '3rdparty',
 	},
 ]
 

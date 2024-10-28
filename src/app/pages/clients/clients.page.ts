@@ -1,6 +1,6 @@
-import { Component, OnInit, Input, WritableSignal, signal } from '@angular/core'
+import { Component, Input, WritableSignal, signal, SimpleChanges } from '@angular/core'
 import { ModalController } from '@ionic/angular'
-import ClientUpdateUtils from '../../utils/ClientUpdateUtils'
+import ClientUpdateUtils, { ClientInfo, Clients } from '../../utils/ClientUpdateUtils'
 import { NotificationBase } from '../../tab-preferences/notification-base'
 import { StorageService } from 'src/app/services/storage.service'
 @Component({
@@ -8,11 +8,13 @@ import { StorageService } from 'src/app/services/storage.service'
 	templateUrl: './clients.page.html',
 	styleUrls: ['./clients.page.scss'],
 })
-export class ClientsPage implements OnInit {
+export class ClientsPage {
 	@Input() clientIdentifier = ''
 
 	loading: WritableSignal<boolean> = signal(false)
 	online: WritableSignal<boolean> = signal(true)
+
+	clients: ClientInfo[] = null
 
 	constructor(
 		private modalCtrl: ModalController,
@@ -20,6 +22,12 @@ export class ClientsPage implements OnInit {
 		public notificationBase: NotificationBase,
 		private storage: StorageService
 	) {}
+
+	ngOnChanges(changes: SimpleChanges) {
+		if (changes.clientIdentifier && !changes.clientIdentifier.firstChange) {
+			this.init() // Refresh data based on new identifier
+		}
+	}
 
 	async doRefresh(force: boolean = false) {
 		if (!(await this.storage.isLoggedIn())) return
@@ -31,43 +39,31 @@ export class ClientsPage implements OnInit {
 		this.loading.set(false)
 	}
 
-	async ngOnInit() {
+	getClientListFilter() {
+		if (this.clientIdentifier == 'eth1Clients') {
+			return 'exec'
+		}
+		if (this.clientIdentifier == 'eth2Clients') {
+			return 'cons'
+		}
+		return '3rdparty'
+	}
+
+	async init() {
+		this.clients = Clients.filter((client) => client.type == this.getClientListFilter())
 		await this.doRefresh()
-		this.updateUtils.getClient('LIGHTHOUSE').then((result) => {
-			this.notificationBase.setClientToggleState('LIGHTHOUSE', result && result != 'null')
-		})
-		this.updateUtils.getClient('LODESTAR').then((result) => {
-			this.notificationBase.setClientToggleState('LODESTAR', result && result != 'null')
-		})
-		this.updateUtils.getClient('PRYSM').then((result) => {
-			this.notificationBase.setClientToggleState('PRYSM', result && result != 'null')
-		})
-		this.updateUtils.getClient('NIMBUS').then((result) => {
-			this.notificationBase.setClientToggleState('NIMBUS', result && result != 'null')
-		})
-		this.updateUtils.getClient('TEKU').then((result) => {
-			this.notificationBase.setClientToggleState('TEKU', result && result != 'null')
-		})
-		this.updateUtils.getClient('BESU').then((result) => {
-			this.notificationBase.setClientToggleState('BESU', result && result != 'null')
-		})
-		this.updateUtils.getClient('ERIGON').then((result) => {
-			this.notificationBase.setClientToggleState('ERIGON', result && result != 'null')
-		})
-		this.updateUtils.getClient('GETH').then((result) => {
-			this.notificationBase.setClientToggleState('GETH', result && result != 'null')
-		})
-		this.updateUtils.getClient('NETHERMIND').then((result) => {
-			this.notificationBase.setClientToggleState('NETHERMIND', result && result != 'null')
-		})
-		this.updateUtils.getClient('RETH').then((result) => {
-			this.notificationBase.setClientToggleState('RETH', result && result != 'null')
-		})
-		this.updateUtils.getClient('GRANDINE').then((result) => {
-			this.notificationBase.setClientToggleState('GRANDINE', result && result != 'null')
-		})
+
+		for (const client of this.clients) {
+			this.updateUtils.getClient(client.key).then((result) => {
+				this.notificationBase.setClientToggleState(client.key, result && result != 'null')
+			})
+		}
 
 		this.notificationBase.disableToggleLock()
+	}
+
+	ionViewWillEnter() {
+		this.init()
 	}
 
 	closeModal() {

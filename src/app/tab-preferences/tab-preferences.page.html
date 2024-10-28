@@ -165,32 +165,10 @@
 			<ion-icon class="opacity-icon" slot="end" name="chevron-forward-outline"></ion-icon>
 		</ion-item>
 
-		<ion-item lines="none">
-			<ion-icon class="opacity-icon" slot="start" name="hammer-outline"></ion-icon>
-			<ion-toggle
-				checked
-				id="clientToggle"
-				[ngModel]="notificationBase.clientUpdatesTogglesMap.get('ROCKETPOOL')"
-				(ngModelChange)="notificationBase.setClientToggleState('ROCKETPOOL', $event)"
-				(ionChange)="notificationBase.clientUpdateOnToggle('ROCKETPOOL')"
-				labelPlacement="start"
-				justify="space-between"
-				>Rocketpool Smartnode</ion-toggle
-			>
-		</ion-item>
-
-		<ion-item lines="none">
-			<ion-icon class="opacity-icon" slot="start" name="magnet-outline"></ion-icon>
-			<ion-toggle
-				checked
-				id="clientToggle"
-				[ngModel]="notificationBase.clientUpdatesTogglesMap.get('MEV-BOOST')"
-				(ngModelChange)="notificationBase.setClientToggleState('MEV-BOOST', $event)"
-				(ionChange)="notificationBase.clientUpdateOnToggle('MEV-BOOST')"
-				labelPlacement="start"
-				justify="space-between"
-				>MEV-Boost</ion-toggle
-			>
+		<ion-item lines="none" (click)="openClientsPage('3rdparty')">
+			<ion-icon class="opacity-icon" slot="start" name="balloon-outline"></ion-icon>
+			<ion-label>Other Clients</ion-label>
+			<ion-icon class="opacity-icon" slot="end" name="chevron-forward-outline"></ion-icon>
 		</ion-item>
 	</ion-list>
 

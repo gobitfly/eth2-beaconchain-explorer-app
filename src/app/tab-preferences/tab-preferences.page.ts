@@ -101,7 +101,7 @@ export class Tab3Page {
 		public platform: Platform,
 		protected alerts: AlertService,
 		protected merchant: MerchantUtils,
-		public notificationBase: NotificationBase,
+		protected notificationBase: NotificationBase,
 		private flavor: FlavorUtils,
 		protected v2migrator: V2Migrator,
 		protected validatorUtils: ValidatorUtils,
@@ -116,12 +116,6 @@ export class Tab3Page {
 
 		this.theme.getThemeColor().then((result) => (this.themeColor = result))
 
-		this.updateUtils.getClient('ROCKETPOOL').then((result) => {
-			this.notificationBase.setClientToggleState('ROCKETPOOL', result && result.toUpperCase() == 'ROCKETPOOL')
-		})
-		this.updateUtils.getClient('MEV-BOOST').then((result) => {
-			this.notificationBase.setClientToggleState('MEV-BOOST', result && result.toUpperCase() == 'MEV-BOOST')
-		})
 		this.updateUtils.getUpdateChannel().then((result) => (this.updateChannel = result))
 
 		this.theme.isWinterEnabled().then((result) => (this.snowing = result))

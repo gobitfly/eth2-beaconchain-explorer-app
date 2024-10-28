@@ -357,6 +357,10 @@ export class MerchantUtils implements OnInit {
 	}
 
 	private updatePrice(id: string, prices: CdvPurchase.PricingPhase) {
+		if (this.platform.is('ios')) {
+			id = id.replace('.apple', '')
+		}
+
 		for (let i = 0; i < this.PACKAGES.length; i++) {
 			if (this.PACKAGES[i].purchaseKey == id) {
 				this.PACKAGES[i].price = prices.price

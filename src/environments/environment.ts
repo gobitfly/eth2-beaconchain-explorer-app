@@ -24,7 +24,7 @@
 export const environment = {
 	production: false,
 	API_ACCESS_KEY: null as string,
-	mock_combine_machines: true, // should be false in production
+	mock_combine_machines: false, // should be false in production
 	debug_set_default_network: '', // todo remove in production
 	debug: true, // false for prod
 }
