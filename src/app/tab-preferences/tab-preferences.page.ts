@@ -47,6 +47,7 @@ import { DashboardUtils } from '../utils/DashboardUtils'
 import { AuthUser, AuthUserv2 } from '../models/StorageTypes'
 import { ValidatorUtils } from '../utils/ValidatorUtils'
 import { AppUpdater } from '../utils/AppUpdater'
+import { V2RegisterPushNotificationToken } from '../requests/v2-user'
 @Component({
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
@@ -296,7 +297,13 @@ export class Tab3Page {
 		}
 	}
 
-	confirmLogout() {
+	async confirmLogout() {
+		const clearNotificationTokenRequest = new V2RegisterPushNotificationToken('', await this.storage.getDeviceID())
+		const result = await this.api.execute2(clearNotificationTokenRequest)
+		if (result.error) {
+			console.error('Failed to clear notification token')
+		}
+
 		this.storage.removeAuthUser()
 		this.storage.setDashboardID(null)
 		this.merchant.clearTempUserInfo()
