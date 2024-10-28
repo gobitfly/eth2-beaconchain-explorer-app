@@ -41,6 +41,7 @@ export class FullPageLoadingComponent implements OnChanges {
 
 	ngOnChanges() {
 		if (this.loading) {
+			//console.log('fpl ngOnChanges loading=true', this.loadingAnimationStarted)
 			this.reset()
 
 			/*
@@ -59,6 +60,17 @@ export class FullPageLoadingComponent implements OnChanges {
 			}, SKIP_LOADING_IF_FASTER_THAN)
 		} else {
 			this.loadingDoneStartPreRender()
+
+			//console.log('fpl ngOnChanges loading=false', this.loadingAnimationStarted)
+
+			// if loading has not been set to true after 30ms and loading animation has not started, the view probably already has data from cache and can be rendered immediately
+			// this fixes some views returning an empty screen if loading is initialized with false and loading=true is never set (e.g. cached data)
+			setTimeout(() => {
+				if (!this.loading && !this.loadingAnimationStarted) {
+					//console.log('fpl fix', this.loadingAnimationStarted)
+					this.onLoadingAnimationDone()
+				}
+			}, 30)
 		}
 	}
 
@@ -77,6 +89,11 @@ export class FullPageLoadingComponent implements OnChanges {
 		this.showContent = false
 		this.fadeInComplete = 'wait'
 		this.showLoading = false
+	}
+
+	private loadingAnimationStarted = false
+	onLoadingAnimationStart() {
+		this.loadingAnimationStarted = true
 	}
 
 	// Called after showLoading animation is faded out, we may display the content now after waiting the render wait

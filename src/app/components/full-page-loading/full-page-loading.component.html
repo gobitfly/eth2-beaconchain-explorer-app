@@ -1,4 +1,4 @@
-<div class="container loading-container" *ngIf="showLoading" @out (@out.done)="onLoadingAnimationDone()">
+<div class="container loading-container" *ngIf="showLoading" @out (@out.start)="onLoadingAnimationStart()" (@out.done)="onLoadingAnimationDone()">
 	<div class="center">
 		<div class="lds-grid">
 			<div></div>
