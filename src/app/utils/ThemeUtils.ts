@@ -229,7 +229,8 @@ export default class ThemeUtils {
 		}
 	}
 
-	setStatusBarColor(color: string) {
+	setStatusBarColor(color: string, recursiveCount = 0) {
+		if (recursiveCount > 5) return
 		try {
 			if (Capacitor.isPluginAvailable('StatusBar')) {
 				StatusBar.setStyle({
@@ -238,6 +239,9 @@ export default class ThemeUtils {
 				StatusBar.setBackgroundColor({
 					color: color,
 				})
+				setTimeout(() => {
+					this.setStatusBarColor(color, ++recursiveCount)
+				}, 40)
 			} else {
 				console.info('Statusbar is not available on this platform')
 			}
