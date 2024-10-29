@@ -42,8 +42,8 @@
 
 	<div style="background: var(--ion-background-color); height: 100%">
 		<app-full-page-loading [loading]="initialLoading && online">
-			<app-full-page-offline (retry)="this.getOverview()" [online]="online">
-				<div *ngIf="overview() || !this.block.block">
+			<app-full-page-offline (retry)="this.getOverviewv1()" [online]="online">
+				<div *ngIf="v1Overview() || !this.block.block">
 					<ion-list-header>
 						<ion-label>Proposer Rewards</ion-label>
 					</ion-list-header>
@@ -78,29 +78,31 @@
 							<ion-label class="value"> {{ block.proposer }} </ion-label>
 						</ion-item>
 
-						<ion-item lines="none" *ngIf="overview()">
+						<!-- v2 -->
+						<!-- <ion-item lines="none" *ngIf="overview()">
 							<ion-label class="stat-title"> Burned </ion-label>
 							<ion-label class="value negative-value" (click)="unit.switchCurrencyPipe()">
 								{{ overview()?.burned_fees | mcurrency: "WEI":unit.pref.Exec }}
 							</ion-label>
-						</ion-item>
+						</ion-item> -->
 
-						<ion-item lines="none" *ngIf="overview()">
+						<ion-item lines="none" *ngIf="v1Overview()">
 							<ion-label class="stat-title"> Base Fee </ion-label>
-							<ion-label class="value"> {{ overview()?.base_fee }} </ion-label>
+							<ion-label class="value"> {{ v1Overview()?.baseFee }} </ion-label>
 						</ion-item>
 
-						<ion-item lines="none" *ngIf="overview()">
+						<ion-item lines="none" *ngIf="v1Overview()">
 							<ion-label class="stat-title"> Gas Used </ion-label>
 							<ion-label class="value" (click)="switchGasPercent()">
-								<span *ngIf="!showGasUsedPercent">{{ this.overview()?.gas_usage }}</span>
+								<span *ngIf="!showGasUsedPercent">{{ this.v1Overview()?.gasUsed }}</span>
 								<span *ngIf="showGasUsedPercent">{{ gasUsedPercent() }} %</span>
 							</ion-label>
 						</ion-item>
 
-						<ion-item lines="none" *ngIf="overview()">
+						<ion-item lines="none" *ngIf="v1Overview()">
 							<ion-label class="stat-title"> Gas Limit </ion-label>
-							<ion-label class="value"> {{ this.overview()?.gas_limit.value }} </ion-label>
+							<ion-label class="value"> {{ this.v1Overview()?.gasLimit }} </ion-label>
+							<!-- <ion-label class="value"> {{ this.overview()?.gas_limit.value }} </ion-label> -->
 						</ion-item>
 
 						<ion-item lines="none">
@@ -116,7 +118,10 @@
 					<ion-list class="performance">
 						<ion-item lines="none">
 							<ion-label class="stat-title"> Epoch </ion-label>
-							<ion-label class="value"> {{ overview()?.epoch || block.slot / getChainNetwork().slotPerEpoch | number: '1.0-0'}} </ion-label>
+							<ion-label class="value">
+								{{ v1Overview()?.posConsensus?.epoch || block.slot / getChainNetwork().slotPerEpoch | number: '1.0-0'}}
+							</ion-label>
+							<!-- <ion-label class="value"> {{ overview()?.epoch || block.slot / getChainNetwork().slotPerEpoch | number: '1.0-0'}} </ion-label> -->
 						</ion-item>
 
 						<ion-item lines="none">
@@ -124,17 +129,17 @@
 							<ion-label class="value"> {{ block.slot | number: '1.0-0' }} </ion-label>
 						</ion-item>
 
-						<ion-item lines="none">
+						<!-- <ion-item lines="none">
 							<ion-label class="stat-title"> Finalized </ion-label>
 							<ion-label class="value">
 								<ion-icon class="check" class="check" name="checkmark-outline" *ngIf="overview()?.status.finalized == 'finalized'"></ion-icon>
 								<ion-icon class="check" class="check" name="hourglass-outline" *ngIf="overview()?.status.finalized == 'justified'"></ion-icon>
 								<ion-icon class="nocheck" class="nocheck" name="close-outline" *ngIf="overview()?.status.finalized == 'not_finalized'"></ion-icon>
 							</ion-label>
-						</ion-item>
+						</ion-item> -->
 					</ion-list>
 
-					<ion-list-header *ngIf="overview()">
+					<!-- <ion-list-header *ngIf="v1Overview()">
 						<ion-label>MEV Relays</ion-label>
 					</ion-list-header>
 
@@ -147,13 +152,25 @@
 							<ion-icon slot="start" class="opacity-icon" name="help-outline"></ion-icon>
 							<ion-label slot="end">unknown or self proposed</ion-label>
 						</ion-item>
-					</ion-list>
+					</ion-list> -->
 
-					<ion-list-header *ngIf="overview()">
+					<ion-list-header *ngIf="v1Overview()">
 						<ion-label>Content</ion-label>
 					</ion-list-header>
 
-					<ion-list class="performance" *ngIf="overview()">
+					<ion-list class="performance" *ngIf="v1Overview()">
+						<ion-item lines="none">
+							<ion-label class="stat-title"> TX Count </ion-label>
+							<ion-label class="value"> {{v1Overview()?.txCount }} </ion-label>
+						</ion-item>
+
+						<ion-item lines="none">
+							<ion-label class="stat-title"> Internal Count </ion-label>
+							<ion-label class="value"> {{ v1Overview()?.internalTxCount }} </ion-label>
+						</ion-item>
+					</ion-list>
+
+					<!-- <ion-list class="performance" *ngIf="overview()">
 						<ion-item lines="none">
 							<ion-label class="stat-title"> TX Count </ion-label>
 							<ion-label class="value"> {{overview()?.transactions.general }} </ion-label>
@@ -168,7 +185,7 @@
 							<ion-label class="stat-title"> Blobs Count </ion-label>
 							<ion-label class="value"> {{ overview()?.transactions.blob }} </ion-label>
 						</ion-item>
-					</ion-list>
+					</ion-list> -->
 
 					<ion-list-header *ngIf="block.graffiti">
 						<ion-label>Graffiti</ion-label>

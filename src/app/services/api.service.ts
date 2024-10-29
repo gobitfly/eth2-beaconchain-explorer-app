@@ -132,7 +132,7 @@ export class ApiService extends CacheModule {
 
 	findParentNetworkKey(childNetwork: ApiNetwork): ApiNetwork {
 		for (const entry of MAP) {
-			if (entry.v2NetworkConfigKey == childNetwork.key) {
+			if (entry.v2NetworkConfigKey?.replace('_prod', '') == childNetwork.key) {
 				return entry
 			}
 		}
@@ -186,12 +186,6 @@ export class ApiService extends CacheModule {
 		if (!user || !user.Session) return
 
 		console.log('init cookies', this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host, user.Session)
-
-		const cookies = await CapacitorCookies.getCookies({
-			url: this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host,
-		})
-		console.log('get cookies', cookies)
-		//cookies['session_id'] = user.Session
 
 		await CapacitorCookies.setCookie({
 			url: this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host,
@@ -563,6 +557,10 @@ export class ApiService extends CacheModule {
 		const base = this.getBaseUrl()
 		if (endpoint == 'default') {
 			return this.getApiBaseUrl() + '/' + resource
+		} else if (endpoint == 'v1') {
+			const v1 = this.getParentNetwork()
+			console.log('v1 endpoint', v1)
+			return v1.protocol + '://' + v1.net + v1.host + v1.endpoint + v1.version + '/' + resource
 		} else {
 			const substitute = endpoint.replace('{$BASE}', base)
 			return substitute + '/' + resource

@@ -12,6 +12,7 @@ import { BlockOverview } from 'src/app/requests/types/block'
 import { V2BlockOverview } from 'src/app/requests/v2-blocks'
 import { Toast } from '@capacitor/toast'
 import { findChainNetworkById } from 'src/app/utils/NetworkData'
+import { V1BlockResponse, V1BlocksOverview } from 'src/app/requests/requests'
 
 @Component({
 	selector: 'app-block-detail',
@@ -32,10 +33,12 @@ export class BlockDetailPage implements OnInit {
 	showGasUsedPercent = true
 	nameResolved = ''
 
-	overview: WritableSignal<BlockOverview> = signal(null)
+	// overview: WritableSignal<BlockOverview> = signal(null) // v2
+	v1Overview: WritableSignal<V1BlockResponse> = signal(null)
 
 	gasUsedPercent = computed(() => {
-		return ((parseInt(this.overview().gas_usage) * 100) / this.overview().gas_limit.value).toFixed(1)
+		return ((this.v1Overview().gasUsed * 100) / this.v1Overview().gasLimit).toFixed(1)
+		//v2: return ((parseInt(this.overview().gas_usage) * 100) / this.overview().gas_limit.value).toFixed(1)
 	})
 
 	chainID = 0
@@ -52,7 +55,7 @@ export class BlockDetailPage implements OnInit {
 	async ngOnInit() {
 		this.online = true
 		this.chainID = await this.api.getCurrentDashboardChainID()
-		this.getOverview()
+		this.getOverviewv1()
 		this.imgData = this.getBlockies()
 		this.timestamp = slotToSecondsTimestamp(this.chainID, this.block.slot) * 1000
 		if (this.block.reward) {
@@ -83,12 +86,31 @@ export class BlockDetailPage implements OnInit {
 		return findChainNetworkById(this.chainID)
 	}
 
-	async getOverview() {
+	// v2
+	// async getOverview() {
+	// 	if (!this.block.block) {
+	// 		this.initialLoading = false
+	// 		return
+	// 	}
+	// 	const result = await this.api.set(new V2BlockOverview(this.chainID, this.block.block), this.overview)
+	// 	if (result.error) {
+	// 		Toast.show({
+	// 			text: 'Failed to fetch block overview',
+	// 			duration: 'long',
+	// 		})
+	// 		this.online = false
+	// 		console.error(result.error)
+	// 	}
+	// 	this.initialLoading = false
+	// }
+
+	async getOverviewv1() {
 		if (!this.block.block) {
 			this.initialLoading = false
 			return
 		}
-		const result = await this.api.set(new V2BlockOverview(this.chainID, this.block.block), this.overview)
+		const result = await this.api.execute2(new V1BlocksOverview(this.block.block))
+		console.log('v1 block result', result)
 		if (result.error) {
 			Toast.show({
 				text: 'Failed to fetch block overview',
@@ -97,6 +119,7 @@ export class BlockDetailPage implements OnInit {
 			this.online = false
 			console.error(result.error)
 		}
+		this.v1Overview.set(result.data[0])
 		this.initialLoading = false
 	}
 

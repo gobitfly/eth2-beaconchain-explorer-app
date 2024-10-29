@@ -240,17 +240,6 @@ export interface BitflyAdResponse {
 
 // ------------ Authorized Calls -----------------
 
-export class GetMyMachinesRequest extends APIRequest<StatsResponse> {
-	resource = 'user/stats'
-	method = Method.GET
-	requiresAuth = true
-
-	constructor(offset = 0, limit = 180) {
-		super()
-		this.resource += '/' + offset + '/' + limit
-	}
-}
-
 /** @deprecated */
 export class RefreshTokenRequest extends APIRequest<ApiTokenResponse> {
 	resource = 'user/token'
@@ -382,6 +371,50 @@ export class GithubReleaseRequest extends APIRequest<GithubReleaseResponse[]> {
 	constructor(repo: string, latest = true) {
 		super()
 		this.resource += repo + '/releases' + (latest ? '/latest' : '')
+	}
+}
+
+export interface V1BlockResponse {
+	baseFee: number
+	blockHash: string
+	blockMevReward: string
+	blockNumber: number
+	blockReward: string
+	consensusAlgorithm: string
+	feeRecipient: string
+	gasLimit: number
+	gasUsed: number
+	internalTxCount: number
+	parentHash: string
+	producerReward: string
+	timestamp: number
+	txCount: number
+	uncleCount: number
+	posConsensus: PoSConsensus
+	relay: Relay
+}
+export interface Relay {
+	builderPubkey: string
+	producerFeeRecipient: string
+	tag: string
+}
+
+export interface PoSConsensus {
+	epoch: number
+	slot: number
+	proposerIndex: number
+	finalized: boolean
+}
+
+export class V1BlocksOverview extends APIRequest<V1BlockResponse[]> {
+	endPoint = 'v1'
+	resource = 'execution/block/{block}'
+
+	method = Method.GET
+
+	constructor(block: number) {
+		super()
+		this.resource = this.resource.replace('{block}', block.toString())
 	}
 }
 
