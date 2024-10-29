@@ -144,8 +144,7 @@ export function formatTsToAbsolute(ts: number, locales: string, includeTime?: bo
 	return includeTime ? date.toLocaleString(locales, options) : date.toLocaleDateString(locales, options)
 }
 
-export function relativeTs(diff: number) {
-	const seconds = Math.floor(diff / 1000)
+export function relativeTs(seconds: number) {
 	const minutes = Math.floor(seconds / 60)
 	const hours = Math.floor(minutes / 60)
 	const days = Math.floor(hours / 24)
