@@ -231,7 +231,11 @@ export class ApiService extends CacheModule {
 				}
 			}
 
-			console.log(LOGTAG + ' Send request: ' + request.resource, request.method, request)
+			if(request.resource == 'user/token'){
+				console.log(LOGTAG + ' Send request: ' + request.resource, request.method)
+			} else {
+				console.log(LOGTAG + ' Send request: ' + request.resource, request.method, request)
+			}
 			const startTs = Date.now()
 
 			let response: Promise<Response>
