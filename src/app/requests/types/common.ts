@@ -27,12 +27,14 @@ export type PubKey = string
 export type Hash = string // blocks, txs etc.
 export interface Address {
 	hash: Hash
+	is_contract: boolean
 	ens?: string
+	label?: string
 }
 export interface LuckItem {
 	percent: number /* float64 */
-	expected: string /* time.Time */
-	average: any /* time.Duration */
+	expected_timestamp: number /* uint64 */
+	average_interval_seconds: number /* uint64 */
 }
 export interface Luck {
 	proposal: LuckItem
@@ -111,7 +113,22 @@ export interface ChartHistorySeconds {
 	daily: number /* uint64 */
 	weekly: number /* uint64 */
 }
+export interface IndexEpoch {
+	index: number /* uint64 */
+	epoch: number /* uint64 */
+}
 export interface IndexBlocks {
 	index: number /* uint64 */
 	blocks: number /* uint64 */[]
+}
+export interface IndexSlots {
+	index: number /* uint64 */
+	slots: number /* uint64 */[]
+}
+export interface ValidatorStateCounts {
+	online: number /* uint64 */
+	offline: number /* uint64 */
+	pending: number /* uint64 */
+	exited: number /* uint64 */
+	slashed: number /* uint64 */
 }

@@ -23,17 +23,20 @@ import { APIRequest, UpdateTokenRequest } from '../requests/requests'
 import { Injectable } from '@angular/core'
 import { AlertController, Platform } from '@ionic/angular'
 
-import { PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications'
+import { ActionPerformed, PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications'
 
 import { LocalNotifications } from '@capacitor/local-notifications'
 import FlavorUtils from './FlavorUtils'
 import { Capacitor } from '@capacitor/core'
 import { V2RegisterPushNotificationToken } from '../requests/v2-user'
+import { Browser } from '@capacitor/browser'
 
 const LOGTAG = '[FirebaseUtils]'
 
 export const CURRENT_TOKENKEY = 'firebase_token'
 const NOTIFICATION_CONSENT_KEY = 'notification_consent'
+
+const firebaseTokenKey = 'last_firebase_token'
 
 @Injectable({
 	providedIn: 'root',
@@ -131,9 +134,19 @@ export default class FirebaseUtils {
 		})
 
 		// Method called when tapping on a notification
-		/*PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
+		PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
 			//alert("Push action performed: " + JSON.stringify(notification));
-		})*/
+			console.log(LOGTAG + 'Push action performed: ', notification)
+			if (
+				notification &&
+				notification.notification &&
+				Object.prototype.hasOwnProperty.call(notification.notification.data, 'dashboard_id') &&
+				Object.prototype.hasOwnProperty.call(notification.notification.data, 'group_id')
+			) {
+				Browser.open({ url: this.api.getBaseUrl(), toolbarColor: '#2f2e42' })
+			}
+			//
+		})
 	}
 
 	private async inAppNotification(title: string, message: string) {
@@ -186,10 +199,9 @@ export default class FirebaseUtils {
 		this.updateRemoteNotificationToken(await this.storage.getItem(CURRENT_TOKENKEY), force)
 	}
 
-	private async updateRemoteNotificationToken(token: string, force = false) {
+	async updateRemoteNotificationToken(token: string, force = false) {
 		console.log(LOGTAG + ' updateRemoteNotificationToken called with token: ' + token)
 
-		const firebaseTokenKey = 'last_firebase_token'
 		const loggedIn = await this.storage.isLoggedIn()
 
 		if (loggedIn && token != null) {

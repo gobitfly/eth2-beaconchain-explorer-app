@@ -218,7 +218,8 @@ export class SubscribePage implements OnInit {
 		if (!loggedIn) {
 			await this.oauth.login()
 		} else {
-			// try refreshing user info first
+			await this.merchant.restore(this.merchant.getUsersSubscription().product_id)
+
 			await this.merchant.getUserInfo(true, () => {
 				Toast.show({
 					text: 'Error restoring purchase',
@@ -231,9 +232,6 @@ export class SubscribePage implements OnInit {
 				this.closeModal()
 				return
 			}
-
-			// if not successfull try registering native purchases again if there are any
-			await this.merchant.restore(this.merchant.getUsersSubscription().product_id)
 		}
 
 		if (this.merchant.isPremium()) {

@@ -912,7 +912,7 @@ export class Tab2Page implements OnInit {
 			return
 		}
 
-		if (this.groups().length >= this.merchant.userInfo()?.premium_perks?.validator_groups_per_dashboard ?? 0) {
+		if (this.groups().length >= (this.merchant.userInfo()?.premium_perks?.validator_groups_per_dashboard ?? 0)) {
 			this.alerts.showInfo(
 				'Upgrade to premium',
 				'You have reached the maximum number of groups allowed for your plan. <br/><br/>You can create more groups by upgrading to a premium plan.'

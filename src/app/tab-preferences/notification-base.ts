@@ -116,6 +116,9 @@ export class NotificationBase {
 
 		// first get remote ids
 		const result = await this.remoteInitClientIDs(true)
+		if (result.error || (result.data?.clients?.length ?? 0) == 0) {
+			return
+		}
 
 		// sync up local enabled client updates to remote
 		const promiseArray: Promise<string>[] = []

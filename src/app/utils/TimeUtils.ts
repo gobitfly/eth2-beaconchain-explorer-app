@@ -67,6 +67,13 @@ export function formatTsToTime(ts: number, locales: string): string {
 	return date.toLocaleTimeString(locales, options)
 }
 
+export function toDateTime(secs: number): Date {
+	if (secs > 100000000000) secs /= 1000000000 // backwards compatibility, server returned nanoseconds pre v2 launch, can be removed later
+	const t = new Date(1970, 0, 1)
+	t.setSeconds(secs)
+	return t
+}
+
 export function getEndTs(aggregation: string, startTs: number): number {
 	if (!startTs) {
 		return
@@ -158,4 +165,17 @@ export function relativeTs(seconds: number) {
 	} else {
 		return seconds > 1 ? `${seconds} seconds` : 'second'
 	}
+}
+
+export function shortTimeFormatLocale(): string {
+	const lang = getLang()
+	if (lang === 'en-US') {
+		return 'M/d/yy, h:mm a'
+	}
+	return 'dd.MM.yyyy, hh:mm'
+}
+
+function getLang() {
+	if (navigator.languages != undefined) return navigator.languages[0]
+	return navigator.language
 }

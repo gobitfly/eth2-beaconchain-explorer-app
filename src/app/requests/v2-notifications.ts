@@ -16,9 +16,9 @@
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
 import { APIRequest, Method, NoContent } from './requests'
-import { NotificationSettings } from './types/notifications'
+import { NotificationDashboardsTableRow, NotificationSettings, NotificationValidatorDashboardDetail } from './types/notifications'
+import { dashboardID, setID } from './v2-dashboard'
 
-// TODO: wronng endpoint, use notifications/settings once done
 export class V2SubscribedClients extends APIRequest<NotificationSettings> {
 	resource = 'users/me/notifications/settings'
 	method = Method.GET
@@ -38,5 +38,26 @@ export class V2ChangeSubscribedClient extends APIRequest<NoContent> {
 		super()
 		this.resource += `${clientID}`
 		this.postData = { is_subscribed: enabled }
+	}
+}
+
+export class V2NotificationDetails extends APIRequest<NotificationValidatorDashboardDetail> {
+	resource = 'users/me/notifications/validator-dashboards/{id}/groups/{group_id}/epochs/{epoch}'
+	method = Method.GET
+
+	constructor(id: dashboardID, groupID: number, epoch: number) {
+		super()
+		this.resource = setID(this.resource, id)
+		this.resource = this.resource.replace('{group_id}', groupID.toString())
+		this.resource = this.resource.replace('{epoch}', epoch.toString())
+	}
+}
+
+export class V2NotificationsDashboard extends APIRequest<NotificationDashboardsTableRow[]> {
+	resource = 'users/me/notifications/dashboards'
+	method = Method.GET
+
+	constructor() {
+		super()
 	}
 }

@@ -311,6 +311,11 @@ ion-tab-button.tab-selected {
 	}
 }
 
+mark {
+	color: #ee7112;
+	background-color: transparent;
+}
+
 body.dark {
 	ion-tab-button.tab-selected {
 		.opacity-icon {

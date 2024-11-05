@@ -52,8 +52,8 @@ export class ValidatorComponent {
 
 	private getBlockies() {
 		// TODO: figure out why the first blockie image is always black
-		blockies.create({ seed: this.validator.public_key }).toDataURL()
-		const dataurl = blockies.create({ seed: this.validator.public_key, size: 8, scale: 7 }).toDataURL()
+		blockies.create({ seed: this.validator.index + '' }).toDataURL()
+		const dataurl = blockies.create({ seed: this.validator.index + '', size: 8, scale: 7 }).toDataURL()
 		return dataurl
 	}
 

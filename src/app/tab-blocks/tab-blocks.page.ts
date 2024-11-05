@@ -14,7 +14,7 @@ import { Toast } from '@capacitor/toast'
 import { V2DashboardBlocks } from '../requests/v2-blocks'
 import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
 import { DashboardUtils } from '../utils/DashboardUtils'
-import { relativeTs } from '../utils/TimeUtils'
+import { relativeTs, toDateTime } from '../utils/TimeUtils'
 
 const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = 'blocks_update'
@@ -151,10 +151,11 @@ export class TabBlocksPage implements OnInit {
 	}
 
 	expectedNextBlockTs = computed(() => {
+		console.log('expectedNextBlockTs', this.summaryGroup())
 		if (!this.summaryGroup()) {
-			return 0
+			return new Date()
 		}
-		return Date.parse(this.summaryGroup().luck.proposal.expected)
+		return toDateTime(this.summaryGroup()?.luck?.proposal?.expected_timestamp ?? 0)
 	})
 
 	private async update() {
@@ -209,7 +210,7 @@ export class TabBlocksPage implements OnInit {
 			this.alertService.showInfo(
 				'Proposal Luck',
 				`With current network conditions, your validators are expected to produce a block every <strong>${relativeTs(
-					this.summaryGroup().luck.proposal.average
+					this.summaryGroup().luck.proposal.average_interval_seconds
 				)}</strong> (on average).`
 			)
 		}

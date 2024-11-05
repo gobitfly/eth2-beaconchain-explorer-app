@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { APP_INITIALIZER, Injectable, NgModule, provideExperimentalZonelessChangeDetection } from '@angular/core'
+import { APP_INITIALIZER, Injectable, NgModule } from '@angular/core'
 import { BrowserModule, HammerModule } from '@angular/platform-browser'
 import { RouteReuseStrategy } from '@angular/router'
 

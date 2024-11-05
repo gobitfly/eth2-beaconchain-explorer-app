@@ -95,9 +95,9 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 	public async reset() {
 		this.fetchedPages.clear()
 		this.cachedData = []
+		this.cursor = undefined
 		this.dataStream.next(this.cachedData)
 		this.reachedMax = false
-		this.cursor = undefined
 		return await this.fetchPage(0)
 	}
 
