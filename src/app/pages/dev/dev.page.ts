@@ -23,6 +23,7 @@ export class DevPage extends Tab3Page implements OnInit {
 	allowHttp = false
 	showOldMachines = false
 	bundleCode = ''
+	session: string
 
 	ngOnInit() {
 		this.notificationBase.disableToggleLock()
@@ -32,6 +33,10 @@ export class DevPage extends Tab3Page implements OnInit {
 
 		this.storage.getItem(CURRENT_TOKENKEY).then((result) => {
 			this.firebaseToken = result
+		})
+
+		this.storage.getAuthUserv2().then((result) => {
+			this.session = result.Session
 		})
 
 		this.storage.getDeviceID().then((result) => {

@@ -113,6 +113,10 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 		return this.cachedData
 	}
 
+	public hasReachedEnd(): boolean {
+		return this.reachedMax
+	}
+
 	public setLoadFrom(loadMore: loadMoreType<T>) {
 		this.loadMore = loadMore
 	}

@@ -187,6 +187,8 @@ export class ApiService extends CacheModule {
 
 		console.log('init cookies', this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host, user.Session)
 
+		await CapacitorCookies.clearAllCookies()
+
 		await CapacitorCookies.setCookie({
 			url: this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host,
 			key: 'session_id',

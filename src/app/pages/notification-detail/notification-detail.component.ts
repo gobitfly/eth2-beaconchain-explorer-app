@@ -1,4 +1,4 @@
-import { Component, computed, Input, Signal, signal, ViewChild, WritableSignal } from '@angular/core'
+import { Component, computed, effect, Input, Signal, signal, ViewChild, WritableSignal } from '@angular/core'
 import { NotificationValidatorDashboardDetail } from 'src/app/requests/types/notifications'
 import { V2NotificationDetails } from 'src/app/requests/v2-notifications'
 import { ApiService } from 'src/app/services/api.service'
@@ -43,7 +43,7 @@ export class NotificationDetailComponent {
 	online: boolean = true
 	timestamp = 0
 	dateState: 'ts' | 'epoch' = 'ts'
-	state: 'collapsed' | 'expanded' = 'collapsed'
+	state = signal<'expanded' | 'collapsed'>('collapsed')
 	fadeInCompleted: boolean = false
 
 	private backbuttonSubscription: Subscription
@@ -51,7 +51,16 @@ export class NotificationDetailComponent {
 	constructor(
 		private api: ApiService,
 		private modalCtrl: ModalController
-	) {}
+	) {
+		effect(() => {
+			const openAccordions = this.defaultOpenAccordions()
+			if (openAccordions.length > 0) {
+				queueMicrotask(() => this.state.set('expanded'))
+			} else {
+				queueMicrotask(() => this.state.set('collapsed'))
+			}
+		})
+	}
 
 	ionViewWillEnter() {
 		const event = fromEvent(document, 'backbutton')
@@ -78,16 +87,10 @@ export class NotificationDetailComponent {
 			return count
 		}, 0)
 
-		const open = Object.keys(this.data()).filter((key) => {
+		return Object.keys(this.data()).filter((key) => {
 			const value = this.data()[key as keyof NotificationValidatorDashboardDetail]
 			return Array.isArray(value) && value.length > 0 && wouldOpenCount <= 1
 		})
-
-		if (open.length > 0) {
-			this.state = 'expanded'
-		}
-
-		return open
 	})
 
 	groupEfficiency: Signal<GroupEfficiency> = computed(() => {
@@ -116,7 +119,7 @@ export class NotificationDetailComponent {
 	}
 
 	collapse = () => {
-		if (this.state == 'collapsed') {
+		if (this.state() == 'collapsed') {
 			this.accordionGroup.value = Object.keys(this.data()).filter((key) => {
 				const value = this.data()[key as keyof NotificationValidatorDashboardDetail]
 				return Array.isArray(value) && value.length > 0
@@ -131,7 +134,7 @@ export class NotificationDetailComponent {
 		if (!this.accordionGroup || !this.accordionGroup.value) {
 			return
 		}
-		this.state = this.accordionGroup.value.length === 0 ? 'collapsed' : 'expanded'
+		this.state.set(this.accordionGroup.value.length === 0 ? 'collapsed' : 'expanded')
 	}
 
 	toggleDateState() {

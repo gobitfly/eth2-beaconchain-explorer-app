@@ -164,10 +164,14 @@ export default class FirebaseUtils {
 		// clickCallback is provided in dashboard page. I was not able to find a way to open the modal here directly
 		// as any reference to NotificationDetailComponent here will break the entire app ¯⁠\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯
 		// Room for improvement here if you know a way
-		if (!this.clickCallback && count < 20) {
-			setTimeout(() => {
-				this.clickNotification(id, groupID, epoch, chainID, ++count)
-			}, 200)
+		if (!this.clickCallback) {
+			if (count < 20) {
+				setTimeout(() => {
+					this.clickNotification(id, groupID, epoch, chainID, ++count)
+				}, 200)
+			} else {
+				console.error(LOGTAG + 'clickNotification failed after 20 tries')
+			}
 			return
 		}
 		this.clickCallback(id, groupID, epoch, chainID)

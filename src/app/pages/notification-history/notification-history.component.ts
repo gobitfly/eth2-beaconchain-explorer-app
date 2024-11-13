@@ -151,7 +151,7 @@ export class NoticationHistoryComponent {
 		// to indicate that there might be even more entries if the user scrolls down
 		let more = ''
 		const lastItemIsAlsoOnSameDay = isSameDay(new Date(getTs(itemsArray[itemsArray.length - 1])), new Date(getTs(item)))
-		if (lastItemIsAlsoOnSameDay) {
+		if (lastItemIsAlsoOnSameDay && !this.dataSources.get(this.selectedTab)().hasReachedEnd()) {
 			more = '+'
 		}
 
