@@ -1,11 +1,11 @@
-import { Component, computed, Input, signal, ViewChild, WritableSignal } from '@angular/core'
+import { Component, computed, Input, Signal, signal, ViewChild, WritableSignal } from '@angular/core'
 import { NotificationValidatorDashboardDetail } from 'src/app/requests/types/notifications'
 import { V2NotificationDetails } from 'src/app/requests/v2-notifications'
 import { ApiService } from 'src/app/services/api.service'
 
 import { IonAccordionGroup, IonicModule, ModalController } from '@ionic/angular'
 import { fromEvent, Subscription } from 'rxjs'
-import { NotificationValidator } from './validator/validator.component'
+import { NotificationValidator } from './notification-item/notification-item.component'
 import { FullPageLoadingComponent } from '../../components/full-page-loading/full-page-loading.component'
 import { FullPageOfflineComponent } from '../../components/full-page-offline/full-page-offline.component'
 import { CommonModule } from '@angular/common'
@@ -90,6 +90,13 @@ export class NotificationDetailComponent {
 		return open
 	})
 
+	groupEfficiency: Signal<GroupEfficiency> = computed(() => {
+		if (this.data()?.group_efficiency_below) {
+			return { efficiency: this.data().group_efficiency_below } as GroupEfficiency
+		}
+		return null
+	})
+
 	async update() {
 		const result = await this.api.set(new V2NotificationDetails(this.dashboardID, this.groupID, this.epoch), this.data)
 		if (result.error) {
@@ -100,7 +107,7 @@ export class NotificationDetailComponent {
 			this.initialLoading = false
 		}
 		// this.data().slashed = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-		this.data().validator_offline = Array.from({ length: 100 }, (_, i) => i + 1)
+		// this.data().validator_offline = Array.from({ length: 100 }, (_, i) => i + 1)
 		// this.data().withdrawal = [{ index: 1, amount: '1000', address: { hash: '', is_contract: false } }]
 		// this.data().max_collateral_reached = [{ hash: '0x1231231231231231231231231232', is_contract: false }]
 		this.initialLoading = false
@@ -144,4 +151,8 @@ export class NotificationDetailComponent {
 	}
 
 	locale = shortTimeFormatLocale
+}
+
+interface GroupEfficiency {
+	efficiency: number
 }

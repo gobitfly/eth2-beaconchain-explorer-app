@@ -61,6 +61,11 @@ const routes: Routes = [
 		path: 'clients',
 		loadChildren: () => import('./pages/clients/clients.module').then((m) => m.ClientsPageModule),
 	},
+	{
+		path: 'notification-history',
+		loadChildren: () =>
+			import('./pages/notification-history/notification-history-routing.module').then((m) => m.NotificationHistoryPageRoutingModule),
+	},
 ]
 @NgModule({
 	imports: [RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })],

@@ -24,9 +24,10 @@ import { FormsModule } from '@angular/forms'
 import { IonicModule } from '@ionic/angular'
 
 import { MessageComponent } from './message.component'
+import { FirebaseUtilsModule } from 'src/app/utils/Firebase.module'
 
 @NgModule({
-	imports: [CommonModule, FormsModule, IonicModule],
+	imports: [CommonModule, FormsModule, IonicModule, FirebaseUtilsModule],
 	declarations: [MessageComponent],
 	exports: [MessageComponent],
 })

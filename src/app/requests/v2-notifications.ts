@@ -16,7 +16,14 @@
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
 import { APIRequest, Method, NoContent } from './requests'
-import { NotificationDashboardsTableRow, NotificationSettings, NotificationValidatorDashboardDetail } from './types/notifications'
+import {
+	NotificationClientsTableRow,
+	NotificationDashboardsTableRow,
+	NotificationMachinesTableRow,
+	NotificationNetworksTableRow,
+	NotificationSettings,
+	NotificationValidatorDashboardDetail,
+} from './types/notifications'
 import { dashboardID, setID } from './v2-dashboard'
 
 export class V2SubscribedClients extends APIRequest<NotificationSettings> {
@@ -57,7 +64,50 @@ export class V2NotificationsDashboard extends APIRequest<NotificationDashboardsT
 	resource = 'users/me/notifications/dashboards'
 	method = Method.GET
 
-	constructor() {
+	constructor(cursor: string, limit: number = 25) {
 		super()
+		this.resource += '?limit=' + limit
+		if (cursor !== undefined) {
+			this.resource += '&cursor=' + cursor
+		}
+	}
+}
+
+export class V2NotificationsMachines extends APIRequest<NotificationMachinesTableRow[]> {
+	resource = 'users/me/notifications/machines'
+	method = Method.GET
+
+	constructor(cursor: string, limit: number = 25) {
+		super()
+		this.resource += '?limit=' + limit
+		if (cursor !== undefined) {
+			this.resource += '&cursor=' + cursor
+		}
+	}
+}
+
+export class V2NotificationsClients extends APIRequest<NotificationClientsTableRow[]> {
+	resource = 'users/me/notifications/clients'
+	method = Method.GET
+
+	constructor(cursor: string, limit: number = 25) {
+		super()
+		this.resource += '?limit=' + limit
+		if (cursor !== undefined) {
+			this.resource += '&cursor=' + cursor
+		}
+	}
+}
+
+export class V2NotificationsNetworks extends APIRequest<NotificationNetworksTableRow[]> {
+	resource = 'users/me/notifications/networks'
+	method = Method.GET
+
+	constructor(cursor: string, limit: number = 25) {
+		super()
+		this.resource += '?limit=' + limit
+		if (cursor !== undefined) {
+			this.resource += '&cursor=' + cursor
+		}
 	}
 }

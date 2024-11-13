@@ -20,7 +20,7 @@
 import { ApiService } from '../services/api.service'
 import { Injectable } from '@angular/core'
 import { StorageService } from '../services/storage.service'
-import FirebaseUtils from './FirebaseUtils'
+import { pushLastTokenUpstream } from './FirebaseUtils'
 import { LoadingController, Platform } from '@ionic/angular'
 import { MerchantUtils } from './MerchantUtils'
 
@@ -40,7 +40,6 @@ export class OAuthUtils {
 	constructor(
 		private api: ApiService,
 		private storage: StorageService,
-		private firebaseUtils: FirebaseUtils,
 		private loadingController: LoadingController,
 		private merchantUtils: MerchantUtils,
 		private flavor: FlavorUtils,
@@ -136,7 +135,7 @@ export class OAuthUtils {
 	}
 
 	async postLogin() {
-		await this.firebaseUtils.pushLastTokenUpstream(true)
+		await pushLastTokenUpstream(this.storage, this.api, true)
 		//await this.sync.fullSync()
 
 		await this.merchantUtils.getUserInfo(true, () => {

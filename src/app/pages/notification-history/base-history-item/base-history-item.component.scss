@@ -1,0 +1,70 @@
+// Copyright (C) 2024 Bitfly GmbH
+//
+// This file is part of Beaconchain Dashboard.
+//
+// Beaconchain Dashboard is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Beaconchain Dashboard is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
+@import '../../../../theme/variables.scss';
+
+ion-item {
+	background: var(--ion-card-background);
+	margin: auto;
+}
+
+ion-icon {
+	position: absolute !important;
+	top: 5px;
+	margin-top: 0px !important;
+	padding-top: 0px !important;
+	margin-bottom: 29px;
+}
+
+.title {
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.date-container {
+	width: 40px;
+	text-align: center;
+}
+
+.status-container {
+	font-size: var(--smaller-info-size);
+}
+
+.inner {
+	padding-top: 2px;
+}
+
+ion-item {
+	display: flex;
+	align-items: stretch; /* Ensures all children have the same height */
+}
+
+.start,
+.status-container {
+	display: flex;
+	align-items: flex-start; /* Align content to the top */
+	justify-content: flex-start; /* Align content to the top vertically */
+	flex-direction: column; /* Stack child elements vertically if needed */
+}
+
+.date-container,
+.status-container {
+	align-self: flex-start; /* Overrides any default centering */
+}
+
+.infi-item-middle-container {
+	flex: 1; /* Allows the middle container to expand and fill available space */
+}

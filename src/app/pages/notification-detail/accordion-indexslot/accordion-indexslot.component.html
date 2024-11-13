@@ -6,14 +6,15 @@
 
 	<div class="ion-padding" slot="content" class="content">
 		<div style="padding-top: 8px"></div>
-		<app-notification-validator
+		<app-notification-item
 			*ngFor="let val of dataCapped()"
-			[title]="getTitle(val)"
-			[extra]="getExtra(val)"
+			[title]="ac.arrayComputed(val, getTitle)"
+			[extra]="ac.arrayComputed(val, getExtra)"
 			[extraName]="extraName"
-			[imgSeed]="getImageSeed(val)"
-			[titlePrefix]="getTitlePrefix(val)">
-		</app-notification-validator>
+			[imgSeed]="ac.arrayComputed(val, getImageSeed)"
+			[titlePrefix]="ac.arrayComputed(val, getTitlePrefix)"
+			[externalLink]="ac.arrayComputed(val, getExternalLink)">
+		</app-notification-item>
 		<div style="text-align: center; padding-bottom: 12px" *ngIf="isDataCapped()" (click)="showAll()">
 			<span style="font-size: var(--smallest-info-size); letter-spacing: 0.9px; opacity: 0.8">{{ CAP_MAX_SHOW }} of {{ this.data.length }}</span
 			><br />

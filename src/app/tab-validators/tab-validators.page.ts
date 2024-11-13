@@ -49,6 +49,8 @@ import ThemeUtils from '../utils/ThemeUtils'
 import { APIError, APIForbiddenError, APINotFoundError, ApiResult, APIUnauthorizedError } from '../requests/requests'
 import { AppComponent } from '../app.component'
 import { V2MyDashboards } from '../requests/v2-user'
+import { NotificationDetailComponent } from '../pages/notification-detail/notification-detail.component'
+import FirebaseUtils from '../utils/FirebaseUtils'
 
 const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = 'validators_tab'
@@ -101,7 +103,8 @@ export class Tab2Page implements OnInit {
 		protected dashboardUtils: DashboardUtils,
 		private themeUtils: ThemeUtils,
 		private platform: Platform,
-		private alertController: AlertController
+		private alertController: AlertController,
+		private firebaseUtils: FirebaseUtils
 	) {
 		this.dashboardUtils.dashboardAwareListener.register(DASHBOARD_UPDATE)
 
@@ -118,7 +121,23 @@ export class Tab2Page implements OnInit {
 		})
 	}
 
+	async doOnNotificationClick(id: dashboardID, groupID: number, epoch: number, chainID: number): Promise<void> {
+		const modal = await this.modalCtrl.create({
+			component: NotificationDetailComponent,
+			componentProps: {
+				dashboardID: id,
+				groupID: groupID,
+				epoch: epoch,
+				chainID: chainID,
+			},
+		})
+		modal.present()
+
+		await modal.onWillDismiss()
+	}
+
 	ngOnInit() {
+		this.firebaseUtils.setNotificationClickCallback(this.doOnNotificationClick)
 		this.setup()
 	}
 

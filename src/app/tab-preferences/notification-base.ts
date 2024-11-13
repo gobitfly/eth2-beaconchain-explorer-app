@@ -1,10 +1,9 @@
-import { Injectable, OnInit, signal, WritableSignal } from '@angular/core'
+import { Injectable, signal, WritableSignal } from '@angular/core'
 import { Platform } from '@ionic/angular'
 import { ApiService } from 'src/app/services/api.service'
 import { StorageService } from 'src/app/services/storage.service'
 import { AlertService } from '../services/alert.service'
 import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils'
-import FirebaseUtils from '../utils/FirebaseUtils'
 import { V2ChangeSubscribedClient, V2SubscribedClients } from '../requests/v2-notifications'
 
 @Injectable({
@@ -18,7 +17,6 @@ export class NotificationBase {
 	constructor(
 		protected api: ApiService,
 		protected storage: StorageService,
-		protected firebaseUtils: FirebaseUtils,
 		protected platform: Platform,
 		protected alerts: AlertService,
 		protected clientUpdate: ClientUpdateUtils

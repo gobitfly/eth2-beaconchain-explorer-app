@@ -32,7 +32,6 @@ import { environment } from 'src/environments/environment'
 import { findConfigForKey } from './utils/NetworkData'
 import { ApiService } from './services/api.service'
 import { Toast } from '@capacitor/toast'
-
 @Component({
 	selector: 'app-root',
 	templateUrl: 'app.component.html',

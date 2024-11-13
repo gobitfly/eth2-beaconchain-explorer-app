@@ -79,18 +79,18 @@ export interface NotificationValidatorDashboardDetail {
 	dashboard_name: string
 	group_name: string
 	validator_offline: number /* uint64 */[] // validator indices
+	validator_offline_reminder: number /* uint64 */[] // validator indices; TODO not filled yet
+	validator_online: NotificationEventValidatorBackOnline[]
 	group_efficiency_below?: number /* float64 */ // fill with the `group_efficiency_below` threshold if event is present
 	proposal_missed: IndexSlots[]
-	proposal_done: IndexBlocks[]
-	upcoming_proposals: IndexSlots[]
+	proposal_success: IndexBlocks[]
+	proposal_upcoming: IndexSlots[]
 	slashed: number /* uint64 */[] // validator indices
-	sync_committee: number /* uint64 */[] // validator indices
+	sync: number /* uint64 */[] // validator indices
 	attestation_missed: IndexEpoch[] // index (epoch)
 	withdrawal: NotificationEventWithdrawal[]
-	validator_offline_reminder: number /* uint64 */[] // validator indices; TODO not filled yet
-	validator_back_online: NotificationEventValidatorBackOnline[]
-	min_collateral_reached: Address[] // node addresses
-	max_collateral_reached: Address[] // node addresses
+	min_collateral: Address[] // node addresses
+	max_collateral: Address[] // node addresses
 }
 export type InternalGetUserNotificationsValidatorDashboardResponse = ApiDataResponse<NotificationValidatorDashboardDetail>
 export interface NotificationEventExecution {

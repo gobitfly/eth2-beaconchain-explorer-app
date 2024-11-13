@@ -37,6 +37,7 @@ import { SummaryChartModule } from './summary-chart/summary-chart.module'
 import { RewardChartModule } from './reward-chart/reward-chart.module'
 import { FullPageLoadingComponent } from '../full-page-loading/full-page-loading.component'
 import { FullPageOfflineComponent } from '../full-page-offline/full-page-offline.component'
+import { FirebaseUtilsModule } from 'src/app/utils/Firebase.module'
 
 @NgModule({
 	imports: [
@@ -56,6 +57,7 @@ import { FullPageOfflineComponent } from '../full-page-offline/full-page-offline
 		RewardChartModule,
 		FullPageLoadingComponent,
 		FullPageOfflineComponent,
+		FirebaseUtilsModule,
 	],
 	declarations: [DashboardComponent],
 	exports: [DashboardComponent],

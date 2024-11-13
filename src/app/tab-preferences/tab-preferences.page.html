@@ -146,6 +146,12 @@
 			<ion-label>Notification Preferences</ion-label>
 			<ion-icon class="opacity-icon" slot="end" name="chevron-forward-outline"></ion-icon>
 		</ion-item>
+
+		<ion-item lines="none" [disabled]="!authUser" [routerLink]="['/notification-history']">
+			<ion-icon class="opacity-icon" slot="start" name="file-tray-full-outline"></ion-icon>
+			<ion-label>Notification History</ion-label>
+			<ion-icon class="opacity-icon" slot="end" name="chevron-forward-outline"></ion-icon>
+		</ion-item>
 	</ion-list>
 
 	<ion-list-header>

@@ -12,7 +12,7 @@
 			</ion-button>
 		</ion-buttons>
 
-		<ion-title style="padding: 0px 10px">{{ title }}</ion-title>
+		<ion-title style="padding: 0px 10px">Notification</ion-title>
 	</ion-toolbar>
 
 	<ion-toolbar>
@@ -33,21 +33,26 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" [scrollY]="false">
+	<ion-list-header
+		><ion-label>{{ title }}</ion-label></ion-list-header
+	>
+
 	<cdk-virtual-scroll-viewport
-		itemSize="53"
+		itemSize="61"
 		minBufferPx="1600"
 		maxBufferPx="2000"
 		[hidden]="!dataSource || !dataSource.hasItems()"
 		class="ion-content-scroll-host">
-		<div *cdkVirtualFor="let item of dataSource; index as idx" style="background-color: var(--ion-card-background)">
-			<app-notification-validator
+		<div *cdkVirtualFor="let val of dataSource; index as idx" style="background-color: var(--ion-card-background)">
+			<app-notification-item
 				[first]="idx == 0"
 				[last]="idx == dataSource.cachedData.length - 1"
-				[title]="getTitle(item)"
-				[extra]="getExtra(item)"
+				[title]="ac.arrayComputed(val, getTitle)"
+				[extra]="ac.arrayComputed(val, getExtra)"
 				[extraName]="extraName"
-				[imgSeed]="getImageSeed(item)"
-				[titlePrefix]="getTitlePrefix(item)"></app-notification-validator>
+				[imgSeed]="ac.arrayComputed(val, getImageSeed)"
+				[titlePrefix]="ac.arrayComputed(val, getTitlePrefix)"
+				[externalLink]="ac.arrayComputed(val, getExternalLink)"></app-notification-item>
 		</div>
 	</cdk-virtual-scroll-viewport>
 </ion-content>

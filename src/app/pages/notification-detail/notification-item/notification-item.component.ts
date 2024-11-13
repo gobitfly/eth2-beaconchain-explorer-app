@@ -1,14 +1,15 @@
 import { CommonModule } from '@angular/common'
 import { Component, Input } from '@angular/core'
+import { Browser } from '@capacitor/browser'
 import { IonicModule } from '@ionic/angular'
 import * as blockies from 'ethereum-blockies'
 
 @Component({
-	selector: 'app-notification-validator',
+	selector: 'app-notification-item',
 	standalone: true,
 	imports: [IonicModule, CommonModule],
-	templateUrl: './validator.component.html',
-	styleUrl: './validator.component.scss',
+	templateUrl: './notification-item.component.html',
+	styleUrl: './notification-item.component.scss',
 })
 export class NotificationValidator {
 	@Input() title: number | string
@@ -18,6 +19,7 @@ export class NotificationValidator {
 	@Input() titlePrefix: string
 	@Input() first: boolean
 	@Input() last: boolean
+	@Input() externalLink?: string
 
 	imgData: string
 
@@ -32,5 +34,9 @@ export class NotificationValidator {
 		blockies.create({ seed: this.imgSeed + '' }).toDataURL()
 		const dataurl = blockies.create({ seed: this.imgSeed + '', size: 8, scale: 7 }).toDataURL()
 		return dataurl
+	}
+
+	openExternalLink() {
+		Browser.open({ url: this.externalLink, toolbarColor: '#2f2e42' })
 	}
 }

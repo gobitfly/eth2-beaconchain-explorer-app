@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core'
 import { DEBUG_SETTING_OVERRIDE_PACKAGE } from 'src/app/services/storage.service'
-import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils'
+import { CURRENT_TOKENKEY, pushLastTokenUpstream } from 'src/app/utils/FirebaseUtils'
 import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page'
 import { Toast } from '@capacitor/toast'
 import { Clients } from '../../utils/ClientUpdateUtils'
 import { DevModeEnabled } from 'src/app/services/storage.service'
-import { V2Me, V2RegisterPushNotificationToken } from 'src/app/requests/v2-user'
+import { V2RegisterPushNotificationToken } from 'src/app/requests/v2-user'
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import versionInfo from '../../../version.json'
 
@@ -102,7 +102,7 @@ export class DevPage extends Tab3Page implements OnInit {
 	}
 
 	updateFirebaseToken() {
-		this.firebaseUtils.pushLastTokenUpstream(true)
+		pushLastTokenUpstream(this.storage, this.api, true)
 	}
 
 	permanentDevMode() {

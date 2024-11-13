@@ -30,7 +30,7 @@ import { HelppagePage } from '../pages/helppage/helppage.page'
 import Unit, { MAPPING } from '../utils/EthereumUnits'
 import { AlertController } from '@ionic/angular'
 
-import FirebaseUtils from '../utils/FirebaseUtils'
+import FirebaseUtils, { updateRemoteNotificationToken } from '../utils/FirebaseUtils'
 import { Platform } from '@ionic/angular'
 import { AlertService } from '../services/alert.service'
 import { LicencesPage } from '../pages/licences/licences.page'
@@ -291,7 +291,7 @@ export class Tab3Page {
 	}
 
 	async confirmLogout() {
-		await this.firebaseUtils.updateRemoteNotificationToken('', true)
+		await updateRemoteNotificationToken(this.storage, this.api, '', true)
 
 		// TODO destroy session on server by calling logout
 

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core'
-import { NotificationValidator } from '../validator/validator.component'
+import { NotificationValidator } from '../notification-item/notification-item.component'
 import { Address, IndexBlocks, IndexEpoch, IndexSlots } from 'src/app/requests/types/common'
 import { IonicModule } from '@ionic/angular'
 import { CommonModule } from '@angular/common'
@@ -7,6 +7,7 @@ import { NotificationEventValidatorBackOnline, NotificationEventWithdrawal } fro
 import { MoreComponent } from '../more/more.component'
 import { ModalController } from '@ionic/angular'
 import BigNumber from 'bignumber.js'
+import { ApiService } from 'src/app/services/api.service'
 
 export type DataTypes = IndexEpoch | IndexSlots | IndexBlocks | NotificationEventValidatorBackOnline | NotificationEventWithdrawal | Address | number
 
@@ -28,7 +29,12 @@ export class AccordionIndexslotComponent {
 
 	CAP_MAX_SHOW = 3 // could be variable in the future, like if it's just one category show more. But 3 is fine for now
 
-	constructor(private modalCtrl: ModalController) {}
+	ac = new ArrayComputer()
+
+	constructor(
+		private modalCtrl: ModalController,
+		private api: ApiService
+	) {}
 
 	isDataCapped = () => {
 		return this.data.length > CAP
@@ -53,19 +59,51 @@ export class AccordionIndexslotComponent {
 		await modal.onWillDismiss()
 	}
 
+	getExternalLink = (data: DataTypes) => {
+		return getExternalLink(data, this.api)
+	}
 	getTitlePrefix = getTitlePrefix
 	getImageSeed = getImageSeed
 	getTitle = getTitle
 	getExtra = getExtra
 }
 
+/**
+ * Utility class to handle caching of array computed values
+ */
+export class ArrayComputer {
+	private cache = new Map<string, unknown>()
+
+	arrayComputed<T>(data: DataTypes, computeFn: (data: DataTypes) => T): T {
+		const key = JSON.stringify({ data, fn: computeFn.toString() })
+
+		if (!this.cache.has(key)) {
+			const result = computeFn(data)
+			this.cache.set(key, result)
+		}
+		return this.cache.get(key) as T
+	}
+}
+
+export function getExternalLink(data: DataTypes, api: ApiService) {
+	if (typeof data === 'number') {
+		return api.getBaseUrl() + '/validator/' + data
+	} else if ('index' in data) {
+		return api.getBaseUrl() + '/validator/' + data.index
+	} else if ('hash' in data) {
+		return api.getBaseUrl() + '/address/' + data.hash
+	}
+	return null
+}
+
 export function getTitlePrefix(data: DataTypes) {
+	console.log('tesss', data)
 	if (typeof data === 'number' || 'index' in data) {
 		return 'Validator'
 	} else if ('hash' in data) {
 		return ''
 	}
-	return '?'
+	return ''
 }
 
 export function getImageSeed(data: DataTypes) {

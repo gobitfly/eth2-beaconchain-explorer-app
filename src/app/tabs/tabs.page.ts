@@ -18,8 +18,10 @@
  */
 
 import { Component } from '@angular/core'
-import FirebaseUtils from '../utils/FirebaseUtils'
+import FirebaseUtils, { pushLastTokenUpstream } from '../utils/FirebaseUtils'
 import V2Migrator from '../utils/V2Migrator'
+import { ApiService } from '../services/api.service'
+import { StorageService } from '../services/storage.service'
 
 @Component({
 	selector: 'app-tabs',
@@ -29,7 +31,9 @@ import V2Migrator from '../utils/V2Migrator'
 export class TabsPage {
 	constructor(
 		private firebaseUtils: FirebaseUtils,
-		private v2Migrator: V2Migrator
+		private v2Migrator: V2Migrator,
+		private storage: StorageService,
+		private api: ApiService
 	) {}
 
 	ionViewDidEnter() {
@@ -46,7 +50,7 @@ export class TabsPage {
 
 		// lazy sync & notification token update
 		setTimeout(() => {
-			this.firebaseUtils.pushLastTokenUpstream(false)
+			pushLastTokenUpstream(this.storage, this.api, false)
 			// await this.sync.mightSyncUpAndSyncDelete()
 			// await this.sync.syncAllSettings()
 		}, 5000)

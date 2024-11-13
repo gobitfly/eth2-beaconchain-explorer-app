@@ -11,6 +11,10 @@
 					<span *ngIf="extraName">{{ extraName }}: </span> <span [innerHTML]="extra"></span>
 				</ion-label>
 			</div>
+
+			<div slot="end" class="status-container" *ngIf="externalLink">
+				<ion-icon (click)="openExternalLink()" name="open-outline" class="opacity-icon"></ion-icon>
+			</div>
 		</ion-item>
 	</div>
 </div>

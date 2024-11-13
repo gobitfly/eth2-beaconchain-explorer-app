@@ -27,6 +27,7 @@ import { DashboardComponentModule } from '../components/dashboard/dashboard.modu
 
 import { Tab3PageRoutingModule } from './tab-preferences-routing.module'
 import { PipesModule } from '../pipes/pipes.module'
+import { FirebaseUtilsModule } from '../utils/Firebase.module'
 
 @NgModule({
 	imports: [
@@ -38,6 +39,7 @@ import { PipesModule } from '../pipes/pipes.module'
 		Tab3PageRoutingModule,
 		PipesModule,
 		RouterModule,
+		FirebaseUtilsModule,
 	],
 	declarations: [Tab3Page],
 })

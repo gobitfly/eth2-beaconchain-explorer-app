@@ -17,47 +17,66 @@
  * along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@import '../../../theme/variables.scss';
+@import '../../../../theme/variables.scss';
 
-.status ion-icon {
-	width: 100%;
-	display: flex;
-	justify-content: center;
-	text-align: center;
-	padding-bottom: 12px;
+.infi-item-middle-container {
+	margin-right: 15px;
 }
 
-.status {
-	text-align: center;
-	background-color: var(--ion-toolbar-background) !important;
-	background-image: var(--status-bg-image);
-	padding-bottom: 0px;
+ion-item {
+	background: var(--ion-card-background);
+	margin: auto;
 }
 
-.status-icon {
-	margin-top: 7px;
-	font-size: 69px;
-	color: var(--x-toolbar-title-color);
+ion-icon {
+	position: absolute !important;
+	top: 5px;
+	margin-top: 0px !important;
+	padding-top: 0px !important;
+	margin-bottom: 29px;
 }
 
-.status-text {
-	margin: 0 35px;
+.title {
+	font-size: 16px;
+	font-weight: bold;
 }
 
-.container {
-	background-color: var(--ion-background-color);
+.balance {
+	font-weight: bold;
 }
 
-.white {
-	color: var(--x-toolbar-title-color);
-	padding: 0px;
-	margin: 0px;
+.status-container {
+	margin-left: 0px;
+	margin-right: 25px;
+}
+
+.onlinestate {
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-bottom: 3px;
+	padding-top: 5px;
+	margin: 0;
+}
+
+.start {
+	width: 50px;
 }
 
 .inner {
-	margin: var(--edge-padding);
+	padding-top: 2px;
 }
 
-.background {
-	background-color: var(--ion-item-background);
+.blockie {
+	margin-top: 5px;
+	left: 16px;
+	margin-left: 5px;
+	border-radius: 20%;
+	height: 40px;
+	width: 40px;
+	image-rendering: pixelated;
+}
+
+.opacity-icon {
+	color: var(--ion-tab-button-color);
+	opacity: 0.95;
 }

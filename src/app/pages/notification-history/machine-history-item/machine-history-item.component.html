@@ -1,0 +1,7 @@
+<app-base-history-item [data]="data" [first]="first" [last]="last" [title]="title">
+	<ion-label class="smaller-info smaller-pad">{{ data.machine_name }}</ion-label>
+	<ion-label class="smaller-info smaller-pad" *ngIf="extra"
+		>{{ preExtra }} <mark>{{ extra }}</mark
+		>%</ion-label
+	>
+</app-base-history-item>

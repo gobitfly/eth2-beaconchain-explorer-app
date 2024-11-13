@@ -19,61 +19,10 @@
 
 @import '../../../../theme/variables.scss';
 
-.infi-item-middle-container {
-	margin-right: 15px;
-}
-
-ion-item {
-	background: var(--ion-card-background);
-	margin: auto;
-}
-
-ion-icon {
-	position: absolute !important;
-	top: 5px;
-	right: 5px;
-	margin-top: 0px !important;
-	padding-top: 0px !important;
-	margin-bottom: 29px;
-}
-
-.title {
-	font-size: 16px;
-	font-weight: bold;
-}
-
-.balance {
-	font-weight: bold;
-}
-
-.status-container {
-	height: 76px;
-	margin-right: 2px;
-	margin-left: 0px;
-}
-
-.onlinestate {
-	padding-left: 5px;
-	padding-right: 5px;
-	padding-bottom: 3px;
-	padding-top: 5px;
-	margin: 0;
-}
-
-.start {
-	width: 50px;
-}
-
-.inner {
-	padding-top: 2px;
-}
-
-.blockie {
-	margin-top: 5px;
-	left: 16px;
-	margin-left: 5px;
-	border-radius: 20%;
-	height: 40px;
-	width: 40px;
-	image-rendering: pixelated;
+ion-badge {
+	--padding-end: 8px;
+	--padding-start: 8px;
+	--padding-top: 5px;
+	--padding-bottom: 4px;
+	min-width: 36px;
 }

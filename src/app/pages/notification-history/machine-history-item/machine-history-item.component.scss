@@ -16,25 +16,3 @@
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
 @import '../../../../theme/variables.scss';
-
-.content {
-	background: var(--ion-card-background);
-}
-
-// ion-label {
-// 	color: var(--x-toolbar-title-color) !important;
-// }
-ion-icon {
-	// color: var(--x-toolbar-title-color) !important;
-
-	margin: 8px 0px;
-	margin-right: 20px;
-}
-
-.accordion-header {
-	padding: 0 5px;
-}
-
-.background {
-	background-color: var(--ion-item-background);
-}

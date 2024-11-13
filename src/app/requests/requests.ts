@@ -18,7 +18,6 @@
  */
 
 import { HttpHeaders, HttpOptions } from '@capacitor/core'
-import { StatsResponse } from '../controllers/MachineController'
 import { Response } from '../services/api.service'
 import { ZoneInfo } from '../utils/AdUtils'
 

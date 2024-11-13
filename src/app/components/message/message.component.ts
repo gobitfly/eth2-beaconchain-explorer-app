@@ -18,7 +18,7 @@
  */
 
 import { Component, OnInit, Input } from '@angular/core'
-import { AlertController, ModalController } from '@ionic/angular'
+import { AlertController } from '@ionic/angular'
 import { StorageService } from 'src/app/services/storage.service'
 import confetti from 'canvas-confetti'
 
@@ -50,7 +50,6 @@ export class MessageComponent implements OnInit {
 	constructor(
 		private alertController: AlertController,
 		private storage: StorageService,
-		private modalController: ModalController,
 		private firebaseUtils: FirebaseUtils
 	) {}
 

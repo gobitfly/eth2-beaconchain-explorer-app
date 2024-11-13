@@ -1,12 +1,21 @@
 import { Component, Input, ViewChild } from '@angular/core'
 import { InfiniteScrollDataSource, loadMoreType } from 'src/app/utils/InfiniteScrollDataSource'
-import { DataTypes, getExtra, getImageSeed, getTitle, getTitlePrefix } from '../accordion-indexslot/accordion-indexslot.component'
+import {
+	ArrayComputer,
+	DataTypes,
+	getExternalLink,
+	getExtra,
+	getImageSeed,
+	getTitle,
+	getTitlePrefix,
+} from '../accordion-indexslot/accordion-indexslot.component'
 import { IonicModule, ModalController, SearchbarCustomEvent } from '@ionic/angular'
 import { CommonModule } from '@angular/common'
-import { NotificationValidator } from '../validator/validator.component'
+import { NotificationValidator } from '../notification-item/notification-item.component'
 import { ScrollingModule } from '@angular/cdk/scrolling'
 import { IonSearchbar } from '@ionic/angular/standalone'
 import { AlertService } from 'src/app/services/alert.service'
+import { ApiService } from 'src/app/services/api.service'
 
 const PAGE_SIZE = 25
 
@@ -34,9 +43,12 @@ export class MoreComponent {
 
 	@ViewChild('searchbarRef', { static: true }) searchbarRef: IonSearchbar
 
+	ac = new ArrayComputer()
+
 	constructor(
 		private modalCtrl: ModalController,
-		private alerts: AlertService
+		private alerts: AlertService,
+		private api: ApiService
 	) {}
 
 	ngOnInit() {
@@ -181,6 +193,9 @@ export class MoreComponent {
 		this.modalCtrl.dismiss()
 	}
 
+	getExternalLink = (data: DataTypes) => {
+		return getExternalLink(data, this.api)
+	}
 	getTitlePrefix = getTitlePrefix
 	getImageSeed = getImageSeed
 	getTitle = (data: DataTypes) => {

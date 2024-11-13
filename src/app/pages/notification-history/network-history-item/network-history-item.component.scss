@@ -17,47 +17,4 @@
  * along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@import '../../../theme/variables.scss';
-
-.status ion-icon {
-	width: 100%;
-	display: flex;
-	justify-content: center;
-	text-align: center;
-	padding-bottom: 12px;
-}
-
-.status {
-	text-align: center;
-	background-color: var(--ion-toolbar-background) !important;
-	background-image: var(--status-bg-image);
-	padding-bottom: 0px;
-}
-
-.status-icon {
-	margin-top: 7px;
-	font-size: 69px;
-	color: var(--x-toolbar-title-color);
-}
-
-.status-text {
-	margin: 0 35px;
-}
-
-.container {
-	background-color: var(--ion-background-color);
-}
-
-.white {
-	color: var(--x-toolbar-title-color);
-	padding: 0px;
-	margin: 0px;
-}
-
-.inner {
-	margin: var(--edge-padding);
-}
-
-.background {
-	background-color: var(--ion-item-background);
-}
+@import '../../../../theme/variables.scss';

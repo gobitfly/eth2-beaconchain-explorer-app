@@ -51,90 +51,102 @@
 					</ion-list>
 				</div>
 
-				<ion-accordion-group (ionChange)="accordionChange()" [multiple]="true" [value]="defaultOpenAccordions()" #accordionGroup>
-					<!-- Please be aware of the priority segments. If you add new notifications please fit it in the according category -->
-					<!-- Note that this priority only comes into play if multiple notifications happened in this epoch and specifies the display order -->
+				<div class="background">
+					<div class="inner">
+						<!-- Non accordion single row stuff -->
+						<ion-item slot="header" class="accordion-header" *ngIf="groupEfficiency()">
+							<ion-icon slot="start" name="analytics-outline"></ion-icon>
+							<ion-label
+								>Group Efficiency below <mark>{{ groupEfficiency().efficiency | number: '1.0-2' }}%</mark></ion-label
+							>
+						</ion-item>
 
-					<!-- Priority 1: Slashed -->
+						<ion-accordion-group (ionChange)="accordionChange()" [multiple]="true" [value]="defaultOpenAccordions()" #accordionGroup>
+							<!-- Please be aware of the priority segments. If you add new notifications please fit it in the according category -->
+							<!-- Note that this priority only comes into play if multiple notifications happened in this epoch and specifies the display order -->
 
-					<app-accordion-indexslot
-						name="Validators Slashed"
-						key="slashed"
-						icon="alert-circle-outline"
-						[data]="data()?.slashed"></app-accordion-indexslot>
+							<!-- Priority 1: Slashed -->
 
-					<!-- Priority 2: Important notifications that might require user to take immediate action -->
+							<app-accordion-indexslot
+								name="Validators Slashed"
+								key="slashed"
+								icon="alert-circle-outline"
+								[data]="data()?.slashed"></app-accordion-indexslot>
 
-					<app-accordion-indexslot
-						name="Validators Offline"
-						key="validator_offline"
-						icon="cloud-offline-outline"
-						[data]="data()?.validator_offline"></app-accordion-indexslot>
+							<!-- Priority 2: Important notifications that might require user to take immediate action -->
 
-					<app-accordion-indexslot
-						name="Proposals Missed"
-						extraName="Slots"
-						key="proposal_missed"
-						icon="cube-outline"
-						[data]="data()?.proposal_missed"></app-accordion-indexslot>
+							<app-accordion-indexslot
+								name="Validators Offline"
+								key="validator_offline"
+								icon="cloud-offline-outline"
+								[data]="data()?.validator_offline"></app-accordion-indexslot>
 
-					<app-accordion-indexslot
-						name="Attestations Missed"
-						extraName="Epoch"
-						key="attestation_missed"
-						icon="cloud-offline-outline"
-						[data]="data()?.attestation_missed"></app-accordion-indexslot>
+							<app-accordion-indexslot
+								name="Proposals Missed"
+								extraName="Slots"
+								key="proposal_missed"
+								icon="cube-outline"
+								[data]="data()?.proposal_missed"></app-accordion-indexslot>
 
-					<!-- Priority 3: Use needs to be aware of something that comes up soon, in case it might affect his workflow (planned maintenance etc) -->
+							<app-accordion-indexslot
+								name="Attestations Missed"
+								extraName="Epoch"
+								key="attestation_missed"
+								icon="cloud-offline-outline"
+								[data]="data()?.attestation_missed"></app-accordion-indexslot>
 
-					<!-- Upcoming proposal is minutes away, upcoming sync hours. So display proposal first -->
-					<app-accordion-indexslot
-						name="Upcoming Proposals"
-						extraName="Slots"
-						key="upcoming_proposals"
-						icon="cube-outline"
-						[data]="data()?.upcoming_proposals"></app-accordion-indexslot>
+							<!-- Priority 3: Use needs to be aware of something that comes up soon, in case it might affect his workflow (planned maintenance etc) -->
 
-					<app-accordion-indexslot
-						name="Sync Committee"
-						key="sync_committee"
-						icon="sync-circle-outline"
-						[data]="data()?.sync_committee"></app-accordion-indexslot>
+							<!-- Upcoming proposal is minutes away, upcoming sync hours. So display proposal first -->
+							<app-accordion-indexslot
+								name="Upcoming Proposals"
+								extraName="Slots"
+								key="upcoming_proposals"
+								icon="cube-outline"
+								[data]="data()?.proposal_upcoming"></app-accordion-indexslot>
 
-					<!-- Priority 4: Infos -->
+							<app-accordion-indexslot
+								name="Sync Committee"
+								key="sync_committee"
+								icon="sync-circle-outline"
+								[data]="data()?.sync"></app-accordion-indexslot>
 
-					<app-accordion-indexslot
-						name="Validators Back Online"
-						key="validator_back_online"
-						extraName="Epochs Offline"
-						icon="cloud-outline"
-						[data]="data()?.validator_back_online"></app-accordion-indexslot>
+							<!-- Priority 4: Infos -->
 
-					<app-accordion-indexslot
-						name="Proposed Blocks"
-						extraName="Blocks"
-						key="proposal_done"
-						icon="cube-outline"
-						[data]="data()?.proposal_done"></app-accordion-indexslot>
+							<app-accordion-indexslot
+								name="Validators Back Online"
+								key="validator_back_online"
+								extraName="Epochs Offline"
+								icon="cloud-outline"
+								[data]="data()?.validator_online"></app-accordion-indexslot>
 
-					<app-accordion-indexslot
-						name="Withdrawals"
-						key="withdrawal"
-						extraName="Amount"
-						icon="wallet-outline"
-						[data]="data()?.withdrawal"></app-accordion-indexslot>
+							<app-accordion-indexslot
+								name="Proposed Blocks"
+								extraName="Blocks"
+								key="proposal_done"
+								icon="cube-outline"
+								[data]="data()?.proposal_success"></app-accordion-indexslot>
 
-					<app-accordion-indexslot
-						name="RP Min Collateral"
-						key="min_collateral_reached"
-						icon="information-circle-outline"
-						[data]="data()?.min_collateral_reached"></app-accordion-indexslot>
-					<app-accordion-indexslot
-						name="RP Max Collateral"
-						key="max_collateral_reached"
-						icon="information-circle-outline"
-						[data]="data()?.max_collateral_reached"></app-accordion-indexslot>
-				</ion-accordion-group>
+							<app-accordion-indexslot
+								name="Withdrawals"
+								key="withdrawal"
+								extraName="Amount"
+								icon="wallet-outline"
+								[data]="data()?.withdrawal"></app-accordion-indexslot>
+
+							<app-accordion-indexslot
+								name="RP Min Collateral"
+								key="min_collateral_reached"
+								icon="information-circle-outline"
+								[data]="data()?.min_collateral"></app-accordion-indexslot>
+							<app-accordion-indexslot
+								name="RP Max Collateral"
+								key="max_collateral_reached"
+								icon="information-circle-outline"
+								[data]="data()?.max_collateral"></app-accordion-indexslot>
+						</ion-accordion-group>
+					</div>
+				</div>
 			</div>
 		</app-full-page-offline>
 	</app-full-page-loading>
