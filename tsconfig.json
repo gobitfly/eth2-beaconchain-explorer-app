@@ -22,6 +22,16 @@
 		"strictBindCallApply": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitAny": true,
+		"paths": {
+			"@services/*": ["src/app/services/*"],
+			"@pages/*": ["src/app/pages/*"],
+			"@utils/*": ["src/app/utils/*"],
+			"@requests/*": ["src/app/requests/*"],
+			"@pipes/*": ["src/app/pipes/*"],
+			"@modals/*": ["src/app/modals/*"],
+			"@controllers/*": ["src/app/controllers/*"],
+			"@components/*": ["src/app/components/*"]
+		}
 	},
 	"angularCompilerOptions": {
 		"fullTemplateTypeCheck": true,
@@ -30,5 +40,5 @@
 		"strictInputAccessModifiers": true,
 		"strictDomEventTypes": true,
 		"preserveWhitespaces": false
-	},
+	}
 }

@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ApiService } from '../services/api.service'
+import { ApiService } from '@services/api.service'
 import { Injectable } from '@angular/core'
-import { BitflyAdRequest, BitflyAdResponse } from '../requests/requests'
+import { BitflyAdRequest, BitflyAdResponse } from '@requests/requests'
 import { MerchantUtils } from './MerchantUtils'
 
 export type AdLocation = 'dashboard' | 'validator' | 'machines' | 'blocks' | 'info'

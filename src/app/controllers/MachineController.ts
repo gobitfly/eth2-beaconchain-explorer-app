@@ -18,8 +18,8 @@
  */
 
 import { Options } from 'highcharts'
-import { HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from '../services/storage.service'
-import { MachineMetricNode, MachineMetricSystem, MachineMetricValidator } from '../requests/types/machine_metrics'
+import { HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from '@services/storage.service'
+import { MachineMetricNode, MachineMetricSystem, MachineMetricValidator } from '@requests/types/machine_metrics'
 import { environment } from 'src/environments/environment'
 
 const OFFLINE_THRESHOLD = 8 * 60 * 1000

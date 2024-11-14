@@ -18,29 +18,35 @@
  */
 
 import { IonicModule } from '@ionic/angular'
-import { RouterModule } from '@angular/router'
 import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
-import { Tab3Page } from './tab-preferences.page'
-import { DashboardComponentModule } from '../components/dashboard/dashboard.module'
-
-import { Tab3PageRoutingModule } from './tab-preferences-routing.module'
-import { PipesModule } from '../pipes/pipes.module'
-import { FirebaseUtilsModule } from '../utils/Firebase.module'
+import { Tab2Page } from './tab-validators.page'
+import { ValidatorComponentModule } from '@components/validator/validator.module'
+import { OfflineComponentModule } from '@components/offline/offline.module'
+import { Tab2PageRoutingModule } from './tab-validators-routing.module'
+import { MessageComponentModule } from '@components/message/message.module'
+import { AdComponentModule } from '@components/ad/ad.module'
+import { ScrollingModule } from '@angular/cdk/scrolling'
+import { FullPageLoadingComponent } from '@components/full-page-loading/full-page-loading.component'
+import { FullPageOfflineComponent } from '@components/full-page-offline/full-page-offline.component'
+import { LoadingComponent } from '@components/loading/loading.component'
 
 @NgModule({
 	imports: [
+		ScrollingModule,
 		IonicModule,
 		CommonModule,
 		FormsModule,
-		DashboardComponentModule,
-		RouterModule.forChild([{ path: '', component: Tab3Page }]),
-		Tab3PageRoutingModule,
-		PipesModule,
-		RouterModule,
-		FirebaseUtilsModule,
+		ValidatorComponentModule,
+		OfflineComponentModule,
+		Tab2PageRoutingModule,
+		MessageComponentModule,
+		AdComponentModule,
+		FullPageLoadingComponent,
+		FullPageOfflineComponent,
+		LoadingComponent,
 	],
-	declarations: [Tab3Page],
+	declarations: [Tab2Page],
 })
-export class Tab3PageModule {}
+export class Tab2PageModule {}

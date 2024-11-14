@@ -8,9 +8,9 @@ import { SubscribePageRoutingModule } from './subscribe-routing.module'
 
 import { SubscribePage } from './subscribe.page'
 import { PipesModule } from '../../pipes/pipes.module'
-import { BoolCheckedComponent } from '../../components/bool-checked/bool-checked.component'
-import { FullPageLoadingComponent } from '../../components/full-page-loading/full-page-loading.component'
-import { FullPageOfflineComponent } from '../../components/full-page-offline/full-page-offline.component'
+import { BoolCheckedComponent } from '@components/bool-checked/bool-checked.component'
+import { FullPageLoadingComponent } from '@components/full-page-loading/full-page-loading.component'
+import { FullPageOfflineComponent } from '@components/full-page-offline/full-page-offline.component'
 
 @NgModule({
 	imports: [

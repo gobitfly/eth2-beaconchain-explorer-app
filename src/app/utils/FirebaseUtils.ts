@@ -17,9 +17,9 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
-import { APIRequest, UpdateTokenRequest } from '../requests/requests'
+import { ApiService } from '@services/api.service'
+import { StorageService } from '@services/storage.service'
+import { APIRequest, UpdateTokenRequest } from '@requests/requests'
 import { Injectable } from '@angular/core'
 import { AlertController, Platform } from '@ionic/angular'
 
@@ -28,8 +28,8 @@ import { ActionPerformed, PushNotifications, PushNotificationSchema } from '@cap
 import { LocalNotifications } from '@capacitor/local-notifications'
 import FlavorUtils from './FlavorUtils'
 import { Capacitor } from '@capacitor/core'
-import { V2RegisterPushNotificationToken } from '../requests/v2-user'
-import { dashboardID } from '../requests/v2-dashboard'
+import { V2RegisterPushNotificationToken } from '@requests/v2-user'
+import { dashboardID } from '@requests/v2-dashboard'
 
 const LOGTAG = '[FirebaseUtils]'
 

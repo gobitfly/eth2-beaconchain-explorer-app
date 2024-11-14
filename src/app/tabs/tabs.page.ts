@@ -18,10 +18,10 @@
  */
 
 import { Component } from '@angular/core'
-import FirebaseUtils, { pushLastTokenUpstream } from '../utils/FirebaseUtils'
-import V2Migrator from '../utils/V2Migrator'
-import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
+import FirebaseUtils, { pushLastTokenUpstream } from '@utils/FirebaseUtils'
+import V2Migrator from '@utils/V2Migrator'
+import { ApiService } from '@services/api.service'
+import { StorageService } from '@services/storage.service'
 
 @Component({
 	selector: 'app-tabs',

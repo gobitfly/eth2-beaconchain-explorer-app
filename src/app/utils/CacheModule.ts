@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { StorageService, replacer } from '../services/storage.service'
+import { StorageService, replacer } from '@services/storage.service'
 import { Validator } from './ValidatorUtils'
 
 const LOGTAG = '[CacheModule]'

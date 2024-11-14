@@ -18,8 +18,8 @@
  */
 
 import { HttpHeaders, HttpOptions } from '@capacitor/core'
-import { Response } from '../services/api.service'
-import { ZoneInfo } from '../utils/AdUtils'
+import { Response } from '@services/api.service'
+import { ZoneInfo } from '@utils/AdUtils'
 
 export enum Method {
 	GET,

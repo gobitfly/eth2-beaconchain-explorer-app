@@ -18,16 +18,16 @@
  */
 
 import { IonicModule } from '@ionic/angular'
+import { RouterModule } from '@angular/router'
 import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
-import { Tab1Page } from './tab-dashboard.page'
-import { DashboardComponentModule } from '../components/dashboard/dashboard.module'
-import { OfflineComponentModule } from '../components/offline/offline.module'
-import { HelpComponentModule } from '../components/help/help.module'
-import { Tab1PageRoutingModule } from './tab-dashboard-routing.module'
-import { PipesModule } from '../pipes/pipes.module'
-import { FullPageOfflineComponent } from '../components/full-page-offline/full-page-offline.component'
+import { Tab3Page } from './tab-preferences.page'
+import { DashboardComponentModule } from '@components/dashboard/dashboard.module'
+
+import { Tab3PageRoutingModule } from './tab-preferences-routing.module'
+import { PipesModule } from '../../pipes/pipes.module'
+import { FirebaseUtilsModule } from '@utils/Firebase.module'
 
 @NgModule({
 	imports: [
@@ -35,12 +35,12 @@ import { FullPageOfflineComponent } from '../components/full-page-offline/full-p
 		CommonModule,
 		FormsModule,
 		DashboardComponentModule,
-		OfflineComponentModule,
-		Tab1PageRoutingModule,
-		HelpComponentModule,
+		RouterModule.forChild([{ path: '', component: Tab3Page }]),
+		Tab3PageRoutingModule,
 		PipesModule,
-		FullPageOfflineComponent,
+		RouterModule,
+		FirebaseUtilsModule,
 	],
-	declarations: [Tab1Page],
+	declarations: [Tab3Page],
 })
-export class Tab1PageModule {}
+export class Tab3PageModule {}

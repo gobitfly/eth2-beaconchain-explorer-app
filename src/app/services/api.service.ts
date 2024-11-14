@@ -18,18 +18,18 @@
  */
 
 import { Injectable, WritableSignal } from '@angular/core'
-import { APIRequest, ApiResult, Method, RefreshTokenRequest } from '../requests/requests'
+import { APIRequest, ApiResult, Method, RefreshTokenRequest } from '@requests/requests'
 import { StorageService } from './storage.service'
 import { ApiNetwork } from '../models/StorageTypes'
 import { Mutex } from 'async-mutex'
-import { findChainNetworkById, findConfigForKey, MAP } from '../utils/NetworkData'
-import { CacheModule } from '../utils/CacheModule'
+import { findChainNetworkById, findConfigForKey, MAP } from '@utils/NetworkData'
+import { CacheModule } from '@utils/CacheModule'
 import { Capacitor, HttpOptions } from '@capacitor/core'
 import { CapacitorCookies } from '@capacitor/core'
-import { LatestStateData } from '../requests/types/latest_state'
-import { V2LatestState } from '../requests/v2-network'
+import { LatestStateData } from '@requests/types/latest_state'
+import { V2LatestState } from '@requests/v2-network'
 import { environment } from 'src/environments/environment'
-import { MigrateV1AuthToV2 } from '../requests/v2-auth'
+import { MigrateV1AuthToV2 } from '@requests/v2-auth'
 const LOGTAG = '[ApiService]'
 
 const SERVER_TIMEOUT = 25000

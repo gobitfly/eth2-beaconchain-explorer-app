@@ -20,7 +20,7 @@
 import { Component, Input } from '@angular/core'
 import { Browser } from '@capacitor/browser'
 import { Toast } from '@capacitor/toast'
-import ClientUpdateUtils, { Release } from '../../utils/ClientUpdateUtils'
+import ClientUpdateUtils, { Release } from '@utils/ClientUpdateUtils'
 
 @Component({
 	selector: 'app-clientupdate',

@@ -18,19 +18,19 @@
  */
 
 import { Component, computed, OnInit, signal, ViewChild, WritableSignal } from '@angular/core'
-import { Validator } from '../utils/ValidatorUtils'
+import { Validator } from '@utils/ValidatorUtils'
 import { AlertController, IonSearchbar, ModalController, Platform, SearchbarCustomEvent } from '@ionic/angular'
-import { ApiService, capitalize } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
-import { AlertService } from '../services/alert.service'
-import { SubscribePage } from '../pages/subscribe/subscribe.page'
-import { MerchantUtils } from '../utils/MerchantUtils'
+import { ApiService, capitalize } from '@services/api.service'
+import { StorageService } from '@services/storage.service'
+import { AlertService } from '@services/alert.service'
+import { SubscribePage } from '@pages/subscribe/subscribe.page'
+import { MerchantUtils } from '@utils/MerchantUtils'
 
 import { Keyboard } from '@capacitor/keyboard'
 
-import { UnitconvService } from '../services/unitconv.service'
-import { InfiniteScrollDataSource, loadMoreType } from '../utils/InfiniteScrollDataSource'
-import { DashboardAndGroupSelectComponent } from '../modals/dashboard-and-group-select/dashboard-and-group-select.component'
+import { UnitconvService } from '@services/unitconv.service'
+import { InfiniteScrollDataSource, loadMoreType } from '@utils/InfiniteScrollDataSource'
+import { DashboardAndGroupSelectComponent } from '@modals/dashboard-and-group-select/dashboard-and-group-select.component'
 import {
 	dashboardID,
 	V2AddDashboardGroup,
@@ -38,19 +38,19 @@ import {
 	V2DeleteDashboardGroup,
 	V2GetValidatorFromDashboard,
 	V2UpdateDashboardGroup,
-} from '../requests/v2-dashboard'
-import { VDBManageValidatorsTableRow, VDBOverviewData, VDBOverviewGroup } from '../requests/types/validator_dashboard'
+} from '@requests/v2-dashboard'
+import { VDBManageValidatorsTableRow, VDBOverviewData, VDBOverviewGroup } from '@requests/types/validator_dashboard'
 import { Toast } from '@capacitor/toast'
 import { Haptics } from '@capacitor/haptics'
-import { searchType, V2SearchValidators } from '../requests/v2-search'
-import { SearchResult } from '../requests/types/common'
-import { DashboardUtils, isLocalDashboard } from '../utils/DashboardUtils'
-import ThemeUtils from '../utils/ThemeUtils'
-import { APIError, APIForbiddenError, APINotFoundError, ApiResult, APIUnauthorizedError } from '../requests/requests'
-import { AppComponent } from '../app.component'
-import { V2MyDashboards } from '../requests/v2-user'
-import { NotificationDetailComponent } from '../pages/notification-detail/notification-detail.component'
-import FirebaseUtils from '../utils/FirebaseUtils'
+import { searchType, V2SearchValidators } from '@requests/v2-search'
+import { SearchResult } from '@requests/types/common'
+import { DashboardUtils, isLocalDashboard } from '@utils/DashboardUtils'
+import ThemeUtils from '@utils/ThemeUtils'
+import { APIError, APIForbiddenError, APINotFoundError, ApiResult, APIUnauthorizedError } from '@requests/requests'
+import { AppComponent } from '../../app.component'
+import { V2MyDashboards } from '@requests/v2-user'
+import { NotificationDetailComponent } from '@pages/notification-detail/notification-detail.component'
+import FirebaseUtils from '@utils/FirebaseUtils'
 
 const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = 'validators_tab'

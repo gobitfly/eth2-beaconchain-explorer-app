@@ -16,7 +16,7 @@
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
 import { APIRequest, Method, NoContent } from './requests'
-import { Response } from '../services/api.service'
+import { Response } from '@services/api.service'
 import { UserInfo } from './types/user'
 import { UserDashboardsData } from './types/dashboard'
 import { StatsResponse } from '../controllers/MachineController'

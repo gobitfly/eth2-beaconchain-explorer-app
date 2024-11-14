@@ -18,10 +18,10 @@
  */
 
 import { Injectable } from '@angular/core'
-import ClientUpdateUtils from '../utils/ClientUpdateUtils'
+import ClientUpdateUtils from '@utils/ClientUpdateUtils'
 import { ApiService } from './api.service'
 import { StorageService } from './storage.service'
-import { V2DashboardOverview, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '../requests/v2-dashboard'
+import { V2DashboardOverview, V2DashboardSummaryGroupTable, V2DashboardSummaryTable } from '@requests/v2-dashboard'
 
 @Injectable({
 	providedIn: 'root',

@@ -29,14 +29,14 @@ import {
 	V2DashboardSummaryChart,
 	V2DashboardSummaryGroupTable,
 	V2DashboardSummaryTable,
-} from '../requests/v2-dashboard'
-import { ApiService, LatestStateWithTime } from '../services/api.service'
-import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '../requests/types/validator_dashboard'
+} from '@requests/v2-dashboard'
+import { ApiService, LatestStateWithTime } from '@services/api.service'
+import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '@requests/types/validator_dashboard'
 import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/core'
-import { ChartData } from '../requests/types/common'
-import { DashboardUtils } from '../utils/DashboardUtils'
-import { ChainNetwork, findChainNetworkById } from '../utils/NetworkData'
-import { sumBigInt } from '../utils/MathUtils'
+import { ChartData } from '@requests/types/common'
+import { DashboardUtils } from '@utils/DashboardUtils'
+import { ChainNetwork, findChainNetworkById } from '@utils/NetworkData'
+import { sumBigInt } from '@utils/MathUtils'
 export interface SummaryChartOptions {
 	aggregation: Aggregation
 	startTime: number

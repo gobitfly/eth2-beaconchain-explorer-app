@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core'
 import { ModalController } from '@ionic/angular'
-import { MachineDetailPage } from '../pages/machine-detail/machine-detail.page'
-import MachineController, { ProcessedStats } from '../controllers/MachineController'
+import { MachineDetailPage } from '@pages/machine-detail/machine-detail.page'
+import MachineController, { ProcessedStats } from '../../controllers/MachineController'
 import { AlertService } from 'src/app/services/alert.service'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { StorageService } from 'src/app/services/storage.service'
@@ -10,7 +10,7 @@ import { OAuthUtils } from 'src/app/utils/OAuthUtils'
 import { Browser } from '@capacitor/browser'
 import { ApiService } from 'src/app/services/api.service'
 import { APIUnauthorizedError } from 'src/app/requests/requests'
-import { V2MyMachines } from '../requests/v2-user'
+import { V2MyMachines } from '@requests/v2-user'
 
 @Component({
 	selector: 'app-machines',

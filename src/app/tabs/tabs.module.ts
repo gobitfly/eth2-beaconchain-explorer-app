@@ -25,7 +25,7 @@ import { FormsModule } from '@angular/forms'
 import { TabsPageRoutingModule } from './tabs-routing.module'
 
 import { TabsPage } from './tabs.page'
-import { FirebaseUtilsModule } from '../utils/Firebase.module'
+import { FirebaseUtilsModule } from '@utils/Firebase.module'
 
 @NgModule({
 	imports: [IonicModule, CommonModule, FormsModule, TabsPageRoutingModule, FirebaseUtilsModule],

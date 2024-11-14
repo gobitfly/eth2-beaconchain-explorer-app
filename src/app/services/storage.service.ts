@@ -19,14 +19,14 @@
 
 import { Injectable, isDevMode, OnInit } from '@angular/core'
 import * as StorageTypes from '../models/StorageTypes'
-import { findConfigForKey } from '../utils/NetworkData'
-import { CacheModule } from '../utils/CacheModule'
+import { findConfigForKey } from '@utils/NetworkData'
+import { CacheModule } from '@utils/CacheModule'
 import { ModalController, Platform } from '@ionic/angular'
 
 import { Preferences } from '@capacitor/preferences'
-import { LogviewPage } from '../pages/logview/logview.page'
+import { LogviewPage } from '@pages/logview/logview.page'
 import { Device } from '@capacitor/device'
-import { Aggregation, dashboardID, Period } from '../requests/v2-dashboard'
+import { Aggregation, dashboardID, Period } from '@requests/v2-dashboard'
 import { StorageMirror } from 'storage-mirror'
 import { environment } from 'src/environments/environment'
 

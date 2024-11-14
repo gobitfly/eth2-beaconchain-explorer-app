@@ -21,32 +21,26 @@ import { IonicModule } from '@ionic/angular'
 import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
-import { Tab2Page } from './tab-validators.page'
-import { ValidatorComponentModule } from '../components/validator/validator.module'
-import { OfflineComponentModule } from '../components/offline/offline.module'
-import { Tab2PageRoutingModule } from './tab-validators-routing.module'
-import { MessageComponentModule } from '../components/message/message.module'
-import { AdComponentModule } from '../components/ad/ad.module'
-import { ScrollingModule } from '@angular/cdk/scrolling'
-import { FullPageLoadingComponent } from '../components/full-page-loading/full-page-loading.component'
-import { FullPageOfflineComponent } from '../components/full-page-offline/full-page-offline.component'
-import { LoadingComponent } from '../components/loading/loading.component'
+import { Tab1Page } from './tab-dashboard.page'
+import { DashboardComponentModule } from '@components/dashboard/dashboard.module'
+import { OfflineComponentModule } from '@components/offline/offline.module'
+import { HelpComponentModule } from '@components/help/help.module'
+import { Tab1PageRoutingModule } from './tab-dashboard-routing.module'
+import { PipesModule } from '../../pipes/pipes.module'
+import { FullPageOfflineComponent } from '@components/full-page-offline/full-page-offline.component'
 
 @NgModule({
 	imports: [
-		ScrollingModule,
 		IonicModule,
 		CommonModule,
 		FormsModule,
-		ValidatorComponentModule,
+		DashboardComponentModule,
 		OfflineComponentModule,
-		Tab2PageRoutingModule,
-		MessageComponentModule,
-		AdComponentModule,
-		FullPageLoadingComponent,
+		Tab1PageRoutingModule,
+		HelpComponentModule,
+		PipesModule,
 		FullPageOfflineComponent,
-		LoadingComponent,
 	],
-	declarations: [Tab2Page],
+	declarations: [Tab1Page],
 })
-export class Tab2PageModule {}
+export class Tab1PageModule {}

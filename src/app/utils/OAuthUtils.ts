@@ -17,9 +17,9 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiService } from '../services/api.service'
+import { ApiService } from '@services/api.service'
 import { Injectable } from '@angular/core'
-import { StorageService } from '../services/storage.service'
+import { StorageService } from '@services/storage.service'
 import { pushLastTokenUpstream } from './FirebaseUtils'
 import { LoadingController, Platform } from '@ionic/angular'
 import { MerchantUtils } from './MerchantUtils'
@@ -29,9 +29,9 @@ import { Device } from '@capacitor/device'
 import { OAuth2AuthenticateOptions, OAuth2Client } from '@byteowls/capacitor-oauth2'
 import FlavorUtils from './FlavorUtils'
 import { mergeLocalDashboardToRemote } from './DashboardUtils'
-import { getProperty } from '../requests/requests'
-import { AlertService } from '../services/alert.service'
-import { NotificationBase } from '../tab-preferences/notification-base'
+import { getProperty } from '@requests/requests'
+import { AlertService } from '@services/alert.service'
+import { NotificationBase } from '../tabs/tab-preferences/notification-base'
 
 @Injectable({
 	providedIn: 'root',

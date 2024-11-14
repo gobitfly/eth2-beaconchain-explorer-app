@@ -17,14 +17,14 @@
 
 import { Injectable } from '@angular/core'
 import { CapacitorUpdater, DownloadOptions } from '@capgo/capacitor-updater'
-import { ApiService } from '../services/api.service'
-import { V2AckBundleUpdate, V2LatestAppBundle } from '../requests/v2-general'
-import { AlertService } from '../services/alert.service'
+import { ApiService } from '@services/api.service'
+import { V2AckBundleUpdate, V2LatestAppBundle } from '@requests/v2-general'
+import { AlertService } from '@services/alert.service'
 import { AppUpdate, AppUpdateAvailability } from '@capawesome/capacitor-app-update'
 import { App } from '@capacitor/app'
 import versionInfo from '../../version.json'
 import { Capacitor } from '@capacitor/core'
-import { StorageService } from '../services/storage.service'
+import { StorageService } from '@services/storage.service'
 
 @Injectable({
 	providedIn: 'root',

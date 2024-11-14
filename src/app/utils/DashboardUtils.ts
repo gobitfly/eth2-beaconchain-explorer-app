@@ -16,24 +16,24 @@
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Injectable } from '@angular/core'
-import { StorageService } from '../services/storage.service'
-import { ApiService } from '../services/api.service'
-import { V2MyDashboards } from '../requests/v2-user'
+import { StorageService } from '@services/storage.service'
+import { ApiService } from '@services/api.service'
+import { V2MyDashboards } from '@requests/v2-user'
 import {
 	dashboardID,
 	V2AddValidatorToDashboard,
 	V2AddValidatorToDashboardData,
 	V2CreateDashboard,
 	V2DeleteValidatorFromDashboard,
-} from '../requests/v2-dashboard'
+} from '@requests/v2-dashboard'
 import { Toast } from '@capacitor/toast'
-import { AlertService } from '../services/alert.service'
+import { AlertService } from '@services/alert.service'
 import { OAuthUtils } from './OAuthUtils'
 import { MerchantUtils } from './MerchantUtils'
-import { SearchResult } from '../requests/types/common'
-import { searchType } from '../requests/v2-search'
-import { UnitconvService } from '../services/unitconv.service'
-import { APIError, APIUnauthorizedError } from '../requests/requests'
+import { SearchResult } from '@requests/types/common'
+import { searchType } from '@requests/v2-search'
+import { UnitconvService } from '@services/unitconv.service'
+import { APIError, APIUnauthorizedError } from '@requests/requests'
 
 @Injectable({
 	providedIn: 'root',
@@ -351,7 +351,7 @@ class SeachResultHandler {
 			searchResult.type == searchType.validatorsByDepositEnsName ||
 			searchResult.type == searchType.validatorsByDepositAddress ||
 			searchResult.type == searchType.validatorsByWithdrawalAddress ||
-			searchResult.type == searchType.validatorsByWithdrawalCredential 
+			searchResult.type == searchType.validatorsByWithdrawalCredential
 		)
 	}
 

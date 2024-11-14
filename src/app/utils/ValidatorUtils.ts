@@ -17,12 +17,12 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiService } from '../services/api.service'
-import { StorageService, StoredShare } from '../services/storage.service'
+import { ApiService } from '@services/api.service'
+import { StorageService, StoredShare } from '@services/storage.service'
 import { Injectable } from '@angular/core'
 import BigNumber from 'bignumber.js'
-import { UnitconvService } from '../services/unitconv.service'
-import { VDBManageValidatorsTableRow } from '../requests/types/validator_dashboard'
+import { UnitconvService } from '@services/unitconv.service'
+import { VDBManageValidatorsTableRow } from '@requests/types/validator_dashboard'
 
 export const SAVED = 0 // stored locally
 export const MEMORY = 1 // Search results etc

@@ -16,14 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ApiService } from '../services/api.service'
+import { ApiService } from '@services/api.service'
 import { Injectable } from '@angular/core'
-import { StorageService } from '../services/storage.service'
-import { MigrateV1AuthToV2 } from '../requests/v2-auth'
+import { StorageService } from '@services/storage.service'
+import { MigrateV1AuthToV2 } from '@requests/v2-auth'
 import * as StorageTypes from '../models/StorageTypes'
 import { ValidatorUtils } from './ValidatorUtils'
 import { DashboardUtils } from './DashboardUtils'
-import { AlertService } from '../services/alert.service'
+import { AlertService } from '@services/alert.service'
 import { MerchantUtils } from './MerchantUtils'
 
 const SETTING_MIGRATION_COMPLETED = 'migration_completed'

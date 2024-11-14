@@ -20,7 +20,7 @@
 import { Component, Input } from '@angular/core'
 import * as blockies from 'ethereum-blockies'
 import { getDisplayName, ValidatorState } from 'src/app/utils/ValidatorUtils'
-import { UnitconvService } from '../../services/unitconv.service'
+import { UnitconvService } from '@services/unitconv.service'
 import { VDBManageValidatorsTableRow } from 'src/app/requests/types/validator_dashboard'
 
 @Component({

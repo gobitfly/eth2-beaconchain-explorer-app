@@ -18,12 +18,12 @@
  */
 
 import { Injectable } from '@angular/core'
-import Unit, { convertDisplayable, MAPPING, convertEthUnits } from '../utils/EthereumUnits'
+import Unit, { convertDisplayable, MAPPING, convertEthUnits } from '@utils/EthereumUnits'
 import { StorageService } from './storage.service'
 import BigNumber from 'bignumber.js'
 import { ApiService } from './api.service'
-import { CoinbaseExchangeRequest, CoinbaseExchangeResponse } from '../requests/requests'
-import { CHAIN_NETWORKS, ChainNetwork, findChainNetworkById } from '../utils/NetworkData'
+import { CoinbaseExchangeRequest, CoinbaseExchangeResponse } from '@requests/requests'
+import { CHAIN_NETWORKS, ChainNetwork, findChainNetworkById } from '@utils/NetworkData'
 
 const STORAGE_KEY_CONS = 'prefered_unit' // cons
 const STORAGE_KEY_EXEC = 'prefered_unit_exec'

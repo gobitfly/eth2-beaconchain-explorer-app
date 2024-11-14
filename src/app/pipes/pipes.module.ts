@@ -24,7 +24,7 @@ import { ValuestylePipe } from './valuestyle.pipe'
 import { PercentageabsPipe } from './percentageabs.pipe'
 import { FadeinpipePipe, FadeoutpipePipe } from './fadeoutpipe.pipe'
 import { TimeagoModule, TimeagoFormatter } from 'ngx-timeago'
-import { CustomTimeAgoFormatter } from '../utils/CustomTimeAgoFormatter'
+import { CustomTimeAgoFormatter } from '@utils/CustomTimeAgoFormatter'
 import { DelegatorPipe } from './delegater.pipi'
 import { ShorterTimeAgo } from './shortertimeago.pipe'
 

@@ -8,8 +8,8 @@ import { BlockDetailPageRoutingModule } from './block-detail-routing.module'
 
 import { BlockDetailPage } from './block-detail.page'
 import { PipesModule } from 'src/app/pipes/pipes.module'
-import { FullPageLoadingComponent } from '../../components/full-page-loading/full-page-loading.component'
-import { FullPageOfflineComponent } from '../../components/full-page-offline/full-page-offline.component'
+import { FullPageLoadingComponent } from '@components/full-page-loading/full-page-loading.component'
+import { FullPageOfflineComponent } from '@components/full-page-offline/full-page-offline.component'
 
 @NgModule({
 	imports: [CommonModule, FormsModule, IonicModule, BlockDetailPageRoutingModule, PipesModule, FullPageLoadingComponent, FullPageOfflineComponent],

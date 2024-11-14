@@ -2,9 +2,9 @@ import { Injectable, signal, WritableSignal } from '@angular/core'
 import { Platform } from '@ionic/angular'
 import { ApiService } from 'src/app/services/api.service'
 import { StorageService } from 'src/app/services/storage.service'
-import { AlertService } from '../services/alert.service'
-import ClientUpdateUtils, { Clients } from '../utils/ClientUpdateUtils'
-import { V2ChangeSubscribedClient, V2SubscribedClients } from '../requests/v2-notifications'
+import { AlertService } from '@services/alert.service'
+import ClientUpdateUtils, { Clients } from '@utils/ClientUpdateUtils'
+import { V2ChangeSubscribedClient, V2SubscribedClients } from '@requests/v2-notifications'
 
 @Injectable({
 	providedIn: 'root',

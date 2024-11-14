@@ -18,10 +18,10 @@
  */
 
 import { Component, OnInit, Input, SimpleChange, signal, WritableSignal, computed, Signal, effect, Output, EventEmitter } from '@angular/core'
-import { UnitconvService } from '../../services/unitconv.service'
-import { ApiService } from '../../services/api.service'
+import { UnitconvService } from '@services/unitconv.service'
+import { ApiService } from '@services/api.service'
 import { OverviewData2 } from '../../controllers/OverviewController'
-import { Release } from '../../utils/ClientUpdateUtils'
+import { Release } from '@utils/ClientUpdateUtils'
 import ThemeUtils from 'src/app/utils/ThemeUtils'
 import { StorageService } from 'src/app/services/storage.service'
 import confetti from 'canvas-confetti'

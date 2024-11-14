@@ -1,7 +1,7 @@
 import { Component, Input, WritableSignal, signal, SimpleChanges } from '@angular/core'
 import { ModalController } from '@ionic/angular'
-import ClientUpdateUtils, { ClientInfo, Clients } from '../../utils/ClientUpdateUtils'
-import { NotificationBase } from '../../tab-preferences/notification-base'
+import ClientUpdateUtils, { ClientInfo, Clients } from '@utils/ClientUpdateUtils'
+import { NotificationBase } from '../../tabs/tab-preferences/notification-base'
 import { StorageService } from 'src/app/services/storage.service'
 @Component({
 	selector: 'app-clients',

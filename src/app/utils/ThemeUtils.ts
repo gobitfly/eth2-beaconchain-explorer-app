@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { StorageService } from '../services/storage.service'
+import { StorageService } from '@services/storage.service'
 import { Injectable } from '@angular/core'
 import { NavigationBarPlugin } from 'capacitor-navigationbarnx'
 import { Capacitor, Plugins } from '@capacitor/core'

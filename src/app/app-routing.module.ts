@@ -51,7 +51,7 @@ const routes: Routes = [
 	},
 	{
 		path: 'tab-blocks',
-		loadChildren: () => import('./tab-blocks/tab-blocks.module').then((m) => m.TabBlocksPageModule),
+		loadChildren: () => import('./tabs/tab-blocks/tab-blocks.module').then((m) => m.TabBlocksPageModule),
 	},
 	{
 		path: 'block-detail',

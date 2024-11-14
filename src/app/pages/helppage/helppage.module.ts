@@ -26,7 +26,7 @@ import { IonicModule } from '@ionic/angular'
 import { HelppagePageRoutingModule } from './helppage-routing.module'
 
 import { HelppagePage } from './helppage.page'
-import { HelpComponentModule } from '../../components/help/help.module'
+import { HelpComponentModule } from '@components/help/help.module'
 
 @NgModule({
 	imports: [CommonModule, FormsModule, IonicModule, HelppagePageRoutingModule, HelpComponentModule],

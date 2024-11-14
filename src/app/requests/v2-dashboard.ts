@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
-import { encodeDashboardID } from '../utils/DashboardHelper'
+import { encodeDashboardID } from '@utils/DashboardHelper'
 import { APIRequest, Method, NoContent } from './requests'
 import { ChartData } from './types/common'
 import {

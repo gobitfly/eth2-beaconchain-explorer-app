@@ -19,7 +19,7 @@
 
 import { Pipe, PipeTransform } from '@angular/core'
 import BigNumber from 'bignumber.js'
-import { UnitconvService } from '../services/unitconv.service'
+import { UnitconvService } from '@services/unitconv.service'
 
 @Pipe({
 	name: 'mcurrency',

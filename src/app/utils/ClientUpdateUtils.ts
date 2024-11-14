@@ -17,10 +17,10 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
+import { ApiService } from '@services/api.service'
+import { StorageService } from '@services/storage.service'
 import { Injectable, OnInit } from '@angular/core'
-import { GithubReleaseRequest, GithubReleaseResponse } from '../requests/requests'
+import { GithubReleaseRequest, GithubReleaseResponse } from '@requests/requests'
 
 export interface ClientInfo {
 	key: string

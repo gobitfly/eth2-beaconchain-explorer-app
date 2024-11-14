@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Response } from '../services/api.service'
+import { Response } from '@services/api.service'
 import { APIRequest, Method } from './requests'
 
 export interface V2AuthResponse {
