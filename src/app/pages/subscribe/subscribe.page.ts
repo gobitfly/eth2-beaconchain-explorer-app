@@ -225,13 +225,6 @@ export class SubscribePage implements OnInit {
 					text: 'Error restoring purchase',
 				})
 			})
-			if (this.merchant.isPremium()) {
-				Toast.show({
-					text: 'Purchase restored',
-				})
-				this.closeModal()
-				return
-			}
 		}
 
 		if (this.merchant.isPremium()) {
