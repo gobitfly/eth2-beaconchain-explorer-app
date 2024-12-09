@@ -42,8 +42,7 @@ import {
 import { VDBManageValidatorsTableRow, VDBOverviewData, VDBOverviewGroup } from '@requests/types/validator_dashboard'
 import { Toast } from '@capacitor/toast'
 import { Haptics } from '@capacitor/haptics'
-import { searchType, V2SearchValidators } from '@requests/v2-search'
-import { SearchResult } from '@requests/types/common'
+import { SearchResultData, searchType, V2SearchValidators } from '@requests/v2-search'
 import { DashboardUtils, isLocalDashboard } from '@utils/DashboardUtils'
 import ThemeUtils from '@utils/ThemeUtils'
 import { APIError, APIForbiddenError, APINotFoundError, ApiResult, APIUnauthorizedError } from '@requests/requests'
@@ -79,7 +78,7 @@ export class Tab2Page implements OnInit {
 	validatorLoader: ValidatorLoader = null
 
 	searchResultMode = false
-	searchResult: SearchResult[] = null
+	searchResult: SearchResultData[] = null
 
 	selectedGroup: number
 
@@ -382,45 +381,8 @@ export class Tab2Page implements OnInit {
 
 		this.searchResultMode = true
 		this.searchResult = null
-		const isETH1Address = searchString.startsWith('0x') && searchString.length == 42
-		const isWithdrawalCredential = searchString.startsWith('0x') && searchString.length == 66
-		const isPubkey = searchString.startsWith('0x') && searchString.length == 98
-
-		const isAllHexadecimal = /^[0-9a-fA-F]+$/.test(searchString) && searchString.length % 2 == 0 && searchString.length > 10
-
-		const isIndexList = /^(\d+,)+\d+$/.test(searchString)
-
 		const chainID = await this.api.getCurrentDashboardChainID()
-
-		// a bit of optimization so search is faster than just scanning for all types
-		let searchTypes: searchType[] = undefined
-		if (isETH1Address) {
-			searchTypes = [searchType.validatorsByWithdrawalAddress, searchType.validatorsByDepositAddress]
-		} else if (isWithdrawalCredential) {
-			searchTypes = [searchType.validatorsByWithdrawalCredential]
-		} else if (isPubkey) {
-			searchTypes = [searchType.validatorByPublicKey]
-		} else if (isAllHexadecimal) {
-			searchTypes = [
-				searchType.validatorsByWithdrawalAddress,
-				searchType.validatorsByDepositAddress,
-				searchType.validatorsByWithdrawalCredential,
-				searchType.validatorByPublicKey,
-			]
-		} else if (isIndexList) {
-			const indexes = searchString.split(',').map((i) => parseInt(i))
-			this.searchResult = [
-				{
-					type: searchType.validatorByIndexBatch,
-					chain_id: chainID,
-					str_value: searchString,
-					num_value: indexes.length,
-				} as SearchResult,
-			]
-			return
-		} else {
-			searchTypes = [searchType.validatorByIndex, searchType.validatorsByDepositEnsName, searchType.validatorsByWithdrawalEns]
-		}
+		const searchTypes = this.getFittingSearchTypes(searchString)
 
 		const result = await this.api.execute2(new V2SearchValidators(searchString, [chainID], searchTypes), ASSOCIATED_CACHE_KEY)
 		if (result.error) {
@@ -443,7 +405,36 @@ export class Tab2Page implements OnInit {
 		this.searchResult = result.data
 	}
 
-	addSearchResult(item: SearchResult) {
+	getFittingSearchTypes(searchString: string): searchType[] {
+		const isETH1Address = searchString.startsWith('0x') && searchString.length == 42
+		const isWithdrawalCredential = searchString.startsWith('0x') && searchString.length == 66
+		const isPubkey = searchString.startsWith('0x') && searchString.length == 98
+
+		const isAllHexadecimal = /^[0-9a-fA-F]+$/.test(searchString) && searchString.length % 2 == 0 && searchString.length > 10
+
+		const isIndexList = /^(\d+,)+\d+$/.test(searchString)
+
+		// a bit of optimization so search is faster than just scanning for all types if we know input is a certain way
+		if (isETH1Address) {
+			return [searchType.validatorsByWithdrawalAddress, searchType.validatorsByDepositAddress]
+		} else if (isWithdrawalCredential) {
+			return [searchType.validatorsByWithdrawalCredential]
+		} else if (isPubkey) {
+			return [searchType.validatorByPublicKey]
+		} else if (isAllHexadecimal) {
+			return [
+				searchType.validatorsByWithdrawalAddress,
+				searchType.validatorsByDepositAddress,
+				searchType.validatorsByWithdrawalCredential,
+				searchType.validatorByPublicKey,
+			]
+		} else if (isIndexList) {
+			return [searchType.validatorList]
+		} 
+		return [searchType.validatorByIndex, searchType.validatorsByDepositEnsName, searchType.validatorsByWithdrawalEns, searchType.validatorsByGraffiti]
+	}
+
+	addSearchResult(item: SearchResultData) {
 		if (!this.merchant.canBulkAdd() && this.dashboardUtils.searchResultHandler.requiresPremium(item)) {
 			this.premiumInfo()
 			return
@@ -477,7 +468,7 @@ export class Tab2Page implements OnInit {
 		}
 	}
 
-	addSearchResultRemoteDialog(item: SearchResult) {
+	addSearchResultRemoteDialog(item: SearchResultData) {
 		const addCount = this.dashboardUtils.searchResultHandler.resultCount(item)
 		let title = 'Add to Group'
 		if (addCount > 1) {
@@ -534,7 +525,7 @@ export class Tab2Page implements OnInit {
 		})
 	}
 
-	async confirmAddSearchResult(item: SearchResult, groupID: number) {
+	async confirmAddSearchResult(item: SearchResultData, groupID: number) {
 		const loading = await this.alerts.presentLoading('Adding validators...')
 		loading.present()
 

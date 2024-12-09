@@ -109,7 +109,7 @@ export class NotificationDetailComponent {
 			}
 			this.initialLoading = false
 		}
-		// this.data().slashed = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+		//this.data().slashed = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
 		// this.data().validator_offline = Array.from({ length: 100 }, (_, i) => i + 1)
 		// this.data().withdrawal = [{ index: 1, amount: '1000', address: { hash: '', is_contract: false } }]
 		// this.data().max_collateral_reached = [{ hash: '0x1231231231231231231231231232', is_contract: false }]

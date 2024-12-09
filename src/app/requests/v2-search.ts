@@ -16,9 +16,10 @@
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
 import { APIRequest, Method } from './requests'
-import { SearchResult } from './types/common'
+import { SearchValidator, SearchValidatorList, SearchValidatorsByDepositAddress, SearchValidatorsByGraffiti, SearchValidatorsByWithdrwalCredential } from './types/search'
 import { networkID } from './v2-dashboard'
 
+// possible search types for a search request
 export enum searchType {
 	validatorByIndex = 'validator_by_index',
 	validatorByPublicKey = 'validator_by_public_key',
@@ -28,11 +29,21 @@ export enum searchType {
 	validatorsByWithdrawalAddress = 'validators_by_withdrawal_address',
 	validatorsByWithdrawalEns = 'validators_by_withdrawal_ens_name',
 	validatorsByGraffiti = 'validators_by_graffiti',
-
-	validatorByIndexBatch = 'validator_by_index_batch', // app only
+	validatorList = 'validator_list'
 }
 
-export class V2SearchValidators extends APIRequest<SearchResult[]> {
+// Possible data types of a search response
+export enum SearchResponseType {
+	validator = 'validator',
+	validatorList = 'validator_list',
+	validatorsByDepositAddress = 'validators_by_deposit_address',
+	validatorsByWithdrawalCredential = 'validators_by_withdrawal_credential',
+	validatorsByGraffiti = 'validators_by_graffiti'
+}
+
+export type SearchResultData = ({ type: 'validator'; chain_id: number; value: SearchValidator } | { type: 'validator_list'; chain_id: number; value: SearchValidatorList } | { type: 'validators_by_deposit_address'; chain_id: number; value: SearchValidatorsByDepositAddress } | { type: 'validators_by_withdrawal_credential'; chain_id: number; value: SearchValidatorsByWithdrwalCredential } | { type: 'validators_by_graffiti'; chain_id: number; value: SearchValidatorsByGraffiti });
+
+export class V2SearchValidators extends APIRequest<SearchResultData[]> {
 	resource = 'search'
 	method = Method.POST
 

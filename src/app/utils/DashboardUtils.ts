@@ -30,8 +30,7 @@ import { Toast } from '@capacitor/toast'
 import { AlertService } from '@services/alert.service'
 import { OAuthUtils } from './OAuthUtils'
 import { MerchantUtils } from './MerchantUtils'
-import { SearchResult } from '@requests/types/common'
-import { searchType } from '@requests/v2-search'
+import { SearchResponseType, SearchResultData, searchType } from '@requests/v2-search'
 import { UnitconvService } from '@services/unitconv.service'
 import { APIError, APIUnauthorizedError } from '@requests/requests'
 
@@ -59,7 +58,7 @@ export class DashboardUtils {
 		})
 	}
 
-	async addValidator(item: SearchResult, groupID: number): Promise<boolean> {
+	async addValidator(item: SearchResultData, groupID: number): Promise<boolean> {
 		const loggedIn = await this.storage.isLoggedIn()
 		const id = await this.storage.getDashboardID()
 
@@ -69,12 +68,12 @@ export class DashboardUtils {
 					group_id: groupID,
 					validators: this.searchResultHandler.getAddByIndex(item),
 					deposit_address: this.searchResultHandler.getAddByDepositAddress(item),
-					withdrawal_address: this.searchResultHandler.getAddByWithdrawalAddress(item),
-					graffiti: undefined,
+					withdrawal_address: this.searchResultHandler.getAddByWithdrawalCredential(item),
+					graffiti: this.searchResultHandler.getAddByGraffiti(item),
 				} as V2AddValidatorToDashboardData)
 			)
 			return result && !result.error
-		} else {
+		} else { // deprecated feature
 			const indexToAdd = this.searchResultHandler.getAddByIndex(item)
 			if (!indexToAdd || indexToAdd.length === 0) {
 				return false
@@ -287,7 +286,7 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 class SeachResultHandler {
 	formatSearchType(type: searchType | string) {
 		switch (type) {
-			case searchType.validatorByIndexBatch:
+			case searchType.validatorList:
 				return 'Validator Indices'
 			case searchType.validatorByIndex:
 				return 'Validator Index'
@@ -306,62 +305,62 @@ class SeachResultHandler {
 		}
 	}
 
-	searchNumFieldIsIndex(item: SearchResult) {
-		return item.type == searchType.validatorByIndex || item.type == searchType.validatorByPublicKey
+	isIndex(item: SearchResultData) {
+		return item.type == SearchResponseType.validator
 	}
 
-	getAddByIndex(searchResult: SearchResult) {
-		if (searchResult.type == searchType.validatorByIndexBatch) {
-			return searchResult.str_value.split(',').map((i) => parseInt(i))
+	getAddByIndex(searchResult: SearchResultData) {
+		if (searchResult.type == SearchResponseType.validatorList) {
+			return searchResult.value.validators
 		}
 
-		if (searchResult.type == searchType.validatorByIndex || searchResult.type == searchType.validatorByPublicKey) {
-			return [searchResult.num_value]
-		}
-		return undefined
-	}
-
-	getAddByDepositAddress(searchResult: SearchResult) {
-		if (searchResult.type == searchType.validatorsByDepositAddress || searchResult.type == searchType.validatorsByDepositEnsName) {
-			return searchResult.hash_value
+		if (searchResult.type == SearchResponseType.validator) {
+			return [searchResult.value.index]
 		}
 		return undefined
 	}
 
-	getAddByWithdrawalAddress(searchResult: SearchResult) {
-		if (
-			searchResult.type == searchType.validatorsByWithdrawalAddress ||
-			searchResult.type == searchType.validatorsByWithdrawalEns ||
-			searchResult.type == searchType.validatorsByWithdrawalCredential
-		) {
-			return searchResult.hash_value
+	getAddByDepositAddress(searchResult: SearchResultData) {
+		if (searchResult.type == SearchResponseType.validatorsByDepositAddress) {
+			return searchResult.value.deposit_address
 		}
 		return undefined
 	}
 
-	getAddByWithdrawalCredential(searchResult: SearchResult) {
-		if (searchResult.type == searchType.validatorsByWithdrawalCredential) {
-			return searchResult.hash_value
+	getAddByWithdrawalCredential(searchResult: SearchResultData) {
+		if (searchResult.type == SearchResponseType.validatorsByWithdrawalCredential) {
+			return searchResult.value.withdrawal_credential
 		}
 		return undefined
 	}
 
-	requiresPremium(searchResult: SearchResult) {
+	getAddByGraffiti(searchResult: SearchResultData) {
+		if (searchResult.type == SearchResponseType.validatorsByGraffiti) {
+			return searchResult.value.graffiti
+		}
+		return undefined
+	}
+
+	requiresPremium(searchResult: SearchResultData) {
 		return (
-			searchResult.type == searchType.validatorsByDepositEnsName ||
-			searchResult.type == searchType.validatorsByDepositAddress ||
-			searchResult.type == searchType.validatorsByWithdrawalAddress ||
-			searchResult.type == searchType.validatorsByWithdrawalCredential
+			searchResult.type == SearchResponseType.validatorsByDepositAddress ||
+			searchResult.type == SearchResponseType.validatorsByWithdrawalCredential ||
+			searchResult.type == SearchResponseType.validatorsByGraffiti
 		)
 	}
 
-	resultCount(searchResult: SearchResult) {
-		if (searchResult.type == searchType.validatorByIndexBatch) {
-			return searchResult.str_value.split(',').length
+	resultCount(searchResult: SearchResultData) {
+		switch (searchResult.type) {
+			case SearchResponseType.validatorList:
+				return searchResult.value.validators.length
+			case SearchResponseType.validator:
+				return 1
+			case SearchResponseType.validatorsByDepositAddress:
+			case SearchResponseType.validatorsByWithdrawalCredential:
+			case SearchResponseType.validatorsByGraffiti:
+				return searchResult.value.count
+			default:
+				return 0
 		}
-		if (searchResult.type == searchType.validatorByIndex || searchResult.type == searchType.validatorByPublicKey) {
-			return 1
-		}
-		return searchResult.num_value
 	}
 }

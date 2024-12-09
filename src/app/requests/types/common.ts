@@ -92,14 +92,6 @@ export interface ChainConfig {
 	chain_id: number /* uint64 */
 	name: string
 }
-export interface SearchResult {
-	type: string
-	chain_id: number /* uint64 */
-	hash_value?: string
-	str_value?: string
-	num_value?: number /* uint64 */
-}
-export type InternalPostSearchResponse = ApiDataResponse<SearchResult[]>
 export interface VDBPublicId {
 	public_id: string
 	name?: string
