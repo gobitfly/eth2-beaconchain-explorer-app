@@ -30,7 +30,7 @@ import { Toast } from '@capacitor/toast'
 import { AlertService } from '@services/alert.service'
 import { OAuthUtils } from './OAuthUtils'
 import { MerchantUtils } from './MerchantUtils'
-import { SearchResponseType, SearchResultData, searchType } from '@requests/v2-search'
+import { SearchResponseType, SearchResultData } from '@requests/v2-search'
 import { UnitconvService } from '@services/unitconv.service'
 import { APIError, APIUnauthorizedError } from '@requests/requests'
 
@@ -284,24 +284,16 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 }
 
 class SeachResultHandler {
-	formatSearchType(type: searchType | string) {
+	formatSearchType(type: SearchResponseType | string) {
 		switch (type) {
-			case searchType.validatorList:
+			case SearchResponseType.validatorList:
 				return 'Validator Indices'
-			case searchType.validatorByIndex:
+			case SearchResponseType.validator:
 				return 'Validator Index'
-			case searchType.validatorsByDepositEnsName:
-				return 'Deposit ENS'
-			case searchType.validatorsByWithdrawalEns:
-				return 'Withdrawal ENS'
-			case searchType.validatorsByDepositAddress:
+			case SearchResponseType.validatorsByDepositAddress:
 				return 'Deposit Address'
-			case searchType.validatorsByWithdrawalAddress:
-				return 'Withdrawal Address'
-			case searchType.validatorsByWithdrawalCredential:
+			case SearchResponseType.validatorsByWithdrawalCredential:
 				return 'Withdrawal Credential'
-			case searchType.validatorByPublicKey:
-				return 'Public Key'
 		}
 	}
 
