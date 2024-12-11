@@ -21,15 +21,16 @@ import { Component, Input } from '@angular/core'
 import * as blockies from 'ethereum-blockies'
 import { getDisplayName, ValidatorState } from 'src/app/utils/ValidatorUtils'
 import { UnitconvService } from '@services/unitconv.service'
-import { VDBManageValidatorsTableRow } from 'src/app/requests/types/validator_dashboard'
+import { MobileValidatorDashboardValidatorsTableRow } from '@requests/types/mobile'
 
+type SyncState = 'none' | 'current' | 'next' 
 @Component({
 	selector: 'app-validator',
 	templateUrl: './validator.component.html',
 	styleUrls: ['./validator.component.scss'],
 })
 export class ValidatorComponent {
-	@Input() validator: VDBManageValidatorsTableRow
+	@Input() validator: MobileValidatorDashboardValidatorsTableRow
 	@Input() first: boolean
 	@Input() last: boolean
 	@Input() selected: boolean
@@ -40,6 +41,9 @@ export class ValidatorComponent {
 	state: string
 
 	stateCss: string
+	labels: string
+	efficiency: number
+	sync: SyncState = 'none'
 
 	constructor(public unit: UnitconvService) {}
 
@@ -48,6 +52,9 @@ export class ValidatorComponent {
 		this.imgData = this.getBlockies()
 		this.state = this.interpretState(this.validator)
 		this.stateCss = this.interpretStateCss(this.validator)
+		this.labels = this.getLabels(this.validator)
+		this.efficiency = this.validator.efficiency
+		this.sync = this.getSyncState(this.validator)
 	}
 
 	private getBlockies() {
@@ -57,7 +64,24 @@ export class ValidatorComponent {
 		return dataurl
 	}
 
-	interpretState(item: VDBManageValidatorsTableRow) {
+	getSyncState(item: MobileValidatorDashboardValidatorsTableRow): SyncState {
+		if (item.is_in_next_sync_committee) {
+			return 'next'
+		}
+		if (item.is_in_sync_committee) {
+			return 'current'
+		}
+		return 'none'
+	}
+
+	getLabels(item: MobileValidatorDashboardValidatorsTableRow) {
+		if (item.rocket_pool) {
+			return '<mark>RP</mark>'
+		}
+		return '<ion-icon name="sync-outline"></ion-icon>'
+	}
+
+	interpretState(item: MobileValidatorDashboardValidatorsTableRow) {
 		switch (item.status) {
 			case ValidatorState.ACTIVE_ONLINE:
 				return 'Active'
@@ -84,7 +108,7 @@ export class ValidatorComponent {
 		}
 	}
 
-	interpretStateCss(item: VDBManageValidatorsTableRow) {
+	interpretStateCss(item: MobileValidatorDashboardValidatorsTableRow) {
 		switch (item.status) {
 			case ValidatorState.ACTIVE_ONLINE || ValidatorState.EXITING_ONLINE || ValidatorState.SLASHING_ONLINE:
 				return 'online'

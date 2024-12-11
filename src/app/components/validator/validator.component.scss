@@ -28,14 +28,7 @@ ion-item {
 	margin: auto;
 }
 
-ion-icon {
-	position: absolute !important;
-	top: 5px;
-	right: 5px;
-	margin-top: 0px !important;
-	padding-top: 0px !important;
-	margin-bottom: 29px;
-}
+
 
 .balance {
 	font-weight: bold;
@@ -106,4 +99,28 @@ ion-badge {
 	padding-bottom: 3px;
 	padding-top: 5px;
 	margin: 0;
+}
+
+.labels {
+	font-size: 0.65rem; 
+	vertical-align: top;
+	margin-right: 3px;
+}
+
+ion-icon {
+	font-size: 0.65rem;
+	color: var(--ion-color-sync-icon-small);
+	position: absolute;
+    top: 3px;
+}
+
+.sync-active {
+	-webkit-animation: spin 6s linear infinite;
+	-moz-animation: spin 6s linear infinite;
+	animation: spin 6s linear infinite;
+}
+
+.sync-container {
+	height: 14px;
+    display: inline-block;
 }

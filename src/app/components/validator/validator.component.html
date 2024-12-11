@@ -30,9 +30,15 @@
 			</div>
 
 			<div class="infi-item-middle-container">
-				<ion-text class="title">{{ name }}</ion-text>
+				<ion-text class="title">
+					{{ name }} 
+					<span class="labels" [innerHTML]="labels"></span>
+					<div class="sync-container">
+						<ion-icon *ngIf="sync != 'none'" [ngClass]="{ 'sync-active': sync == 'current' }" name="sync-outline"></ion-icon>
+					</div>
+				</ion-text>
 				<ion-label class="smaller-info smaller-pad"> Balance: {{ validator.balance | mcurrency: 'WEI' : unit.pref.Cons }} </ion-label>
-				<ion-label class="smaller-info smaller-pad"> Labels: Solo</ion-label>
+				<ion-label class="smaller-info smaller-pad"> Efficiency: {{ efficiency | number: '1.0-2' }}% </ion-label>
 			</div>
 			<div slot="end" class="status-container">
 				<ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge>

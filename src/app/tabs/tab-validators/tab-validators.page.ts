@@ -18,7 +18,6 @@
  */
 
 import { Component, computed, OnInit, signal, ViewChild, WritableSignal } from '@angular/core'
-import { Validator } from '@utils/ValidatorUtils'
 import { AlertController, IonSearchbar, ModalController, Platform, SearchbarCustomEvent } from '@ionic/angular'
 import { ApiService, capitalize } from '@services/api.service'
 import { StorageService } from '@services/storage.service'
@@ -39,7 +38,7 @@ import {
 	V2GetValidatorFromDashboard,
 	V2UpdateDashboardGroup,
 } from '@requests/v2-dashboard'
-import { VDBManageValidatorsTableRow, VDBOverviewData, VDBOverviewGroup } from '@requests/types/validator_dashboard'
+import { VDBOverviewData, VDBOverviewGroup } from '@requests/types/validator_dashboard'
 import { Toast } from '@capacitor/toast'
 import { Haptics } from '@capacitor/haptics'
 import { SearchResultData, searchType, V2SearchValidators } from '@requests/v2-search'
@@ -50,6 +49,7 @@ import { AppComponent } from '../../app.component'
 import { V2MyDashboards } from '@requests/v2-user'
 import { NotificationDetailComponent } from '@pages/notification-detail/notification-detail.component'
 import FirebaseUtils from '@utils/FirebaseUtils'
+import { MobileValidatorDashboardValidatorsTableRow } from '@requests/types/mobile'
 
 const PAGE_SIZE = 25
 const DASHBOARD_UPDATE = 'validators_tab'
@@ -65,7 +65,7 @@ export class Tab2Page implements OnInit {
 
 	public classReference = UnitconvService
 	@ViewChild('searchbarRef', { static: true }) searchbarRef: IonSearchbar
-	dataSource: InfiniteScrollDataSource<VDBManageValidatorsTableRow>
+	dataSource: InfiniteScrollDataSource<MobileValidatorDashboardValidatorsTableRow>
 
 	initialLoading = true
 	reachedMaxValidators = false
@@ -348,12 +348,12 @@ export class Tab2Page implements OnInit {
 				return this.updateValidators(true)
 			}
 		})
-		this.dataSource = new InfiniteScrollDataSource<VDBManageValidatorsTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
+		this.dataSource = new InfiniteScrollDataSource<MobileValidatorDashboardValidatorsTableRow>(PAGE_SIZE, this.getDefaultDataRetriever())
 
 		await this.dataSource.reset()
 	}
 
-	private getDefaultDataRetriever(): loadMoreType<VDBManageValidatorsTableRow> {
+	private getDefaultDataRetriever(): loadMoreType<MobileValidatorDashboardValidatorsTableRow> {
 		return async (cursor) => {
 			const firstRun = !cursor && !this.initialized
 			if (firstRun) {
@@ -430,7 +430,7 @@ export class Tab2Page implements OnInit {
 			]
 		} else if (isIndexList) {
 			return [searchType.validatorList]
-		} 
+		}
 		return [searchType.validatorByIndex, searchType.validatorsByDepositEnsName, searchType.validatorsByWithdrawalEns, searchType.validatorsByGraffiti]
 	}
 
@@ -551,7 +551,7 @@ export class Tab2Page implements OnInit {
 		}, forTime)
 	}
 
-	selectValidator(item: Validator) {
+	selectValidator(item: MobileValidatorDashboardValidatorsTableRow) {
 		this.selectMode = !this.selectMode
 		AppComponent.PREVENT_BACK_PRESS = this.selectMode
 		if (!this.selectMode) {
@@ -665,7 +665,7 @@ export class Tab2Page implements OnInit {
 		return await modal.present()
 	}
 
-	clickValidator(item: Validator) {
+	clickValidator(item: MobileValidatorDashboardValidatorsTableRow) {
 		if (this.clickBlocked) return
 		if (this.selectMode) {
 			if (this.selected.get(item.index)) {
@@ -674,6 +674,31 @@ export class Tab2Page implements OnInit {
 				this.selected.set(item.index, true)
 			}
 			Haptics.selectionChanged()
+		} else {
+			let syncText = ''
+			if (item.is_in_sync_committee) {
+				syncText =
+					"This validator is part of the current sync committee. You'll earn extra rewards during this period if you are online and attesting.<br/><br/>"
+			} else if (item.is_in_next_sync_committee) {
+				syncText =
+					"This validator is part of the <strong>next</strong> sync committee. You'll earn extra rewards during this period if you are online and attesting.<br/><br/>"
+			}
+
+			let rocketPoolText = ''
+			if (item.rocket_pool) {
+				rocketPoolText = '<strong>Rocket Pool</strong><br/>'	
+				rocketPoolText += 'Deposit: ' + this.unit.weiToEth(item.rocket_pool.deposit_amount) + '<br/>'
+				rocketPoolText += 'Commission: ' + (item.rocket_pool.commission*100).toFixed(1) + '%<br/>'
+				rocketPoolText += 'Status: ' + item.rocket_pool.status + '<br/>'
+				rocketPoolText += 'Penalty Count: ' + item.rocket_pool.penalty_count + '<br/>'
+				rocketPoolText += 'Smoothing Pool: ' + (item.rocket_pool.is_in_smoothing_pool ? 'Yes' : 'No') + '<br/>'
+			}
+
+			if (!item.rocket_pool && !syncText) {
+				this.alerts.showInfo('Validator Details', "Nothing to show")
+			} else {
+				this.alerts.showInfo('Validator Details', syncText + rocketPoolText)
+			}
 		}
 	}
 
@@ -1024,7 +1049,7 @@ class ValidatorLoader {
 		private errorHandler: (error: Error) => Promise<void>
 	) {}
 
-	public getDefaultDataRetriever(): loadMoreType<VDBManageValidatorsTableRow> {
+	public getDefaultDataRetriever(): loadMoreType<MobileValidatorDashboardValidatorsTableRow> {
 		return async (cursor) => {
 			if (!this.dashboard) {
 				return {
@@ -1050,7 +1075,7 @@ class ValidatorLoader {
 				}
 			}
 			return {
-				data: result.data as VDBManageValidatorsTableRow[],
+				data: result.data as MobileValidatorDashboardValidatorsTableRow[],
 				next_cursor: result.paging?.next_cursor,
 			}
 		}

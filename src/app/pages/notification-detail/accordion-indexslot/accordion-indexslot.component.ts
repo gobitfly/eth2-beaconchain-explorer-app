@@ -97,7 +97,6 @@ export function getExternalLink(data: DataTypes, api: ApiService) {
 }
 
 export function getTitlePrefix(data: DataTypes) {
-	console.log('tesss', data)
 	if (typeof data === 'number' || 'index' in data) {
 		return 'Validator'
 	} else if ('hash' in data) {

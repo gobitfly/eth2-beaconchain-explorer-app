@@ -164,6 +164,7 @@ body {
 	--status-warn: var(--ion-color-warning);
 	--status-danger: var(--ion-color-danger);
 	--status-secondary: var(--ion-color-secondary);
+	--ion-color-sync-icon-small: #2dade9;
 
 	--x-toolbar-title-color: #fff;
 
@@ -215,6 +216,7 @@ body.dark {
 	--ion-color-primary-contrast-rgb: 255, 255, 255;
 	--ion-color-primary-shade: #e97112;
 	--ion-color-primary-tint: #fa7112;
+	--ion-color-sync-icon-small: #45daff;
 
 	--ion-color-secondary: #50c8ff;
 	--ion-color-secondary-rgb: 80, 200, 255;

@@ -331,6 +331,10 @@ export class UnitconvService {
 		return this.convertBase(value, from, MAPPING.get(to), displayable)
 	}
 
+	public weiToEth(value: BigNumber | number | string, displayable = true) {
+		return this.convertBase(value, 'WEI', Unit.ETHER, displayable)
+	}
+
 	private convertBase(value: BigNumber | number | string, from: string, to: Unit, displayable = true) {
 		if (!value || !from || !to) return value
 

@@ -20,7 +20,6 @@ import { APIRequest, Method, NoContent } from './requests'
 import { ChartData } from './types/common'
 import {
 	VDBGroupSummaryData,
-	VDBManageValidatorsTableRow,
 	VDBOverviewData,
 	VDBPostCreateGroupData,
 	VDBPostReturnData,
@@ -28,6 +27,7 @@ import {
 	VDBRocketPoolTableRow,
 	VDBSummaryTableRow,
 } from './types/validator_dashboard'
+import { MobileValidatorDashboardValidatorsTableRow } from './types/mobile'
 
 export type dashboardID = string | number | number[]
 export type networkID = string | number
@@ -150,8 +150,8 @@ export class V2AddValidatorToDashboard extends APIRequest<VDBPostValidatorsData>
 	}
 }
 
-export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsTableRow[]> {
-	resource = 'validator-dashboards/{id}/validators'
+export class V2GetValidatorFromDashboard extends APIRequest<MobileValidatorDashboardValidatorsTableRow[]> {
+	resource = 'validator-dashboards/{id}/mobile/validators'
 	method = Method.GET
 
 	constructor(
@@ -159,7 +159,8 @@ export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsT
 		groupID: number | undefined = undefined,
 		cursor: string | undefined = undefined,
 		limit: number = 10,
-		sort: string = 'index:asc'
+		sort: string = 'index:asc',
+		period: Period = Period.Last24h
 	) {
 		super()
 		this.resource = setID(this.resource, id)
@@ -174,6 +175,9 @@ export class V2GetValidatorFromDashboard extends APIRequest<VDBManageValidatorsT
 		}
 		if (cursor !== undefined) {
 			this.resource += '&cursor=' + cursor
+		}
+		if (period !== undefined) {
+			this.resource += '&period=' + period
 		}
 	}
 }
