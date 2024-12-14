@@ -69,7 +69,7 @@ Build the the app at least once before proceeding:
 
 #### Livereload
 
-Make sure port 8100 is accessable on your computer and use the following command to run a livereload server
+Make sure port 8100 is accessible on your computer and use the following command to run a livereload server
 
 `ionic cap run android --livereload --external --host=192.168.1.64 --disableHostCheck --configuration=development`
 
@@ -97,7 +97,7 @@ Build the the app at least once before proceeding:
 
 #### Livereload
 
-Make sure port 8100 is accessable on your mac and use the following command to run a livereload server
+Make sure port 8100 is accessible on your mac and use the following command to run a livereload server
 
 `ionic cap run ios --livereload --external --host=192.168.1.64 --disableHostCheck --configuration=development`
 
@@ -112,7 +112,6 @@ Adapt the --host param to match your macs IP.
 * Use components when we need it for multiple pages.
 * Use pipes for currency conversion or interpreting a value
 * Keep in mind that the app can be used in light and dark theme, use css vars when styling. Global theme attributes can be found in src/app/theme/variables.scss and src/app/global.scss.
-
+[![Run spec tests and linter](https://github.com/ethereum/consensus-specs/actions/workflows/run-tests.yml/badge.svg?branch=dev)](https://github.com/ethereum/consensus-specs/actions/workflows/run-tests.yml)
 ## License
-
-This project is licensed under GPLv3. [LICENSE](LICENSE)
+eth2-beaconchain-explorer © 2 by Mahdi Amolimoghaddam is licensed under Creative Commons Attribution-NoDerivatives 4.0 International 

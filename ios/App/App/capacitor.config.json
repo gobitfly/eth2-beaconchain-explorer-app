@@ -12,5 +12,28 @@
 		"CapacitorHttp": {
 			"enabled": true
 		}
-	}
+	},
+	"server": {
+		"androidScheme": "http"
+	},
+	"android": {
+		"flavor": "prod"
+	},
+	"packageClassList": [
+		"OAuth2ClientPlugin",
+		"AppPlugin",
+		"CAPBrowserPlugin",
+		"ClipboardPlugin",
+		"DevicePlugin",
+		"HapticsPlugin",
+		"KeyboardPlugin",
+		"LocalNotificationsPlugin",
+		"PreferencesPlugin",
+		"PushNotificationsPlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin",
+		"ToastPlugin",
+		"NavigationBar",
+		"CDVPlugin"
+	]
 }
