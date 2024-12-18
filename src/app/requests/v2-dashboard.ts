@@ -294,6 +294,10 @@ export class V2DashboardRocketPool extends APIRequest<VDBRocketPoolTableRow[]> {
 	resource = 'validator-dashboards/{id}/rocket-pool'
 	method = Method.GET
 
+	sortResultFn: (a: VDBRocketPoolTableRow, b: VDBRocketPoolTableRow) => number = (a, b) => {
+		return a.node.hash.localeCompare(b.node.hash)
+	}
+
 	constructor(id: dashboardID) {
 		super()
 		this.resource = setID(this.resource, id)
