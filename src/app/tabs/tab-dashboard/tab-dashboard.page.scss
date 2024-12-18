@@ -85,3 +85,15 @@ ion-refresher-content {
 	font-weight: bold;
 	color: var(--ion-color-primary);
 }
+
+.sub-text {
+	--color: var(--x-toolbar-title-color);
+    left: 0;
+    top: 40px;
+    bottom: 0;
+    margin: auto;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+	font-size: 0.65rem;
+}

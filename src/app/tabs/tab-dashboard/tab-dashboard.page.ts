@@ -57,6 +57,7 @@ export class Tab1Page implements OnInit {
 	fadeInCompleted: boolean = false
 
 	online: boolean = true
+	dashboardName: string = ''
 
 	constructor(
 		public api: ApiService,
@@ -92,15 +93,23 @@ export class Tab1Page implements OnInit {
 		this.setup()
 	}
 
+	async changedGroup() {
+		await Promise.all([
+			this.overviewProvider.setGroup(this.overallData, await this.storage.getDashboardGroupID()),
+			this.changeTimeframe(await this.storage.getDashboardTimeframe()),
+		]) 
+	}
+
 	async changeTimeframe(period: Period) {
 		if (!this.overallData) {
 			return
 		}
 		this.storage.setDashboardTimeframe(period)
+		const groupID = await this.storage.getDashboardGroupID()
 
 		const loading = await this.alert.presentLoading('Loading...')
 		loading.present()
-		const result = await this.overviewProvider.setTimeframe(this.overallData, period)
+		const result = await this.overviewProvider.setTimeframe(this.overallData, period, groupID)
 		this.online = true
 		if (result[0].error) {
 			console.error('Error fetching summary table', result[0].error)
@@ -166,6 +175,7 @@ export class Tab1Page implements OnInit {
 			this.overallData = await this.overviewProvider.create(
 				this.dashboardID,
 				await this.storage.getDashboardTimeframe(),
+				await this.storage.getDashboardGroupID(),
 				{
 					aggregation: await this.storage.getDashboardSummaryAggregation(),
 					startTime: null,
@@ -205,6 +215,7 @@ export class Tab1Page implements OnInit {
 		}
 
 		console.log('overallData', this.overallData)
+		//this.dashboardName = this.overallData.overviewData().name
 		this.lastRefreshTs = this.getUnixSeconds()
 	}
 

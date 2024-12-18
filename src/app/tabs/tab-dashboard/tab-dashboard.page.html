@@ -24,6 +24,7 @@
 			<ion-icon slot="icon-only" ios="apps-outline" md="apps-outline" id="network-icon"></ion-icon>
 		</ion-buttons>
 		<ion-title> Dashboard </ion-title>
+		<ion-label class="sub-text">{{ dashboardName }}</ion-label>
 		<ion-buttons slot="primary" id="options-dashboard" *ngIf="overallData && !overallData.isEmpty()">
 			<ion-label>{{formattedSelectedTimeframe()}}</ion-label>
 		</ion-buttons>
@@ -95,6 +96,7 @@
 
 		<app-validator-dashboard
 			(fadeInCompleted)="fadeInCompleted=true"
+			(changedGroup)="changedGroup()"
 			[online]="online"
 			[data]="overallData"
 			[currentY]="currentY"

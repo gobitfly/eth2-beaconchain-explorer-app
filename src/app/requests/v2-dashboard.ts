@@ -26,6 +26,7 @@ import {
 	VDBPostValidatorsData,
 	VDBRocketPoolTableRow,
 	VDBSummaryTableRow,
+	VDBSummaryValidatorsData,
 } from './types/validator_dashboard'
 import { MobileValidatorDashboardValidatorsTableRow } from './types/mobile'
 
@@ -61,6 +62,7 @@ export class V2DashboardOverview extends APIRequest<VDBOverviewData> {
 	constructor(id: dashboardID) {
 		super()
 		this.resource = setID(this.resource, id)
+		this.resource += '?modes=rocket_pool'
 	}
 }
 
@@ -147,6 +149,18 @@ export class V2AddValidatorToDashboard extends APIRequest<VDBPostValidatorsData>
 		super()
 		this.resource = setID(this.resource, id)
 		this.postData = data
+	}
+}
+
+export class V2GetValidatorStatusOfGroup extends APIRequest<VDBSummaryValidatorsData[]> {
+	resource = 'validator-dashboards/{id}/summary/validators?duty'
+	method = Method.GET
+
+	constructor(id: dashboardID, groupID: number, period: Period) {
+		super()
+		this.resource = setID(this.resource, id)
+		this.resource += '&group_id=' + groupID
+		this.resource += '&period=' + period
 	}
 }
 

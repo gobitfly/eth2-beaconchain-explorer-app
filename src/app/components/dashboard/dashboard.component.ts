@@ -35,6 +35,9 @@ import { endEpochSyncCommittee, slotToEpoch, startEpochSyncCommittee } from 'src
 import { epochToTimestamp, getLocale } from 'src/app/utils/TimeUtils'
 import { Period, setID } from 'src/app/requests/v2-dashboard'
 import { getSuccessFailMode, Mode } from './success-fail-view/success-fail-view.component'
+import { DashboardUtils } from '@utils/DashboardUtils'
+import { formatAddress } from '@utils/Formatting'
+import BigNumber from 'bignumber.js'
 
 type ExtraTabs = 'chartIncome' | 'chartSummary' | 'rocketPool'
 type RewardTabs = 'combined' | 'cons' | 'exec'
@@ -52,19 +55,18 @@ export class DashboardComponent implements OnInit {
 	@Input() scrolling: boolean
 	@Input() online: boolean
 	@Output() fadeInCompleted = new EventEmitter<void>()
+	@Output() changedGroup = new EventEmitter<void>()
 
 	beaconChainUrl: string = null
 
 	selectedExtraTab: WritableSignal<ExtraTabs> = signal('chartIncome')
+	selectedRPNode: WritableSignal<string> = signal(null)
 
 	rplState = 'rpl'
 
 	nextRewardRound: string = null
 
 	notificationPermissionPending = false
-	depositCreditText: string = null
-	vacantMinipoolText: string = null
-	showWithdrawalInfo = false
 
 	rewardTab: RewardTabs = 'combined'
 
@@ -81,7 +83,8 @@ export class DashboardComponent implements OnInit {
 		public merchant: MerchantUtils,
 		public validatorUtils: ValidatorUtils,
 		private firebaseUtils: FirebaseUtils,
-		private platform: Platform
+		private platform: Platform,
+		private dashboardUtils: DashboardUtils
 	) {
 		effect(async () => {
 			if ((await this.showFirstProposalMsg()) && !this.ignoreConfetti) {
@@ -97,15 +100,19 @@ export class DashboardComponent implements OnInit {
 		})
 	}
 
+	formatAddress = formatAddress
+
+	groups = computed(() => {
+		return this.dashboardUtils.getGroupList(this.data?.overviewData()?.groups)
+	})
+
 	selectedExtraTabTitle = computed(() => {
 		if (this.selectedExtraTab() == 'chartIncome') return 'Income'
 		if (this.selectedExtraTab() == 'chartSummary') return 'Efficiency'
-		if (this.selectedExtraTab() == 'rocketPool') return 'Rocket Pool'
 		return 'Income'
 	})
 
 	selectedExtraTabTimeframe = computed(() => {
-		if (this.selectedExtraTab() == 'rocketPool') return ''
 		if (this.data && this.data.timeframeDisplay()) return this.data.timeframeDisplay()
 		return Period.AllTime
 	})
@@ -188,6 +195,13 @@ export class DashboardComponent implements OnInit {
 		return null
 	})
 
+	async onGroupChanged(id: number) {
+		await this.storage.setDashboardGroupID(id)
+		this.data?.selectedGroupID.set(id)
+
+		this.changedGroup.emit()
+	}
+
 	syncDateFormatOptions(): Intl.DateTimeFormatOptions {
 		return {
 			year: 'numeric',
@@ -203,82 +217,25 @@ export class DashboardComponent implements OnInit {
 			if (event.data.currentValue) {
 				this.beaconChainUrl = this.api.getBaseUrl()
 			}
+			this.selectedRPNode.set(this.data?.rocketpool()?.[0]?.node?.hash)
 		}
 	}
 
-	// updateWithdrawalInfo() {
-	// 	this.storage.getBooleanSetting('withdrawal_info_dismissed', false).then((result) => {
-	// 		this.showWithdrawalInfo = !this.data.withdrawalsEnabledForAll && !result
-	// 	})
-	// }
-
-	// updateDepositCreditText() {
-	// 	if (this.data.rocketpool.depositCredit && this.data.rocketpool.depositCredit.gt(0)) {
-	// 		this.depositCreditText = `You have ${this.unit.convertNonFiat(
-	// 			this.data.rocketpool.depositCredit,
-	// 			'WEI',
-	// 			'ETHER',
-	// 			true
-	// 		)} in unused Rocketpool deposit credit.<br/><br/>You can use this credit to spin up more minipools. Be aware that you can not withdraw your deposit credit.`
-	// 	}
-	// }
-
-	// updateVacantMinipoolText() {
-	// 	if (this.data.rocketpool.vacantPools && this.data.rocketpool.vacantPools > 0) {
-	// 		this.vacantMinipoolText = `${this.data.rocketpool.vacantPools} of your ${
-	// 			this.data.rocketpool.vacantPools == 1 ? 'minipool is' : 'minipools are'
-	// 		}
-	// 		currently vacant. Head over to the validators tab to see which one has a vacant label.<br/><br/>
-	// 		If you recently converted a validator to a minipool please make sure you did change the 0x0 withdrawal credentials to the new vacant minipool address (0x01) to fix this warning.<br/><br/>
-	// 		If you already changed the withdrawal credentials this warning will disappear on it's own within 24h.
-	// 		`
-	// 	}
-	// }
-
-	// updateSmoothingPool() {
-	// 	try {
-	// 		if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
-	// 		this.hasNonSmoothingPoolAsWell = this.data.rocketpool.hasNonSmoothingPoolAsWell
-	// 		this.displaySmoothingPool = this.data.rocketpool.smoothingPool
-	// 		this.smoothingClaimed = this.data.rocketpool.smoothingPoolClaimed
-	// 		this.smoothingUnclaimed = this.data.rocketpool.smoothingPoolUnclaimed
-	// 		this.unclaimedRpl = this.data.rocketpool.rplUnclaimed
-	// 		this.totalRplEarned = this.data.rocketpool.totalClaims.plus(this.data.rocketpool.rplUnclaimed)
-	// 	} catch (e) {
-	// 		console.warn('cannot update smoothing pool', e)
-	// 	}
-	// }
-
-	// updateRplProjectedClaim() {
-	// 	try {
-	// 		if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.effective_rpl_staked) return
-	// 		if (this.data.rocketpool.currentRpl.isLessThanOrEqualTo(this.data.rocketpool.minRpl)) {
-	// 			this.rplProjectedClaim = 0
-	// 			return
-	// 		}
-
-	// 		const temp = this.getEffectiveRplStake(this.data.rocketpool)
-	// 			.dividedBy(new BigNumber(this.validatorUtils.rocketpoolStats.effective_rpl_staked))
-	// 			.multipliedBy(new BigNumber(this.validatorUtils.rocketpoolStats.node_operator_rewards))
-
-	// 		this.rplProjectedClaim = temp
-	// 		if (temp.isLessThanOrEqualTo(new BigNumber('0'))) {
-	// 			this.rplProjectedClaim = null
-	// 		}
-	// 	} catch (e) {
-	// 		console.warn('cannot updateRplProjectedClaim', e)
-	// 	}
-	// }
-
-	updateNextRewardRound() {
-		// try {
-		// 	if (!this.validatorUtils.rocketpoolStats || !this.validatorUtils.rocketpoolStats.claim_interval_time) return
-		// 	const hoursToAdd = this.validatorUtils.rocketpoolStats.claim_interval_time.split(':')[0]
-		// 	this.nextRewardRound = this.validatorUtils.rocketpoolStats.claim_interval_time_start * 1000 + parseInt(hoursToAdd) * 60 * 60 * 1000
-		// } catch (e) {
-		// 	console.warn('cannot updateNextRewardRound', e)
-		// }
-	}
+	depositCreditText = computed(() => {
+		let depositCredit = new BigNumber(0)
+		this.data.rocketpool().forEach((item) => {
+			depositCredit = depositCredit.plus(new BigNumber(item.deposit_credit))
+		})
+		if (depositCredit.gt(0)) {
+			return `You have ${this.unit.convertNonFiat(
+				depositCredit,
+				'WEI',
+				'ETHER',
+				true
+			)} in unused Rocketpool deposit credit.<br/><br/>You can use this credit to spin up more minipools. Be aware that you can not withdraw your deposit credit.`
+		}
+		return null
+	})
 
 	ngOnInit() {
 		getSuccessFailMode(this.storage).then((result) => {

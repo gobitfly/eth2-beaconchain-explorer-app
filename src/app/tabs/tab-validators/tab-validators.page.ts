@@ -19,7 +19,7 @@
 
 import { Component, computed, OnInit, signal, ViewChild, WritableSignal } from '@angular/core'
 import { AlertController, IonSearchbar, ModalController, Platform, SearchbarCustomEvent } from '@ionic/angular'
-import { ApiService, capitalize } from '@services/api.service'
+import { ApiService } from '@services/api.service'
 import { StorageService } from '@services/storage.service'
 import { AlertService } from '@services/alert.service'
 import { SubscribePage } from '@pages/subscribe/subscribe.page'
@@ -720,25 +720,7 @@ export class Tab2Page implements OnInit {
 	// ------------ GROUPS ------------
 
 	groups = computed(() => {
-		return (
-			this.dashboardData()
-				?.groups.sort((a, b) => a.id - b.id)
-				.map((group) => {
-					return {
-						id: group.id,
-						count: group.count,
-						name: group.name == 'default' && group.id == 0 ? 'Default' : capitalize(group.name),
-						realName: group.name,
-					}
-				}) || [
-				{
-					id: 0,
-					count: isLocalDashboard(this.dashboardID()) ? (this.dashboardID() as number[]).length : 0,
-					name: 'Default',
-					realName: 'default',
-				},
-			]
-		)
+		return this.dashboardUtils.getGroupList(this.dashboardData()?.groups)
 	})
 
 	validatorCountAcrossAllGroups = computed(() => {

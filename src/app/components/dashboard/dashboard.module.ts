@@ -38,27 +38,29 @@ import { RewardChartModule } from './reward-chart/reward-chart.module'
 import { FullPageLoadingComponent } from '../full-page-loading/full-page-loading.component'
 import { FullPageOfflineComponent } from '../full-page-offline/full-page-offline.component'
 import { FirebaseUtilsModule } from 'src/app/utils/Firebase.module'
+import { GroupSelectorComponent } from "./group-selector/group-selector.component";
 
 @NgModule({
 	imports: [
-		CommonModule,
-		FormsModule,
-		IonicModule,
-		PipesModule,
-		ClientupdateComponentModule,
-		MessageComponentModule,
-		TooltipModule,
-		AdComponentModule,
-		PerformanceItemComponentModule,
-		SummaryChartModule,
-		SuccessFailViewComponent,
-		GridCellLeftComponent,
-		GridCellRightComponent,
-		RewardChartModule,
-		FullPageLoadingComponent,
-		FullPageOfflineComponent,
-		FirebaseUtilsModule,
-	],
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    PipesModule,
+    ClientupdateComponentModule,
+    MessageComponentModule,
+    TooltipModule,
+    AdComponentModule,
+    PerformanceItemComponentModule,
+    SummaryChartModule,
+    SuccessFailViewComponent,
+    GridCellLeftComponent,
+    GridCellRightComponent,
+    RewardChartModule,
+    FullPageLoadingComponent,
+    FullPageOfflineComponent,
+    FirebaseUtilsModule,
+    GroupSelectorComponent
+],
 	declarations: [DashboardComponent],
 	exports: [DashboardComponent],
 })

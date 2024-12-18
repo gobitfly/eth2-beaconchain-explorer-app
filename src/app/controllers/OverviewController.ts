@@ -29,9 +29,10 @@ import {
 	V2DashboardSummaryChart,
 	V2DashboardSummaryGroupTable,
 	V2DashboardSummaryTable,
+	V2GetValidatorStatusOfGroup,
 } from '@requests/v2-dashboard'
 import { ApiService, LatestStateWithTime } from '@services/api.service'
-import { VDBGroupSummaryData, VDBOverviewData, VDBRocketPoolTableRow, VDBSummaryTableRow } from '@requests/types/validator_dashboard'
+import { VDBGroupSummaryData, VDBOverviewData, VDBOverviewValidators, VDBRocketPoolTableRow, VDBSummaryTableRow, VDBSummaryValidatorsData } from '@requests/types/validator_dashboard'
 import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/core'
 import { ChartData } from '@requests/types/common'
 import { DashboardUtils } from '@utils/DashboardUtils'
@@ -84,14 +85,29 @@ export class OverviewProvider {
 		}
 	}
 
-	async setTimeframe(data: OverviewData2, timeframe: Period, force: boolean = false) {
+	async setGroup(data: OverviewData2, groupID: number, force: boolean = false) {
+		if (groupID == -1) {
+			data.groupValidatorStatus.set(null)
+			return
+		}
+		const result = await this.api.set(
+			new V2GetValidatorStatusOfGroup(data.id, groupID, Period.AllTime).withAllowedCacheResponse(!force),
+			data.groupValidatorStatus,
+			data.associatedCacheKey
+		)
+		if (result.error) {
+			console.error('Error fetching group dashboard status', result.error)
+		}
+	}
+
+	async setTimeframe(data: OverviewData2, timeframe: Period, groupID: number, force: boolean = false) {
 		data.timeframeInternal.set(timeframe)
 		const period = timeframe
 
 		return Promise.all([
 			this.api.set(new V2DashboardSummaryTable(data.id, period, null).withAllowedCacheResponse(!force), data.summary, data.associatedCacheKey),
 			this.api.set(
-				new V2DashboardSummaryGroupTable(data.id, 0, period, null).withAllowedCacheResponse(!force),
+				new V2DashboardSummaryGroupTable(data.id, groupID, period, null).withAllowedCacheResponse(!force),
 				data.summaryGroup,
 				data.associatedCacheKey
 			),
@@ -101,6 +117,7 @@ export class OverviewProvider {
 	async create(
 		id: dashboardID,
 		timeframe: Period,
+		groupID: number,
 		summaryChartOptions: SummaryChartOptions,
 		associatedCacheKey: string = null
 	): Promise<OverviewData2> {
@@ -109,7 +126,7 @@ export class OverviewProvider {
 		const temp = new OverviewData2(id, associatedCacheKey)
 
 		const overview = this.api.set(new V2DashboardOverview(id), temp.overviewData, associatedCacheKey)
-		this.setTimeframe(temp, timeframe, false)
+		this.setTimeframe(temp, timeframe, groupID, false)
 
 		this.api.set(new V2DashboardRocketPool(id), temp.rocketpool, associatedCacheKey)
 		this.api.set(new V2DashboardRewardChart(id).withCustomCacheKey('reward-chart-initial-' + id), temp.rewardChart, associatedCacheKey)
@@ -152,10 +169,17 @@ export class OverviewData2 {
 	rocketpool: WritableSignal<VDBRocketPoolTableRow[]> = signal(null)
 	summaryChart: WritableSignal<ChartData<number, number>> = signal(null)
 	rewardChart: WritableSignal<ChartData<number, string>> = signal(null)
+	groupValidatorStatus: WritableSignal<VDBSummaryValidatorsData[]> = signal(null)
 
 	timeframeInternal: WritableSignal<Period> = signal(null)
 	timeframe = computed(() => this.timeframeInternal())
 	timeframeDisplay = computed(() => getPeriodDisplayable(this.timeframe()))
+
+	selectedGroupID: WritableSignal<number> = signal(-1)
+	summaryCurrentGroup = computed(() => { // todo: efficiency should be provided by summaryGroup
+		if (!this.summary()) return null
+		return this.summary().find((group) => group.group_id == this.selectedGroupID())
+	})
 
 	summaryChartOptionsInternal: WritableSignal<SummaryChartOptions> = signal(null)
 	summaryChartOptions = computed(() => this.summaryChartOptionsInternal())
@@ -178,11 +202,28 @@ export class OverviewData2 {
 
 	validatorCount: Signal<number> = computed(() => {
 		if (!this.overviewData()) return 0
+		// if group is selected, just return count for that group
+		if (this.groupValidatorStatus()) {
+			return this.groupValidatorStatus().reduce((acc, group) => acc + group.validators.length, 0)
+		}
+			
 		return getValidatorCount(this.overviewData())
 	})
 
 	dashboardState: Signal<DashboardStatus> = computed(() => {
-		return getDashboardState(this.overviewData(), this.validatorCount(), this.foreignValidator)
+		let validators = this.overviewData()?.validators 
+		// if group is selected, calculate validator states of that group
+		if (this.groupValidatorStatus()) {
+			validators = {
+				online: this.groupValidatorStatus().find((item) => item.category == 'online')?.validators.length,
+				offline: this.groupValidatorStatus().find((item) => item.category == 'offline')?.validators.length,
+				slashed: this.groupValidatorStatus().find((item) => item.category == 'slashed')?.validators.length,
+				exited: this.groupValidatorStatus().find((item) => item.category == 'exited')?.validators.length,
+				pending: this.groupValidatorStatus().find((item) => item.category == 'pending')?.validators.length
+			} as VDBOverviewValidators
+		}
+
+		return getDashboardState(validators, this.validatorCount(), this.foreignValidator)
 	})
 
 	consensusPerformance: Signal<Performance> = computed(() => {
@@ -224,8 +265,8 @@ export class OverviewData2 {
 
 	rpTotalRPLClaimed: Signal<BigNumber> = computed(() => {
 		if (this.rocketpool() == null) return new BigNumber(0)
-		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl.claimed))
-		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl.unclaimed))
+		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl_claimed))
+		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl_unclaimed))
 
 		return claimed.plus(unclaimed)
 	})
@@ -245,15 +286,15 @@ export class OverviewData2 {
 
 	totalSmoothingPool: Signal<BigNumber> = computed(() => {
 		if (this.rocketpool() == null) return new BigNumber(0)
-		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.smoothing_pool.claimed))
-		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.smoothing_pool.unclaimed))
+		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.smoothingpool_claimed))
+		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.smoothingpool_unclaimed))
 		return claimed.plus(unclaimed)
 	})
 
 	totalRPL: Signal<BigNumber> = computed(() => {
 		if (this.rocketpool() == null) return new BigNumber(0)
-		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl.claimed))
-		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl.unclaimed))
+		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl_claimed))
+		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl_unclaimed))
 		return claimed.plus(unclaimed)
 	})
 }
@@ -328,12 +369,13 @@ export type Description = {
 	extendedDescriptionPre: string
 }
 
-function getDashboardState(overviewData: VDBOverviewData, validatorCount: number, foreignValidator: boolean): DashboardStatus {
-	if (!overviewData) return null
+// VDBSummaryValidators just 3 states?
+function getDashboardState(validators: VDBOverviewValidators, validatorCount: number, foreignValidator: boolean): DashboardStatus {
+	if (!validators) return null
 	// create status object with some default values
 	const dashboardStatus: DashboardStatus = {
 		state: StateType.none,
-		title: `${overviewData.validators.online} / ${validatorCount}`,
+		title: `${validators.online} / ${validatorCount}`,
 		iconCss: 'ok',
 		icon: 'checkmark-circle-outline',
 		description: [],
@@ -346,21 +388,21 @@ function getDashboardState(overviewData: VDBOverviewData, validatorCount: number
 	// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
 
 	// handle slashed validators
-	updateStateSlashed(dashboardStatus, overviewData.validators.slashed, validatorCount, foreignValidator)
+	updateStateSlashed(dashboardStatus, validators.slashed, validatorCount, foreignValidator)
 
 	// handle offline validators
-	updateStateOffline(dashboardStatus, validatorCount, overviewData.validators.offline, foreignValidator)
+	updateStateOffline(dashboardStatus, validatorCount, validators.offline, foreignValidator)
 
 	// handle awaiting activation validators
-	if (overviewData.validators.pending > 0) {
-		updateStateAwaiting(dashboardStatus, overviewData.validators.pending, validatorCount, foreignValidator)
+	if (validators.pending > 0) {
+		updateStateAwaiting(dashboardStatus, validators.pending, validatorCount, foreignValidator)
 	}
 
 	// handle exited validators
-	updateExitedState(dashboardStatus, overviewData.validators.exited, validatorCount, foreignValidator)
+	updateExitedState(dashboardStatus, validators.exited, validatorCount, foreignValidator)
 
 	// handle ok state, always call last
-	updateStateOk(dashboardStatus, overviewData.validators.online, validatorCount, foreignValidator)
+	updateStateOk(dashboardStatus, validators.online, validatorCount, foreignValidator)
 
 	if (dashboardStatus.state == StateType.mixed) {
 		// remove extended description if more than one state is shown

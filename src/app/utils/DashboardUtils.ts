@@ -17,7 +17,7 @@
 
 import { Injectable } from '@angular/core'
 import { StorageService } from '@services/storage.service'
-import { ApiService } from '@services/api.service'
+import { ApiService, capitalize } from '@services/api.service'
 import { V2MyDashboards } from '@requests/v2-user'
 import {
 	dashboardID,
@@ -33,6 +33,7 @@ import { MerchantUtils } from './MerchantUtils'
 import { SearchResponseType, SearchResultData } from '@requests/v2-search'
 import { UnitconvService } from '@services/unitconv.service'
 import { APIError, APIUnauthorizedError } from '@requests/requests'
+import { VDBOverviewGroup } from '@requests/types/validator_dashboard'
 
 @Injectable({
 	providedIn: 'root',
@@ -73,7 +74,8 @@ export class DashboardUtils {
 				} as V2AddValidatorToDashboardData)
 			)
 			return result && !result.error
-		} else { // deprecated feature
+		} else {
+			// deprecated feature
 			const indexToAdd = this.searchResultHandler.getAddByIndex(item)
 			if (!indexToAdd || indexToAdd.length === 0) {
 				return false
@@ -117,6 +119,28 @@ export class DashboardUtils {
 			}
 			return true
 		}
+	}
+
+	getGroupList(groups: VDBOverviewGroup[] | null): GroupEntries[] {
+		return (
+			groups
+				?.sort((a, b) => a.id - b.id)
+				.map((group) => {
+					return {
+						id: group.id,
+						count: group.count,
+						name: group.name == 'default' && group.id == 0 ? 'Default' : capitalize(group.name),
+						realName: group.name,
+					}
+				}) || [
+				{
+					id: 0,
+					count: 0,
+					name: 'Default',
+					realName: 'default',
+				},
+			]
+		)
 	}
 
 	async deleteValidator(index: number[]) {
@@ -172,6 +196,13 @@ export class DashboardUtils {
 
 		return false
 	}
+}
+
+export interface GroupEntries {
+	id: number
+	count: number
+	name: string
+	realName: string
 }
 
 export function isLocalDashboard(id: dashboardID): id is number[] {

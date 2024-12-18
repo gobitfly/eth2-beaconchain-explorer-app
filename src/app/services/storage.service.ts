@@ -329,7 +329,17 @@ export class StorageService extends CacheModule implements OnInit {
 	}
 
 	async setDashboardTimeframe(timeframe: Period): Promise<void> {
-		await this.setObject('dashboard_timeframe', timeframe)
+		return await this.setObject('dashboard_timeframe', timeframe)
+	}
+
+	async setDashboardGroupID(groupID: number): Promise<void> {
+		return await this.setObject('dashboard_group_id', groupID)
+	}
+
+	async getDashboardGroupID(): Promise<number> {
+		const data = (await this.getObject('dashboard_group_id')) as number
+		if (data === null || data === undefined) return -1
+		return data
 	}
 }
 
