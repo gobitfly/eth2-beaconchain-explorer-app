@@ -64,7 +64,7 @@ export class AppUpdater {
 			return false
 		}
 
-		const [hasNativeUpdate, latest] = await Promise.all([this.updateNative(), this.api.execute2(new V2LatestAppBundle(currentBundle, currentNative))])
+		const [hasNativeUpdate, latest] = await Promise.all([this.updateNative(), this.api.execute(new V2LatestAppBundle(currentBundle, currentNative))])
 
 		// Does it make sense to have a minimal api here so checking for updates still works even if
 		// an update breaks the api service?
@@ -94,7 +94,7 @@ export class AppUpdater {
 		}
 		try {
 			await this.api.getLatestState() // get csrf token
-			const result = await this.api.execute2(new V2AckBundleUpdate(currentBundle))
+			const result = await this.api.execute(new V2AckBundleUpdate(currentBundle))
 			if (result.error) {
 				console.warn('could not ack bundle', result.error)
 				return

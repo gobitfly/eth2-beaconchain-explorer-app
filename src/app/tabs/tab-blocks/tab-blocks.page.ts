@@ -124,7 +124,7 @@ export class TabBlocksPage implements OnInit {
 	private getDefaultDataRetriever(): loadMoreType<VDBBlocksTableRow> {
 		return async (cursor) => {
 			this.loadMore = !!cursor
-			const result = await this.api.execute2(new V2DashboardBlocks(this.dashboardID, cursor, PAGE_SIZE), ASSOCIATED_CACHE_KEY)
+			const result = await this.api.execute(new V2DashboardBlocks(this.dashboardID, cursor, PAGE_SIZE), ASSOCIATED_CACHE_KEY)
 			if (result.error) {
 				Toast.show({
 					text: 'Could not load blocks',

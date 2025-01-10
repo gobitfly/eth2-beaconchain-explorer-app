@@ -224,7 +224,7 @@ export class MachinesPage extends MachineController implements OnInit {
 	// }
 
 	private async getAndProcessDataBase(timeslot = 180) {
-		const apiResult = await this.api.execute2(new V2MyMachines(0, timeslot))
+		const apiResult = await this.api.execute(new V2MyMachines(0, timeslot))
 		if (apiResult.error) {
 			//this.dashboardUtils.defaultDashboardErrorHandler(apiResult.error)
 			if (!(apiResult.error instanceof APIUnauthorizedError)) {

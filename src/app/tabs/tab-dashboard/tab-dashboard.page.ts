@@ -97,7 +97,7 @@ export class Tab1Page implements OnInit {
 		await Promise.all([
 			this.overviewProvider.setGroup(this.overallData, await this.storage.getDashboardGroupID()),
 			this.changeTimeframe(await this.storage.getDashboardTimeframe()),
-		]) 
+		])
 	}
 
 	async changeTimeframe(period: Period) {
@@ -211,7 +211,7 @@ export class Tab1Page implements OnInit {
 		}
 		this.loading = false
 		if (this.overallData) {
-			this.api.setCurrentDashboardChainID(this.overallData.chainNetwork().id)
+			//this.api.setCurrentDashboardChainID(this.overallData.chainNetwork().id)
 		}
 
 		console.log('overallData', this.overallData)

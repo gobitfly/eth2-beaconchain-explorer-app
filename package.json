@@ -5,8 +5,9 @@
 	"homepage": "https://beaconcha.in",
 	"scripts": {
 		"test": "ng test",
-		"dev": "ionic serve --live-reload --no-open --configuration=development",
-		"dev-android": "ionic cap run android --livereload --external --public-host=100.121.110.92 --no-open --configuration=development",
+		"generate-cert": "node local_env/generate-cert.js",
+		"dev": "(trap 'kill 0' SIGINT; ionic serve --live-reload --no-open --configuration=development --address=app-dev.beaconcha.in & sleep 15; node local_env/run.js)",
+		"dev-android": "ionic cap run android --livereload --external --no-open --configuration=development",
 		"build-android": "npm run increment-build && ionic cap build android --prod --release --source-map=true",
 		"build-ios": "npm run increment-build && ionic cap build ios --prod --release --source-map=true",
 		"prettier-format": "prettier --config .prettierrc.yml 'src/**/*.{ts,html,scss}' --write",
@@ -65,6 +66,7 @@
 		"ng2-tooltip-directive-major-angular-updates": "^2.12.1",
 		"ngx-echarts": "^17.2.0",
 		"ngx-timeago": "^3.0.0",
+		"puppeteer": "^23.11.0",
 		"rxjs": "~7.8.1",
 		"storage-mirror": "file:storage-mirror",
 		"tslib": "^2.7.0"

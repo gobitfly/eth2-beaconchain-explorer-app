@@ -66,7 +66,7 @@ export class NotificationBase {
 	private async setRemote(clientKey: string, enabled: boolean) {
 		const remoteID = Clients.find((c) => c.key == clientKey).remoteId
 		const updateRequest = new V2ChangeSubscribedClient(remoteID, enabled)
-		const result = await this.api.execute2(updateRequest)
+		const result = await this.api.execute(updateRequest)
 		return result
 	}
 
@@ -86,7 +86,7 @@ export class NotificationBase {
 	 * @returns
 	 */
 	private async remoteInitClientIDs(force: boolean, callback: (clientKey: string, exists: boolean) => Promise<void> = null) {
-		const result = await this.api.execute2(new V2SubscribedClients().withAllowedCacheResponse(!force))
+		const result = await this.api.execute(new V2SubscribedClients().withAllowedCacheResponse(!force))
 		if (result.error) {
 			console.warn('Failed to load subscribed clients', result.error)
 			return result

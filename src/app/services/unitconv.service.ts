@@ -62,6 +62,9 @@ export class UnitconvService {
 	private async init() {
 		await this.migrateToGnosisEra()
 
+		this.chainNetwork = findChainNetworkById(await this.api.getCurrentDashboardChainID())
+		console.log('unitconvservice chainNetwork', this.chainNetwork)
+
 		this.lastPrice = {
 			Cons: await this.getLastStoredPrice(this.pref.Cons),
 			Exec: await this.getLastStoredPrice(this.pref.Exec),
@@ -76,8 +79,6 @@ export class UnitconvService {
 			this.storage.setBooleanSetting('UPDATED_CURRENCY_INTEROP', true)
 			this.save()
 		}
-
-		this.chainNetwork = findChainNetworkById(await this.api.getCurrentDashboardChainID())
 
 		await this.loadCurrentChainNetwork()
 		await this.updatePriceData()
@@ -438,7 +439,9 @@ export class UnitconvService {
 			this.lastPrice.mGNOXDAI = this.lastPrice.Exec.dividedBy(this.lastPrice.Cons)
 		}
 
-		console.log('skipFetchingMGNOtoDAIPrice', skipFetchingMGNOtoDAIPrice, this.lastPrice.mGNOXDAI.toString())
+		console.log('unitconvservice skipFetchingMGNOtoDAIPrice units', this.pref.Cons, this.pref.Exec)
+		console.log('unitconvservice skipFetchingMGNOtoDAIPrice details', this.lastPrice.Cons.toString(), this.lastPrice.Exec.toString())
+		console.log('unitconvservice skipFetchingMGNOtoDAIPrice', skipFetchingMGNOtoDAIPrice, this.lastPrice.mGNOXDAI.toString())
 
 		this.triggerPropertyChange()
 	}
@@ -465,7 +468,7 @@ export class UnitconvService {
 	}
 
 	private async getExchangeRate(unitPair: string): Promise<CoinbaseExchangeResponse> {
-		const temp = await this.api.execute2(new CoinbaseExchangeRequest(unitPair))
+		const temp = await this.api.execute(new CoinbaseExchangeRequest(unitPair))
 		if (temp.error) return null
 		console.log('requested exchange rate for ', unitPair, 'got', temp.data.amount, 'as response')
 		return temp.data

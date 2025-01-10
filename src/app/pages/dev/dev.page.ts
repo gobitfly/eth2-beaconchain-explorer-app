@@ -329,7 +329,7 @@ export class DevPage extends Tab3Page implements OnInit {
 	async registerV2Push() {
 		//const lastToken = await this.storage.getItem('last_firebase_token')
 		const deviceID = await this.storage.getDeviceID()
-		const result = this.api.execute2(new V2RegisterPushNotificationToken('hallo', deviceID))
+		const result = this.api.execute(new V2RegisterPushNotificationToken('hallo', deviceID))
 		console.log('v2 register push', result)
 	}
 

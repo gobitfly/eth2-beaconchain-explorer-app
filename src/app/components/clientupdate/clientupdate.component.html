@@ -21,7 +21,7 @@
 <div class="background" *ngIf="version">
 	<div class="inner">
 		<ion-item lines="none">
-			<ion-icon slot="start" name="logo-github" (click)="openGithub()"></ion-icon>
+			<ion-icon style="margin-right: 20px" slot="start" name="logo-github" (click)="openGithub()"></ion-icon>
 
 			<ion-label (click)="openGithub()"> {{ data.client.name }} Update: {{ version }} available </ion-label>
 

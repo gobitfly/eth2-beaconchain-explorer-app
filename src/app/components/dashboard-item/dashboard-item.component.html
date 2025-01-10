@@ -9,16 +9,16 @@
 			</div>
 			<div>
 				<ion-label class="smaller-info"
-					>Groups:
-					<span class="stat-count" [class]="reachedMaxGroupClassStyle()">{{ data.group_count }}</span>
-					/
-					<span class="stat-count" [class]="reachedMaxGroupClassStyle()">{{ merchant.getCurrentPlanMaxGroups() }}</span>
-				</ion-label>
-				<ion-label class="smaller-info"
 					>Validators:
 					<span class="stat-count" [class]="reachedMaxValidatorClassStyle()">{{ data.validator_count }}</span>
 					/
 					<span class="stat-count" [class]="reachedMaxValidatorClassStyle()">{{ merchant.getCurrentPlanMaxValidator() }}</span>
+				</ion-label>
+				<ion-label class="smaller-info"
+					>Groups:
+					<span class="stat-count" [class]="reachedMaxGroupClassStyle()">{{ data.group_count }}</span>
+					/
+					<span class="stat-count" [class]="reachedMaxGroupClassStyle()">{{ merchant.getCurrentPlanMaxGroups() }}</span>
 				</ion-label>
 			</div>
 		</ion-label>

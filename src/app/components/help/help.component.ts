@@ -23,13 +23,6 @@ import { StorageService } from 'src/app/services/storage.service'
 import { OAuthUtils } from 'src/app/utils/OAuthUtils'
 import { Browser } from '@capacitor/browser'
 import { ApiService } from 'src/app/services/api.service'
-import { changeNetwork } from 'src/app/tabs/tab-preferences/tab-preferences.page'
-import { UnitconvService } from 'src/app/services/unitconv.service'
-import { NotificationBase } from 'src/app/tabs/tab-preferences/notification-base'
-import ThemeUtils from 'src/app/utils/ThemeUtils'
-import { AlertService } from 'src/app/services/alert.service'
-import { MerchantUtils } from 'src/app/utils/MerchantUtils'
-import { DashboardUtils } from 'src/app/utils/DashboardUtils'
 
 @Component({
 	selector: 'app-help',
@@ -48,13 +41,7 @@ export class HelpComponent implements OnInit {
 		private oauthUtils: OAuthUtils,
 		private storage: StorageService,
 		private router: Router,
-		public api: ApiService,
-		private dashboardUtils: DashboardUtils,
-		private unit: UnitconvService,
-		private notificationBase: NotificationBase,
-		private theme: ThemeUtils,
-		private alert: AlertService,
-		private merchant: MerchantUtils
+		public api: ApiService
 	) {}
 
 	ngOnInit() {
@@ -81,20 +68,5 @@ export class HelpComponent implements OnInit {
 			const hasValidators = !!(await this.storage.getDashboardID())
 			if (!hasValidators) this.router.navigate(['/tabs/validators'])
 		}
-	}
-
-	async switchNetwork() {
-		await changeNetwork(
-			this.api.isGnosis() ? this.ethereumNetworkKey : 'gnosis',
-			this.storage,
-			this.api,
-			this.unit,
-			this.theme,
-			this.alert,
-			this.merchant,
-			true,
-			this.dashboardUtils
-		)
-		this.isGnosis = this.api.isGnosis()
 	}
 }

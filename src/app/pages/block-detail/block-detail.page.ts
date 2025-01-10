@@ -107,7 +107,7 @@ export class BlockDetailPage implements OnInit {
 			this.initialLoading = false
 			return
 		}
-		const result = await this.api.execute2(new V1BlocksOverview(this.block.block))
+		const result = await this.api.execute(new V1BlocksOverview(this.block.block))
 		console.log('v1 block result', result)
 		if (result.error) {
 			Toast.show({

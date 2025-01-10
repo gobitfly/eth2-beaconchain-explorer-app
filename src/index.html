@@ -33,7 +33,7 @@
 
 					var lastLogSession = parseInt(localStorage.getItem('last_log_session'))
 					if (isNaN(lastLogSession)) lastLogSession = 0
-					const newLogSession = (lastLogSession + 1) % 3
+					const newLogSession = (lastLogSession + 1) % 2
 					localStorage.setItem('last_log_session', newLogSession.toString())
 
 					var console = (function (oldCons, storage, debug) {

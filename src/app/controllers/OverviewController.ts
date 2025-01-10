@@ -32,12 +32,19 @@ import {
 	V2GetValidatorStatusOfGroup,
 } from '@requests/v2-dashboard'
 import { ApiService, LatestStateWithTime } from '@services/api.service'
-import { VDBGroupSummaryData, VDBOverviewData, VDBOverviewValidators, VDBRocketPoolTableRow, VDBSummaryTableRow, VDBSummaryValidatorsData } from '@requests/types/validator_dashboard'
+import {
+	VDBGroupSummaryData,
+	VDBOverviewData,
+	VDBOverviewValidators,
+	VDBRocketPoolTableRow,
+	VDBSummaryTableRow,
+	VDBSummaryValidatorsData,
+} from '@requests/types/validator_dashboard'
 import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/core'
 import { ChartData } from '@requests/types/common'
-import { DashboardUtils } from '@utils/DashboardUtils'
 import { ChainNetwork, findChainNetworkById } from '@utils/NetworkData'
 import { sumBigInt } from '@utils/MathUtils'
+import { UnitconvService } from '@services/unitconv.service'
 export interface SummaryChartOptions {
 	aggregation: Aggregation
 	startTime: number
@@ -49,7 +56,7 @@ export interface SummaryChartOptions {
 export class OverviewProvider {
 	constructor(
 		private api: ApiService,
-		private dashboardUtils: DashboardUtils
+		private unit: UnitconvService
 	) {}
 
 	clearRequestCache(data: OverviewData2) {
@@ -123,7 +130,7 @@ export class OverviewProvider {
 	): Promise<OverviewData2> {
 		if (!id) return null
 
-		const temp = new OverviewData2(id, associatedCacheKey)
+		const temp = new OverviewData2(id, associatedCacheKey, this.unit)
 
 		const overview = this.api.set(new V2DashboardOverview(id), temp.overviewData, associatedCacheKey)
 		this.setTimeframe(temp, timeframe, groupID, false)
@@ -176,7 +183,8 @@ export class OverviewData2 {
 	timeframeDisplay = computed(() => getPeriodDisplayable(this.timeframe()))
 
 	selectedGroupID: WritableSignal<number> = signal(-1)
-	summaryCurrentGroup = computed(() => { // todo: efficiency should be provided by summaryGroup
+	summaryCurrentGroup = computed(() => {
+		// todo: efficiency should be provided by summaryGroup
 		if (!this.summary()) return null
 		return this.summary().find((group) => group.group_id == this.selectedGroupID())
 	})
@@ -185,15 +193,17 @@ export class OverviewData2 {
 	summaryChartOptions = computed(() => this.summaryChartOptionsInternal())
 
 	foreignValidator: boolean = false
+	unit: UnitconvService
 
 	chainNetwork: Signal<ChainNetwork> = computed(() => {
 		if (!this.overviewData()) return findChainNetworkById(1)
 		return findChainNetworkById(this.overviewData().network)
 	})
 
-	constructor(id: dashboardID, associatedCacheKey: string) {
+	constructor(id: dashboardID, associatedCacheKey: string, unit: UnitconvService) {
 		this.id = id
 		this.associatedCacheKey = associatedCacheKey
+		this.unit = unit
 	}
 
 	isEmpty = computed(() => {
@@ -206,12 +216,12 @@ export class OverviewData2 {
 		if (this.groupValidatorStatus()) {
 			return this.groupValidatorStatus().reduce((acc, group) => acc + group.validators.length, 0)
 		}
-			
+
 		return getValidatorCount(this.overviewData())
 	})
 
 	dashboardState: Signal<DashboardStatus> = computed(() => {
-		let validators = this.overviewData()?.validators 
+		let validators = this.overviewData()?.validators
 		// if group is selected, calculate validator states of that group
 		if (this.groupValidatorStatus()) {
 			validators = {
@@ -219,7 +229,7 @@ export class OverviewData2 {
 				offline: this.groupValidatorStatus().find((item) => item.category == 'offline')?.validators.length,
 				slashed: this.groupValidatorStatus().find((item) => item.category == 'slashed')?.validators.length,
 				exited: this.groupValidatorStatus().find((item) => item.category == 'exited')?.validators.length,
-				pending: this.groupValidatorStatus().find((item) => item.category == 'pending')?.validators.length
+				pending: this.groupValidatorStatus().find((item) => item.category == 'pending')?.validators.length,
 			} as VDBOverviewValidators
 		}
 
@@ -235,7 +245,7 @@ export class OverviewData2 {
 	})
 
 	combinedPerformance: Signal<Performance> = computed(() => {
-		return getCombinedPerformance(this.consensusPerformance(), this.executionPerformance())
+		return getCombinedPerformance(this.consensusPerformance(), this.executionPerformance(), this.unit)
 	})
 
 	showSyncStats: Signal<boolean> = computed(() => {
@@ -570,12 +580,12 @@ function getConsensusPerformance(overviewData: VDBOverviewData): Performance {
 	}
 }
 
-function getCombinedPerformance(cons: Performance, exec: Performance): Performance {
+function getCombinedPerformance(cons: Performance, exec: Performance, unit: UnitconvService): Performance {
 	return {
-		performance1d: cons.performance1d.plus(exec.performance1d),
-		performance30d: cons.performance30d.plus(exec.performance30d),
-		performance7d: cons.performance7d.plus(exec.performance7d),
-		total: cons.total.plus(exec.total),
+		performance1d: cons.performance1d.plus(unit.convertELtoCL(exec.performance1d)),
+		performance30d: cons.performance30d.plus(unit.convertELtoCL(exec.performance30d)),
+		performance7d: cons.performance7d.plus(unit.convertELtoCL(exec.performance7d)),
+		total: cons.total.plus(unit.convertELtoCL(exec.total)),
 		apr30d: cons.apr30d + exec.apr30d,
 		apr7d: cons.apr7d + exec.apr7d,
 		aprTotal: cons.aprTotal + exec.aprTotal,

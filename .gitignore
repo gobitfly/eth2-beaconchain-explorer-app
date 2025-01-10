@@ -20,6 +20,7 @@ bundle*.zip
 log.txt
 npm-debug.log*
 
+/tmp
 /.idea
 /.ionic
 /.sass-cache
@@ -37,6 +38,7 @@ npm-debug.log*
 /android/app/src/beta/google-services.json
 /ios/App/GoogleService-Info.plist
 /appassets
+/local_env/server.*
 /android/.idea
 android/.idea/jarRepositories.xml
 android/.idea/misc.xml

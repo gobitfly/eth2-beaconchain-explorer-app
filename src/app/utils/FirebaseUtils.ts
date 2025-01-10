@@ -244,7 +244,7 @@ export async function updateRemoteNotificationToken(storage: StorageService, api
 			} else {
 				request = new UpdateTokenRequest(token)
 			}
-			const result = await api.execute2(request)
+			const result = await api.execute(request)
 			if (result.error) {
 				console.warn(LOGTAG + ' update on remote failed', result.error)
 			} else {

@@ -37,10 +37,9 @@ export interface ApiNetwork {
 	version: string
 	onlyDebug: boolean
 	active: boolean
-	supportedChainIds: number[]
+	supportedChainIds: number
 	name: string
 	v2NetworkConfigKey?: string
-	passXCookieDANGEROUS?: boolean // do not set unless you know what you are doing, enabling this could expose your session to attackers
 }
 
 export class NetworkMainCurrency {

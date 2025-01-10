@@ -184,12 +184,10 @@
 
 	<ion-list>
 		<ion-item lines="none">
-			<ion-icon class="opacity-icon" slot="start" name="planet-outline"></ion-icon>
-			<ion-select label="Network" value="main" [(ngModel)]="network" (ionChange)="changeNetwork()" interface="popover">
-				<ion-select-option value="main">Mainnet</ion-select-option>
-				<ion-select-option value="gnosis">Gnosis</ion-select-option>
-				<ion-select-option *ngFor="let item of allTestNetworks;" value="{{item[1]}}"> {{ item[0] }} </ion-select-option>
-			</ion-select>
+			<ion-icon slot="start" name="planet-outline" class="opacity-icon"></ion-icon>
+			<ion-toggle id="themeToggle" [(ngModel)]="showTestnets" (ionChange)="changeShowTestnets()" labelPlacement="start" justify="space-between"
+				>Enable Test Networks</ion-toggle
+			>
 		</ion-item>
 
 		<ion-item lines="none" (click)="rateApp()">

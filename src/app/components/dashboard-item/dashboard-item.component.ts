@@ -12,6 +12,9 @@ import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { findChainNetworkById } from 'src/app/utils/NetworkData'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import { Clipboard } from '@capacitor/clipboard'
+import { changeNetwork } from 'src/app/tabs/tab-preferences/tab-preferences.page'
+import { UnitconvService } from '@services/unitconv.service'
+import ThemeUtils from '@utils/ThemeUtils'
 
 @Component({
 	selector: 'app-dashboard-item',
@@ -32,7 +35,7 @@ export class DashboardItemComponent implements OnChanges {
 	selected: boolean
 
 	nameTruncated = computed(() => {
-		return this.data.name.length > 18 ? this.data.name.substring(0, 18) + '...' : this.data.name
+		return this.data.name.length > 21 ? this.data.name.substring(0, 21) + '...' : this.data.name
 	})
 
 	networkName = computed(() => {
@@ -61,10 +64,12 @@ export class DashboardItemComponent implements OnChanges {
 		private dashboardUtils: DashboardUtils,
 		private storage: StorageService,
 		protected merchant: MerchantUtils,
-		private validatorUtils: ValidatorUtils
+		private validatorUtils: ValidatorUtils,
+		private unit: UnitconvService,
+		private theme: ThemeUtils
 	) {
 		effect(() => {
-			this.selected = this.defaultDashboard() === this.data.id
+			this.selected = this.defaultDashboard() === this.data.id && this.data.network === this.api.networkConfig.supportedChainIds
 		})
 	}
 
@@ -106,6 +111,22 @@ export class DashboardItemComponent implements OnChanges {
 			await alert.present()
 			return
 		}
+		if (this.data.network !== this.api.networkConfig.supportedChainIds) {
+			const loading = await this.alert.presentLoading('Loading...')
+			loading.present()
+			await changeNetwork(
+				findChainNetworkById(this.data.network).legacyKey,
+				this.storage,
+				this.api,
+				this.unit,
+				this.theme,
+				this.alert,
+				this.merchant,
+				true,
+				this.dashboardUtils
+			)
+			loading.dismiss()
+		}
 		this.defaultDashboard.set(this.data.id)
 	}
 
@@ -143,7 +164,7 @@ export class DashboardItemComponent implements OnChanges {
 						const loading = await this.alert.presentLoading('Applying changes...')
 						loading.present()
 
-						const result = await this.api.execute2(new V2ChangeDashboardName(this.data.id, alertData.newName))
+						const result = await this.api.executeOnChainID(new V2ChangeDashboardName(this.data.id, alertData.newName), null, this.data.network)
 						if (result.error) {
 							Toast.show({
 								text: 'Error renaming dashboard, please try again later',
@@ -236,7 +257,7 @@ export class DashboardItemComponent implements OnChanges {
 						const loading = await this.alert.presentLoading('Removing dashboard...')
 						loading.present()
 
-						const result = await this.api.execute2(new V2DeleteDashboard(this.data.id))
+						const result = await this.api.executeOnChainID(new V2DeleteDashboard(this.data.id), null, this.data.network)
 						if (result.error) {
 							Toast.show({
 								text: 'Error removing dashboard, please try again later',

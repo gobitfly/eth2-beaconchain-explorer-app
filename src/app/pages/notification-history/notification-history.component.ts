@@ -113,7 +113,7 @@ export class NoticationHistoryComponent {
 	private getDefaultDataRetriever<T extends new (cursor: string, limit: number) => APIRequest<E[]>, E>(constructor: T): loadMoreType<E> {
 		return async (cursor) => {
 			this.loadMore = !!cursor
-			const result = await this.api.execute2(new constructor(cursor, PAGE_SIZE), ASSOCIATED_CACHE_KEY)
+			const result = await this.api.execute(new constructor(cursor, PAGE_SIZE), ASSOCIATED_CACHE_KEY)
 			if (result.error) {
 				Toast.show({
 					text: 'Could not load blocks',

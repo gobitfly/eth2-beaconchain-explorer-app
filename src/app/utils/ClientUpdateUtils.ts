@@ -349,7 +349,7 @@ export default class ClientUpdateUtils implements OnInit {
 
 	private async getReleases(client: ClientInfo): Promise<Release> {
 		const req = new GithubReleaseRequest(client.repo)
-		const temp = await this.api.execute2(req)
+		const temp = await this.api.execute(req)
 		if (temp.error) return null
 		console.log('Client updates data', temp)
 		return new Release(client, temp.data[0])

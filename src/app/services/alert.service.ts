@@ -22,6 +22,7 @@ import { AlertController, LoadingController } from '@ionic/angular'
 
 export const VALIDATORUTILS = 140
 export const PURCHASEUTILS = 150
+export const DASHBOARD_SELECTOR = 160
 
 @Injectable({
 	providedIn: 'root',
@@ -108,7 +109,14 @@ export class AlertService {
 		await alert.present()
 	}
 
-	async confirmDialog(title: string, message: string, confirmButton: string, confirmCallback: () => void, customCSS: string | undefined = undefined) {
+	async confirmDialog(
+		title: string,
+		message: string,
+		confirmButton: string,
+		confirmCallback: () => void,
+		customCSS: string | undefined = undefined,
+		cancelCallback: () => void = null
+	) {
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
 			header: title,
@@ -119,6 +127,9 @@ export class AlertService {
 					role: 'cancel',
 					cssClass: 'secondary',
 					handler: () => {
+						if (cancelCallback) {
+							cancelCallback()
+						}
 						return
 					},
 				},

@@ -87,6 +87,9 @@ export class StorageService extends CacheModule implements OnInit {
 	}
 
 	async setAuthUserv2(value: StorageTypes.AuthUserv2) {
+		const expires = new Date()
+		expires.setMonth(expires.getMonth() + 12)
+		document.cookie = 'session_id' + '=' + value.Session + ';domain=.beaconcha.in;path=/;expires=' + expires
 		return this.setObject(AUTH_USER_V2, value)
 	}
 
@@ -212,7 +215,7 @@ export class StorageService extends CacheModule implements OnInit {
 			component: LogviewPage,
 			cssClass: 'my-custom-class',
 			componentProps: {
-				logs: JSON.parse(window.localStorage.getItem('log_session_' + ((lastLogSession + (3 - offset)) % 3))),
+				logs: JSON.parse(window.localStorage.getItem('log_session_' + ((lastLogSession + (2 - offset)) % 2))),
 			},
 		})
 		return await modal.present()

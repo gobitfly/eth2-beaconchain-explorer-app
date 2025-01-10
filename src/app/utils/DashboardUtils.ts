@@ -64,7 +64,7 @@ export class DashboardUtils {
 		const id = await this.storage.getDashboardID()
 
 		if (loggedIn) {
-			const result = await this.api.execute2(
+			const result = await this.api.execute(
 				new V2AddValidatorToDashboard(id, {
 					group_id: groupID,
 					validators: this.searchResultHandler.getAddByIndex(item),
@@ -101,7 +101,7 @@ export class DashboardUtils {
 		}
 
 		if (loggedIn) {
-			const result = await this.api.execute2(
+			const result = await this.api.execute(
 				new V2AddValidatorToDashboard(id, {
 					group_id: groupID,
 					validators: index,
@@ -148,7 +148,7 @@ export class DashboardUtils {
 		const id = await this.storage.getDashboardID()
 
 		if (loggedIn) {
-			const result = await this.api.execute2(new V2DeleteValidatorFromDashboard(id, index))
+			const result = await this.api.execute(new V2DeleteValidatorFromDashboard(id, index))
 			return result && !result.error
 		} else {
 			if (isLocalDashboard(id)) {
@@ -251,7 +251,7 @@ export async function mergeLocalDashboardToRemote(api: ApiService, storage: Stor
 	storage.setDashboardID(null) // clear local dashboard
 	const remoteDashboard = await initDashboard(api, storage)
 
-	const result = await api.execute2(
+	const result = await api.execute(
 		new V2AddValidatorToDashboard(remoteDashboard, {
 			group_id: 0,
 			validators: localDashboard,
@@ -275,7 +275,7 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 
 	// check if user has dashboards
 	if (!dashID && isLoggedIn) {
-		const result = await api.execute2(new V2MyDashboards())
+		const result = await api.execute(new V2MyDashboards())
 		if (result.error) {
 			console.warn('dashboards can not be loaded', result.error)
 			Toast.show({
@@ -294,7 +294,7 @@ export async function initDashboard(api: ApiService, storage: StorageService, da
 			console.log('user has no dashboards, creating default dashboard')
 			// create a new dashboard
 			const chainID = await api.getCurrentDashboardChainID()
-			const createResult = await api.execute2(new V2CreateDashboard('Default Dashboard', chainID))
+			const createResult = await api.execute(new V2CreateDashboard('Default Dashboard', chainID))
 			if (createResult.error) {
 				Toast.show({
 					text: 'Error renaming dashboard, please try again later',

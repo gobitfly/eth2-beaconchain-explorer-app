@@ -206,11 +206,7 @@ export class ValidatorUtils {
 			})
 		}
 
-		return (await hasStakeShareEnabled('main')) || (await hasStakeShareEnabled('holesky'))
-	}
-
-	async wasGnosisUser() {
-		return (await this.getAllValidatorsLocal('gnosis')).length > 0
+		return (await hasStakeShareEnabled('main')) || (await hasStakeShareEnabled('holesky')) || (await hasStakeShareEnabled('gnosis'))
 	}
 
 	private updateRplAndRethPrice() {

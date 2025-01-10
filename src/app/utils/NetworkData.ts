@@ -29,7 +29,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		supportedChainIds: [1],
+		supportedChainIds: 1,
 		name: 'Ethereum',
 		v2NetworkConfigKey: 'main_v2_prod',
 	},
@@ -37,13 +37,12 @@ export const MAP: ApiNetwork[] = [
 		key: 'main_v2_prod',
 		protocol: 'https',
 		host: 'v2-staging-mainnet.beaconcha.in',
-		passXCookieDANGEROUS: false,
 		net: '',
 		endpoint: '/api/',
 		version: 'i',
 		onlyDebug: true,
 		active: true,
-		supportedChainIds: [1],
+		supportedChainIds: 1,
 		name: 'Ethereum',
 	},
 	{
@@ -56,7 +55,21 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		supportedChainIds: [1, 100],
+		supportedChainIds: 100,
+		name: 'Gnosis',
+		v2NetworkConfigKey: 'gnosis_v2_prod',
+	},
+	{
+		// todo change
+		key: 'gnosis_v2_prod',
+		protocol: 'https',
+		host: 'v2-staging-gnosis.beaconcha.in',
+		net: '',
+		endpoint: '/api/',
+		version: 'i',
+		onlyDebug: true,
+		active: true,
+		supportedChainIds: 100,
 		name: 'Gnosis',
 	},
 	{
@@ -68,7 +81,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		supportedChainIds: [11155111],
+		supportedChainIds: 11155111,
 		name: 'Ethereum',
 	},
 	{
@@ -80,7 +93,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		supportedChainIds: [17000],
+		supportedChainIds: 17000,
 		name: 'Ethereum',
 		v2NetworkConfigKey: 'holesky_v2_prod',
 	},
@@ -88,39 +101,36 @@ export const MAP: ApiNetwork[] = [
 		key: 'main_v2',
 		protocol: 'http',
 		host: 'local.beaconcha.in:8083',
-		passXCookieDANGEROUS: true, // DO NOT COMMIT!
 		net: '',
 		endpoint: '/api/',
 		version: 'i',
 		onlyDebug: true,
 		active: true,
-		supportedChainIds: [1],
+		supportedChainIds: 1,
 		name: 'Ethereum',
 	},
 	{
 		key: 'holesky_v2',
 		protocol: 'http',
 		host: 'local.beaconcha.in:8083',
-		passXCookieDANGEROUS: true, // DO NOT COMMIT!
 		net: '',
 		endpoint: '/api/',
 		version: 'i',
 		onlyDebug: true,
 		active: true,
-		supportedChainIds: [17000],
+		supportedChainIds: 17000,
 		name: 'Ethereum',
 	},
 	{
 		key: 'holesky_v2_prod',
 		protocol: 'https',
 		host: 'jkihuwegfsgjkhsdgf.beaconcha.in',
-		passXCookieDANGEROUS: false, // DO NOT COMMIT!
 		net: '',
 		endpoint: '/api/',
 		version: 'i',
 		onlyDebug: true,
 		active: true,
-		supportedChainIds: [17000],
+		supportedChainIds: 17000,
 		name: 'Ethereum',
 	},
 	{
@@ -132,7 +142,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: true,
 		active: true,
-		supportedChainIds: [17000],
+		supportedChainIds: 17000,
 		name: 'Ethereum',
 	},
 ]
@@ -158,6 +168,7 @@ export const CHAIN_NETWORKS: ChainNetwork[] = [
 		slotPerEpoch: 32,
 		slotsTime: 12,
 		epochsPerSyncPeriod: 256,
+		testnet: false,
 	},
 	{
 		id: 17000,
@@ -169,6 +180,7 @@ export const CHAIN_NETWORKS: ChainNetwork[] = [
 		slotPerEpoch: 32,
 		slotsTime: 12,
 		epochsPerSyncPeriod: 256,
+		testnet: true,
 	},
 	{
 		id: 100,
@@ -180,6 +192,7 @@ export const CHAIN_NETWORKS: ChainNetwork[] = [
 		slotPerEpoch: 16,
 		slotsTime: 5,
 		epochsPerSyncPeriod: 512,
+		testnet: false,
 	},
 	{
 		id: 11155111,
@@ -191,6 +204,7 @@ export const CHAIN_NETWORKS: ChainNetwork[] = [
 		slotPerEpoch: 32,
 		slotsTime: 12,
 		epochsPerSyncPeriod: 256,
+		testnet: true,
 	},
 ]
 
@@ -222,4 +236,5 @@ export interface ChainNetwork {
 	slotPerEpoch: number
 	slotsTime: number
 	epochsPerSyncPeriod: number
+	testnet: boolean
 }

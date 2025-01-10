@@ -6,7 +6,7 @@ import { ApiService, capitalize } from 'src/app/services/api.service'
 import { DashboardItemComponent, LegacyAdd } from '@components/dashboard-item/dashboard-item.component'
 import { CommonModule } from '@angular/common'
 import { dashboardID, V2CreateDashboard, V2DashboardOverview } from 'src/app/requests/v2-dashboard'
-import { AlertService } from 'src/app/services/alert.service'
+import { AlertService, DASHBOARD_SELECTOR } from 'src/app/services/alert.service'
 import { Toast } from '@capacitor/toast'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { StorageService } from 'src/app/services/storage.service'
@@ -14,13 +14,15 @@ import { DashboardUtils } from 'src/app/utils/DashboardUtils'
 import { OAuthUtils } from 'src/app/utils/OAuthUtils'
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
 import { FullPageLoadingComponent } from '@components/full-page-loading/full-page-loading.component'
-import { findChainNetworkById, findChainNetworkByName } from 'src/app/utils/NetworkData'
+import { CHAIN_NETWORKS, findChainNetworkById, findChainNetworkByName } from 'src/app/utils/NetworkData'
 import { fromEvent, Subscription } from 'rxjs'
 import { FullPageOfflineComponent } from '@components/full-page-offline/full-page-offline.component'
 import { OfflineComponentModule } from '@components/offline/offline.module'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import { getValidatorCount } from 'src/app/controllers/OverviewController'
 import { APIUnauthorizedError } from 'src/app/requests/requests'
+import { SHOW_TESTNETS_CONFIG } from 'src/app/tabs/tab-preferences/tab-preferences.page'
+import { UserInfo } from '@requests/types/user'
 
 const DASHBOARD_INFO_DISMISS_KEY = 'dashboard_info_dismissed'
 const ASSOCIATED_CACHE_KEY = 'manage_dashboards'
@@ -92,9 +94,13 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 	}
 
 	maxAllowedDashboards = computed(() => {
-		if (!this.merchant.userInfo()) return 1
-		return this.merchant.userInfo().premium_perks.validator_dashboards
+		return this.calculateMaxAllowedDashboards(this.merchant.userInfo())
 	})
+
+	calculateMaxAllowedDashboards(userInfo: UserInfo) {
+		if (!userInfo) return 1
+		return userInfo.premium_perks.validator_dashboards
+	}
 
 	sortedValidatorDashboards = computed(() => {
 		return (
@@ -137,26 +143,45 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 		} as ValidatorDashboard
 	}
 
+	async initNetworks() {
+		this.dashboardAddButtons = []
+
+		CHAIN_NETWORKS.forEach((network) => {
+			if (!network.testnet) {
+				this.dashboardAddButtons.push({
+					network: network.id,
+					text: `Add on ${capitalize(network.name)}`,
+				})
+			}
+		})
+
+		if (await this.storage.getBooleanSetting(SHOW_TESTNETS_CONFIG, false)) {
+			CHAIN_NETWORKS.forEach((network) => {
+				if (network.testnet) {
+					this.dashboardAddButtons.push({
+						network: network.id,
+						text: `Add on ${capitalize(network.name)} (Test)`,
+					})
+				}
+			})
+		}
+	}
+
 	async setup() {
 		this.online = true
-		this.dashboardAddButtons = []
-		this.api.networkConfig.supportedChainIds.forEach((chainID) => {
-			this.dashboardAddButtons.push({
-				network: chainID,
-				text: `Add ${capitalize(findChainNetworkById(chainID).name)} Dashboard`,
-			})
-		})
+		await this.initNetworks()
 
 		this.getLegacyDashboard()
 
 		this.isLoggedIn = await this.storage.isLoggedIn()
+		// @deprecated - remove in v2
 		if (!this.isLoggedIn) {
 			this.dashboards.set({
 				validator_dashboards: [
 					{
 						id: null,
 						name: 'Default',
-						network: this.api.networkConfig.supportedChainIds[0], // todo: gnosis (having two supported chain ids in general)
+						network: this.api.networkConfig.supportedChainIds,
 						is_archived: false,
 						validator_count: await this.dashboardUtils.getLocalValidatorCount(),
 						group_count: 1,
@@ -167,7 +192,8 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 			return
 		}
 
-		const result = await this.api.set(new V2MyDashboards(), this.dashboards, ASSOCIATED_CACHE_KEY)
+		const result = await this.api.getAllUserDashboards(ASSOCIATED_CACHE_KEY)
+		console.log('all dashboards', result)
 		if (result.error) {
 			console.warn('dashboards can not be loaded', result.error)
 
@@ -177,10 +203,32 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 			}
 			this.initLoading = false
 			return
+		} else {
+			this.dashboards.set(result.data)
+		}
+
+		// Convenience: If user already has a testnet dashboard, allow them to create dashboards on testnets too
+		if (this.hasTestnetDashboard(result.data.validator_dashboards)) {
+			await this.storage.setBooleanSetting(SHOW_TESTNETS_CONFIG, true)
+			this.initNetworks()
 		}
 
 		this.merchant.getUserInfo(false)
 		this.initLoading = false
+	}
+
+	hasTestnetDashboard(data: ValidatorDashboard[]) {
+		let has = false
+		data.forEach((dashboard) => {
+			CHAIN_NETWORKS.forEach((network) => {
+				if (network.testnet) {
+					if (dashboard.network == network.id && network.testnet) {
+						has = true
+					}
+				}
+			})
+		})
+		return has
 	}
 
 	async addDashboard(network: number, onSuccessCallback: (id: dashboardID) => void = null) {
@@ -189,23 +237,30 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 			return
 		}
 
-		if (this.sortedValidatorDashboards().length >= this.merchant.highestPackageDashboardsAllowed()) {
+		const networkName = findChainNetworkById(network).name
+
+		const networkPerks = await this.merchant.getUserInfoOnNetwork(network, false)
+		if (networkPerks.error) {
+			this.alert.showError('Error', 'Could not load network config, please try again later.', DASHBOARD_SELECTOR)
+			return
+		}
+
+		const validatorCountOnNetwork = this.sortedValidatorDashboards().filter((d) => d.network == network).length
+		if (validatorCountOnNetwork >= this.merchant.highestPackageDashboardsAllowed()) {
 			this.alert.showInfo(
 				'Maximum dashboards reached',
-				'You reached the highest possible number of dashboards we currently support. <br/><br/>If you feel like you need more, let us know!'
+				'You reached the highest possible number of dashboards we currently support on that network. <br/><br/>If you feel like you need more, let us know!'
 			)
 			return
 		}
 
-		if (this.sortedValidatorDashboards().length >= this.maxAllowedDashboards()) {
+		if (validatorCountOnNetwork >= this.calculateMaxAllowedDashboards(networkPerks.data)) {
 			this.alert.showInfo(
 				'Upgrade to premium',
-				'You have reached the maximum number of dashboards allowed for your plan. <br/><br/>You can create more dashboards by upgrading to a premium plan.'
+				'You have reached the maximum number of dashboards allowed for your plan on that network. <br/><br/>You can create more dashboards by upgrading to a premium plan.'
 			)
 			return
 		}
-
-		const networkName = findChainNetworkById(network).name
 
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
@@ -239,7 +294,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 						const loading = await this.alert.presentLoading('Applying changes...')
 						loading.present()
 
-						const result = await this.api.execute2(new V2CreateDashboard(alertData.newName, network))
+						const result = await this.api.executeOnChainID(new V2CreateDashboard(alertData.newName, network), null, network)
 						if (result.error) {
 							Toast.show({
 								text: 'Error creating dashboard, please try again later',
@@ -280,7 +335,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 				setDefault(this.sortedValidatorDashboards()[0].id)
 			} else {
 				// else we must create one
-				const result = await this.api.execute2(new V2CreateDashboard('Default Dashboard', this.api.networkConfig.supportedChainIds[0]))
+				const result = await this.api.execute(new V2CreateDashboard('Default Dashboard', this.api.networkConfig.supportedChainIds))
 				if (result.error) {
 					Toast.show({
 						text: 'Error creating dashboard, please try again later',
@@ -313,7 +368,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 				async () => {
 					let loading = await this.alert.presentLoading('Loading...')
 					loading.present()
-					const result = await this.api.execute2(new V2DashboardOverview(id), ASSOCIATED_CACHE_KEY)
+					const result = await this.api.execute(new V2DashboardOverview(id), ASSOCIATED_CACHE_KEY)
 					if (result.error) {
 						Toast.show({
 							text: 'Can not add validators right now, please try again later',

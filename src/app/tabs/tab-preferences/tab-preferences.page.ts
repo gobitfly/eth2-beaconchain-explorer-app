@@ -47,6 +47,8 @@ import { DashboardUtils } from '@utils/DashboardUtils'
 import { AuthUser, AuthUserv2 } from '../../models/StorageTypes'
 import { ValidatorUtils } from '@utils/ValidatorUtils'
 import { AppUpdater } from '@utils/AppUpdater'
+
+export const SHOW_TESTNETS_CONFIG = 'show_testnets'
 @Component({
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
@@ -54,10 +56,9 @@ import { AppUpdater } from '@utils/AppUpdater'
 })
 export class Tab3Page {
 	darkMode: boolean
+	showTestnets: boolean
 
 	network = 'main'
-
-	allTestNetworks: string[][]
 
 	authUser: AuthUserv2 | AuthUser
 
@@ -112,6 +113,7 @@ export class Tab3Page {
 			this.currentFiatCurrency = result
 		})
 		this.theme.isDarkThemed().then((result) => (this.darkMode = result))
+		this.storage.getBooleanSetting(SHOW_TESTNETS_CONFIG, false).then((result) => (this.showTestnets = result))
 
 		this.theme.getThemeColor().then((result) => (this.themeColor = result))
 
@@ -120,9 +122,6 @@ export class Tab3Page {
 		this.theme.isWinterEnabled().then((result) => (this.snowing = result))
 
 		this.allCurrencies = this.getAllCurrencies()
-		this.api.getAllTestNetNames().then((result) => {
-			this.allTestNetworks = result
-		})
 
 		this.appUpdater.getFormattedCurrentVersion().then((result) => {
 			this.appVersion = result
@@ -141,6 +140,28 @@ export class Tab3Page {
 		})
 
 		this.notificationBase.disableToggleLock()
+	}
+
+	changeShowTestnets() {
+		if (this.showTestnets) {
+			this.alerts.confirmDialog(
+				'Test Networks',
+				`Test Networks let you practice staking without real money. They share features with Ethereum but use worthless ETH.
+				<br/><br/>
+				Enabling test networks allows you to create dashboards to track testnet validators.`,
+				'Enable',
+				() => {
+					this.showTestnets = true
+					this.storage.setBooleanSetting(SHOW_TESTNETS_CONFIG, this.showTestnets)
+				},
+				undefined,
+				() => {
+					this.showTestnets = false
+				}
+			)
+		} else {
+			this.storage.setBooleanSetting(SHOW_TESTNETS_CONFIG, this.showTestnets)
+		}
 	}
 
 	goToNotificationPage() {
@@ -305,12 +326,6 @@ export class Tab3Page {
 		})
 	}
 
-	async changeNetwork() {
-		await changeNetwork(this.network, this.storage, this.api, this.unit, this.theme, this.alerts, this.merchant, false, this.dashboardUtils)
-		this.network = this.api.getParentNetwork().key
-		this.currentFiatCurrency = await this.unit.getCurrentConsFiat()
-	}
-
 	async openIconCredit() {
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
@@ -381,12 +396,6 @@ export class Tab3Page {
 					},
 				},
 				{
-					text: 'Last Last Session',
-					handler: () => {
-						this.storage.openLogSession(this.modalController, 2)
-					},
-				},
-				{
 					text: 'Cancel',
 				},
 			],
@@ -417,7 +426,7 @@ export async function changeNetwork(
 	await api.initialize()
 	await unit.networkSwitchReload()
 	dashboardUtils.dashboardAwareListener.notifyAll()
-	//await this.unit.changeCurrency(this.currentFiatCurrency)
+	//await unit.changeCurrency(currentFiatCurrency)
 
 	const currentTheme = theme.currentThemeColor
 

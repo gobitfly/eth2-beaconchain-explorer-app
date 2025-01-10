@@ -384,7 +384,7 @@ export class Tab2Page implements OnInit {
 		const chainID = await this.api.getCurrentDashboardChainID()
 		const searchTypes = this.getFittingSearchTypes(searchString)
 
-		const result = await this.api.execute2(new V2SearchValidators(searchString, [chainID], searchTypes), ASSOCIATED_CACHE_KEY)
+		const result = await this.api.execute(new V2SearchValidators(searchString, [chainID], searchTypes), ASSOCIATED_CACHE_KEY)
 		if (result.error) {
 			// If we get a cors forbidden error, try a get call and then retry
 			if (result.error instanceof APIForbiddenError && !maxRecursive) {
@@ -580,6 +580,13 @@ export class Tab2Page implements OnInit {
 		this.themeUtils.setStatusBarColor(color)
 	}
 
+	disableSelectMode() {
+		this.selectMode = false
+		this.selected = new Map<number, boolean>()
+		this.themeUtils.revertStatusBarColor()
+		Haptics.selectionEnd()
+	}
+
 	deleteSelected() {
 		if (this.selected.size <= 0) {
 			Toast.show({
@@ -620,6 +627,7 @@ export class Tab2Page implements OnInit {
 
 		this.validatorSetAltered = true
 		await this.clearRequestCache()
+		this.disableSelectMode()
 		await this.setup()
 		loading.dismiss()
 		Toast.show({
@@ -686,16 +694,16 @@ export class Tab2Page implements OnInit {
 
 			let rocketPoolText = ''
 			if (item.rocket_pool) {
-				rocketPoolText = '<strong>Rocket Pool</strong><br/>'	
+				rocketPoolText = '<strong>Rocket Pool</strong><br/>'
 				rocketPoolText += 'Deposit: ' + this.unit.weiToEth(item.rocket_pool.deposit_amount) + '<br/>'
-				rocketPoolText += 'Commission: ' + (item.rocket_pool.commission*100).toFixed(1) + '%<br/>'
+				rocketPoolText += 'Commission: ' + (item.rocket_pool.commission * 100).toFixed(1) + '%<br/>'
 				rocketPoolText += 'Status: ' + item.rocket_pool.status + '<br/>'
 				rocketPoolText += 'Penalty Count: ' + item.rocket_pool.penalty_count + '<br/>'
 				rocketPoolText += 'Smoothing Pool: ' + (item.rocket_pool.is_in_smoothing_pool ? 'Yes' : 'No') + '<br/>'
 			}
 
 			if (!item.rocket_pool && !syncText) {
-				this.alerts.showInfo('Validator Details', "Nothing to show")
+				this.alerts.showInfo('Validator Details', 'Nothing to show')
 			} else {
 				this.alerts.showInfo('Validator Details', syncText + rocketPoolText)
 			}
@@ -711,10 +719,7 @@ export class Tab2Page implements OnInit {
 			AppComponent.PREVENT_BACK_PRESS = false
 		}
 
-		this.selectMode = false
-		this.selected = new Map<number, boolean>()
-		this.themeUtils.revertStatusBarColor()
-		Haptics.selectionEnd()
+		this.disableSelectMode()
 	}
 
 	// ------------ GROUPS ------------
@@ -812,7 +817,7 @@ export class Tab2Page implements OnInit {
 						const loading = await this.alerts.presentLoading('Applying changes...')
 						loading.present()
 
-						const result = await this.api.execute2(new V2UpdateDashboardGroup(this.dashboardID(), renameGroup.id, alertData.newName))
+						const result = await this.api.execute(new V2UpdateDashboardGroup(this.dashboardID(), renameGroup.id, alertData.newName))
 						if (result.error) {
 							Toast.show({
 								text: 'Error creating group, please try again later',
@@ -873,7 +878,7 @@ export class Tab2Page implements OnInit {
 		const loading = await this.alerts.presentLoading('Deleting group...')
 		loading.present()
 
-		const result = await this.api.execute2(new V2DeleteDashboardGroup(this.dashboardID(), deleteGroup.id))
+		const result = await this.api.execute(new V2DeleteDashboardGroup(this.dashboardID(), deleteGroup.id))
 		if (result.error) {
 			Toast.show({
 				text: 'Error deleting group, please try again later',
@@ -969,7 +974,7 @@ export class Tab2Page implements OnInit {
 						const loading = await this.alerts.presentLoading('Creating group...')
 						loading.present()
 
-						const result = await this.api.execute2(new V2AddDashboardGroup(this.dashboardID(), alertData.newName))
+						const result = await this.api.execute(new V2AddDashboardGroup(this.dashboardID(), alertData.newName))
 						if (result.error) {
 							console.log('error', result.error?.message)
 							if ((result.error.message?.indexOf('has incorrect format') || -1) > -1) {
@@ -1039,7 +1044,7 @@ class ValidatorLoader {
 					next_cursor: null,
 				}
 			}
-			const result = await this.api.execute2(
+			const result = await this.api.execute(
 				new V2GetValidatorFromDashboard(this.dashboard, this.groupID, cursor, PAGE_SIZE, this.sort),
 				ASSOCIATED_CACHE_KEY
 			)

@@ -30,6 +30,7 @@ import { UserInfo, UserSubscription } from '@requests/types/user'
 import { Aggregation } from '@requests/v2-dashboard'
 import { ONE_DAY, ONE_HOUR } from './TimeUtils'
 import ThemeUtils from './ThemeUtils'
+import { ApiResult } from '@requests/requests'
 
 export const PRODUCT_STANDARD = 'standard'
 
@@ -160,6 +161,30 @@ export class MerchantUtils implements OnInit {
 		this.initialize = this.init()
 	}
 
+	public async getUserInfoOnNetwork(chainID: number, forceRefresh: boolean): Promise<ApiResult<UserInfo>> {
+		if (await this.storage.getAuthUserv2()) {
+			const result = await this.api.executeOnChainID(new V2Me().withAllowedCacheResponse(!forceRefresh), null, chainID)
+			if (result.error) {
+				console.warn('failed to get user info', result.error)
+				return result
+			}
+
+			const override = (await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')) as string
+			if (override != 'default') {
+				return {
+					data: this.overridePerks(result.data, override),
+					error: undefined,
+				} as ApiResult<UserInfo>
+			}
+			return result
+		} else {
+			return {
+				data: this.overridePerks(undefined, 'standard'),
+				error: undefined,
+			} as ApiResult<UserInfo>
+		}
+	}
+
 	public async getUserInfo(forceRefresh: boolean = false, errHandler: (err: Error) => void = () => {}) {
 		if (await this.storage.getAuthUserv2()) {
 			if (!forceRefresh) {
@@ -179,19 +204,19 @@ export class MerchantUtils implements OnInit {
 				}
 			}
 		} else {
-			this.overridePerks('standard')
+			this.userInfo.set(this.overridePerks(this.userInfo(), 'standard'))
 		}
 		// check for override
 		const override = (await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')) as string
 		if (override != 'default') {
-			this.overridePerks(override)
+			this.userInfo.set(this.overridePerks(this.userInfo(), override))
 		}
 	}
 
 	// debug
-	private overridePerks(target: string) {
+	private overridePerks(sourcePerks: UserInfo, target: string) {
 		const userInfoShadow =
-			this.userInfo() ||
+			sourcePerks ||
 			({
 				premium_perks: {
 					ad_free: false,
@@ -257,8 +282,7 @@ export class MerchantUtils implements OnInit {
 				}
 				break
 		}
-
-		this.userInfo.set(userInfoShadow)
+		return userInfoShadow
 	}
 
 	clearTempUserInfo() {
@@ -317,7 +341,7 @@ export class MerchantUtils implements OnInit {
 	}
 
 	private async registerPurchaseOnRemote(data: SubscriptionData): Promise<boolean> {
-		const result = await this.api.execute2(new V2PurchaseValidation(data))
+		const result = await this.api.execute(new V2PurchaseValidation(data))
 
 		if (result.error) {
 			console.log('registering purchase receipt failed', result)

@@ -26,16 +26,7 @@
 
 	<ion-item lines="none" (click)="login()" *ngIf="!isAlreadyLoggedIn">
 		<ion-icon slot="start" name="log-in-outline"></ion-icon>
-		<ion-label>Or login with {{ isGnosis ? 'gnosischa.in' : 'beaconcha.in' }} </ion-label>
-	</ion-item>
-
-	<ion-item lines="none" (click)="switchNetwork()" *ngIf="false">
-		<!-- todo gnosis -->
-		<ion-icon slot="start" name="repeat-outline"></ion-icon>
-		<ion-label
-			>{{ api.getNetwork().name }} Network
-			<span style="padding-left: 6px; opacity: 0.6; font-size: 0.9rem">- {{ isGnosis ? 'Ethereum' : 'Gnosis' }} Network</span></ion-label
-		>
+		<ion-label>Or login with beaconcha.in</ion-label>
 	</ion-item>
 </ion-list>
 

@@ -55,9 +55,8 @@ export default class V2Migrator {
 
 		let deprecationList = ''
 		const stakeShareUser = await this.validatorUtils.wasStakeShareUser()
-		const gnosisUser = await this.validatorUtils.wasGnosisUser()
 
-		if (!stakeShareUser && !gnosisUser) {
+		if (!stakeShareUser) {
 			return
 		}
 
@@ -65,12 +64,6 @@ export default class V2Migrator {
 			deprecationList += `<br/><br/>- Stake Share, the partial validator ownership feature, has been removed. 
 			We value your privacy and specifically made this app without any trackers, but this also means that we have no insight into how much this feature was actually used. 
 			We rely on your feedback, so please let us know if you miss this feature and whether we should spend our resources on bringing it back.`
-		}
-
-		if (gnosisUser) {
-			deprecationList += `<br/><br/>- Gnosis Chain support has been <strong>temporarily</strong> removed. 
-			As beaconcha.in v2 is such a big overhaul to our entire infrastructure, we had to make some tough decisions on what to include in this first release.
-			We know that this is a big inconvenience for some of you and we are hard at work to bring back support within the next couple of weeks and months.`
 		}
 
 		this.alert.showInfo(
@@ -199,7 +192,7 @@ export default class V2Migrator {
 		}
 
 		const loginRequest = new MigrateV1AuthToV2(user.refreshToken, await this.storage.getDeviceID(), await this.storage.getDeviceName())
-		const result = await this.api.execute2(loginRequest)
+		const result = await this.api.execute(loginRequest)
 		console.log('migrator, v1SessionToV2 eq exchange', result) // todo remove
 
 		if (result.error) {

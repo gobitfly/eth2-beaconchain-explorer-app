@@ -223,7 +223,7 @@ export class DashboardComponent implements OnInit {
 
 	depositCreditText = computed(() => {
 		let depositCredit = new BigNumber(0)
-		this.data.rocketpool().forEach((item) => {
+		this.data.rocketpool()?.forEach((item) => {
 			depositCredit = depositCredit.plus(new BigNumber(item.deposit_credit))
 		})
 		if (depositCredit.gt(0)) {

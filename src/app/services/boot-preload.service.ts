@@ -53,9 +53,9 @@ export class BootPreloadService {
 			const timeFrame = await this.storage.getDashboardTimeframe()
 
 			// preload the 3 calls needed for display
-			api.execute2(new V2DashboardOverview(id), 'dashboard')
-			api.execute2(new V2DashboardSummaryTable(id, timeFrame, null), 'dashboard')
-			api.execute2(new V2DashboardSummaryGroupTable(id, 0, timeFrame, null), 'dashboard')
+			api.execute(new V2DashboardOverview(id), 'dashboard')
+			api.execute(new V2DashboardSummaryTable(id, timeFrame, null), 'dashboard')
+			api.execute(new V2DashboardSummaryGroupTable(id, 0, timeFrame, null), 'dashboard')
 		}
 	}
 }
