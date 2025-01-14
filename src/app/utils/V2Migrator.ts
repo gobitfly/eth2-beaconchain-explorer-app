@@ -74,6 +74,7 @@ export default class V2Migrator {
 	}
 
 	async migrate() {
+		// TODO migrate other networks as well
 		if (await this.storage.getBooleanSetting(SETTING_MIGRATION_COMPLETED, false)) {
 			return
 		}

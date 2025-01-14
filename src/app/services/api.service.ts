@@ -190,18 +190,17 @@ export class ApiService extends CacheModule {
 
 		await CapacitorCookies.clearAllCookies()
 
-		await CapacitorCookies.setCookie({
-			url: this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host,
-			key: 'session_id',
-			value: user.Session,
-		})
+		for (const network of MAP) {
+			// only v2 networks with https
+			if (!network.v2NetworkConfigKey && network.protocol == 'https') {
+				console.log('init cookies', network.protocol + '://' + network.net + network.host, user.Session && user.Session.length > 0)
 
-		if (await this.storage.isHttpAllowed()) {
-			await CapacitorCookies.setCookie({
-				url: 'http://' + this.networkConfig.net + this.networkConfig.host,
-				key: 'session_id',
-				value: user.Session,
-			})
+				await CapacitorCookies.setCookie({
+					url: network.protocol + '://' + network.net + network.host,
+					key: 'session_id',
+					value: user.Session,
+				})
+			}
 		}
 
 		this.sessionCookie = user.Session

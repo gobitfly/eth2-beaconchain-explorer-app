@@ -162,14 +162,6 @@ export class StorageService extends CacheModule implements OnInit {
 		return this.getSetting(key, defaultV) as Promise<boolean>
 	}
 
-	async isHttpAllowed() {
-		return this.getBooleanSetting('allow_http', false)
-	}
-
-	setHttpAllowed(value: boolean) {
-		return this.setBooleanSetting('allow_http', value)
-	}
-
 	setSetting(key: string, value: unknown) {
 		return this.setObject(key, { value: value } as ValueWrapper)
 	}

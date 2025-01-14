@@ -41,7 +41,7 @@ export default class Unit {
 
 	public static XDAI = new Unit('DAI', new BigNumber('1'), 4, 'XXX-DAI', 'xDAI')
 	public static GNO = new Unit('GNO', new BigNumber('0.03125'), 5, 'XXX-GNO', 'GNO')
-	public static MGNO = new Unit('mGNO', new BigNumber('1'), 5, 'XXX-GNO', 'mGNO')
+	// public static MGNO = new Unit('mGNO', new BigNumber('1'), 5, 'XXX-GNO', 'mGNO')
 
 	public static USDETH = new Unit('$', new BigNumber('1'), 2, 'XXX-USD', 'Dollar')
 	public static EURETH = new Unit('€', new BigNumber('1'), 2, 'XXX-EUR', 'Euro')
@@ -104,7 +104,7 @@ export const MAPPING = new Map([
 	['NO_CURRENCY', Unit.NO_CURRENCY],
 	['RETH', Unit.RETH],
 	['GNO', Unit.GNO],
-	['mGNO', Unit.MGNO],
+	// ['mGNO', Unit.MGNO],
 	['xDAI', Unit.XDAI],
 
 	['RUBLE', Unit.RUBETH],

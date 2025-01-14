@@ -122,8 +122,8 @@ export class AppUpdater {
 		return true
 	}
 
-	async updateBundle(bundleURL: string) {
-		if (bundleURL.indexOf('http') < 0) {
+	async updateBundle(bundleURL: string, allowHTTP = false) {
+		if (!allowHTTP && bundleURL.indexOf('http') < 0) {
 			console.warn('invalid bundle url', bundleURL)
 			return
 		}

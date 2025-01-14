@@ -20,7 +20,6 @@ export class DevPage extends Tab3Page implements OnInit {
 	notificationConsent = false
 	deviceID = ''
 	usev2api = false
-	allowHttp = false
 	showOldMachines = false
 	bundleCode = ''
 	session: string
@@ -55,10 +54,6 @@ export class DevPage extends Tab3Page implements OnInit {
 
 		this.storage.getBooleanSetting('debug_show_old_machines', false).then((result) => {
 			this.showOldMachines = result
-		})
-
-		this.storage.isHttpAllowed().then((result) => {
-			this.allowHttp = result
 		})
 
 		this.bundleCode = versionInfo.buildNumber + ' - ' + versionInfo.formattedVersion
@@ -287,6 +282,7 @@ export class DevPage extends Tab3Page implements OnInit {
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
 			header: 'Bundle URL',
+			message: 'This way of updating is insecure as it bypasses HTTPS. Proceed if you know what you are doing. Stay safe.',
 			inputs: [
 				{
 					name: 'url',
@@ -308,7 +304,7 @@ export class DevPage extends Tab3Page implements OnInit {
 					text: 'Ok',
 					handler: async (alertData) => {
 						await this.storage.setItem('dev_bundle_url', alertData.url)
-						await this.appUpdater.updateBundle(alertData.url)
+						await this.appUpdater.updateBundle(alertData.url, true)
 					},
 				},
 			],
@@ -338,9 +334,5 @@ export class DevPage extends Tab3Page implements OnInit {
 			// back to native bundle
 			toLastSuccessful: false,
 		})
-	}
-
-	changeAllowHttp() {
-		this.storage.setHttpAllowed(this.allowHttp)
 	}
 }
