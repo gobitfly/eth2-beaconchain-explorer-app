@@ -29,6 +29,7 @@ import {
 	VDBSummaryValidatorsData,
 } from './types/validator_dashboard'
 import { MobileValidatorDashboardValidatorsTableRow } from './types/mobile'
+import { SlotVizEpoch } from './types/slot_viz'
 
 export type dashboardID = string | number | number[]
 export type networkID = string | number
@@ -312,4 +313,18 @@ export function setID(resource: string, id: dashboardID): string {
 		return resource.replace('{id}', encodeDashboardID(id))
 	}
 	return resource.replace('{id}', id + '')
+}
+
+export class V2SlotViz extends APIRequest<SlotVizEpoch[]> {
+	resource = 'validator-dashboards/{id}/slot-viz'
+	method = Method.GET
+
+	// does not accept -1 for all groups
+	constructor(id: dashboardID, groupID: number) {
+		super()
+		this.resource = setID(this.resource, id)
+		if (groupID !== -1) {
+			this.resource += '?group_ids=' + groupID
+		}
+	}
 }

@@ -520,3 +520,20 @@ ion-buttons {
 		transform: rotate(360deg);
 	}
 }
+
+:root {
+	--blink-animation: blink 1.2s infinite;
+}
+
+// Keyframes for the blink animation
+@keyframes blink {
+	0% {
+		opacity: 0.8;
+	}
+	50% {
+		opacity: 0.4;
+	}
+	100% {
+		opacity: 0.8;
+	}
+}

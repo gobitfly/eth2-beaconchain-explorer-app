@@ -50,6 +50,8 @@
 		<ion-list class="updates" *ngIf="!data.foreignValidator">
 			<app-group-selector [groups]="groups()" [preSelectGroupID]="-1" (groupChanged)="onGroupChanged($event)"></app-group-selector>
 
+			<app-slotviz-widget [dashboardID]="data.id" [groupID]="data.selectedGroupID()"></app-slotviz-widget>
+
 			<span *ngFor="let update of updates">
 				<app-clientupdate [data]="update" *ngIf="update"></app-clientupdate>
 			</span>
@@ -245,7 +247,7 @@
 		</ion-list>
 
 		<!-- Missed rewards: Disabled for now until supported by api -->
-		<ion-list class="performances" *ngIf="false && selectedExtraTab() == 'chartIncome'">
+		<ion-list class="performances" *ngIf="selectedExtraTab() == 'chartIncome'">
 			<ion-item lines="none">
 				<ion-label class="stat-title" tooltip="Rewards missed by sub-optimal performance" trigger="click" [hideDelayAfterClick]="5000"
 					>Missed Rewards</ion-label
@@ -268,7 +270,7 @@
 					{{ data.summaryGroup().missed_rewards.proposer_rewards.cl | mcurrency: 'WEI' : unit.pref.Cons }}
 				</ion-label>
 			</ion-item>
-			<ion-item lines="none">
+			<ion-item lines="none" *ngIf="false">
 				<span
 					tooltip="*Missed proposal execution rewards are calculated by taking the median reward from a 33-slot window around the missed block."
 					trigger="click"

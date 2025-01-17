@@ -36,6 +36,18 @@ export function timestampToEpoch(chainID: number, ts: number) {
 	return Math.floor((ts / 1000 - network.genesisTs) / network.slotPerEpoch / network.slotsTime)
 }
 
+export function timestampToSlot(chainID: number, ts: number) {
+	const network = findChainNetworkById(chainID)
+	return Math.floor((ts / 1000 - network.genesisTs) / network.slotsTime)
+}
+
+export function timeUntilNextSlot(chainID: number, ts: number) {
+	const slot = timestampToSlot(chainID, ts)
+	const nextSlot = slot + 1
+	const nextSlotTs = slotToSecondsTimestamp(chainID, nextSlot) * 1000
+	return nextSlotTs - ts
+}
+
 export function slotToSecondsTimestamp(chainID: number, slot: number) {
 	const network = findChainNetworkById(chainID)
 	return network.genesisTs + slot * network.slotsTime

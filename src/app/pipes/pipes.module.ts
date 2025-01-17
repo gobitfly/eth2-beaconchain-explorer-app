@@ -27,6 +27,7 @@ import { TimeagoModule, TimeagoFormatter } from 'ngx-timeago'
 import { CustomTimeAgoFormatter } from '@utils/CustomTimeAgoFormatter'
 import { DelegatorPipe } from './delegater.pipi'
 import { ShorterTimeAgo } from './shortertimeago.pipe'
+import { CountdownPipe } from './countdown'
 
 @Pipe({
 	name: 'subSecondsToTime',
@@ -56,7 +57,17 @@ export class SubSecondsToTime implements PipeTransform {
 
 @NgModule({
 	imports: [TimeagoModule.forRoot({ formatter: { provide: TimeagoFormatter, useClass: CustomTimeAgoFormatter } })],
-	declarations: [McurrencyPipe, ValuestylePipe, PercentageabsPipe, FadeoutpipePipe, FadeinpipePipe, DelegatorPipe, ShorterTimeAgo, SubSecondsToTime],
+	declarations: [
+		McurrencyPipe,
+		ValuestylePipe,
+		PercentageabsPipe,
+		FadeoutpipePipe,
+		CountdownPipe,
+		FadeinpipePipe,
+		DelegatorPipe,
+		ShorterTimeAgo,
+		SubSecondsToTime,
+	],
 	exports: [
 		McurrencyPipe,
 		ValuestylePipe,
@@ -67,6 +78,7 @@ export class SubSecondsToTime implements PipeTransform {
 		TimeagoModule,
 		ShorterTimeAgo,
 		SubSecondsToTime,
+		CountdownPipe,
 	],
 })
 export class PipesModule {}

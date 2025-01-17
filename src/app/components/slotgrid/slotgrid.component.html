@@ -1,0 +1,17 @@
+<div class="slot-grid">
+	<ion-list-header>
+		<ion-label id="epoch-title">Epoch {{ epoch }}</ion-label>
+	</ion-list-header>
+	<div class="row" *ngFor="let row of rows; let rowIndex = index" [style.margin-bottom.px]="margin">
+		<div
+			[class]="getSquareCss(slot)"
+			[class.blinking]="slot.slot <= slotViz.currentSlot() && slot.status == 'scheduled'"
+			*ngFor="let slot of row"
+			[style.width.px]="squareSize"
+			[style.height.px]="squareSize"
+			[style.margin-right.px]="margin">
+			<ion-icon class="smallicon" *ngIf="getIconSmall(slot) != ''" [name]="getIconSmall(slot)" [style.font-size.px]="squareSize * 0.28"></ion-icon>
+			<ion-icon [class.bigicon]="getIconSmall(slot) != ''" [name]="getIconBig(slot)" [style.font-size.px]="squareSize * 0.43"></ion-icon>
+		</div>
+	</div>
+</div>

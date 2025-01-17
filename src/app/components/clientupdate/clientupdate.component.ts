@@ -17,15 +17,19 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { CommonModule } from '@angular/common'
 import { Component, Input } from '@angular/core'
 import { Browser } from '@capacitor/browser'
 import { Toast } from '@capacitor/toast'
+import { IonicModule } from '@ionic/angular'
 import ClientUpdateUtils, { Release } from '@utils/ClientUpdateUtils'
 
 @Component({
 	selector: 'app-clientupdate',
 	templateUrl: './clientupdate.component.html',
 	styleUrls: ['./clientupdate.component.scss'],
+	standalone: true,
+	imports: [CommonModule, IonicModule],
 })
 export class ClientupdateComponent {
 	@Input() data: Release

@@ -1,0 +1,25 @@
+<ion-header [translucent]="true">
+	<ion-toolbar class="top">
+		<ion-buttons slot="start">
+			<ion-button (click)="closeModal()">
+				<ion-icon size="large" name="close-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+
+		<ion-title style="padding: 0px 10px">Duties</ion-title>
+	</ion-toolbar>
+</ion-header>
+
+<ion-content [ngClass]="{ 'ios-background': fadeInCompleted && online }" [fullscreen]="true">
+	<app-full-page-loading (fadeInCompleted)="fadeInCompleted = true" [loading]="initialLoading">
+		<app-full-page-offline (retry)="this.ionViewWillEnter()" [online]="online">
+			<app-slotgrid
+				class="grid"
+				*ngFor="let epoch of slotViz.slotViz()"
+				[epoch]="epoch.epoch"
+				[slots]="epoch.slots"
+				[rowsToShow]="4"
+				[margin]="5"></app-slotgrid>
+		</app-full-page-offline>
+	</app-full-page-loading>
+</ion-content>

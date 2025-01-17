@@ -41,7 +41,7 @@ export const WEEK = DAY * 7
 export const MONTH = DAY * 30
 export const YEAR = DAY * 365
 
-const defaultFormattter = function (then: number): { value: number; unit: Unit; suffix: Suffix } {
+export const defaultFormattter = function (then: number): { value: number; unit: Unit; suffix: Suffix } {
 	const now = Date.now()
 	const seconds = Math.round(Math.abs(now - then) / 1000)
 	const suffix: Suffix = then < now ? 'ago' : 'from now'

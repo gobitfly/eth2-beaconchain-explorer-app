@@ -38,7 +38,6 @@ import { getSuccessFailMode, Mode } from './success-fail-view/success-fail-view.
 import { DashboardUtils } from '@utils/DashboardUtils'
 import { formatAddress } from '@utils/Formatting'
 import BigNumber from 'bignumber.js'
-
 type ExtraTabs = 'chartIncome' | 'chartSummary' | 'rocketPool'
 type RewardTabs = 'combined' | 'cons' | 'exec'
 @Component({
