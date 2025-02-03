@@ -30,9 +30,9 @@ jobs:
          npm install @ionic/cli@6.20.4 native-run@1.3.0 
          npm install
 
-      - name: Rename environment.ts to environment.prod.ts
+      - name: Copy environment.ts to environment.prod.ts
         run: |
-          mv src/environments/environment.ts src/environments/environment.prod.ts
+          cp src/environments/environment.ts src/environments/environment.prod.ts
    
       - name: Build
         run: |
