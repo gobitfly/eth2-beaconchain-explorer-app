@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing'
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing'
 import { IonicModule } from '@ionic/angular'
 
 import { MessageComponent } from './message.component'
@@ -26,7 +26,7 @@ describe('MessageComponent', () => {
 	let component: MessageComponent
 	let fixture: ComponentFixture<MessageComponent>
 
-	beforeEach(async(() => {
+	beforeEach(waitForAsync(() => {
 		TestBed.configureTestingModule({
 			declarations: [MessageComponent],
 			imports: [IonicModule.forRoot()],

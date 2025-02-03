@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing'
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing'
 import { IonicModule } from '@ionic/angular'
 import { AlertService } from 'src/app/services/alert.service'
 import { UnitconvService } from 'src/app/services/unitconv.service'
@@ -30,7 +30,7 @@ describe('ValidatorComponent', () => {
 	let component: ValidatorComponent
 	let fixture: ComponentFixture<ValidatorComponent>
 
-	beforeEach(async(() => {
+	beforeEach(waitForAsync(() => {
 		TestBed.configureTestingModule({
 			declarations: [ValidatorComponent],
 			imports: [IonicModule.forRoot(), PipesModule],
