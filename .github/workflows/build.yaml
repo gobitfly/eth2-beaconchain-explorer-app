@@ -16,7 +16,6 @@ jobs:
       matrix:
         node-version: [18.x]
     steps:
-
       - name: Check out code
         uses: actions/checkout@v3
 
@@ -24,19 +23,25 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-    
+
       - name: Dependency install
         run: |
-         npm install @ionic/cli@6.20.4 native-run@1.3.0 
-         npm install
+          npm install @ionic/cli@6.20.4 native-run@1.3.0 
+          npm install
+
+      - name: Build Storage Mirror
+        run: |
+          cd storage-mirror
+          npm install
+          npm run build
 
       - name: Copy environment.ts to environment.prod.ts
         run: |
           cp src/environments/environment.ts src/environments/environment.prod.ts
-   
+
       - name: Build
         run: |
           ./node_modules/@ionic/cli/bin/ionic build --prod --release
-     
+
       #- name: Test
       #  run: ./node_modules/@angular/cli/bin/ng test

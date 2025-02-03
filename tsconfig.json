@@ -9,12 +9,12 @@
 		"esModuleInterop": true,
 		"declaration": false,
 		"experimentalDecorators": true,
-		"module": "esnext",
+		"module": "es2020",
 		"moduleResolution": "node",
 		"importHelpers": true,
 		"noEmitHelpers": true,
 		"target": "es2020",
-		"lib": ["dom"],
+		"lib": ["es2020", "dom"],
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"removeComments": true,
@@ -22,6 +22,7 @@
 		"strictBindCallApply": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitAny": true,
+
 		"paths": {
 			"@services/*": ["src/app/services/*"],
 			"@pages/*": ["src/app/pages/*"],
@@ -33,6 +34,7 @@
 			"@components/*": ["src/app/components/*"]
 		}
 	},
+
 	"angularCompilerOptions": {
 		"fullTemplateTypeCheck": true,
 		"strictInjectionParameters": true,

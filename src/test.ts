@@ -24,12 +24,3 @@ import { getTestBed } from '@angular/core/testing'
 import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing'
 
 getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting())
-
-async function importAllTests() {
-	const context = import.meta.glob('./**/*.spec.ts') // Dynamically import all spec files
-	for (const path in context) {
-		await context[path]()
-	}
-}
-
-importAllTests().then(() => console.log('All tests loaded.'))
