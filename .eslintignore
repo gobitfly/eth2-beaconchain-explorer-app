@@ -1,6 +1,0 @@
-node_modules
-dist
-.angular
-src/zone-flags.ts
-increment-build.js
-seal-bundle.js
