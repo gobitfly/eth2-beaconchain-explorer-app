@@ -28,8 +28,6 @@ ion-item {
 	margin: auto;
 }
 
-
-
 .balance {
 	font-weight: bold;
 }
@@ -102,7 +100,7 @@ ion-badge {
 }
 
 .labels {
-	font-size: 0.65rem; 
+	font-size: 0.65rem;
 	vertical-align: top;
 	margin-right: 3px;
 }
@@ -111,7 +109,7 @@ ion-icon {
 	font-size: 0.65rem;
 	color: var(--ion-color-sync-icon-small);
 	position: absolute;
-    top: 3px;
+	top: 3px;
 }
 
 .sync-active {
@@ -122,5 +120,5 @@ ion-icon {
 
 .sync-container {
 	height: 14px;
-    display: inline-block;
+	display: inline-block;
 }

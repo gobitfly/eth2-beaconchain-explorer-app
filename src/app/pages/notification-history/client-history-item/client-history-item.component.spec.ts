@@ -1,23 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing'
 
-import { ClientHistoryItemComponent } from './client-history-item.component';
+import { ClientHistoryItemComponent } from './client-history-item.component'
 
 describe('ClientHistoryItemComponent', () => {
-  let component: ClientHistoryItemComponent;
-  let fixture: ComponentFixture<ClientHistoryItemComponent>;
+	let component: ClientHistoryItemComponent
+	let fixture: ComponentFixture<ClientHistoryItemComponent>
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ClientHistoryItemComponent]
-    })
-    .compileComponents();
+	beforeEach(async () => {
+		await TestBed.configureTestingModule({
+			imports: [ClientHistoryItemComponent],
+		}).compileComponents()
 
-    fixture = TestBed.createComponent(ClientHistoryItemComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+		fixture = TestBed.createComponent(ClientHistoryItemComponent)
+		component = fixture.componentInstance
+		fixture.detectChanges()
+	})
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+	it('should create', () => {
+		expect(component).toBeTruthy()
+	})
+})

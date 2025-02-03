@@ -1,7 +1,7 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
-import { GroupEntries } from '@utils/DashboardUtils';
+import { CommonModule } from '@angular/common'
+import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { IonicModule } from '@ionic/angular'
+import { GroupEntries } from '@utils/DashboardUtils'
 
 @Component({
 	selector: 'app-group-selector',
@@ -17,7 +17,7 @@ export class GroupSelectorComponent {
 	@Output() groupChanged = new EventEmitter<number>()
 
 	selectGroup(event: CustomEvent<{ value: number }>): void {
-		const selectedGroupID = event.detail.value 
+		const selectedGroupID = event.detail.value
 		this.groupChanged.emit(selectedGroupID)
 	}
 }

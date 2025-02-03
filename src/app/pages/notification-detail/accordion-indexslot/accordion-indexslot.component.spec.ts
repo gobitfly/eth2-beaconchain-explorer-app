@@ -1,23 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing'
 
-import { AccordionIndexslotComponent } from './accordion-indexslot.component';
+import { AccordionIndexslotComponent } from './accordion-indexslot.component'
 
 describe('AccordionIndexslotComponent', () => {
-  let component: AccordionIndexslotComponent;
-  let fixture: ComponentFixture<AccordionIndexslotComponent>;
+	let component: AccordionIndexslotComponent
+	let fixture: ComponentFixture<AccordionIndexslotComponent>
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [AccordionIndexslotComponent]
-    })
-    .compileComponents();
+	beforeEach(async () => {
+		await TestBed.configureTestingModule({
+			imports: [AccordionIndexslotComponent],
+		}).compileComponents()
 
-    fixture = TestBed.createComponent(AccordionIndexslotComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+		fixture = TestBed.createComponent(AccordionIndexslotComponent)
+		component = fixture.componentInstance
+		fixture.detectChanges()
+	})
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+	it('should create', () => {
+		expect(component).toBeTruthy()
+	})
+})

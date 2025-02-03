@@ -93,9 +93,7 @@
 				<ion-label class="search-result-title" *ngIf="!dashboardUtils.searchResultHandler.isIndex(item)"
 					>{{ dashboardUtils.searchResultHandler.resultCount(item) }} Validators</ion-label
 				>
-				<ion-label class="search-result-title" *ngIf="dashboardUtils.searchResultHandler.isIndex(item)"
-					>Validator {{item.value.index}}</ion-label
-				>
+				<ion-label class="search-result-title" *ngIf="dashboardUtils.searchResultHandler.isIndex(item)">Validator {{item.value.index}}</ion-label>
 				<ion-label slot="start" class="smaller-info">Found via {{ dashboardUtils.searchResultHandler.formatSearchType(item.type) }}</ion-label>
 			</div>
 

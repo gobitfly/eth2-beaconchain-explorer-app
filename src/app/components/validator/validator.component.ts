@@ -23,7 +23,7 @@ import { getDisplayName, ValidatorState } from 'src/app/utils/ValidatorUtils'
 import { UnitconvService } from '@services/unitconv.service'
 import { MobileValidatorDashboardValidatorsTableRow } from '@requests/types/mobile'
 
-type SyncState = 'none' | 'current' | 'next' 
+type SyncState = 'none' | 'current' | 'next'
 @Component({
 	selector: 'app-validator',
 	templateUrl: './validator.component.html',
