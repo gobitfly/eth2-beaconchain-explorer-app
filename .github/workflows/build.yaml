@@ -45,8 +45,8 @@ jobs:
 
       - name: Install Chrome
         run: |
-          apt-get install -y wget
-          apt-get update && apt-get install -y \
+          sudo apt-get install -y wget
+          sudo apt-get update && apt-get install -y \
             fonts-liberation \
             libasound2 \
             libatk-bridge2.0-0 \
@@ -69,7 +69,7 @@ jobs:
             libu2f-udev \
             libvulkan1
           wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          apt-get install -y ./google-chrome-stable_current_amd64.deb
+          sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
 
       - name: Test
         run: ./node_modules/@angular/cli/bin/ng.js test --no-watch --no-progress --browsers=ChromeHeadlessCI
