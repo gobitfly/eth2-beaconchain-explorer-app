@@ -137,7 +137,7 @@ function formatTs(
 	}
 }
 
-function formatTsToRelative(
+export function formatTsToRelative(
 	targetTimestamp?: number,
 	baseTimestamp?: number,
 	style: StringUnitLength = 'narrow',
