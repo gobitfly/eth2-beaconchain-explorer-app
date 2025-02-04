@@ -45,10 +45,10 @@ jobs:
 
       - name: Install Chrome
         run: |
-          sudo apt-get install -y wget
-          sudo apt-get update && sudo apt-get install -y \
+          sudo apt-get update
+          sudo apt-get install -y \
+            wget \
             fonts-liberation \
-            libasound2 \
             libatk-bridge2.0-0 \
             libatk1.0-0 \
             libatspi2.0-0 \
@@ -68,6 +68,7 @@ jobs:
             xdg-utils \
             libu2f-udev \
             libvulkan1
+          sudo apt-get install -y --no-install-recommends libasound2 || sudo apt-get install -y libasound2t64
           wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
 
