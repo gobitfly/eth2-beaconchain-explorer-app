@@ -12,11 +12,13 @@
 			"schematics": {},
 			"architect": {
 				"build": {
-					"builder": "@angular-devkit/build-angular:browser",
+					"builder": "@angular-devkit/build-angular:application",
 					"options": {
-						"outputPath": "www",
+						"outputPath": {
+							"base": "www",
+							"browser": ""
+						},
 						"index": "src/index.html",
-						"main": "src/main.ts",
 						"polyfills": ["zone.js"],
 						"tsConfig": "tsconfig.app.json",
 						"allowedCommonJsDependencies": ["highcharts", "ethereum-blockies", "magic-snowflakes"],
@@ -40,7 +42,8 @@
 								"input": "src/global.scss"
 							}
 						],
-						"scripts": []
+						"scripts": [],
+						"browser": "src/main.ts"
 					},
 					"configurations": {
 						"production": {
@@ -61,17 +64,13 @@
 							"namedChunks": false,
 							"aot": true,
 							"extractLicenses": true,
-							"vendorChunk": false,
-							"buildOptimizer": true,
 							"budgets": []
 						},
 						"ci": {
 							"progress": false
 						},
 						"development": {
-							"buildOptimizer": true,
 							"optimization": false,
-							"vendorChunk": true,
 							"extractLicenses": false,
 							"sourceMap": true,
 							"namedChunks": true

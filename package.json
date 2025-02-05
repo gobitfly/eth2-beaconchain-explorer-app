@@ -6,7 +6,7 @@
 	"scripts": {
 		"test": "ng test",
 		"generate-cert": "node local_env/generate-cert.js",
-		"dev": "(trap 'kill 0' SIGINT; ionic serve --live-reload --no-open --configuration=development --address=app-dev.beaconcha.in & sleep 15; node local_env/run.js)",
+		"dev": "(trap 'kill 0' SIGINT; ionic serve --live-reload --no-open --configuration=development --address=app-dev.beaconcha.in & sleep 10; node local_env/run.js)",
 		"dev-android": "ionic cap run android --livereload --external --no-open --configuration=development",
 		"build-android": "npm run increment-build && ionic cap build android --prod --release --source-map=true",
 		"build-ios": "npm run increment-build && ionic cap build ios --prod --release --source-map=true",
