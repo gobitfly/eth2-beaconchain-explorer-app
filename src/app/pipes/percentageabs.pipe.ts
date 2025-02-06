@@ -22,6 +22,7 @@ import BigNumber from 'bignumber.js'
 
 @Pipe({
 	name: 'percentageabs',
+	standalone: false,
 })
 export class PercentageabsPipe implements PipeTransform {
 	/**

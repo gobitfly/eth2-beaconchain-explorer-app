@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [22.x]
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -23,16 +23,35 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm' # Enables automatic npm caching
 
-      - name: Dependency install
+      - name: Restore npm Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: Install Dependencies
         run: |
-          npm install @ionic/cli@6.20.4 native-run@1.3.0 
-          npm install
+          npm ci
+          npm install @ionic/cli@6.20.4 native-run@1.3.0
+
+      - name: Cache Build Artifacts (optional)
+        uses: actions/cache@v3
+        with:
+          path: |
+            storage-mirror/node_modules
+            node_modules
+          key: build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            build-${{ runner.os }}-
 
       - name: Build Storage Mirror
         run: |
           cd storage-mirror
-          npm install
+          npm ci
           npm run build
 
       - name: Copy environment.ts to environment.prod.ts
@@ -41,36 +60,8 @@ jobs:
 
       - name: Build
         run: |
-          ./node_modules/@ionic/cli/bin/ionic build --prod --release
+          npx ionic build --prod --release
 
-      - name: Install Chrome
+      - name: Run Vitest
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            wget \
-            fonts-liberation \
-            libatk-bridge2.0-0 \
-            libatk1.0-0 \
-            libatspi2.0-0 \
-            libcups2 \
-            libdbus-1-3 \
-            libdrm2 \
-            libgbm1 \
-            libgtk-3-0 \
-            libnspr4 \
-            libnss3 \
-            libwayland-client0 \
-            libxcomposite1 \
-            libxdamage1 \
-            libxfixes3 \
-            libxkbcommon0 \
-            libxrandr2 \
-            xdg-utils \
-            libu2f-udev \
-            libvulkan1
-          sudo apt-get install -y --no-install-recommends libasound2 || sudo apt-get install -y libasound2t64
-          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
-
-      - name: Test
-        run: ./node_modules/@angular/cli/bin/ng.js test --no-watch --no-progress --browsers=ChromeHeadlessCI
+          npx vitest --coverage --run

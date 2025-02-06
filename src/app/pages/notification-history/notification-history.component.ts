@@ -31,7 +31,6 @@ type Tab = 'validator-dashboard' | 'network' | 'machines' | 'eth-clients'
 
 @Component({
 	selector: 'app-notification-history',
-	standalone: true,
 	imports: [
 		CommonModule,
 		IonicModule,

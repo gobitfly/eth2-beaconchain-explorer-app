@@ -18,7 +18,6 @@ To to:
 
 @Component({
 	selector: 'app-slotgrid',
-	standalone: true,
 	imports: [CommonModule, IonicModule],
 	templateUrl: './slotgrid.component.html',
 	styleUrl: './slotgrid.component.scss',

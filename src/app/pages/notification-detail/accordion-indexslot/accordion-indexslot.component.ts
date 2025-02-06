@@ -15,8 +15,8 @@ const CAP = 7 // Millers Law
 
 @Component({
 	selector: 'app-accordion-indexslot',
-	standalone: true,
 	imports: [IonicModule, CommonModule, NotificationValidator],
+	standalone: true,
 	templateUrl: './accordion-indexslot.component.html',
 	styleUrl: './accordion-indexslot.component.scss',
 })

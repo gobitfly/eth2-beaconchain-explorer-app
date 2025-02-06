@@ -6,7 +6,6 @@ import { StorageService } from 'src/app/services/storage.service'
 
 @Component({
 	selector: 'app-success-fail-view',
-	standalone: true,
 	imports: [IonItem, IonLabel, CommonModule, PipesModule],
 	templateUrl: './success-fail-view.component.html',
 	styleUrl: './success-fail-view.component.scss',

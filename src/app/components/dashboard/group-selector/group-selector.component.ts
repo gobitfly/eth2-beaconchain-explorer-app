@@ -5,7 +5,6 @@ import { GroupEntries } from '@utils/DashboardUtils'
 
 @Component({
 	selector: 'app-group-selector',
-	standalone: true,
 	imports: [CommonModule, IonicModule],
 	templateUrl: './group-selector.component.html',
 	styleUrl: './group-selector.component.scss',

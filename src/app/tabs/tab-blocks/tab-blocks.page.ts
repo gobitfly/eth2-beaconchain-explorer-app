@@ -23,6 +23,7 @@ const ASSOCIATED_CACHE_KEY = 'blocks'
 	selector: 'app-tab-blocks',
 	templateUrl: './tab-blocks.page.html',
 	styleUrls: ['./tab-blocks.page.scss'],
+	standalone: false,
 })
 export class TabBlocksPage implements OnInit {
 	public classReference = UnitconvService

@@ -13,6 +13,7 @@ import versionInfo from '../../../version.json'
 	selector: 'app-dev',
 	templateUrl: './dev.page.html',
 	styleUrls: ['./dev.page.scss'],
+	standalone: false,
 })
 export class DevPage extends Tab3Page implements OnInit {
 	packageOverride = 'default'

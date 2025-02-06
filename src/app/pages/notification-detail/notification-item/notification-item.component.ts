@@ -6,8 +6,8 @@ import * as blockies from 'ethereum-blockies'
 
 @Component({
 	selector: 'app-notification-item',
-	standalone: true,
 	imports: [IonicModule, CommonModule],
+	standalone: true,
 	templateUrl: './notification-item.component.html',
 	styleUrl: './notification-item.component.scss',
 })

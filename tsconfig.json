@@ -16,23 +16,20 @@
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"removeComments": true,
-		//"strict": true
 		"strictBindCallApply": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitAny": true,
-
 		"paths": {
-			"@services/*": ["src/app/services/*"],
-			"@pages/*": ["src/app/pages/*"],
-			"@utils/*": ["src/app/utils/*"],
-			"@requests/*": ["src/app/requests/*"],
-			"@pipes/*": ["src/app/pipes/*"],
-			"@modals/*": ["src/app/modals/*"],
+			"@components/*": ["src/app/components/*"],
 			"@controllers/*": ["src/app/controllers/*"],
-			"@components/*": ["src/app/components/*"]
+			"@modals/*": ["src/app/modals/*"],
+			"@pages/*": ["src/app/pages/*"],
+			"@pipes/*": ["src/app/pipes/*"],
+			"@requests/*": ["src/app/requests/*"],
+			"@services/*": ["src/app/services/*"],
+			"@utils/*": ["src/app/utils/*"]
 		}
 	},
-
 	"angularCompilerOptions": {
 		"fullTemplateTypeCheck": true,
 		"strictInjectionParameters": true,

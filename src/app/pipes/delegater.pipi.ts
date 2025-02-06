@@ -22,6 +22,7 @@ import { ProcessedStats } from '../controllers/MachineController'
 
 @Pipe({
 	name: 'delegate',
+	standalone: false,
 })
 export class DelegatorPipe implements PipeTransform {
 	// TODO: improve this typing, unknown not working when used with async pipe in template, investigate

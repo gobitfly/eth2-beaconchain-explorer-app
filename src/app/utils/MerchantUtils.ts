@@ -18,7 +18,7 @@
  */
 
 import { computed, effect, Injectable, OnInit, Signal, signal, WritableSignal } from '@angular/core'
-import 'cordova-plugin-purchase/www/store.d'
+import 'cordova-plugin-purchase'
 import { Platform } from '@ionic/angular'
 import { AlertService, PURCHASEUTILS } from '@services/alert.service'
 import { ApiService } from '@services/api.service'

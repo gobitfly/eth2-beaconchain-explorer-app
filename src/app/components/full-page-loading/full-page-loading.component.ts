@@ -1,14 +1,13 @@
 import { animate, state, style, transition, trigger } from '@angular/animations'
 import { CommonModule } from '@angular/common'
 import { Component, Input, ChangeDetectorRef, OnChanges, Output, EventEmitter } from '@angular/core'
-import { IonLabel, IonSpinner } from '@ionic/angular/standalone'
 
 const SKIP_LOADING_IF_FASTER_THAN = 30 //ms
 
 @Component({
 	selector: 'app-full-page-loading',
+	imports: [CommonModule],
 	standalone: true,
-	imports: [IonLabel, IonSpinner, CommonModule],
 	templateUrl: './full-page-loading.component.html',
 	styleUrls: ['./full-page-loading.component.scss'],
 	animations: [

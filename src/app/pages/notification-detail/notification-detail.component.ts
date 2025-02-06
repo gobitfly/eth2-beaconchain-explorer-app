@@ -5,7 +5,6 @@ import { ApiService } from 'src/app/services/api.service'
 
 import { IonAccordionGroup, IonicModule, ModalController } from '@ionic/angular'
 import { fromEvent, Subscription } from 'rxjs'
-import { NotificationValidator } from './notification-item/notification-item.component'
 import { FullPageLoadingComponent } from '@components/full-page-loading/full-page-loading.component'
 import { FullPageOfflineComponent } from '@components/full-page-offline/full-page-offline.component'
 import { CommonModule } from '@angular/common'
@@ -16,16 +15,8 @@ import { APIUnauthorizedError } from 'src/app/requests/requests'
 
 @Component({
 	selector: 'app-notification-detail',
+	imports: [IonicModule, PipesModule, FullPageLoadingComponent, FullPageOfflineComponent, CommonModule, AccordionIndexslotComponent],
 	standalone: true,
-	imports: [
-		IonicModule,
-		PipesModule,
-		NotificationValidator,
-		FullPageLoadingComponent,
-		FullPageOfflineComponent,
-		CommonModule,
-		AccordionIndexslotComponent,
-	],
 	templateUrl: './notification-detail.component.html',
 	styleUrl: './notification-detail.component.scss',
 })

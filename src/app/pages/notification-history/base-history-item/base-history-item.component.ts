@@ -6,7 +6,6 @@ import { epochToTimestamp, formatMonthShort, getLocale } from 'src/app/utils/Tim
 
 @Component({
 	selector: 'app-base-history-item',
-	standalone: true,
 	imports: [CommonModule, IonicModule],
 	templateUrl: './base-history-item.component.html',
 	styleUrl: './base-history-item.component.scss',

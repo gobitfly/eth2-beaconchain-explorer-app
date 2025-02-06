@@ -16,6 +16,7 @@ import { V1BlockResponse, V1BlocksOverview } from 'src/app/requests/requests'
 	selector: 'app-block-detail',
 	templateUrl: './block-detail.page.html',
 	styleUrls: ['./block-detail.page.scss'],
+	standalone: false,
 })
 export class BlockDetailPage implements OnInit {
 	currentY = 0

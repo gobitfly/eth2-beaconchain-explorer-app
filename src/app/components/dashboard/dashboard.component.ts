@@ -44,6 +44,7 @@ type RewardTabs = 'combined' | 'cons' | 'exec'
 	selector: 'app-validator-dashboard',
 	templateUrl: './dashboard.component.html',
 	styleUrls: ['./dashboard.component.scss'],
+	standalone: false,
 })
 export class DashboardComponent implements OnInit {
 	public classReference = UnitconvService

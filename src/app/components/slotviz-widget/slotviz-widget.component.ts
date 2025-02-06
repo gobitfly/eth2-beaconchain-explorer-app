@@ -9,7 +9,6 @@ import { SlotvizComponent } from '@pages/slotviz/slotviz.component'
 
 @Component({
 	selector: 'app-slotviz-widget',
-	standalone: true,
 	imports: [CommonModule, IonicModule, PipesModule],
 	templateUrl: './slotviz-widget.component.html',
 	styleUrls: ['./slotviz-widget.component.scss'],

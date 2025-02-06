@@ -28,6 +28,7 @@ type SyncState = 'none' | 'current' | 'next'
 	selector: 'app-validator',
 	templateUrl: './validator.component.html',
 	styleUrls: ['./validator.component.scss'],
+	standalone: false,
 })
 export class ValidatorComponent {
 	@Input() validator: MobileValidatorDashboardValidatorsTableRow

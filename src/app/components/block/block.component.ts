@@ -10,6 +10,7 @@ import { slotToSecondsTimestamp } from 'src/app/utils/TimeUtils'
 	selector: 'app-block',
 	templateUrl: './block.component.html',
 	styleUrls: ['./block.component.scss'],
+	standalone: false,
 })
 export class BlockComponent {
 	@Input() block: VDBBlocksTableRow

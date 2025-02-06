@@ -7,6 +7,7 @@ import { Clipboard } from '@capacitor/clipboard'
 	selector: 'app-logview',
 	templateUrl: './logview.page.html',
 	styleUrls: ['./logview.page.scss'],
+	standalone: false,
 })
 export class LogviewPage implements OnInit {
 	@Input() logs: [LogEntry] = [{ text: '', extra: '' }]

@@ -23,6 +23,7 @@ import { UnitconvService } from '@services/unitconv.service'
 
 @Pipe({
 	name: 'mcurrency',
+	standalone: false,
 })
 export class McurrencyPipe implements PipeTransform {
 	constructor(private unit: UnitconvService) {}

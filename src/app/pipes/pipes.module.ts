@@ -31,6 +31,7 @@ import { CountdownPipe } from './countdown'
 
 @Pipe({
 	name: 'subSecondsToTime',
+	standalone: false,
 })
 export class SubSecondsToTime implements PipeTransform {
 	transform(ts: number): string {

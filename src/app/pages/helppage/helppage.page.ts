@@ -25,6 +25,7 @@ import { fromEvent, Subscription } from 'rxjs'
 	selector: 'app-helppage',
 	templateUrl: './helppage.page.html',
 	styleUrls: ['./helppage.page.scss'],
+	standalone: false,
 })
 export class HelppagePage implements OnInit {
 	private backbuttonSubscription: Subscription

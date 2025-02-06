@@ -19,6 +19,7 @@ import { Pipe, PipeTransform } from '@angular/core'
 
 @Pipe({
 	name: 'shortertimeago',
+	standalone: false,
 })
 export class ShorterTimeAgo implements PipeTransform {
 	transform(ts: number): string {

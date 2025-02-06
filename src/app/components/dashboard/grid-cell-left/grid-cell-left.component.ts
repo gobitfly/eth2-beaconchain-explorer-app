@@ -5,7 +5,6 @@ import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
 
 @Component({
 	selector: 'app-grid-cell-left',
-	standalone: true,
 	imports: [IonicModule, TooltipModule, CommonModule],
 	templateUrl: './grid-cell-left.component.html',
 	styleUrl: './grid-cell-left.component.scss',

@@ -17,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { APP_INITIALIZER, Injectable, NgModule } from '@angular/core'
+import { Injectable, NgModule, inject, provideAppInitializer } from '@angular/core'
 import { BrowserModule, HammerModule } from '@angular/platform-browser'
 import { RouteReuseStrategy } from '@angular/router'
 
@@ -70,12 +70,10 @@ export class MyHammerConfig extends HammerGestureConfig {
 			provide: HAMMER_GESTURE_CONFIG,
 			useClass: MyHammerConfig,
 		},
-		{
-			provide: APP_INITIALIZER,
-			useFactory: initializeApp,
-			multi: true,
-			deps: [ApiService, BootPreloadService],
-		},
+		provideAppInitializer(() => {
+			const initializerFn = initializeApp(inject(ApiService), inject(BootPreloadService))
+			return initializerFn()
+		}),
 		provideEcharts(),
 		//provideExperimentalZonelessChangeDetection() // experimental zoneless
 	],

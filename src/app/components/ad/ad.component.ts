@@ -9,6 +9,7 @@ import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 	selector: 'app-ad',
 	templateUrl: './ad.component.html',
 	styleUrls: ['./ad.component.scss'],
+	standalone: false,
 })
 export class AdComponent implements OnInit {
 	info: AdLocation = 'info'

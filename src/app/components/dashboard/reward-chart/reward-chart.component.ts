@@ -14,6 +14,7 @@ import { EChartsOption } from 'echarts'
 	selector: 'app-reward-chart',
 	templateUrl: './reward-chart.component.html',
 	styleUrl: './reward-chart.component.scss',
+	standalone: false,
 })
 export class RewardChartComponent {
 	@Input() data: OverviewData2

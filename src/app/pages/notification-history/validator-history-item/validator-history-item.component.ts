@@ -24,7 +24,6 @@ export type HistoryDataTypes =
 
 @Component({
 	selector: 'app-validator-history-item',
-	standalone: true,
 	imports: [CommonModule, IonicModule, BaseHistoryItemComponent],
 	templateUrl: './validator-history-item.component.html',
 	styleUrl: './validator-history-item.component.scss',

@@ -7,6 +7,7 @@ import { StorageService } from 'src/app/services/storage.service'
 	selector: 'app-clients',
 	templateUrl: './clients.page.html',
 	styleUrls: ['./clients.page.scss'],
+	standalone: false,
 })
 export class ClientsPage {
 	@Input() clientIdentifier = ''

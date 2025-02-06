@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
 
-@import '../../../theme/variables.scss';
+@use '../../../theme/variables.scss';
 
 .slot-grid {
 	display: flex;

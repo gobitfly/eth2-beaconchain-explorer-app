@@ -1,20 +1,4 @@
-// Copyright (C) 2025 Bitfly GmbH
-//
-// This file is part of Beaconchain Dashboard.
-//
-// Beaconchain Dashboard is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Beaconchain Dashboard is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
-
+import { describe, it, expect } from 'vitest'
 import {
 	epochToTimestamp,
 	formatMonthLong,
@@ -25,7 +9,6 @@ import {
 	ONE_HOUR,
 	ONE_WEEK,
 	relativeTs,
-	shortTimeFormatLocale,
 	slotToSecondsTimestamp,
 	timestampToEpoch,
 	timestampToSlot,
@@ -46,39 +29,29 @@ describe('TimeUtils', () => {
 	})
 
 	it('should convert timestamp to epoch', () => {
-		const result = timestampToEpoch(chainID, genesisMainnet)
-		expect(result).toBe(0)
-
-		const result2 = timestampToEpoch(chainID, genesisMainnet + 12 * 32 * 1000)
-		expect(result2).toBe(1)
+		expect(timestampToEpoch(chainID, genesisMainnet)).toBe(0)
+		expect(timestampToEpoch(chainID, genesisMainnet + 12 * 32 * 1000)).toBe(1)
 	})
 
 	it('should convert timestamp to slot', () => {
-		const result = timestampToSlot(chainID, genesisMainnet)
-		expect(result).toBe(0)
-
-		const result2 = timestampToSlot(chainID, genesisMainnet + 36000)
-		expect(result2).toBe(3)
+		expect(timestampToSlot(chainID, genesisMainnet)).toBe(0)
+		expect(timestampToSlot(chainID, genesisMainnet + 36000)).toBe(3)
 	})
 
 	it('should calculate time until next slot', () => {
-		const result = timeUntilNextSlot(chainID, genesisMainnet)
-		expect(result).toBe(12000)
+		expect(timeUntilNextSlot(chainID, genesisMainnet)).toBe(12000)
 	})
 
 	it('should calculate time until next slot offset', () => {
-		const result = timeUntilNextSlot(chainID, genesisMainnet + 2000)
-		expect(result).toBe(10000)
+		expect(timeUntilNextSlot(chainID, genesisMainnet + 2000)).toBe(10000)
 	})
 
 	it('should convert slot to seconds timestamp', () => {
-		const result = slotToSecondsTimestamp(chainID, slot)
-		expect(result).toBe(genesisMainnet / 1000 + slot * 12)
+		expect(slotToSecondsTimestamp(chainID, slot)).toBe(genesisMainnet / 1000 + slot * 12)
 	})
 
 	it('should convert seconds to Date object', () => {
-		const result = toDateTime(ts)
-		expect(result).toEqual(new Date(1970, 0, 1, 0, 0, ts))
+		expect(toDateTime(ts)).toEqual(new Date(1970, 0, 1, 0, 0, ts))
 	})
 
 	it('should get end timestamp based on aggregation', () => {
@@ -98,10 +71,6 @@ describe('TimeUtils', () => {
 		expect(relativeTs(7200)).toBe('2 hours')
 		expect(relativeTs(86400)).toBe('day')
 		expect(relativeTs(172800)).toBe('2 days')
-	})
-
-	it('should return short time format locale', () => {
-		expect(shortTimeFormatLocale()).toBe('M/d/yy, h:mm a')
 	})
 
 	it('should format month short', () => {

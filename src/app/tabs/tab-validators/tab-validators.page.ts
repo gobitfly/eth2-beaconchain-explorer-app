@@ -59,6 +59,7 @@ const ASSOCIATED_CACHE_KEY = 'validators'
 	selector: 'app-tab2',
 	templateUrl: 'tab-validators.page.html',
 	styleUrls: ['tab-validators.page.scss'],
+	standalone: false,
 })
 export class Tab2Page implements OnInit {
 	NEW_GROUP_OFFSET = 900

@@ -18,7 +18,6 @@ import ThemeUtils from '@utils/ThemeUtils'
 
 @Component({
 	selector: 'app-dashboard-item',
-	standalone: true,
 	imports: [CommonModule, IonicModule],
 	templateUrl: './dashboard-item.component.html',
 	styleUrl: './dashboard-item.component.scss',

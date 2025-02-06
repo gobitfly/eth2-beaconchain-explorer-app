@@ -23,5 +23,6 @@ import { Component } from '@angular/core'
 	selector: 'app-offline',
 	templateUrl: './offline.component.html',
 	styleUrls: ['./offline.component.scss'],
+	standalone: false,
 })
 export class OfflineComponent {}

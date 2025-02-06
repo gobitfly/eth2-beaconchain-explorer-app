@@ -42,7 +42,7 @@ You will need the following installed on your system for local development:
 
 1. **Docker** (for Docker Compose)
 2. **OpenSSL** (to generate SSL certificates for local testing)
-3. **NodeJS 18**
+3. **NodeJS 22**
 
 ### Getting started
 
@@ -72,7 +72,7 @@ to start a local webserver with livereload enabled.
 
 **Prerequisites**
 
-- NodeJS 18
+- NodeJS 22
 - Install [Android Studio](https://developer.android.com/studio#downloads]) (2022.2.1 or newer)
 - Use Android Studio to install the Android SDK: https://capacitorjs.com/docs/android
 
@@ -104,7 +104,7 @@ Or to run it in an emulator, follow up here: https://developer.android.com/studi
 
 **Prerequisites**
 
-- NodeJS 18
+- NodeJS 22
 - macOS with macOS Monterey 12.5 newer
 - Xcode 14.1 or newer
 

@@ -25,6 +25,7 @@ import { Currency, UnitconvService } from 'src/app/services/unitconv.service'
 	selector: 'app-performance-item',
 	templateUrl: './performance-item.component.html',
 	styleUrls: ['./performance-item.component.scss'],
+	standalone: false,
 })
 export class PerformanceItemComponent {
 	@Input() performanceData: Performance

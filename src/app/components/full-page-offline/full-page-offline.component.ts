@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common'
 import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { IonIcon, IonLabel } from '@ionic/angular/standalone'
+import { IonicModule } from '@ionic/angular'
 
 const MAX_WAIT_BEFORE_RETRY = 90 * 1000 // ms
 
 @Component({
 	selector: 'app-full-page-offline',
+	imports: [IonicModule, CommonModule],
 	standalone: true,
-	imports: [IonLabel, IonIcon, CommonModule],
 	templateUrl: './full-page-offline.component.html',
 	styleUrl: './full-page-offline.component.scss',
 })

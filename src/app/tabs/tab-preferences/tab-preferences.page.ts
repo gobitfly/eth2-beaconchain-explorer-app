@@ -53,6 +53,7 @@ export const SHOW_TESTNETS_CONFIG = 'show_testnets'
 	selector: 'app-tab3',
 	templateUrl: 'tab-preferences.page.html',
 	styleUrls: ['tab-preferences.page.scss'],
+	standalone: false,
 })
 export class Tab3Page {
 	darkMode: boolean

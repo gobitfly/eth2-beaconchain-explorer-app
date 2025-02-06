@@ -34,6 +34,7 @@ const bounceTime = 450
 	selector: 'app-summary-chart',
 	templateUrl: './summary-chart.component.html',
 	styleUrl: './summary-chart.component.scss',
+	standalone: false,
 })
 export class SummaryChartComponent implements OnInit {
 	@Input() data: OverviewData2

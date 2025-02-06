@@ -8,7 +8,6 @@ import { capitalize } from 'src/app/services/api.service'
 
 @Component({
 	selector: 'app-network-history-item',
-	standalone: true,
 	imports: [CommonModule, IonicModule, BaseHistoryItemComponent],
 	templateUrl: './network-history-item.component.html',
 	styleUrl: './network-history-item.component.scss',

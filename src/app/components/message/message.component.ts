@@ -30,6 +30,7 @@ import FirebaseUtils from 'src/app/utils/FirebaseUtils'
 	selector: 'app-message',
 	templateUrl: './message.component.html',
 	styleUrls: ['./message.component.scss'],
+	standalone: false,
 })
 export class MessageComponent implements OnInit {
 	@Input() title: string

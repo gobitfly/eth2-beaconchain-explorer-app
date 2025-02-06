@@ -4,7 +4,6 @@ import { IonIcon } from '@ionic/angular/standalone'
 
 @Component({
 	selector: 'app-bool-checked',
-	standalone: true,
 	imports: [IonIcon, CommonModule],
 	templateUrl: './bool-checked.component.html',
 	styleUrl: './bool-checked.component.scss',

@@ -42,6 +42,7 @@ export const ASSOCIATED_CACHE_KEY = 'dashboard'
 	selector: 'app-tab1',
 	templateUrl: 'tab-dashboard.page.html',
 	styleUrls: ['tab-dashboard.page.scss'],
+	standalone: false,
 })
 export class Tab1Page implements OnInit {
 	readonly Period = Period

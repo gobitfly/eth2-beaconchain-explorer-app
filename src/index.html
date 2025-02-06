@@ -57,6 +57,19 @@
 									storage.setItem('log_session_' + newLogSession, JSON.stringify(logSession))
 								} catch (e) {}
 							},
+							debug: (text, ...extra) => {
+								if (debug) oldCons.debug(text, ...extra)
+								try {
+									if (typeof text === 'object') {
+										text = JSON.stringify(text)
+									}
+									logSession.push({
+										text: '[DEBUG] [' + new Date().toLocaleString() + '] ' + text,
+										extra: extra ? ': ' + JSON.stringify(extra) : '',
+									})
+									storage.setItem('log_session_' + newLogSession, JSON.stringify(logSession))
+								} catch (e) {}
+							},
 							info: (text, ...extra) => {
 								if (debug) oldCons.info(text, ...extra)
 								try {

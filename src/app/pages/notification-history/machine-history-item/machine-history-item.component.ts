@@ -6,7 +6,6 @@ import { NotificationMachinesTableRow } from 'src/app/requests/types/notificatio
 
 @Component({
 	selector: 'app-machine-history-item',
-	standalone: true,
 	imports: [CommonModule, IonicModule, BaseHistoryItemComponent],
 	templateUrl: './machine-history-item.component.html',
 	styleUrl: './machine-history-item.component.scss',

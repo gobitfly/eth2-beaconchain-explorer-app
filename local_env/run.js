@@ -34,9 +34,9 @@ const { exec } = require('child_process');
         '--no-sandbox', // Disable sandbox (if needed for Linux)
         '--disable-setuid-sandbox',
         '--ignore-certificate-errors', // Ignore SSL certificate errors (for self-signed certs)
-	'--user-data-dir=./tmp',
-	'--disable-third-party-cookie-blocking'
-//	'--proxy-server=http://localhost:8088'
+        '--user-data-dir=./tmp',
+        '--disable-third-party-cookie-blocking'
+        //	'--proxy-server=http://localhost:8088'
       ]
     });
 
@@ -86,8 +86,8 @@ const { exec } = require('child_process');
     });
 
     // Emulate a mobile device
-//    const iPhone = puppeteer.devices['iPhone 15 Pro'];
-//    await page.emulate(iPhone);
+    //    const iPhone = puppeteer.devices['iPhone 15 Pro'];
+    //    await page.emulate(iPhone);
 
     // Open your local app
     await page.goto('https://localhost:8103/tabs/dashboard', {
@@ -97,38 +97,38 @@ const { exec } = require('child_process');
     console.log('Page loaded with mobile emulation and DevTools enabled.');
 
     // Optional: Log responses for debugging
-  page.on('response', async (response) => {
-    const cookies = response.headers()['set-cookie'];
+    page.on('response', async (response) => {
+      const cookies = response.headers()['set-cookie'];
 
-    if (cookies) {
-      // Ensure cookies is an array (split if it's a string)
-      const cookieArray = Array.isArray(cookies) ? cookies : [cookies];
+      if (cookies) {
+        // Ensure cookies is an array (split if it's a string)
+        const cookieArray = Array.isArray(cookies) ? cookies : [cookies];
 
-      cookieArray.forEach(cookie => {
-        console.log('Found cookie:', cookie);
+        cookieArray.forEach(cookie => {
+          console.log('Found cookie:', cookie);
 
-        // Extract the cookie value (before the ';' separator)
-        const cookieParts = cookie.split(';')[0].split('=');
-        const cookieName = cookieParts[0];
-        const cookieValue = cookieParts[1];
+          // Extract the cookie value (before the ';' separator)
+          const cookieParts = cookie.split(';')[0].split('=');
+          const cookieName = cookieParts[0];
+          const cookieValue = cookieParts[1];
 
-        const domain = response.url().split('/')[2]; // Extract the domain from the response URL
+          const domain = response.url().split('/')[2]; // Extract the domain from the response URL
 
-        // Set the cookie for that domain
-        page.setCookie({
-          name: cookieName,
-          value: cookieValue,
-          domain: domain,  // Set cookie for the specific domain
-          path: '/',
-          secure: true,
-          httpOnly: cookie.includes('HttpOnly'),
-          sameSite: cookie.includes('SameSite=None') ? 'None' : 'Strict', // Use None if specified, otherwise Strict
+          // Set the cookie for that domain
+          page.setCookie({
+            name: cookieName,
+            value: cookieValue,
+            domain: domain,  // Set cookie for the specific domain
+            path: '/',
+            secure: true,
+            httpOnly: cookie.includes('HttpOnly'),
+            sameSite: cookie.includes('SameSite=None') ? 'None' : 'Strict', // Use None if specified, otherwise Strict
+          });
+
+          console.log(`Set cookie: ${cookieName} for domain: ${domain}`);
         });
-
-        console.log(`Set cookie: ${cookieName} for domain: ${domain}`);
-      });
-    }
-  });
+      }
+    });
 
     // Keep the browser open for testing or close it after your actions
     // await browser.close();

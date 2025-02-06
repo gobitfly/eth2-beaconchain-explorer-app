@@ -9,6 +9,7 @@ import MachineController, { ProcessedStats, bytes, MachineChartData } from '../.
 	selector: 'app-machine-detail',
 	templateUrl: './machine-detail.page.html',
 	styleUrls: ['./machine-detail.page.scss'],
+	standalone: false,
 })
 export class MachineDetailPage extends MachineController implements OnInit {
 	@Input() key: string

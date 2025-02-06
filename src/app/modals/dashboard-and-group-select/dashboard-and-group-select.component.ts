@@ -33,7 +33,6 @@ interface DashboardAddButton {
 }
 @Component({
 	selector: 'app-dashboard-and-group-select',
-	standalone: true,
 	imports: [CommonModule, IonicModule, DashboardItemComponent, FullPageLoadingComponent, FullPageOfflineComponent, OfflineComponentModule],
 	templateUrl: './dashboard-and-group-select.component.html',
 	styleUrl: './dashboard-and-group-select.component.scss',

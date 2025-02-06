@@ -19,7 +19,8 @@ import { defaultFormattter } from './shortertimeago.pipe' // Import your shorter
 
 @Pipe({
 	name: 'countdown',
-	pure: false, // Mark pipe as impure to allow updates
+	pure: false,
+	standalone: false,
 })
 export class CountdownPipe implements PipeTransform, OnDestroy {
 	private timer: ReturnType<typeof setInterval> | null = null

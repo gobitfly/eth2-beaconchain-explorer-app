@@ -1,4 +1,4 @@
-@import '../../../theme/variables.scss';
+@use '../../../theme/variables.scss';
 
 .purchase-btn {
 	--border-radius: var(--button-border-radius);

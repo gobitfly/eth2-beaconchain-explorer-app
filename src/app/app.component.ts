@@ -36,6 +36,7 @@ import { Toast } from '@capacitor/toast'
 	selector: 'app-root',
 	templateUrl: 'app.component.html',
 	styleUrls: ['app.component.scss'],
+	standalone: false,
 })
 export class AppComponent {
 	static PREVENT_BACK_PRESS = false

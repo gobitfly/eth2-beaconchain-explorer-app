@@ -18,6 +18,7 @@ const ASSOCIATED_CACHE_KEY = 'subscribe'
 	selector: 'app-subscribe',
 	templateUrl: './subscribe.page.html',
 	styleUrls: ['./subscribe.page.scss'],
+	standalone: false,
 })
 export class SubscribePage implements OnInit {
 	currentY = 0

@@ -26,6 +26,7 @@ const NEGATIVE = 'negative-value'
 
 @Pipe({
 	name: 'valuestyle',
+	standalone: false,
 })
 export class ValuestylePipe implements PipeTransform {
 	transform(tempvalue: number | string | BigNumber, ...args: (number | BigNumber | string)[]): string {

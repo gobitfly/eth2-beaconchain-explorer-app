@@ -23,7 +23,6 @@ type Sort = 'index:asc' | 'index:desc' | 'extra:asc' | 'extra:desc'
 
 @Component({
 	selector: 'app-more',
-	standalone: true,
 	imports: [CommonModule, IonicModule, NotificationValidator, ScrollingModule],
 	templateUrl: './more.component.html',
 	styleUrl: './more.component.scss',

@@ -28,7 +28,6 @@ import ClientUpdateUtils, { Release } from '@utils/ClientUpdateUtils'
 	selector: 'app-clientupdate',
 	templateUrl: './clientupdate.component.html',
 	styleUrls: ['./clientupdate.component.scss'],
-	standalone: true,
 	imports: [CommonModule, IonicModule],
 })
 export class ClientupdateComponent {

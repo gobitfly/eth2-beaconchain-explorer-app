@@ -21,6 +21,7 @@ import { Pipe, PipeTransform } from '@angular/core'
 
 @Pipe({
 	name: 'fadeoutpipe',
+	standalone: false,
 })
 export class FadeoutpipePipe implements PipeTransform {
 	transform(currentY: number, fullHide: number): number {
@@ -33,6 +34,7 @@ export class FadeoutpipePipe implements PipeTransform {
 
 @Pipe({
 	name: 'fadeinpipe',
+	standalone: false,
 })
 export class FadeinpipePipe implements PipeTransform {
 	transform(currentY: number, fullHide: number, offset = 0): number {

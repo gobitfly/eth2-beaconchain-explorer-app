@@ -9,7 +9,6 @@ import { fromEvent, Subscription } from 'rxjs'
 import { SlotGridComponent } from '../../components/slotgrid/slotgrid.component'
 @Component({
 	selector: 'app-slotviz',
-	standalone: true,
 	imports: [CommonModule, IonicModule, FullPageLoadingComponent, FullPageOfflineComponent, SlotGridComponent],
 	templateUrl: './slotviz.component.html',
 	styleUrl: './slotviz.component.scss',

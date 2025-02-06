@@ -28,6 +28,7 @@ import { ApiService } from 'src/app/services/api.service'
 	selector: 'app-help',
 	templateUrl: './help.component.html',
 	styleUrls: ['./help.component.scss'],
+	standalone: false,
 })
 export class HelpComponent implements OnInit {
 	@Input() onlyGuides: boolean

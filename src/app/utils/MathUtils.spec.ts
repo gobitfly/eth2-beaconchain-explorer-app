@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest'
 import { sumBigInt, findHighest, findLowest, slotToEpoch, startEpochSyncCommittee, endEpochSyncCommittee } from './MathUtils'
 import BigNumber from 'bignumber.js'
 

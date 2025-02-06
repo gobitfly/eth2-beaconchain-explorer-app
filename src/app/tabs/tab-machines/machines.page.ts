@@ -16,6 +16,7 @@ import { V2MyMachines } from '@requests/v2-user'
 	selector: 'app-machines',
 	templateUrl: './machines.page.html',
 	styleUrls: ['./machines.page.scss'],
+	standalone: false,
 })
 export class MachinesPage extends MachineController implements OnInit {
 	data: Map<string, ProcessedStats> = null

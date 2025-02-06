@@ -9,6 +9,7 @@ import { ApiService } from 'src/app/services/api.service'
 	selector: 'app-machinechart',
 	templateUrl: './machinechart.component.html',
 	styleUrls: ['./machinechart.component.scss'],
+	standalone: false,
 })
 export class MachinechartComponent implements OnInit {
 	@Input() title?: string = null

@@ -25,6 +25,7 @@ import { fromEvent, Subscription } from 'rxjs'
 	selector: 'app-licences',
 	templateUrl: './licences.page.html',
 	styleUrls: ['./licences.page.scss'],
+	standalone: false,
 })
 export class LicencesPage implements OnInit {
 	private backbuttonSubscription: Subscription

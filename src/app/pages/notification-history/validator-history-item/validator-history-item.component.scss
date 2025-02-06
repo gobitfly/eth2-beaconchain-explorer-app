@@ -17,7 +17,7 @@
  * along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@import '../../../../theme/variables.scss';
+@use '../../../../theme/variables.scss';
 
 ion-badge {
 	--padding-end: 8px;
