@@ -26,7 +26,7 @@ dependencies {
     implementation project(':capgo-capacitor-updater')
     implementation project(':capacitor-navigationbarnx')
     implementation project(':storage-mirror')
-    implementation "com.android.billingclient:billing:7.0.0"
+    implementation "com.android.billingclient:billing:7.1.1"
 }
 
 

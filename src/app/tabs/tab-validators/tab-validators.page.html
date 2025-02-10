@@ -180,6 +180,7 @@
 				class="ion-content-scroll-host">
 				<div *cdkVirtualFor="let item of dataSource; index as idx;" style="background-color: var(--ion-card-background)">
 					<app-validator
+						press
 						[validator]="item"
 						[first]="idx == 0"
 						[selected]="selected.get(item.index)"

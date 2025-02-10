@@ -40,6 +40,8 @@ export const AggregationTimeframes: Aggregation[] = [Aggregation.Epoch, Aggregat
 	providedIn: 'root',
 })
 export class MerchantUtils implements OnInit {
+	store?: CdvPurchase.Store
+
 	DEPRECATED_PACKAGES: Package[] = [
 		{
 			name: 'Plankton',
@@ -94,6 +96,11 @@ export class MerchantUtils implements OnInit {
 			console.info('merchant is not supported on this platform')
 			return
 		}
+		this.platform.ready().then(() => {
+			console.log('store initialized')
+			// MUST WAIT for Cordova to initialize before referencing CdvPurchase namespace
+			this.store = CdvPurchase.store
+		})
 	}
 
 	initPackages(appendix: string = '') {
@@ -313,7 +320,7 @@ export class MerchantUtils implements OnInit {
 	}
 
 	private initCustomValidator() {
-		CdvPurchase.store.validator = async (
+		this.store.validator = async (
 			product: CdvPurchase.Validator.Request.Body,
 			callback: CdvPurchase.Callback<CdvPurchase.Validator.Response.Payload>
 		) => {
@@ -360,7 +367,7 @@ export class MerchantUtils implements OnInit {
 
 		for (let i = 0; i < this.PACKAGES.length; i++) {
 			if (this.PACKAGES[i].purchaseKey) {
-				CdvPurchase.store.register({
+				this.store.register({
 					id: this.PACKAGES[i].purchaseKey + appendix,
 					platform: platform,
 					type: CdvPurchase.ProductType.PAID_SUBSCRIPTION,
@@ -368,15 +375,15 @@ export class MerchantUtils implements OnInit {
 			}
 		}
 
-		await CdvPurchase.store.initialize()
-		for (let i = 0; i < CdvPurchase.store.products.length; i++) {
-			const lastIndex = CdvPurchase.store.products[i].offers[0].pricingPhases.length - 1
+		await this.store.initialize()
+		for (let i = 0; i < this.store.products.length; i++) {
+			const lastIndex = this.store.products[i].offers[0].pricingPhases.length - 1
 			if (lastIndex < 0) {
-				console.warn('no pricingphases found', CdvPurchase.store.products[i])
+				console.warn('no pricingphases found', this.store.products[i])
 				continue
 			}
 
-			this.updatePrice(CdvPurchase.store.products[i].id, CdvPurchase.store.products[i].offers[0].pricingPhases[lastIndex])
+			this.updatePrice(this.store.products[i].id, this.store.products[i].offers[0].pricingPhases[lastIndex])
 		}
 	}
 
@@ -398,7 +405,7 @@ export class MerchantUtils implements OnInit {
 
 	private setupListeners() {
 		// General query to all products
-		CdvPurchase.store
+		this.store
 			.when()
 			.approved((p: CdvPurchase.Transaction) => {
 				// Handle the product deliverable
@@ -418,13 +425,13 @@ export class MerchantUtils implements OnInit {
 	}
 
 	manageSubscriptions() {
-		CdvPurchase.store.manageSubscriptions()
+		this.store.manageSubscriptions()
 	}
 
 	async restore(product: string) {
 		this.restorePurchase = true
 		this.purchaseIntent = product
-		await CdvPurchase.store.restorePurchases()
+		await this.store.restorePurchases()
 	}
 
 	async purchase(product: string) {
@@ -433,8 +440,9 @@ export class MerchantUtils implements OnInit {
 			product += '.apple'
 		}
 		console.log('purchasing product', product)
-		const storeProduct = CdvPurchase.store.get(product)
+		const storeProduct = this.store.get(product)
 		if (storeProduct == null) {
+			console.log('store', this.store)
 			this.alertService.showError('Purchase failed', `Product ${product} can not be purchased at the moment, please try again later.`, PURCHASEUTILS)
 			return
 		}
@@ -444,7 +452,7 @@ export class MerchantUtils implements OnInit {
 		loading.present()
 		this.restorePurchase = true
 		this.purchaseIntent = product
-		CdvPurchase.store.order(offer).then(
+		this.store.order(offer).then(
 			() => {
 				setTimeout(() => {
 					loading.dismiss()

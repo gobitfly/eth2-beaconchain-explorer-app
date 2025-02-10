@@ -63,7 +63,7 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 		return Math.floor(index / this.pageSize)
 	}
 
-	private async fetchPage(page: number) {
+	protected async fetchPage(page: number) {
 		if (this.fetchedPages.has(page) || this.reachedMax) {
 			return
 		}

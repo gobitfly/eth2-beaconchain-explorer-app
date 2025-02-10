@@ -71,8 +71,6 @@ export class Tab3Page {
 
 	debug = true
 
-	snowing: boolean
-
 	themeColor: string
 
 	premiumLabel = computed(() => {
@@ -119,8 +117,6 @@ export class Tab3Page {
 		this.theme.getThemeColor().then((result) => (this.themeColor = result))
 
 		this.updateUtils.getUpdateChannel().then((result) => (this.updateChannel = result))
-
-		this.theme.isWinterEnabled().then((result) => (this.snowing = result))
 
 		this.allCurrencies = this.getAllCurrencies()
 
@@ -297,19 +293,7 @@ export class Tab3Page {
 	notAnEasterEgg() {
 		this.count++
 		if (this.count % 3 != 0) return
-		const random = Math.floor(Math.random() * 2)
-		switch (random) {
-			case 0: {
-				const currentSnow = this.theme.snow()
-				setTimeout(() => {
-					this.theme.stopSnow(currentSnow)
-				}, 45000)
-				break
-			}
-			case 1:
-				this.theme.silvesterFireworks()
-				break
-		}
+		this.theme.silvesterFireworks()
 	}
 
 	async confirmLogout() {
@@ -365,10 +349,6 @@ export class Tab3Page {
 
 	manageSubs() {
 		this.merchant.manageSubscriptions()
-	}
-
-	toggleSnow() {
-		this.theme.toggleWinter(this.snowing)
 	}
 
 	versionClickCount = 0

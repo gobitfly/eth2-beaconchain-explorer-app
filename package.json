@@ -14,7 +14,8 @@
 		"prettier-check": "prettier -c --config .prettierrc.yml 'src/**/*.{ts,html,scss}'",
 		"lint": "eslint .",
 		"increment-build": "node increment-build.js",
-		"build-bundle": "npm run increment-build && ionic build --prod --release && node seal-bundle.js"
+		"build-bundle": "npm run increment-build && ionic build --prod --release && node seal-bundle.js",
+		"build": "ionic build --prod --release"
 	},
 	"private": true,
 	"dependencies": {
@@ -54,17 +55,15 @@
 		"bignumber.js": "^9.1.2",
 		"canvas-confetti": "^1.9.3",
 		"capacitor-navigationbarnx": "0.1.6",
-		"cordova-plugin-purchase": "^13.11.1",
+		"cordova-plugin-purchase": "^13.12.1",
 		"cordova-res": "^0.15.4",
 		"echarts": "^5.5.1",
 		"ethereum-blockies": "^0.1.1",
-		"hammerjs": "^2.0.8",
 		"highcharts": "^11.4.8",
 		"intl": "^1.2.5",
 		"jetifier": "^1.6.8",
 		"lodash-es": "^4.17.21",
 		"luxon": "^3.5.0",
-		"magic-snowflakes": "^4.2.0",
 		"ng2-tooltip-directive-major-angular-updates": "^2.12.1",
 		"ngx-echarts": "^17.2.0",
 		"ngx-timeago": "^3.0.0",

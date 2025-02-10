@@ -8,6 +8,7 @@
 		"esModuleInterop": true,
 		"declaration": false,
 		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
 		"module": "es2020",
 		"moduleResolution": "node",
 		"importHelpers": true,
@@ -27,7 +28,9 @@
 			"@pipes/*": ["src/app/pipes/*"],
 			"@requests/*": ["src/app/requests/*"],
 			"@services/*": ["src/app/services/*"],
-			"@utils/*": ["src/app/utils/*"]
+			"@utils/*": ["src/app/utils/*"],
+			"@typings/*": ["src/typings/*"]
+			// "cordova-plugin-purchase": ["src/cordova-plugin-purchase-wrapper.ts"]
 		}
 	},
 	"angularCompilerOptions": {
@@ -37,5 +40,6 @@
 		"strictInputAccessModifiers": true,
 		"strictDomEventTypes": true,
 		"preserveWhitespaces": false
-	}
+	},
+	"include": ["src/**/*.ts", "src/typings/**/*.d.ts"]
 }

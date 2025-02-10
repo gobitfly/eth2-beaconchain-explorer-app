@@ -31,6 +31,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling'
 import { FullPageLoadingComponent } from '@components/full-page-loading/full-page-loading.component'
 import { FullPageOfflineComponent } from '@components/full-page-offline/full-page-offline.component'
 import { LoadingComponent } from '@components/loading/loading.component'
+import { PressDirective } from 'src/app/directive/press.directive'
 
 @NgModule({
 	imports: [
@@ -38,6 +39,7 @@ import { LoadingComponent } from '@components/loading/loading.component'
 		IonicModule,
 		CommonModule,
 		FormsModule,
+		PressDirective,
 		ValidatorComponentModule,
 		OfflineComponentModule,
 		Tab2PageRoutingModule,

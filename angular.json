@@ -18,11 +18,10 @@
 							"base": "www",
 							"browser": ""
 						},
-						"preserveSymlinks": true,
 						"index": "src/index.html",
 						"polyfills": ["zone.js"],
 						"tsConfig": "tsconfig.app.json",
-						"allowedCommonJsDependencies": ["highcharts", "ethereum-blockies", "magic-snowflakes"],
+						"allowedCommonJsDependencies": ["highcharts", "ethereum-blockies", "cordova-plugin-purchase"],
 						"assets": [
 							{
 								"glob": "**/*",

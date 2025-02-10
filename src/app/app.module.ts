@@ -17,8 +17,8 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable, NgModule, inject, provideAppInitializer } from '@angular/core'
-import { BrowserModule, HammerModule } from '@angular/platform-browser'
+import { NgModule, inject, provideAppInitializer } from '@angular/core'
+import { BrowserModule } from '@angular/platform-browser'
 import { RouteReuseStrategy } from '@angular/router'
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular'
@@ -26,24 +26,10 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular'
 import { AppRoutingModule } from './app-routing.module'
 import { AppComponent } from './app.component'
 import { PipesModule } from './pipes/pipes.module'
-import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import 'hammerjs'
 import { ApiService } from './services/api.service'
 import { BootPreloadService } from './services/boot-preload.service'
 import { NgxEchartsModule, provideEcharts } from 'ngx-echarts'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare let Hammer: any
-@Injectable()
-export class MyHammerConfig extends HammerGestureConfig {
-	buildHammer(element: HTMLElement) {
-		const mc = new Hammer(element, {
-			touchAction: 'auto',
-		})
-		return mc
-	}
-}
 
 @NgModule({
 	declarations: [AppComponent],
@@ -53,7 +39,6 @@ export class MyHammerConfig extends HammerGestureConfig {
 		IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }),
 		AppRoutingModule,
 		PipesModule,
-		HammerModule,
 		NgxEchartsModule.forRoot({
 			/**
 			 * This will import all modules from echarts.
@@ -65,11 +50,6 @@ export class MyHammerConfig extends HammerGestureConfig {
 	],
 	providers: [
 		{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-		{
-			// hammer instantion with custom config
-			provide: HAMMER_GESTURE_CONFIG,
-			useClass: MyHammerConfig,
-		},
 		provideAppInitializer(() => {
 			const initializerFn = initializeApp(inject(ApiService), inject(BootPreloadService))
 			return initializerFn()
