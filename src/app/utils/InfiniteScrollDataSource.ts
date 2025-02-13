@@ -43,11 +43,11 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 
 	connect(collectionViewer: CollectionViewer): Observable<T[]> {
 		this.subscription.add(
-			collectionViewer.viewChange.subscribe((range) => {
+			collectionViewer.viewChange.subscribe(async (range) => {
 				const startPage = this.getPageForIndex(range.start)
-				const endPage = this.getPageForIndex(range.end + 1)
+				const endPage = this.getPageForIndex(range.end)
 				for (let i = startPage; i <= endPage; i++) {
-					this.fetchPage(i)
+					await this.fetchPage(i)
 				}
 			})
 		)

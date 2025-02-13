@@ -1,5 +1,4 @@
-/// <reference types="vitest" />
-
+// vite.config.mts
 import { defineConfig } from 'vite'
 import angular from '@analogjs/vite-plugin-angular'
 import { resolve } from 'path'
@@ -9,12 +8,6 @@ export default defineConfig(({ mode }) => {
 
 	return {
 		plugins: isTest ? [angular()] : [],
-		// resolve: {
-		// 	alias: {
-		// 		// When 'cordova-plugin-purchase' is imported, use your wrapper.
-		// 		'cordova-plugin-purchase': resolve(__dirname, 'src/cordova-plugin-purchase-wrapper.ts'),
-		// 	},
-		// },
 		server: {
 			port: 8100,
 			strictPort: true,
@@ -34,9 +27,6 @@ export default defineConfig(({ mode }) => {
 		optimizeDeps: {
 			exclude: ['highcharts', 'ethereum-blockies', 'cordova-plugin-purchase'],
 			include: ['@ionic/core'],
-			esbuildOptions: {
-				format: 'esm',
-			},
 		},
 		test: isTest
 			? {
@@ -45,8 +35,15 @@ export default defineConfig(({ mode }) => {
 					setupFiles: ['src/test-setup.ts'],
 					include: ['**/*.spec.ts'],
 					reporters: ['default'],
+					//   browser: {
+					//     enabled: true,
+					//     name: 'chromium',
+					//     headless: false, // set to true in CI
+					//     provider: 'playwright',
+					//   },
 					deps: {
-						inline: ['@angular/compiler', '@angular/cdk'],
+						// Force Vitest to inline these packages so that the JIT compiler isn’t “lost”
+						inline: ['@angular/compiler', '@angular/cdk', '@angular/cdk/collections'],
 					},
 				}
 			: undefined,

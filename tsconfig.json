@@ -39,7 +39,8 @@
 		"strictTemplates": true,
 		"strictInputAccessModifiers": true,
 		"strictDomEventTypes": true,
-		"preserveWhitespaces": false
+		"preserveWhitespaces": false,
+		"compilationMode": "full"
 	},
 	"include": ["src/**/*.ts", "src/typings/**/*.d.ts"]
 }

@@ -4,7 +4,7 @@
 	"author": "bitfly explorer GmbH",
 	"homepage": "https://beaconcha.in",
 	"scripts": {
-		"test": "vitest",
+		"test": "ng test",
 		"generate-cert": "node local_env/generate-cert.js",
 		"dev": "(trap 'kill 0' SIGINT; ionic serve --live-reload --no-open --disable-host-check --configuration=development --host=app-dev.beaconcha.in --port=8100 --strictPort=true & sleep 13; node local_env/run.js)",
 		"dev-android": "ionic cap run android --livereload --external --no-open --configuration=development",

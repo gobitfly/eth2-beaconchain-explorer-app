@@ -1,4 +1,3 @@
-import { BehaviorSubject } from 'rxjs'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { InfiniteScrollDataSource, sleep } from './InfiniteScrollDataSource'
 
@@ -7,10 +6,11 @@ interface Range {
 	end: number
 }
 
-class FakeCollectionViewer {
-	public viewChange = new BehaviorSubject<Range>({ start: 0, end: 0 })
-}
+import { Subject } from 'rxjs'
 
+class FakeCollectionViewer {
+	public viewChange = new Subject<Range>()
+}
 describe('InfiniteScrollDataSource', () => {
 	let fakeLoadMore: ReturnType<typeof vi.fn>
 	let dataSource: InfiniteScrollDataSource<number>
@@ -18,15 +18,17 @@ describe('InfiniteScrollDataSource', () => {
 
 	beforeEach(() => {
 		// A fake loadMore function that returns different data based on the cursor.
-		fakeLoadMore = vi.fn().mockImplementation((cursor: string) => {
+		fakeLoadMore = vi.fn((cursor: string) => {
 			if (!cursor) {
-				// first page returns 5 items and a valid next_cursor
-				return Promise.resolve({ data: [1, 2, 3, 4, 5], next_cursor: 'cursor1' })
-			} else {
-				// second page returns another 5 items and no next cursor (reached end)
-				return Promise.resolve({ data: [6, 7, 8, 9, 10], next_cursor: undefined })
+			  // First page
+			  return Promise.resolve({ data: [1, 2, 3, 4, 5], next_cursor: 'cursor1' });
+			} else if (cursor === 'cursor1') {
+			  // Second page
+			  return Promise.resolve({ data: [6, 7, 8, 9, 10], next_cursor: null });
 			}
-		})
+			return Promise.resolve({ data: [], next_cursor: null });
+		  });
+		  
 		// Set pageSize = 5 for easier math
 		dataSource = new InfiniteScrollDataSource<number>(5, fakeLoadMore)
 		collectionViewer = new FakeCollectionViewer()
@@ -107,6 +109,8 @@ describe('InfiniteScrollDataSource', () => {
 		// Connect and request a range that will fetch two pages.
 		dataSource.connect(collectionViewer)
 		collectionViewer.viewChange.next({ start: 0, end: 9 })
+		await sleep(10)
+		collectionViewer.viewChange.next({ start: 9, end: 10 })
 		await sleep(10)
 
 		// The second page returns next_cursor as undefined.
