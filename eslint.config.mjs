@@ -11,6 +11,8 @@ export default [
             "seal-bundle.js",
             "android/app/**", // Ignore Android build folder
             "ios/App/App/public/**", // Ignore iOS assets
+            "storage-mirror/**",
+            "e2e/**",
         ],
     },
     {
