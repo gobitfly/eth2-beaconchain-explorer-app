@@ -20,15 +20,15 @@ describe('InfiniteScrollDataSource', () => {
 		// A fake loadMore function that returns different data based on the cursor.
 		fakeLoadMore = vi.fn((cursor: string) => {
 			if (!cursor) {
-			  // First page
-			  return Promise.resolve({ data: [1, 2, 3, 4, 5], next_cursor: 'cursor1' });
+				// First page
+				return Promise.resolve({ data: [1, 2, 3, 4, 5], next_cursor: 'cursor1' })
 			} else if (cursor === 'cursor1') {
-			  // Second page
-			  return Promise.resolve({ data: [6, 7, 8, 9, 10], next_cursor: null });
+				// Second page
+				return Promise.resolve({ data: [6, 7, 8, 9, 10], next_cursor: null })
 			}
-			return Promise.resolve({ data: [], next_cursor: null });
-		  });
-		  
+			return Promise.resolve({ data: [], next_cursor: null })
+		})
+
 		// Set pageSize = 5 for easier math
 		dataSource = new InfiniteScrollDataSource<number>(5, fakeLoadMore)
 		collectionViewer = new FakeCollectionViewer()
