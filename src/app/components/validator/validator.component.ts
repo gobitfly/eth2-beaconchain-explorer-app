@@ -19,7 +19,7 @@
 
 import { Component, Input } from '@angular/core'
 import * as blockies from 'ethereum-blockies'
-import { getDisplayName, ValidatorState } from 'src/app/utils/ValidatorUtils'
+import { getDisplayName, ValidatorState } from '@utils/ValidatorUtils'
 import { UnitconvService } from '@services/unitconv.service'
 import { MobileValidatorDashboardValidatorsTableRow } from '@requests/types/mobile'
 

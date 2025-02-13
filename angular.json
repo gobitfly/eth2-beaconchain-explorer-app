@@ -96,7 +96,10 @@
 					"defaultConfiguration": "production"
 				},
 				"test": {
-					"builder": "@analogjs/vitest-angular:test"
+					"builder": "@analogjs/vitest-angular:test",
+					"options": {
+						"viteConfigPath": "vite.config.mts"
+					}
 				},
 				"lint": {
 					"builder": "@angular-devkit/build-angular:tslint",

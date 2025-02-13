@@ -18,8 +18,8 @@
  */
 
 import { Component, Input } from '@angular/core'
-import { Performance } from 'src/app/controllers/OverviewController'
-import { Currency, UnitconvService } from 'src/app/services/unitconv.service'
+import { Performance } from '@controllers/OverviewController'
+import { Currency, UnitconvService } from '@services/unitconv.service'
 
 @Component({
 	selector: 'app-performance-item',

@@ -1,7 +1,7 @@
 import { Component, computed, effect, Input, Signal, signal, ViewChild, WritableSignal } from '@angular/core'
-import { NotificationValidatorDashboardDetail } from 'src/app/requests/types/notifications'
-import { V2NotificationDetails } from 'src/app/requests/v2-notifications'
-import { ApiService } from 'src/app/services/api.service'
+import { NotificationValidatorDashboardDetail } from '@requests/types/notifications'
+import { V2NotificationDetails } from '@requests/v2-notifications'
+import { ApiService } from '@services/api.service'
 
 import { IonAccordionGroup, IonicModule, ModalController } from '@ionic/angular'
 import { fromEvent, Subscription } from 'rxjs'
@@ -9,9 +9,9 @@ import { FullPageLoadingComponent } from '@components/full-page-loading/full-pag
 import { FullPageOfflineComponent } from '@components/full-page-offline/full-page-offline.component'
 import { CommonModule } from '@angular/common'
 import { AccordionIndexslotComponent } from './accordion-indexslot/accordion-indexslot.component'
-import { PipesModule } from 'src/app/pipes/pipes.module'
-import { epochToTimestamp, shortTimeFormatLocale } from 'src/app/utils/TimeUtils'
-import { APIUnauthorizedError } from 'src/app/requests/requests'
+import { PipesModule } from '@pipes/pipes.module'
+import { epochToTimestamp, shortTimeFormatLocale } from '@utils/TimeUtils'
+import { APIUnauthorizedError } from '@requests/requests'
 
 @Component({
 	selector: 'app-notification-detail',

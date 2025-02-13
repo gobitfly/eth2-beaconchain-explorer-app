@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core'
 import { BaseHistoryItemComponent } from '../base-history-item/base-history-item.component'
 import { CommonModule } from '@angular/common'
 import { IonicModule } from '@ionic/angular'
-import { NotificationMachinesTableRow } from 'src/app/requests/types/notifications'
+import { NotificationMachinesTableRow } from '@requests/types/notifications'
 
 @Component({
 	selector: 'app-machine-history-item',

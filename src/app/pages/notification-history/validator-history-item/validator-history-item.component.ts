@@ -4,7 +4,7 @@ import {
 	NotificationDashboardsTableRow,
 	NotificationMachinesTableRow,
 	NotificationNetworksTableRow,
-} from 'src/app/requests/types/notifications'
+} from '@requests/types/notifications'
 import { NotificationDetailComponent } from '../../notification-detail/notification-detail.component'
 import { IonicModule, ModalController } from '@ionic/angular'
 import { CommonModule } from '@angular/common'

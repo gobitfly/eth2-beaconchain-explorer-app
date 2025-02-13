@@ -1,9 +1,9 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core'
-import { highChartOptions } from 'src/app/utils/HighchartOptions'
+import { highChartOptions } from '@utils/HighchartOptions'
 import * as HighCharts from 'highcharts'
 import * as Highstock from 'highcharts/highstock'
-import { MachineChartData } from 'src/app/controllers/MachineController'
-import { ApiService } from 'src/app/services/api.service'
+import { MachineChartData } from '@controllers/MachineController'
+import { ApiService } from '@services/api.service'
 
 @Component({
 	selector: 'app-machinechart',

@@ -1,11 +1,11 @@
 import { Component, computed, Input, OnInit } from '@angular/core'
 import { Toast } from '@capacitor/toast'
-import { OverviewData2, OverviewProvider } from 'src/app/controllers/OverviewController'
-import { ChartData } from 'src/app/requests/types/common'
-import { Aggregation, V2DashboardSummaryChart } from 'src/app/requests/v2-dashboard'
-import { AlertService } from 'src/app/services/alert.service'
-import { getChartTextColor, getChartTooltipBackgroundColor, getSummaryChartGroupColors } from 'src/app/utils/ColorUtils'
-import { MerchantUtils } from 'src/app/utils/MerchantUtils'
+import { OverviewData2, OverviewProvider } from '@controllers/OverviewController'
+import { ChartData } from '@requests/types/common'
+import { Aggregation, V2DashboardSummaryChart } from '@requests/v2-dashboard'
+import { AlertService } from '@services/alert.service'
+import { getChartTextColor, getChartTooltipBackgroundColor, getSummaryChartGroupColors } from '@utils/ColorUtils'
+import { MerchantUtils } from '@utils/MerchantUtils'
 import {
 	formatGoTimestamp,
 	formatTsToDateTime,
@@ -17,10 +17,10 @@ import {
 	ONE_WEEK,
 	slotToSecondsTimestamp,
 	timestampToEpoch,
-} from 'src/app/utils/TimeUtils'
+} from '@utils/TimeUtils'
 import { get } from 'lodash-es'
 import { ECharts, EChartsOption } from 'echarts'
-import { StorageService } from 'src/app/services/storage.service'
+import { StorageService } from '@services/storage.service'
 
 const currentZoom = {
 	end: 100,

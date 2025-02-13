@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common'
 import { Component, computed, Input, WritableSignal } from '@angular/core'
 import { IonLabel, IonItem } from '@ionic/angular/standalone'
-import { PipesModule } from 'src/app/pipes/pipes.module'
-import { StorageService } from 'src/app/services/storage.service'
+import { PipesModule } from '@pipes/pipes.module'
+import { StorageService } from '@services/storage.service'
 
 @Component({
 	selector: 'app-success-fail-view',

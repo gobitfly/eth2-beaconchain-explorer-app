@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core'
 import { ModalController } from '@ionic/angular'
 import { Options } from 'highcharts'
 import { fromEvent, Subscription } from 'rxjs'
-import { StorageService } from 'src/app/services/storage.service'
+import { StorageService } from '@services/storage.service'
 import MachineController, { ProcessedStats, bytes, MachineChartData } from '../../controllers/MachineController'
 
 @Component({

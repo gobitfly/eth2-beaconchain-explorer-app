@@ -19,10 +19,10 @@
 
 import { Component, OnInit, Input } from '@angular/core'
 import { Router } from '@angular/router'
-import { StorageService } from 'src/app/services/storage.service'
-import { OAuthUtils } from 'src/app/utils/OAuthUtils'
+import { StorageService } from '@services/storage.service'
+import { OAuthUtils } from '@utils/OAuthUtils'
 import { Browser } from '@capacitor/browser'
-import { ApiService } from 'src/app/services/api.service'
+import { ApiService } from '@services/api.service'
 
 @Component({
 	selector: 'app-help',

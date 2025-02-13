@@ -1,13 +1,13 @@
 import { Component, Input } from '@angular/core'
 import { NotificationValidator } from '../notification-item/notification-item.component'
-import { Address, IndexBlocks, IndexEpoch, IndexSlots } from 'src/app/requests/types/common'
+import { Address, IndexBlocks, IndexEpoch, IndexSlots } from '@requests/types/common'
 import { IonicModule } from '@ionic/angular'
 import { CommonModule } from '@angular/common'
-import { NotificationEventValidatorBackOnline, NotificationEventWithdrawal } from 'src/app/requests/types/notifications'
+import { NotificationEventValidatorBackOnline, NotificationEventWithdrawal } from '@requests/types/notifications'
 import { MoreComponent } from '../more/more.component'
 import { ModalController } from '@ionic/angular'
 import BigNumber from 'bignumber.js'
-import { ApiService } from 'src/app/services/api.service'
+import { ApiService } from '@services/api.service'
 
 export type DataTypes = IndexEpoch | IndexSlots | IndexBlocks | NotificationEventValidatorBackOnline | NotificationEventWithdrawal | Address | number
 

@@ -1,16 +1,16 @@
 import { Component, OnInit, Input, WritableSignal, signal, computed } from '@angular/core'
-import { ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from 'src/app/utils/BlockUtils'
+import { ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from '@utils/BlockUtils'
 import * as blockies from 'ethereum-blockies'
 import BigNumber from 'bignumber.js'
-import { UnitconvService } from 'src/app/services/unitconv.service'
+import { UnitconvService } from '@services/unitconv.service'
 import { ModalController } from '@ionic/angular'
 import { Browser } from '@capacitor/browser'
-import { ApiService } from 'src/app/services/api.service'
-import { VDBBlocksTableRow } from 'src/app/requests/types/validator_dashboard'
-import { slotToSecondsTimestamp } from 'src/app/utils/TimeUtils'
+import { ApiService } from '@services/api.service'
+import { VDBBlocksTableRow } from '@requests/types/validator_dashboard'
+import { slotToSecondsTimestamp } from '@utils/TimeUtils'
 import { Toast } from '@capacitor/toast'
-import { findChainNetworkById } from 'src/app/utils/NetworkData'
-import { V1BlockResponse, V1BlocksOverview } from 'src/app/requests/requests'
+import { findChainNetworkById } from '@utils/NetworkData'
+import { V1BlockResponse, V1BlocksOverview } from '@requests/requests'
 
 @Component({
 	selector: 'app-block-detail',

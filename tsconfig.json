@@ -11,6 +11,7 @@
 		"allowSyntheticDefaultImports": true,
 		"module": "es2020",
 		"moduleResolution": "node",
+		"target": "es2020",
 		"importHelpers": true,
 		"noEmitHelpers": true,
 		"lib": ["es2020", "dom"],

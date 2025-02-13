@@ -1,10 +1,10 @@
 import { Component, Input } from '@angular/core'
 import * as blockies from 'ethereum-blockies'
-import { UnitconvService } from 'src/app/services/unitconv.service'
-import { ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from 'src/app/utils/BlockUtils'
+import { UnitconvService } from '@services/unitconv.service'
+import { ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from '@utils/BlockUtils'
 import BigNumber from 'bignumber.js'
-import { VDBBlocksTableRow } from 'src/app/requests/types/validator_dashboard'
-import { slotToSecondsTimestamp } from 'src/app/utils/TimeUtils'
+import { VDBBlocksTableRow } from '@requests/types/validator_dashboard'
+import { slotToSecondsTimestamp } from '@utils/TimeUtils'
 
 @Component({
 	selector: 'app-block',

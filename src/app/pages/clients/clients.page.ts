@@ -2,7 +2,7 @@ import { Component, Input, WritableSignal, signal, SimpleChanges } from '@angula
 import { ModalController } from '@ionic/angular'
 import ClientUpdateUtils, { ClientInfo, Clients } from '@utils/ClientUpdateUtils'
 import { NotificationBase } from '../../tabs/tab-preferences/notification-base'
-import { StorageService } from 'src/app/services/storage.service'
+import { StorageService } from '@services/storage.service'
 @Component({
 	selector: 'app-clients',
 	templateUrl: './clients.page.html',

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common'
 import { Component, Input } from '@angular/core'
 import { IonicModule } from '@ionic/angular'
 import { HistoryDataTypes } from '../validator-history-item/validator-history-item.component'
-import { epochToTimestamp, formatMonthShort, getLocale } from 'src/app/utils/TimeUtils'
+import { epochToTimestamp, formatMonthShort, getLocale } from '@utils/TimeUtils'
 
 @Component({
 	selector: 'app-base-history-item',

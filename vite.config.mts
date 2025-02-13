@@ -2,12 +2,28 @@
 import { defineConfig } from 'vite'
 import angular from '@analogjs/vite-plugin-angular'
 import { resolve } from 'path'
+import path from 'path'
 
 export default defineConfig(({ mode }) => {
 	const isTest = mode === 'test'
 
 	return {
 		plugins: isTest ? [angular()] : [],
+		resolve: {
+			alias: {
+				'@services': path.resolve(__dirname, 'src/app/services'),
+				'@requests': path.resolve(__dirname, 'src/app/requests'),
+				'@components': path.resolve(__dirname, 'src/app/components'),
+				'@controllers': path.resolve(__dirname, 'src/app/controllers'),
+				'@modals': path.resolve(__dirname, 'src/app/modals'),
+				'@pages': path.resolve(__dirname, 'src/app/pages'),
+				'@pipes': path.resolve(__dirname, 'src/app/pipes'),
+				'@utils': path.resolve(__dirname, 'src/app/utils'),
+				'@typings': path.resolve(__dirname, 'src/typings'),
+				'src/environments': path.resolve(__dirname, 'src/environments'),
+				'storage-mirror': path.resolve(__dirname, 'storage-mirror/dist/esm/index.js'),
+			},
+		},
 		server: {
 			port: 8100,
 			strictPort: true,

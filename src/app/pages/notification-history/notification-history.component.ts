@@ -3,19 +3,19 @@ import { CommonModule } from '@angular/common'
 import { Component, signal, WritableSignal } from '@angular/core'
 import { Toast } from '@capacitor/toast'
 import { IonicModule } from '@ionic/angular'
-import { APIRequest, APIUnauthorizedError } from 'src/app/requests/requests'
+import { APIRequest, APIUnauthorizedError } from '@requests/requests'
 import {
 	NotificationClientsTableRow,
 	NotificationDashboardsTableRow,
 	NotificationMachinesTableRow,
 	NotificationNetworksTableRow,
-} from 'src/app/requests/types/notifications'
-import { V2NotificationsClients, V2NotificationsDashboard, V2NotificationsMachines, V2NotificationsNetworks } from 'src/app/requests/v2-notifications'
-import { ApiService } from 'src/app/services/api.service'
-import { InfiniteScrollDataSource, loadMoreType } from 'src/app/utils/InfiniteScrollDataSource'
+} from '@requests/types/notifications'
+import { V2NotificationsClients, V2NotificationsDashboard, V2NotificationsMachines, V2NotificationsNetworks } from '@requests/v2-notifications'
+import { ApiService } from '@services/api.service'
+import { InfiniteScrollDataSource, loadMoreType } from '@utils/InfiniteScrollDataSource'
 import { eventTypeBadge, HistoryDataTypes, NotificationHistoryItemComponent } from './validator-history-item/validator-history-item.component'
-import { formatMonthLong } from 'src/app/utils/TimeUtils'
-import { AlertService } from 'src/app/services/alert.service'
+import { formatMonthLong } from '@utils/TimeUtils'
+import { AlertService } from '@services/alert.service'
 import { FullPageLoadingComponent } from '@components/full-page-loading/full-page-loading.component'
 import { FullPageOfflineComponent } from '@components/full-page-offline/full-page-offline.component'
 import { FormsModule } from '@angular/forms'

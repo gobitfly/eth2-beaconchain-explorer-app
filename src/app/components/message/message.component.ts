@@ -19,12 +19,12 @@
 
 import { Component, OnInit, Input } from '@angular/core'
 import { AlertController } from '@ionic/angular'
-import { StorageService } from 'src/app/services/storage.service'
+import { StorageService } from '@services/storage.service'
 import confetti from 'canvas-confetti'
 
 import { Browser } from '@capacitor/browser'
 import { Output, EventEmitter } from '@angular/core'
-import FirebaseUtils from 'src/app/utils/FirebaseUtils'
+import FirebaseUtils from '@utils/FirebaseUtils'
 
 @Component({
 	selector: 'app-message',

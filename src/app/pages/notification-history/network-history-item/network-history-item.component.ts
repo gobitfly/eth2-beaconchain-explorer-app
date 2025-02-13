@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common'
 import { Component, Input } from '@angular/core'
 import { IonicModule } from '@ionic/angular'
-import { NotificationNetworksTableRow } from 'src/app/requests/types/notifications'
+import { NotificationNetworksTableRow } from '@requests/types/notifications'
 import { BaseHistoryItemComponent } from '../base-history-item/base-history-item.component'
-import { findChainNetworkById } from 'src/app/utils/NetworkData'
-import { capitalize } from 'src/app/services/api.service'
+import { findChainNetworkById } from '@utils/NetworkData'
+import { capitalize } from '@services/api.service'
 
 @Component({
 	selector: 'app-network-history-item',

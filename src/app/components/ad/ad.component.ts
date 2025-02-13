@@ -1,9 +1,9 @@
 import { Component, OnInit, Input } from '@angular/core'
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser'
 import { ModalController } from '@ionic/angular'
-import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
-import AdUtils, { AdLocation } from 'src/app/utils/AdUtils'
-import { MerchantUtils } from 'src/app/utils/MerchantUtils'
+import { SubscribePage } from '@pages/subscribe/subscribe.page'
+import AdUtils, { AdLocation } from '@utils/AdUtils'
+import { MerchantUtils } from '@utils/MerchantUtils'
 
 @Component({
 	selector: 'app-ad',

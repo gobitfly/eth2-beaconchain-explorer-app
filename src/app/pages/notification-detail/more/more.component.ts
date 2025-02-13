@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild } from '@angular/core'
-import { InfiniteScrollDataSource, loadMoreType } from 'src/app/utils/InfiniteScrollDataSource'
+import { InfiniteScrollDataSource, loadMoreType } from '@utils/InfiniteScrollDataSource'
 import {
 	ArrayComputer,
 	DataTypes,
@@ -14,8 +14,8 @@ import { CommonModule } from '@angular/common'
 import { NotificationValidator } from '../notification-item/notification-item.component'
 import { ScrollingModule } from '@angular/cdk/scrolling'
 import { IonSearchbar } from '@ionic/angular/standalone'
-import { AlertService } from 'src/app/services/alert.service'
-import { ApiService } from 'src/app/services/api.service'
+import { AlertService } from '@services/alert.service'
+import { ApiService } from '@services/api.service'
 
 const PAGE_SIZE = 25
 
