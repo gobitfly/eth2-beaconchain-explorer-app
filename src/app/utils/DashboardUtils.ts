@@ -53,7 +53,7 @@ export class DashboardUtils {
 		private unit: UnitconvService
 	) {}
 
-	initDashboard() {
+	public initDashboard() {
 		return initDashboard(this.api, this.storage, () => {
 			this.dashboardAwareListener.notifyAll()
 		})

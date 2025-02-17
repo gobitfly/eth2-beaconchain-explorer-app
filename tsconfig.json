@@ -21,6 +21,7 @@
 		"strictBindCallApply": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitAny": true,
+		"types": ["vitest/globals"],
 		"paths": {
 			"@components/*": ["src/app/components/*"],
 			"@controllers/*": ["src/app/controllers/*"],

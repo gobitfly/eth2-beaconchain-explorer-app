@@ -21,7 +21,8 @@ export default defineConfig(({ mode }) => {
 				'@utils': path.resolve(__dirname, 'src/app/utils'),
 				'@typings': path.resolve(__dirname, 'src/typings'),
 				'src/environments': path.resolve(__dirname, 'src/environments'),
-				'storage-mirror': path.resolve(__dirname, 'storage-mirror/dist/esm/index.js'),
+				'storage-mirror': path.resolve(__dirname, 'storage-mirror/dist/esm/index.js'), // src/stubs/storage-mirror.js
+				'@byteowls/capacitor-oauth2': path.resolve(__dirname, 'src/stubs/capacitor-oauth2.js'),
 			},
 		},
 		server: {
@@ -51,6 +52,11 @@ export default defineConfig(({ mode }) => {
 					setupFiles: ['src/test-setup.ts'],
 					include: ['**/*.spec.ts'],
 					reporters: ['default'],
+					server: {
+						deps: {
+							inline: [/fesm2022/],
+						},
+					},
 					//   browser: {
 					//     enabled: true,
 					//     name: 'chromium',
