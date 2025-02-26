@@ -57,12 +57,12 @@ export class AppUpdater {
 		const currentNative = await this.getCurrentNativeVersionCode()
 		console.log('Current App Version', versionInfo.buildNumber, currentNative)
 
-		this.ackCurrentBundle(currentBundle)
-
 		if (!Capacitor.isNativePlatform()) {
 			console.info('non native, skipping updates')
 			return false
 		}
+
+		this.ackCurrentBundle(currentBundle)
 
 		const [hasNativeUpdate, latest] = await Promise.all([this.updateNative(), this.api.execute(new V2LatestAppBundle(currentBundle, currentNative))])
 

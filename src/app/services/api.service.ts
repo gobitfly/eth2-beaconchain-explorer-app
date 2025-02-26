@@ -90,7 +90,7 @@ export class ApiService extends CacheModule {
 
 	storeInHardCache(cacheKey: string): boolean {
 		return (
-			cacheKey.indexOf('dashboards') >= 0 ||
+			(cacheKey.indexOf('dashboards') >= 0 && cacheKey.indexOf('slot-viz') < 0) || // do not save slotviz to hardcache
 			cacheKey.indexOf('produced?offset=0') >= 0 || // first page of blocks page // todo v2
 			(cacheKey.indexOf('beaconcha.in') < 0 && cacheKey.indexOf('gnosischa.in') < 0 && cacheKey.indexOf('ads.bitfly') < 0)
 		)

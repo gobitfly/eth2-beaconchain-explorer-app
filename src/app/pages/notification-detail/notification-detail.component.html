@@ -1,13 +1,13 @@
 <ion-header [translucent]="true">
 	<ion-toolbar class="top">
-		<ion-buttons slot="start">
+		<ion-buttons slot="start" class="modal-buttons">
 			<ion-button (click)="closeModal()">
 				<ion-icon size="large" name="close-outline"></ion-icon>
 			</ion-button>
 		</ion-buttons>
 
 		<ion-title style="padding: 0px 10px">Notification</ion-title>
-		<ion-buttons slot="end">
+		<ion-buttons slot="end" class="modal-buttons">
 			<ion-button (click)="collapse()">
 				<ion-icon *ngIf="state() == 'collapsed'" size="large" name="chevron-expand-outline"></ion-icon>
 				<ion-icon *ngIf="state() == 'expanded'" size="large" name="chevron-collapse-outline"></ion-icon>

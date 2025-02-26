@@ -1,0 +1,113 @@
+// Copyright (C) 2025 Bitfly GmbH
+//
+// This file is part of Beaconchain Dashboard.
+//
+// Beaconchain Dashboard is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Beaconchain Dashboard is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
+
+@use '../../../theme/variables.scss';
+
+:host {
+	display: block;
+}
+
+.legend-content {
+	padding: 16px;
+}
+
+ion-item {
+	margin-bottom: 12px;
+}
+
+h2 {
+	font-size: 18px;
+	margin-bottom: 8px;
+}
+
+p {
+	font-size: 14px;
+	line-height: 1.4;
+	margin: 0;
+}
+
+/* Color swatches for content status */
+.color-example {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border-radius: 2px;
+	margin-right: 8px;
+	vertical-align: middle;
+}
+.color-example.success {
+	background-color: var(--ion-color-success);
+}
+.color-example.danger {
+	background-color: var(--ion-color-danger);
+}
+.color-example.warning {
+	background-color: var(--ion-color-warning);
+}
+.color-example.pending {
+	background-color: transparent;
+	border: 1px solid #ccc;
+}
+
+/* Border examples for network status */
+.border-example {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border: 2px solid;
+	border-radius: 2px;
+	margin-right: 8px;
+}
+.border-example.success {
+	border-color: var(--ion-color-success);
+}
+.border-example.danger {
+	border-color: var(--ion-color-danger);
+}
+
+/* Symbol row styling */
+.symbol-row {
+	align-items: center;
+	margin-bottom: 8px;
+}
+.symbol-icon {
+	font-size: 24px;
+	margin-right: 4px;
+}
+
+/* Example block styling */
+.example-row {
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+/* Simulated block (square) style */
+.square {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 48px;
+	height: 48px;
+	border: 2px solid #ccc;
+	box-sizing: border-box;
+	background-color: var(--ion-card-background);
+	transition:
+		border-color 0.3s ease,
+		background-color 0.3s ease;
+	border-radius: 4px;
+}

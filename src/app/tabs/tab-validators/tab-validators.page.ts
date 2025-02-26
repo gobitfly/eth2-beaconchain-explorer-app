@@ -201,7 +201,7 @@ export class Tab2Page implements OnInit {
 			// fall back to first group
 
 			// todo test local only "all groups" - is it working?
-			this.selectedGroup = this.groups()?.[0]?.id ?? 0
+			this.selectedGroup = this.groups()?.[0] ? -1 : 0 //this.groups()?.[0]?.id ?? 0
 		}
 
 		await this.updateValidators()

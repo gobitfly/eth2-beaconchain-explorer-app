@@ -20,6 +20,7 @@
 .slot-grid {
 	display: flex;
 	flex-direction: column;
+	justify-content: center;
 	background-color: var(--ion-card-background);
 	padding: 0 0 10px 0;
 
@@ -29,7 +30,7 @@
 	}
 
 	.square {
-		position: relative; /* Establish positioning context for icons */
+		position: relative;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -39,6 +40,7 @@
 		transition:
 			border-color 0.3s ease,
 			background-color 0.3s ease;
+		border-radius: 4px;
 	}
 }
 

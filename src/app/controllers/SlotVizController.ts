@@ -23,6 +23,8 @@ import { ApiService } from '@services/api.service'
 import { ChainNetwork, findChainNetworkById } from '@utils/NetworkData'
 import { slotToSecondsTimestamp, timestampToSlot, timeUntilNextSlot } from '@utils/TimeUtils'
 
+export type FilterType = 'block' | 'attestation' | 'sync' | 'slash'
+
 @Injectable({ providedIn: 'root' })
 export class SlotVizProvider {
 	private dashboardID: dashboardID
@@ -90,7 +92,12 @@ export class SlotVizProvider {
 		return slot
 	})
 
+	currentEpoch: Signal<number> = computed(() => {
+		return Math.floor(this.currentSlot() / findChainNetworkById(this.api.networkConfig.supportedChainIds).slotPerEpoch)
+	})
+
 	nextDutyTs: Signal<number> = computed(() => {
+		if (this.slots().length == 0) return 0
 		if (this.nextDuty() == null) return this.slotTime(this.slots()[this.slots().length - 1].slot)
 		return this.slotTime(this.nextDuty().slot)
 	})

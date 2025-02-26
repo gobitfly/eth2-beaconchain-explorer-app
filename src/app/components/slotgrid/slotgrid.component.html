@@ -1,8 +1,15 @@
 <div class="slot-grid">
 	<ion-list-header>
-		<ion-label id="epoch-title">Epoch {{ epoch }}</ion-label>
+		<ion-label id="epoch-title" (click)="openEpochInWeb()"
+			>{{ epochDescriptive() }} <small>{{ epoch }}</small></ion-label
+		>
 	</ion-list-header>
-	<div class="row" *ngFor="let row of rows; let rowIndex = index" [style.margin-bottom.px]="margin">
+	<div
+		class="row"
+		*ngFor="let row of rows; let rowIndex = index"
+		[style.margin-bottom.px]="margin"
+		[style.padding-left.px]="edgePadding"
+		[style.padding-right.px]="edgePadding">
 		<div
 			[class]="getSquareCss(slot)"
 			[class.blinking]="slot.slot <= slotViz.currentSlot() && slot.status == 'scheduled'"
