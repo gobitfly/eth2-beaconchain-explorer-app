@@ -48,9 +48,9 @@
 		</ion-list>
 
 		<ion-list class="updates" *ngIf="!data.foreignValidator">
-			<app-group-selector [groups]="groups()" [preSelectGroupID]="-1" (groupChanged)="onGroupChanged($event)"></app-group-selector>
-
 			<app-slotviz-widget [dashboardID]="data.id" [groupID]="data.selectedGroupID()"></app-slotviz-widget>
+
+			<app-group-selector [groups]="groups()" [preSelectGroupID]="-1" (groupChanged)="onGroupChanged($event)"></app-group-selector>
 
 			<span *ngFor="let update of updates">
 				<app-clientupdate [data]="update" *ngIf="update"></app-clientupdate>

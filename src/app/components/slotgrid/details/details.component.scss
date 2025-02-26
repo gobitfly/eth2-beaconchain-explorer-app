@@ -17,55 +17,51 @@
  * along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@use '../../../theme/variables.scss';
+@use '../../../../theme/variables.scss';
 
-.inner {
-	padding-top: 5px;
-	padding-bottom: 5px;
+.popover {
+	border-radius: 4px;
 }
 
-.background {
-	background-color: var(--ion-toolbar-background);
+.popover-header {
+	padding: 12px 12px 6px 12px;
+	border-bottom: 1px solid #ccc;
+	margin-bottom: 4px;
+
+	.flex-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+}
+.popover-content {
+	padding: 12px;
+	font-size: 0.9em;
+
+	div {
+		margin-bottom: 4px;
+	}
 }
 
-ion-item {
-	--background-color: var(--ion-toolbar-background) !important;
-	--background: var(--ion-toolbar-background) !important;
-}
-
-ion-label {
-	color: var(--x-toolbar-title-color) !important;
-}
-ion-icon {
-	color: var(--x-toolbar-title-color) !important;
-
-	margin: 8px 0px;
-}
-
-.unknown {
-	opacity: 0.5;
-	animation: var(--blink-animation);
-}
-
-.danger {
-	opacity: 0.9;
-	color: var(--ion-color-danger) !important;
+h3 {
+	font-size: 1em;
+	margin: 0;
 }
 
 .warning {
-	opacity: 0.9;
+	opacity: 1;
 	color: var(--ion-color-warning) !important;
+	font-weight: bold;
+}
+
+.danger {
+	opacity: 1;
+	color: var(--ion-color-danger) !important;
+	font-weight: bold;
 }
 
 .success {
-	opacity: 0.9;
+	opacity: 1;
 	color: var(--ion-color-success) !important;
-}
-
-#previous {
-	font-size: 1em;
-}
-
-.next {
-	font-size: 1.5em;
+	font-weight: bold;
 }

@@ -43,7 +43,9 @@ export class CountdownPipe implements PipeTransform, OnDestroy {
 			}
 
 			const space = result.unit == 's' ? '' : ' '
-			const formattedTime = 'in ' + result.value + space + result.unit + ' '
+			const prefix = result.suffix != 'ago' ? 'in ' : ''
+			const postfix = result.suffix == 'ago' ? 'ago' : ''
+			const formattedTime = prefix + result.value + space + result.unit + ' ' + postfix
 			// Trigger change detection
 			this.changeDetector.markForCheck()
 

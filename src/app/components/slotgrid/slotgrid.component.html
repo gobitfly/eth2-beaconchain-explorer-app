@@ -1,8 +1,8 @@
 <div class="slot-grid">
 	<ion-list-header>
-		<ion-label id="epoch-title" (click)="openEpochInWeb()"
-			>{{ epochDescriptive() }} <small>{{ epoch }}</small></ion-label
-		>
+		<ion-label id="epoch-title" (click)="openEpochInWeb()">
+			{{ epochDescriptive() }} <small>{{ epoch }}</small>
+		</ion-label>
 	</ion-list-header>
 	<div
 		class="row"
@@ -11,14 +11,16 @@
 		[style.padding-left.px]="edgePadding"
 		[style.padding-right.px]="edgePadding">
 		<div
-			[class]="getSquareCss(slot)"
+			class="square"
+			[ngClass]="getSquareCss(slot)"
 			[class.blinking]="slot.slot <= slotViz.currentSlot() && slot.status == 'scheduled'"
-			*ngFor="let slot of row"
+			*ngFor="let slot of row; trackBy: trackBySlot"
 			[style.width.px]="squareSize"
 			[style.height.px]="squareSize"
-			[style.margin-right.px]="margin">
-			<ion-icon class="smallicon" *ngIf="getIconSmall(slot) != ''" [name]="getIconSmall(slot)" [style.font-size.px]="squareSize * 0.28"></ion-icon>
-			<ion-icon [class.bigicon]="getIconSmall(slot) != ''" [name]="getIconBig(slot)" [style.font-size.px]="squareSize * 0.43"></ion-icon>
+			[style.margin-right.px]="margin"
+			(click)="onSquareClick(slot, $event)">
+			<ion-icon class="smallicon" *ngIf="getIconSmall(slot) !== ''" [name]="getIconSmall(slot)" [style.font-size.px]="squareSize * 0.28"> </ion-icon>
+			<ion-icon [class.bigicon]="getIconSmall(slot) !== ''" [name]="getIconBig(slot)" [style.font-size.px]="squareSize * 0.43"> </ion-icon>
 		</div>
 	</div>
 </div>

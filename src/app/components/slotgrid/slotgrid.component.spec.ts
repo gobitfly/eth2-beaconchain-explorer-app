@@ -6,6 +6,7 @@ import { signal } from '@angular/core'
 // Dummy provider (its functionality is not used in these tests)
 const dummySlotVizProvider = {} as any
 const dummyApiService = {} as any
+const dummyPopOverController = {} as any
 
 // Helper function to simulate a WritableSignal for filterMap.
 // It returns a function that produces a Map with the desired filter settings.
@@ -272,7 +273,7 @@ describe('SlotGridComponent', () => {
 	let component: SlotGridComponent
 
 	beforeEach(() => {
-		component = new SlotGridComponent(dummySlotVizProvider, dummyApiService)
+		component = new SlotGridComponent(dummySlotVizProvider, dummyApiService, dummyPopOverController)
 	})
 
 	testCases.forEach((tc) => {

@@ -1,27 +1,24 @@
 import { CommonModule } from '@angular/common'
-import { Component, Input, OnInit, HostListener, WritableSignal, computed, Signal } from '@angular/core'
+import { OnInit, HostListener, WritableSignal, computed, Signal } from '@angular/core'
 import { Browser } from '@capacitor/browser'
 import { FilterType, SlotVizProvider } from '@controllers/SlotVizController'
 import { IonicModule } from '@ionic/angular'
 import { VDBSlotVizSlot } from '@requests/types/slot_viz'
 import { ApiService } from '@services/api.service'
+import { Component, Input } from '@angular/core'
+import { PopoverController } from '@ionic/angular'
+import { SlotDetailPopoverComponent } from './details/details.component'
 
 /*
 To to:
--) add header showing next duty
--) add filter like on web (disable/enable sync duties etc - next duty ts should adjust too)
-
--) add details on slot click (show countdown to that selected slot too)
-
 -) sync up blinking of scheduled duties (still not working even with global animation)
 -) border color transition, background color transition and icon color transition not working
 */
-
 @Component({
 	selector: 'app-slotgrid',
 	imports: [CommonModule, IonicModule],
 	templateUrl: './slotgrid.component.html',
-	styleUrl: './slotgrid.component.scss',
+	styleUrls: ['./slotgrid.component.scss'],
 })
 export class SlotGridComponent implements OnInit {
 	@Input() slots: Array<VDBSlotVizSlot> = []
@@ -41,7 +38,8 @@ export class SlotGridComponent implements OnInit {
 
 	constructor(
 		public slotViz: SlotVizProvider,
-		private api: ApiService
+		private api: ApiService,
+		private popoverCtrl: PopoverController
 	) {}
 
 	ngOnInit() {
@@ -65,6 +63,10 @@ export class SlotGridComponent implements OnInit {
 		this.calculateSquareSize()
 	}
 
+	trackBySlot(_: number, slot: VDBSlotVizSlot): number {
+		return slot.slot
+	}
+
 	private calculateGrid() {
 		// Break slots into chunks for rows
 		const chunkSize = this.slotsPerRow
@@ -80,13 +82,24 @@ export class SlotGridComponent implements OnInit {
 		const rootStyles = getComputedStyle(document.documentElement)
 		const edgePadding = parseInt(rootStyles.getPropertyValue('--edge-padding').split(' ')[1]) || 0
 		this.edgePadding = edgePadding
-
-		// Calculate available width with minimum edge padding
 		const availableWidth = window.innerWidth - 2 * edgePadding
 		const totalMargin = (this.slotsPerRow - 1) * this.margin
 		const totalBorder = this.slotsPerRow * 2 // 2px per square
-
 		this.squareSize = Math.floor((availableWidth - totalMargin - totalBorder) / this.slotsPerRow)
+	}
+	// Called when a square is clicked; stops propagation so the document listener doesn't immediately clear it.
+	async onSquareClick(slot: VDBSlotVizSlot, event: MouseEvent) {
+		event.stopPropagation()
+		// Create a snapshot of the slot so that future updates don’t affect it.
+		const slotSnapshot = JSON.parse(JSON.stringify(slot))
+		const popover = await this.popoverCtrl.create({
+			component: SlotDetailPopoverComponent,
+			componentProps: { slot: slotSnapshot },
+			event: event,
+			translucent: true,
+			backdropDismiss: true,
+		})
+		await popover.present()
 	}
 
 	getIconBig(slot: VDBSlotVizSlot): string {
@@ -133,79 +146,15 @@ export class SlotGridComponent implements OnInit {
 	}
 
 	// Returns the color for attestation-related state
-	private getAttestationColor(slot: VDBSlotVizSlot): string {
-		if (slot.attestations) {
-			if (
-				slot.attestations.failed &&
-				slot.attestations.success &&
-				slot.attestations.failed.total_count > 0 &&
-				slot.attestations.success.total_count > 0
-			) {
-				return 'warning'
-			}
-			if (slot.attestations.failed && slot.attestations.failed.total_count > 0) {
-				return 'danger'
-			}
-			if (slot.attestations.success && slot.attestations.success.total_count > 0) {
-				return 'success'
-			}
-		}
-		return ''
-	}
-
-	// Returns the color for proposal-related state
-	private getProposalColor(slot: VDBSlotVizSlot): string {
-		if (slot.proposal) {
-			if (slot.status === 'missed' || slot.status === 'orphaned') {
-				return 'danger'
-			}
-			if (slot.status === 'proposed') {
-				return 'success'
-			}
-		}
-		return ''
-	}
-
-	// Returns the color for sync-related state
-	private getSyncColor(slot: VDBSlotVizSlot): string {
-		if (slot.sync) {
-			if (slot.sync.failed && slot.attestations?.success && slot.sync.failed.total_count > 0 && slot.attestations.success.total_count > 0) {
-				return 'warning'
-			}
-			if (slot.sync.failed && slot.sync.failed.total_count > 0) {
-				return 'danger'
-			}
-			if (slot.attestations?.success && slot.sync.success.total_count > 0) {
-				return 'success'
-			}
-		}
-		return ''
-	}
-
-	// Returns the color for slashing-related state
-	private getSlashingColor(slot: VDBSlotVizSlot): string {
-		if (slot.slashing) {
-			if (slot.slashing.success && slot.slashing.success.total_count > 0) {
-				return 'success'
-			}
-			if (slot.slashing.failed && slot.slashing.failed.total_count > 0) {
-				return 'danger'
-			}
-		}
-		return ''
-	}
 
 	// Main method that combines the results from each duty.
 	// It returns 'danger' if every applicable duty returns danger,
-	// 'green' if every applicable duty returns success,
+	// 'success' if every applicable duty returns success,
 	// and 'warning' in all other cases.
 	getIconColor(slot: VDBSlotVizSlot): string {
-		const colors: string[] = [
-			this.getAttestationColor(slot),
-			this.getProposalColor(slot),
-			this.getSyncColor(slot),
-			this.getSlashingColor(slot),
-		].filter((color) => color !== '')
+		const colors: string[] = [getAttestationColor(slot), getProposalColor(slot), getSyncColor(slot), getSlashingColor(slot)].filter(
+			(color) => color !== ''
+		)
 
 		if (colors.length === 0) {
 			return ''
@@ -249,6 +198,68 @@ export class SlotGridComponent implements OnInit {
 	}
 
 	openEpochInWeb() {
-		Browser.open({ url: this.api.getBaseUrl() + `epoch/${this.epoch}` })
+		Browser.open({ url: this.api.getBaseUrl() + `/epoch/${this.epoch}` })
 	}
+}
+
+export function getAttestationColor(slot: VDBSlotVizSlot): string {
+	if (slot.attestations) {
+		if (
+			slot.attestations.failed &&
+			slot.attestations.success &&
+			slot.attestations.failed.total_count > 0 &&
+			slot.attestations.success.total_count > 0
+		) {
+			return 'warning'
+		}
+		if (slot.attestations.failed && slot.attestations.failed.total_count > 0) {
+			return 'danger'
+		}
+		if (slot.attestations.success && slot.attestations.success.total_count > 0) {
+			return 'success'
+		}
+	}
+	return ''
+}
+
+// Returns the color for proposal-related state
+export function getProposalColor(slot: VDBSlotVizSlot): string {
+	if (slot.proposal) {
+		if (slot.status === 'missed' || slot.status === 'orphaned') {
+			return 'danger'
+		}
+		if (slot.status === 'proposed') {
+			return 'success'
+		}
+	}
+	return ''
+}
+
+// Returns the color for sync-related state
+export function getSyncColor(slot: VDBSlotVizSlot): string {
+	if (slot.sync) {
+		if (slot.sync.failed && slot.sync.failed.total_count > 0 && slot.sync?.success && slot.sync.success.total_count > 0) {
+			return 'warning'
+		}
+		if (slot.sync.failed && slot.sync.failed.total_count > 0) {
+			return 'danger'
+		}
+		if (slot.sync?.success && slot.sync.success.total_count > 0) {
+			return 'success'
+		}
+	}
+	return ''
+}
+
+// Returns the color for slashing-related state
+export function getSlashingColor(slot: VDBSlotVizSlot): string {
+	if (slot.slashing) {
+		if (slot.slashing.success && slot.slashing.success.total_count > 0) {
+			return 'success'
+		}
+		if (slot.slashing.failed && slot.slashing.failed.total_count > 0) {
+			return 'danger'
+		}
+	}
+	return ''
 }

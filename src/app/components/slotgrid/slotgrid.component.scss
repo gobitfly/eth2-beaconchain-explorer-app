@@ -41,6 +41,29 @@
 			border-color 0.3s ease,
 			background-color 0.3s ease;
 		border-radius: 4px;
+
+		.overlay {
+			position: absolute;
+			bottom: 100%; // positions it directly above the square
+			left: 50%;
+			transform: translateX(-50%);
+			min-width: 150px; // ensures the overlay is wider than the square
+			padding: 5px;
+			background-color: var(--ion-card-background);
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			z-index: 10;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+			font-size: 0.8em;
+
+			// Optional: style each detail line
+			div {
+				margin-bottom: 2px;
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
+		}
 	}
 }
 
