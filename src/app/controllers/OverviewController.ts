@@ -123,10 +123,15 @@ export type Description = {
 	extendedDescriptionPre: string
 }
 
+// @deprecated DO NOT USE ANY MORE AFTER PECTRA
 const VALIDATOR_32ETH = new BigNumber(32000000000)
 
 export default class OverviewController {
-	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280, private unit: UnitconvService = null) {}
+	constructor(
+		private refreshCallback: () => void = null,
+		private userMaxValidators = 280,
+		private unit: UnitconvService = null
+	) {}
 
 	public processDashboard(
 		validators: Validator[],
@@ -155,12 +160,14 @@ export default class OverviewController {
 		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
 		const validatorDepositActive = sumBigInt(validators, (cur) => {
 			if (cur.data.activationepoch <= currentEpoch.epoch) {
-				if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+				if (!cur.rocketpool || !cur.rocketpool.node_address)
+					return new BigNumber(cur.data.effectivebalance.toString()).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 
 				let nodeDeposit
 				if (cur.rocketpool.node_deposit_balance) {
 					nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
 				} else {
+					// should never happen
 					nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
 				}
 				return nodeDeposit.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
@@ -252,7 +259,7 @@ export default class OverviewController {
 
 		let foreignWCAre0x01 = false
 		if (foreignValidator) {
-			foreignWCAre0x01 = validators[0].data.withdrawalcredentials.startsWith('0x01')
+			foreignWCAre0x01 = !validators[0].data.withdrawalcredentials.startsWith('0x00')
 		}
 
 		return {
@@ -442,15 +449,21 @@ export default class OverviewController {
 			}
 
 			let nodeDeposit
+			let totalDeposit
 			if (cur.rocketpool.node_deposit_balance) {
 				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+				totalDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString())
+					.plus(new BigNumber(cur.rocketpool.user_deposit_balance.toString()))
+					.dividedBy(new BigNumber(1e9))
 			} else {
+				// should never happen
 				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
+				totalDeposit = VALIDATOR_32ETH
 			}
 
-			const rewards = new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
+			const rewards = new BigNumber(cur.data.performancetotal.toString()) //new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
 
-			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
+			const nodeShare = nodeDeposit.dividedBy(totalDeposit).toNumber()
 			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
 			const rewardNodeFromPool = new BigNumber(rewards)
 				.multipliedBy(new BigNumber(1 - nodeShare))
@@ -484,15 +497,21 @@ export default class OverviewController {
 			}
 
 			let nodeDeposit
+			let totalDeposit
 			if (cur.rocketpool.node_deposit_balance) {
 				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+				totalDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString())
+					.plus(new BigNumber(cur.rocketpool.user_deposit_balance.toString()))
+					.dividedBy(new BigNumber(1e9))
 			} else {
+				// should never happen
 				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
+				totalDeposit = VALIDATOR_32ETH
 			}
 
 			const rewards = new BigNumber(fieldResolved.toString())
 
-			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
+			const nodeShare = nodeDeposit.dividedBy(totalDeposit).toNumber()
 
 			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
 			const rewardNodeFromPool = new BigNumber(rewards)
