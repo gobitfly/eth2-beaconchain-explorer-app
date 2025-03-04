@@ -92,6 +92,8 @@ PODS:
   - nanopb/encode (2.30909.0)
   - OAuthSwift (2.2.0)
   - PromisesObjC (2.1.1)
+  - StorageMirror (0.0.1):
+    - Capacitor
 
 DEPENDENCIES:
   - "ByteowlsCapacitorOauth2 (from `../../node_modules/@byteowls/capacitor-oauth2`)"
@@ -113,6 +115,7 @@ DEPENDENCIES:
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - Firebase/Messaging
   - FirebaseCore
+  - StorageMirror (from `../../storage-mirror`)
 
 SPEC REPOS:
   trunk:
@@ -163,6 +166,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/toast"
   CordovaPlugins:
     :path: "../capacitor-cordova-ios-plugins"
+  StorageMirror:
+    :path: "../../storage-mirror"
 
 SPEC CHECKSUMS:
   ByteowlsCapacitorOauth2: dde6b8fdf2995bc7872434c407ee2492ce562638
@@ -193,7 +198,8 @@ SPEC CHECKSUMS:
   nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
   OAuthSwift: 75efbb5bd9a4b2b71a37bd7e986bf3f55ddd54c6
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
+  StorageMirror: 29856c6eceb244679e713a6517dbfaa0ba12bffe
 
-PODFILE CHECKSUM: 0abccb83d0d503da1628c7d1ca5579739161bb33
+PODFILE CHECKSUM: 05961bc4d72b410969c8aea2b8cf69b9a4d06f1d
 
 COCOAPODS: 1.15.2

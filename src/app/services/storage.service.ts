@@ -28,7 +28,7 @@ import { Platform } from '@ionic/angular'
 
 import { Preferences } from '@capacitor/preferences'
 import { LogviewPage } from '../pages/logview/logview.page'
-const { StorageMirror } = Plugins
+import { StorageMirror } from 'storage-mirror'
 
 const AUTH_USER = 'auth_user'
 const PREFERENCES = 'network_preferences'
