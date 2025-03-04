@@ -127,11 +127,7 @@ export type Description = {
 const VALIDATOR_32ETH = new BigNumber(32000000000)
 
 export default class OverviewController {
-	constructor(
-		private refreshCallback: () => void = null,
-		private userMaxValidators = 280,
-		private unit: UnitconvService = null
-	) {}
+	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280, private unit: UnitconvService = null) {}
 
 	public processDashboard(
 		validators: Validator[],
