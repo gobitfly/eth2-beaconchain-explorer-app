@@ -19,7 +19,6 @@
  */
 
 import { Injectable, isDevMode } from '@angular/core'
-import { Plugins } from '@capacitor/core'
 import * as StorageTypes from '../models/StorageTypes'
 import { MAP, findConfigForKey } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
