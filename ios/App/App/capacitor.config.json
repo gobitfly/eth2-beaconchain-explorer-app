@@ -13,11 +13,11 @@
 			"enabled": true
 		}
 	},
-	"server": {
-		"androidScheme": "http"
-	},
 	"android": {
 		"flavor": "prod"
+	},
+	"server": {
+		"androidScheme": "http"
 	},
 	"packageClassList": [
 		"OAuth2ClientPlugin",
