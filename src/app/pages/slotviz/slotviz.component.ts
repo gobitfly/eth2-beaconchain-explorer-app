@@ -51,7 +51,7 @@ export class SlotvizComponent {
 				this.filterMap.update(() => filters as Map<FilterType, boolean>)
 			}
 		})
-		console.log("start slot viz with dashboardID", this.dashboardID, "and groupID", this.groupID)
+		console.log('start slot viz with dashboardID', this.dashboardID, 'and groupID', this.groupID)
 		this.slotViz.start(this.dashboardID, this.groupID)
 	}
 
@@ -90,5 +90,4 @@ export class SlotvizComponent {
 	isFiltered(filter: FilterType) {
 		return this.filterMap().get(filter)
 	}
-
 }

@@ -14,7 +14,7 @@
 			class="square"
 			[ngClass]="slotMap().get(slot.slot).squareCss"
 			[@bgColorAnim]="slotMap().get(slot.slot).color"
-			[@blink]="(slot.slot <= slotViz.currentSlot() && slot.status === 'scheduled') ? blinkState : 'off'"
+			[@blink]="slot.slot <= slotViz.currentSlot() && slot.status === 'scheduled' ? blinkState : 'off'"
 			*ngFor="let slot of row; trackBy: trackBySlot"
 			[style.width.px]="squareSize"
 			[style.height.px]="squareSize"

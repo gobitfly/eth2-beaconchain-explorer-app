@@ -29,10 +29,10 @@ interface SlotModel {
 	styleUrls: ['./slotgrid.component.scss'],
 	animations: [
 		trigger('blink', [
-		  state('off', style({ opacity: 0.8 })),
-		  state('on', style({ opacity: 0.4 })),
-		  // Transition for one half of the blink cycle; adjust duration as needed
-		  transition('off <=> on', animate('600ms ease-in-out')),
+			state('off', style({ opacity: 0.8 })),
+			state('on', style({ opacity: 0.4 })),
+			// Transition for one half of the blink cycle; adjust duration as needed
+			transition('off <=> on', animate('600ms ease-in-out')),
 		]),
 		trigger('bgColorAnim', [
 			state('default', style({ backgroundColor: 'var(--ion-card-background)', color: '#000' })),
@@ -40,9 +40,9 @@ interface SlotModel {
 			state('danger', style({ backgroundColor: 'var(--ion-color-danger)', color: '#000' })),
 			state('success', style({ backgroundColor: 'var(--ion-color-success)', color: '#000' })),
 			// Animate any state change with a uniform timing
-			transition('* <=> *', animate('400ms ease-in-out'))
-		  ])
-	  ]
+			transition('* <=> *', animate('400ms ease-in-out')),
+		]),
+	],
 })
 export class SlotGridComponent implements OnInit {
 	@Input() slots: Signal<Array<VDBSlotVizSlot>> = signal([])
@@ -58,10 +58,10 @@ export class SlotGridComponent implements OnInit {
 	squareSize: number = 50 // Dynamically calculated
 	edgePadding: number = 0
 
-	blinkState: 'on' | 'off' = 'off';
+	blinkState: 'on' | 'off' = 'off'
 
 	lastAnimated: number = 0
-	static nextLastAnimated : number = 0
+	static nextLastAnimated: number = 0
 
 	slotMap: Signal<Map<number, SlotModel>> = computed(() => {
 		const filters = this.filterMap()
@@ -75,7 +75,7 @@ export class SlotGridComponent implements OnInit {
 				squareCss: this.getSquareCss(slot, filters),
 				color: this.getIconColor(slot, filters),
 			}
-			
+
 			if (slot.slot > this.lastAnimated && model.color !== '') {
 				SlotGridComponent.nextLastAnimated = slot.slot
 			}
@@ -84,24 +84,22 @@ export class SlotGridComponent implements OnInit {
 		return newMap
 	})
 
-
-
 	private readonly slotsPerRow: number = 8 // Fixed number of slots per row
 
 	constructor(
 		public slotViz: SlotVizProvider,
 		private api: ApiService,
-		private popoverCtrl: PopoverController,
+		private popoverCtrl: PopoverController
 	) {}
 
 	ngOnInit() {
 		this.calculateGrid()
 		this.calculateSquareSize()
 		interval(600)
-      .pipe(startWith(0))
-      .subscribe(() => {
-        this.blinkState = this.blinkState === 'off' ? 'on' : 'off';
-      });
+			.pipe(startWith(0))
+			.subscribe(() => {
+				this.blinkState = this.blinkState === 'off' ? 'on' : 'off'
+			})
 	}
 
 	private calculateDescriptiveEpoch() {
@@ -211,10 +209,10 @@ export class SlotGridComponent implements OnInit {
 		}
 
 		// console.log("slot.slot: "+slot.slot+" | last animated slot", this.lastAnimated)
-		if(slot.slot <= this.lastAnimated){
+		if (slot.slot <= this.lastAnimated) {
 			css.push(this.getIconColor(slot, filters))
 		}
-		
+
 		return css
 	}
 
