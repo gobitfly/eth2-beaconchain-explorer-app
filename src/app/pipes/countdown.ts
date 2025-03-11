@@ -13,62 +13,32 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
-import { Pipe, PipeTransform, NgZone, ChangeDetectorRef, OnDestroy } from '@angular/core'
-import { defaultFormattter } from './shortertimeago.pipe' // Import your shortertimeago pipe
+// along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.import { Pipe, PipeTransform } from '@angular/core';
+import { timer, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { defaultFormattter } from './shortertimeago.pipe';
+import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-	name: 'countdown',
-	pure: false,
+    name: 'countdown',
+	pure: true,
 	standalone: false,
 })
-export class CountdownPipe implements PipeTransform, OnDestroy {
-	private timer: ReturnType<typeof setInterval> | null = null
-
-	constructor(
-		private changeDetector: ChangeDetectorRef,
-		private ngZone: NgZone
-	) {}
-
-	transform(timestamp: number): string {
-		this.clearTimer()
-
-		const update = () => {
-			// Use the shortertimeago pipe for formatting
-			const result = defaultFormattter(Math.ceil(timestamp / 1000) * 1000 + 300) // 300ms buffer for better transition feel
-
-			if (result.value == 0) {
-				this.clearTimer()
-				return 'in 1s'
-			}
-
-			const space = result.unit == 's' ? '' : ' '
-			const prefix = result.suffix != 'ago' ? 'in ' : ''
-			const postfix = result.suffix == 'ago' ? 'ago' : ''
-			const formattedTime = prefix + result.value + space + result.unit + ' ' + postfix
-			// Trigger change detection
-			this.changeDetector.markForCheck()
-
-			return formattedTime
-		}
-
-		this.ngZone.runOutsideAngular(() => {
-			this.timer = setInterval(() => {
-				this.ngZone.run(() => update())
-			}, 1000)
-		})
-
-		return update()
-	}
-
-	private clearTimer() {
-		if (this.timer) {
-			clearInterval(this.timer)
-			this.timer = null
-		}
-	}
-
-	ngOnDestroy() {
-		this.clearTimer()
-	}
+export class CountdownPipe implements PipeTransform {
+  transform(timestamp: number): Observable<string> {
+    // Create an observable that fires every 1000ms (1 second)
+    return timer(0, 1000).pipe(
+      map(() => {
+        // Calculate the countdown string on each tick
+        const result = defaultFormattter(Math.ceil(timestamp / 1000) * 1000); 
+        if (result.value === 0) {
+          return 'in 1s';
+        }
+        const space = result.unit === 's' ? '' : ' ';
+        const prefix = result.suffix !== 'ago' ? 'in ' : '';
+        const postfix = result.suffix === 'ago' ? 'ago' : '';
+        return `${prefix}${result.value}${space}${result.unit} ${postfix}`;
+      })
+    );
+  }
 }

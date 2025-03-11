@@ -3,7 +3,7 @@
 		<ion-item lines="none" (click)="openSlotViz()">
 			<ion-icon style="margin-right: 20px" class="left-icon" slot="start" name="pulse-outline"></ion-icon>
 
-			<ion-label> Next Duty {{ slotViz.nextDutyTs() | countdown }} </ion-label>
+			<ion-label> Next Duty {{ slotViz.nextDutyTs() | countdown | async }} </ion-label>
 
 			<div style="position: relative; display: inline-block">
 				<!-- Previous icon -->

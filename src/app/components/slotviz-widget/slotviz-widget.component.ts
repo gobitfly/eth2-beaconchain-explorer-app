@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectorRef, Component, computed, effect, Input, signal, WritableSignal } from '@angular/core'
+import { Component, computed, effect, Input, signal, WritableSignal } from '@angular/core'
 import { SlotVizProvider } from '@controllers/SlotVizController'
 import { IonicModule, ModalController } from '@ionic/angular'
 import { PipesModule } from '@pipes/pipes.module'
@@ -48,7 +48,6 @@ export class SlotvizWidgetComponent {
 
 	constructor(
 		public slotViz: SlotVizProvider,
-		private cdr: ChangeDetectorRef,
 		private modalCtrl: ModalController
 	) {
 		effect(() => {
@@ -133,14 +132,13 @@ export class SlotvizWidgetComponent {
 		this.nextIconState = 'initial'
 	}
 
-	private triggerChangeDetection() {
-		this.cdr.detectChanges()
-	}
-
 	async openSlotViz() {
 		const modal = await this.modalCtrl.create({
 			component: SlotvizComponent,
-			componentProps: {},
+			componentProps: {
+				dashboardID: this.dashboardID,
+				groupID: this.groupID,
+			},
 		})
 		modal.present()
 

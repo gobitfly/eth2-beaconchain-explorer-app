@@ -362,7 +362,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 		const add = (id: dashboardID) => {
 			this.alert.confirmDialog(
 				'Migrate from Legacy Dashboard',
-				`Do you want to add ${index.length} validator${index.length > 1 ? 's' : ''} from your legacy dashboard to your new dashboard "${this.defaultDashboardData()?.name}"?`,
+				`Do you want to add ${index.length} validator${index.length > 1 ? 's' : ''} from your legacy dashboard to your new dashboard "${this.dashboards()?.validator_dashboards?.find((d) => d.id == id)?.name}"?`,
 				'OK',
 				async () => {
 					let loading = await this.alert.presentLoading('Loading...')
@@ -400,7 +400,7 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 					this.alert.showSelect('Add to Group', allGroups, async (groupID: number) => {
 						loading = await this.alert.presentLoading('Migrating...')
 						loading.present()
-						const ok = await this.dashboardUtils.addValidators(index, groupID, this.defaultDashboard())
+						const ok = await this.dashboardUtils.addValidators(index, groupID, id)
 						if (!ok) {
 							Toast.show({
 								text: 'Can not add validators right now, please try again later',
@@ -449,7 +449,9 @@ export class DashboardAndGroupSelectComponent implements OnInit {
 					return capitalize(network)
 				}
 
-				const targetNetwork = findChainNetworkById(this.defaultDashboardData().network).legacyKey
+				const targetNetwork = findChainNetworkById(
+					this.dashboards()?.validator_dashboards?.find((d) => d.id == selectedDashboardID).network
+				).legacyKey
 				if (legacyAddData.network != targetNetwork) {
 					const originName = formatNetwork(legacyAddData.network)
 					const targetName = formatNetwork(targetNetwork)

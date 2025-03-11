@@ -6,7 +6,7 @@
 			</ion-button>
 		</ion-buttons>
 
-		<ion-title style="padding: 0px 10px">Duty {{ slotViz.nextDutyTs() | countdown }}</ion-title>
+		<ion-title style="padding: 0px 10px">Duty {{ slotViz.nextDutyTs() | countdown | async}}</ion-title>
 
 		<ion-buttons slot="end" class="modal-buttons">
 			<ion-button (click)="openLegend()">
@@ -59,7 +59,7 @@
 				class="grid"
 				*ngFor="let epoch of slotViz.slotViz()"
 				[epoch]="epoch.epoch"
-				[slots]="epoch.slots"
+				[slots]="getSlots(epoch)"
 				[rowsToShow]="4"
 				[margin]="5"
 				[filterMap]="filterMap"></app-slotgrid>

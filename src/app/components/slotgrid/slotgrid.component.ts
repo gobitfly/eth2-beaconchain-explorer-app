@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { OnInit, HostListener, WritableSignal, computed, Signal } from '@angular/core'
+import { OnInit, HostListener, WritableSignal, computed, Signal, signal } from '@angular/core'
 import { Browser } from '@capacitor/browser'
 import { FilterType, SlotVizProvider } from '@controllers/SlotVizController'
 import { IonicModule } from '@ionic/angular'
@@ -8,20 +8,44 @@ import { ApiService } from '@services/api.service'
 import { Component, Input } from '@angular/core'
 import { PopoverController } from '@ionic/angular'
 import { SlotDetailPopoverComponent } from './details/details.component'
+import { animate, state, style, transition, trigger } from '@angular/animations'
+import { interval, startWith } from 'rxjs'
 
 /*
 To to:
--) sync up blinking of scheduled duties (still not working even with global animation)
 -) border color transition, background color transition and icon color transition not working
 */
+
+interface SlotModel {
+	smallIcon: string
+	bigIcon: string
+	squareCss: string[]
+	color: string
+}
 @Component({
 	selector: 'app-slotgrid',
 	imports: [CommonModule, IonicModule],
 	templateUrl: './slotgrid.component.html',
 	styleUrls: ['./slotgrid.component.scss'],
+	animations: [
+		trigger('blink', [
+		  state('off', style({ opacity: 0.8 })),
+		  state('on', style({ opacity: 0.4 })),
+		  // Transition for one half of the blink cycle; adjust duration as needed
+		  transition('off <=> on', animate('600ms ease-in-out')),
+		]),
+		trigger('bgColorAnim', [
+			state('default', style({ backgroundColor: 'var(--ion-card-background)', color: '#000' })),
+			state('warning', style({ backgroundColor: 'var(--ion-color-warning)', color: '#000' })),
+			state('danger', style({ backgroundColor: 'var(--ion-color-danger)', color: '#000' })),
+			state('success', style({ backgroundColor: 'var(--ion-color-success)', color: '#000' })),
+			// Animate any state change with a uniform timing
+			transition('* <=> *', animate('400ms ease-in-out'))
+		  ])
+	  ]
 })
 export class SlotGridComponent implements OnInit {
-	@Input() slots: Array<VDBSlotVizSlot> = []
+	@Input() slots: Signal<Array<VDBSlotVizSlot>> = signal([])
 	@Input() epoch = 0
 	@Input() rowsToShow: number = 4
 	@Input() margin: number = 5
@@ -34,17 +58,50 @@ export class SlotGridComponent implements OnInit {
 	squareSize: number = 50 // Dynamically calculated
 	edgePadding: number = 0
 
+	blinkState: 'on' | 'off' = 'off';
+
+	lastAnimated: number = 0
+	static nextLastAnimated : number = 0
+
+	slotMap: Signal<Map<number, SlotModel>> = computed(() => {
+		const filters = this.filterMap()
+		this.lastAnimated = SlotGridComponent.nextLastAnimated
+		const newMap = new Map<number, SlotModel>()
+		this.slots().forEach((slot) => {
+			// Pass the captured filters to your helper functions
+			const model: SlotModel = {
+				smallIcon: this.getIconSmall(slot, filters),
+				bigIcon: this.getIconBig(slot, filters),
+				squareCss: this.getSquareCss(slot, filters),
+				color: this.getIconColor(slot, filters),
+			}
+			
+			if (slot.slot > this.lastAnimated && model.color !== '') {
+				SlotGridComponent.nextLastAnimated = slot.slot
+			}
+			newMap.set(slot.slot, model)
+		})
+		return newMap
+	})
+
+
+
 	private readonly slotsPerRow: number = 8 // Fixed number of slots per row
 
 	constructor(
 		public slotViz: SlotVizProvider,
 		private api: ApiService,
-		private popoverCtrl: PopoverController
+		private popoverCtrl: PopoverController,
 	) {}
 
 	ngOnInit() {
 		this.calculateGrid()
 		this.calculateSquareSize()
+		interval(600)
+      .pipe(startWith(0))
+      .subscribe(() => {
+        this.blinkState = this.blinkState === 'off' ? 'on' : 'off';
+      });
 	}
 
 	private calculateDescriptiveEpoch() {
@@ -73,7 +130,7 @@ export class SlotGridComponent implements OnInit {
 		this.rows = []
 		for (let i = 0; i < this.rowsToShow; i++) {
 			const start = i * chunkSize
-			const row = this.slots.slice(start, start + chunkSize)
+			const row = this.slots().slice(start, start + chunkSize)
 			this.rows.unshift(row)
 		}
 	}
@@ -87,6 +144,7 @@ export class SlotGridComponent implements OnInit {
 		const totalBorder = this.slotsPerRow * 2 // 2px per square
 		this.squareSize = Math.floor((availableWidth - totalMargin - totalBorder) / this.slotsPerRow)
 	}
+
 	// Called when a square is clicked; stops propagation so the document listener doesn't immediately clear it.
 	async onSquareClick(slot: VDBSlotVizSlot, event: MouseEvent) {
 		event.stopPropagation()
@@ -102,47 +160,62 @@ export class SlotGridComponent implements OnInit {
 		await popover.present()
 	}
 
-	getIconBig(slot: VDBSlotVizSlot): string {
+	getIconBig(slot: VDBSlotVizSlot, filters: Map<FilterType, boolean>): string {
 		let icon = ''
-		if (slot.slashing && !this.filterMap().get('slash')) {
+		if (slot.slashing && !filters.get('slash')) {
 			icon = 'person-remove-outline'
-		} else if (slot.proposal && !this.filterMap().get('block')) {
+		} else if (slot.proposal && !filters.get('block')) {
 			icon = 'cube-outline'
-		} else if (slot.attestations && !this.filterMap().get('attestation')) {
+		} else if (slot.attestations && !filters.get('attestation')) {
 			icon = 'document-text-outline'
-		} else if (slot.sync && !this.filterMap().get('sync')) {
+		} else if (slot.sync && !filters.get('sync')) {
 			icon = 'sync-outline'
 		}
-		return icon
+		return icon || 'nothing'
 	}
 
-	getCandidateIcons(slot: VDBSlotVizSlot): string[] {
-		const big = this.getIconBig(slot)
+	getCandidateIcons(slot: VDBSlotVizSlot, filters: Map<FilterType, boolean>): string[] {
+		const big = this.getIconBig(slot, filters)
 		const candidates: string[] = []
-
-		if (slot.slashing && big !== 'person-remove-outline' && !this.filterMap().get('slash')) {
+		if (slot.slashing && big !== 'person-remove-outline' && !filters.get('slash')) {
 			candidates.push('person-remove-outline')
 		}
-		if (slot.proposal && big !== 'cube-outline' && !this.filterMap().get('block')) {
+		if (slot.proposal && big !== 'cube-outline' && !filters.get('block')) {
 			candidates.push('cube-outline')
 		}
-		if (slot.sync && big !== 'sync-outline' && !this.filterMap().get('sync')) {
+		if (slot.sync && big !== 'sync-outline' && !filters.get('sync')) {
 			candidates.push('sync-outline')
 		}
-		if (slot.attestations && big !== 'document-text-outline' && !this.filterMap().get('attestation')) {
+		if (slot.attestations && big !== 'document-text-outline' && !filters.get('attestation')) {
 			candidates.push('document-text-outline')
 		}
-
 		return candidates
 	}
 
-	getIconSmall(slot: VDBSlotVizSlot): string {
-		const candidates = this.getCandidateIcons(slot)
-		// Maintain current behavior: if more than one candidate, show "add-outline"
+	getIconSmall(slot: VDBSlotVizSlot, filters: Map<FilterType, boolean>): string {
+		const candidates = this.getCandidateIcons(slot, filters)
 		if (candidates.length > 1) {
 			return 'add-outline'
 		}
-		return candidates[0] || ''
+		return candidates[0] || 'nothing'
+	}
+
+	getSquareCss(slot: VDBSlotVizSlot, filters: Map<FilterType, boolean>): string[] {
+		const css = ['square']
+		if (slot.status === 'proposed') {
+			css.push('network-proposed')
+		} else if (slot.status === 'missed') {
+			css.push('network-missed')
+		} else {
+			css.push('network-scheduled')
+		}
+
+		// console.log("slot.slot: "+slot.slot+" | last animated slot", this.lastAnimated)
+		if(slot.slot <= this.lastAnimated){
+			css.push(this.getIconColor(slot, filters))
+		}
+		
+		return css
 	}
 
 	// Returns the color for attestation-related state
@@ -151,15 +224,13 @@ export class SlotGridComponent implements OnInit {
 	// It returns 'danger' if every applicable duty returns danger,
 	// 'success' if every applicable duty returns success,
 	// and 'warning' in all other cases.
-	getIconColor(slot: VDBSlotVizSlot): string {
+	getIconColor(slot: VDBSlotVizSlot, _: Map<FilterType, boolean>): string {
 		const colors: string[] = [getAttestationColor(slot), getProposalColor(slot), getSyncColor(slot), getSlashingColor(slot)].filter(
 			(color) => color !== ''
 		)
-
 		if (colors.length === 0) {
 			return ''
 		}
-
 		if (colors.every((color) => color === 'danger')) {
 			return 'danger'
 		}
@@ -167,19 +238,6 @@ export class SlotGridComponent implements OnInit {
 			return 'success'
 		}
 		return 'warning'
-	}
-
-	getSquareCss(slot: VDBSlotVizSlot): string[] {
-		const css = ['square']
-		if (slot.status == 'proposed') {
-			css.push('network-proposed')
-		} else if (slot.status == 'missed') {
-			css.push('network-missed')
-		} else {
-			css.push('network-scheduled')
-		}
-		css.push(this.getIconColor(slot))
-		return css
 	}
 
 	statusIcon(ok: string, fail: string, scheduled: string, orphaned: string, slot: VDBSlotVizSlot): string {

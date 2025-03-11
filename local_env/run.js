@@ -105,7 +105,7 @@ const { exec } = require('child_process');
         const cookieArray = Array.isArray(cookies) ? cookies : [cookies];
 
         cookieArray.forEach(cookie => {
-          console.log('Found cookie:', cookie);
+          // console.log('Found cookie:', cookie);
 
           // Extract the cookie value (before the ';' separator)
           const cookieParts = cookie.split(';')[0].split('=');
@@ -125,7 +125,7 @@ const { exec } = require('child_process');
             sameSite: cookie.includes('SameSite=None') ? 'None' : 'Strict', // Use None if specified, otherwise Strict
           });
 
-          console.log(`Set cookie: ${cookieName} for domain: ${domain}`);
+          // console.log(`Set cookie: ${cookieName} for domain: ${domain}`);
         });
       }
     });

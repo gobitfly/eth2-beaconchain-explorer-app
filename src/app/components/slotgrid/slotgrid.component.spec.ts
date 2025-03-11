@@ -283,22 +283,22 @@ describe('SlotGridComponent', () => {
 			})
 
 			it(`should return expected big icon: "${tc.expectedBig}"`, () => {
-				const result = component.getIconBig(tc.slot)
+				const result = component.getIconBig(tc.slot, component.filterMap())
 				expect(result).toEqual(tc.expectedBig)
 			})
 
 			it(`should return expected small icon: "${tc.expectedSmall}"`, () => {
-				const result = component.getIconSmall(tc.slot)
+				const result = component.getIconSmall(tc.slot, component.filterMap())
 				expect(result).toEqual(tc.expectedSmall)
 			})
 
 			it(`should return expected icon color: "${tc.expectedColor}"`, () => {
-				const result = component.getIconColor(tc.slot)
+				const result = component.getIconColor(tc.slot, component.filterMap())
 				expect(result).toEqual(tc.expectedColor)
 			})
 
 			it(`should return expected square CSS: ${JSON.stringify(tc.expectedSquareCss)}`, () => {
-				const result = component.getSquareCss(tc.slot)
+				const result = component.getSquareCss(tc.slot, component.filterMap())
 				expect(result).toEqual(tc.expectedSquareCss)
 			})
 		})

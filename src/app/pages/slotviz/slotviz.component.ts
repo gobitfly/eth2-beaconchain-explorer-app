@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, signal, WritableSignal } from '@angular/core'
+import { Component, computed, Input, signal, WritableSignal } from '@angular/core'
 import { FullPageLoadingComponent } from '@components/full-page-loading/full-page-loading.component'
 import { FullPageOfflineComponent } from '@components/full-page-offline/full-page-offline.component'
 import { FilterType, SlotVizProvider } from '@controllers/SlotVizController'
@@ -10,6 +10,8 @@ import { SlotGridComponent } from '../../components/slotgrid/slotgrid.component'
 import { SlotvizLegendComponent } from '@pages/slotviz-legend/slotviz-legend.component'
 import { PipesModule } from '@pipes/pipes.module'
 import { StorageService } from '@services/storage.service'
+import { SlotVizEpoch } from '@requests/types/slot_viz'
+import { dashboardID } from '@requests/v2-dashboard'
 
 @Component({
 	selector: 'app-slotviz',
@@ -24,6 +26,9 @@ export class SlotvizComponent {
 
 	private backbuttonSubscription: Subscription
 
+	@Input() dashboardID: dashboardID
+	@Input() groupID: number
+
 	filterMap: WritableSignal<Map<FilterType, boolean>> = signal(new Map<FilterType, boolean>())
 
 	constructor(
@@ -36,12 +41,18 @@ export class SlotvizComponent {
 		this.initialLoading = false
 	}
 
+	getSlots(epoch: SlotVizEpoch) {
+		return computed(() => epoch.slots ?? [])
+	}
+
 	ngOnInit() {
 		this.storage.getObject('slotviz_filters').then((filters) => {
 			if (filters) {
 				this.filterMap.update(() => filters as Map<FilterType, boolean>)
 			}
 		})
+		console.log("start slot viz with dashboardID", this.dashboardID, "and groupID", this.groupID)
+		this.slotViz.start(this.dashboardID, this.groupID)
 	}
 
 	ionViewWillEnter() {
@@ -69,7 +80,9 @@ export class SlotvizComponent {
 
 	filter(filter: FilterType) {
 		this.filterMap.update((map) => {
-			return map.set(filter, !map.get(filter))
+			const newMap = new Map(map) // Create a shallow copy of the map
+			newMap.set(filter, !map.get(filter))
+			return newMap // Return the new instance
 		})
 		this.storage.setObject('slotviz_filters', this.filterMap())
 	}
@@ -77,4 +90,5 @@ export class SlotvizComponent {
 	isFiltered(filter: FilterType) {
 		return this.filterMap().get(filter)
 	}
+
 }

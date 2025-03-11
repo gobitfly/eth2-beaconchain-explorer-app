@@ -8,7 +8,7 @@
 		<small *ngIf="slot.status == 'proposed'">Proposed by network</small>
 		<small *ngIf="slot.status == 'missed'">Missed by network</small>
 		<small *ngIf="slot.status == 'orphaned'">Orphaned by network</small>
-		<small style="float: right">{{ slotTs | countdown }}</small>
+		<small style="float: right">{{ slotTs | countdown | async }}</small>
 	</div>
 	<div class="popover-content">
 		<div *ngIf="slot.attestations">
@@ -37,6 +37,9 @@
 			><span>Validators </span>
 			<span *ngIf="getSlashingColor(slot) == 'danger'" [ngClass]="getSlashingColor(slot)"> {{ slot.slashing?.failed?.total_count }}</span
 			><span>> Validators Slashed </span>
+		</div>
+		<div *ngIf="!slot.slashing && !slot.sync && !slot.proposal && !slot.attestations">
+			<span>You have no duties this slot</span>
 		</div>
 	</div>
 </div>

@@ -319,7 +319,7 @@
 			<ion-list-header>
 				<ion-label>Rocket Pool</ion-label>
 			</ion-list-header>
-			<ion-segment [(ngModel)]="selectedRPNode" mode="md" [scrollable]="true">
+			<ion-segment [(ngModel)]="selectedRPNode" mode="md" [scrollable]="true" *ngIf="data.rocketpool() && data.rocketpool().length > 1">
 				<ion-segment-button value="{{ item.node.hash }}" *ngFor="let item of data.rocketpool()" [disabled]="scrolling">
 					<ion-label>{{ formatAddress(item.node) }}</ion-label>
 				</ion-segment-button>
