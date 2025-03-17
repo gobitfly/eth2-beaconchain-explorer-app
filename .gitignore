@@ -44,3 +44,4 @@ android/.idea/jarRepositories.xml
 android/.idea/misc.xml
 /src/environments/environment.prod.ts
 ios/GoogleService-Info.plist
+test/user-auth/auth.js
