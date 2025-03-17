@@ -5,6 +5,7 @@
     "esModuleInterop": true,
     "inlineSources": true,
     "lib": ["dom", "es2017"],
+    "types": ["node", "jasmine"],
     "module": "esnext",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
