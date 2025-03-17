@@ -16,7 +16,7 @@
 		"increment-build": "node increment-build.js",
 		"build-bundle": "npm run increment-build && ionic build --prod --release && node seal-bundle.js",
 		"build": "ionic build --prod --release",
-		"app-e2e-tests": "  npx wdio wdio.conf.js"
+		"app-e2e-tests": "npx wdio wdio.conf.js"
 	},
 	"private": true,
 	"dependencies": {
