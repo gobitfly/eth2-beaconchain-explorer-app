@@ -6,8 +6,8 @@
 Beaconchain Dashboard is an open source ethereum and gnosis validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
 
 
-[![Get it on Google Play](https://raw.githubusercontent.com/gobitfly/eth2-beaconchain-explorer-app/.github/assets/android.png)](https://play.google.com/store/apps/details?id=in.beaconcha.mobile)
-[![Get it App Store](https://raw.githubusercontent.com/gobitfly/eth2-beaconchain-explorer-app/.github/assets/ios.png)](https://apps.apple.com/app/beaconchain-dashboard/id1541822121)
+[![Get it on Google Play](.github/assets/android.png)](https://play.google.com/store/apps/details?id=in.beaconcha.mobile)
+[![Get it App Store](.github/assets/ios.png)](https://apps.apple.com/app/beaconchain-dashboard/id1541822121)
 
 ## About
 
