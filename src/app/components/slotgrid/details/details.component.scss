@@ -1,0 +1,67 @@
+/**
+ * Copyright (C) 2025 Bitfly GmbH
+ * 
+ * This file is part of Beaconchain Dashboard.
+ * 
+ * Beaconchain Dashboard is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Beaconchain Dashboard is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+@use '../../../../theme/variables.scss';
+
+.popover {
+	border-radius: 4px;
+}
+
+.popover-header {
+	padding: 12px 12px 6px 12px;
+	border-bottom: 1px solid #ccc;
+	margin-bottom: 4px;
+
+	.flex-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+}
+.popover-content {
+	padding: 12px;
+	font-size: 0.9em;
+
+	div {
+		margin-bottom: 4px;
+	}
+}
+
+h3 {
+	font-size: 1em;
+	margin: 0;
+}
+
+.warning {
+	opacity: 1;
+	color: var(--ion-color-warning) !important;
+	font-weight: bold;
+}
+
+.danger {
+	opacity: 1;
+	color: var(--ion-color-danger) !important;
+	font-weight: bold;
+}
+
+.success {
+	opacity: 1;
+	color: var(--ion-color-success) !important;
+	font-weight: bold;
+}

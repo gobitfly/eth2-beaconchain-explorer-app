@@ -1,0 +1,24 @@
+<ion-accordion [value]="key" *ngIf="data && data.length > 0" class="background">
+	<ion-item slot="header" class="accordion-header">
+		<ion-icon slot="start" [name]="icon"></ion-icon>
+		<ion-label>{{ name }} ({{ data.length }})</ion-label>
+	</ion-item>
+
+	<div class="ion-padding" slot="content" class="content">
+		<div style="padding-top: 8px"></div>
+		<app-notification-item
+			*ngFor="let val of dataCapped()"
+			[title]="ac.arrayComputed(val, getTitle)"
+			[extra]="ac.arrayComputed(val, getExtra)"
+			[extraName]="extraName"
+			[imgSeed]="ac.arrayComputed(val, getImageSeed)"
+			[titlePrefix]="ac.arrayComputed(val, getTitlePrefix)"
+			[externalLink]="ac.arrayComputed(val, getExternalLink)">
+		</app-notification-item>
+		<div style="text-align: center; padding-bottom: 12px" *ngIf="isDataCapped()" (click)="showAll()">
+			<span style="font-size: var(--smallest-info-size); letter-spacing: 0.9px; opacity: 0.8">{{ CAP_MAX_SHOW }} of {{ this.data.length }}</span
+			><br />
+			<span style="letter-spacing: 0.9px; color: var(--ion-color-primary); font-size: var(--smaller-info-size)">Show me all</span>
+		</div>
+	</div>
+</ion-accordion>

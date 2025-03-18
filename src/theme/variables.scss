@@ -1,6 +1,5 @@
 /* 
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  // 
  *  // This file is part of Beaconchain Dashboard.
  *  // 
@@ -21,6 +20,8 @@
 // Ionic Variables and Theming. For more info, please see:
 // http://ionicframework.com/docs/theming/
 
+@import '@ionic/angular/css/core.css';
+
 /** Ionic CSS Variables **/
 @font-face {
 	font-family: 'Mukta';
@@ -37,6 +38,17 @@
 }
 
 :root {
+	--test-color: #ee7112;
+	--smaller-label-weight: 600;
+	--edge-padding: 0px 0px;
+	--edge-padding-left-plus-15px: 0px 15px;
+	--edge-padding-left-minus-5px: 0px 0px;
+	--default-secondary-transparency: 0.83;
+	--smaller-info-size: 0.82rem;
+	--smallest-info-size: 0.73rem;
+	--text-below-blockie-margin: 46px;
+	--block-ts-padding: 1px 0px 0px 0px;
+
 	--ion-font-family: 'Mukta';
 	/** primary **/
 	--ion-color-primary: #ee7112;
@@ -107,7 +119,7 @@
 	--ion-color-medium-tint: #9d9fa6;
 
 	/** light **/
-	--ion-color-light: #f4f5f8;
+	--ion-color-light: #fff;
 	--ion-color-light-rgb: 244, 245, 248;
 	--ion-color-light-contrast: #000000;
 	--ion-color-light-contrast-rgb: 0, 0, 0;
@@ -120,12 +132,39 @@
 	--hilight-color: #0275d8;
 }
 
+:root .ios {
+	--smaller-info-size: 0.79rem;
+	--smallest-info-size: 0.7rem;
+	--text-below-blockie-margin: 51px;
+	--block-ts-padding: 0px 0px 0px 0px;
+}
+
+@media (min-width: 360px) {
+	:root {
+		--edge-padding: 0px 15px;
+		--edge-padding-left-plus-15px: 0px 30px;
+		--edge-padding-left-minus-5px: 0px 10px;
+	}
+}
+
+@media (min-width: 480px) {
+	:root {
+		--edge-padding: 0px 25px;
+		--edge-padding-left-plus-15px: 0px 40px;
+		--edge-padding-left-minus-5px: 0px 20px;
+	}
+}
+
 body {
+	--popover-border: none;
+	--loading-opacity: 0.55;
+	--bar-transparency: 0.92;
 	--tab-top-border: 1px;
 	--status-ok: var(--ion-color-success);
 	--status-warn: var(--ion-color-warning);
 	--status-danger: var(--ion-color-danger);
 	--status-secondary: var(--ion-color-secondary);
+	--ion-color-sync-icon-small: #2dade9;
 
 	--x-toolbar-title-color: #fff;
 
@@ -140,6 +179,7 @@ body {
 	--ion-item-background: #fff;
 
 	--ion-toolbar-background: #2f2e42; //2f2e42
+	--ion-toolbar-color: #fff;
 
 	--ion-tab-bar-background: #fff; // f8f8f8
 
@@ -167,12 +207,16 @@ body {
 }
 
 body.dark {
+	--popover-border: 1px solid #393939;
+	--loading-opacity: 0.7;
+	--bar-transparency: 0.79;
 	--ion-color-primary: #ee7112;
 	--ion-color-primary-rgb: 238, 113, 18;
 	--ion-color-primary-contrast: #ffffff;
 	--ion-color-primary-contrast-rgb: 255, 255, 255;
 	--ion-color-primary-shade: #e97112;
 	--ion-color-primary-tint: #fa7112;
+	--ion-color-sync-icon-small: #45daff;
 
 	--ion-color-secondary: #50c8ff;
 	--ion-color-secondary-rgb: 80, 200, 255;
@@ -672,7 +716,7 @@ body.rocketpool {
 
 	--ion-tab-bar-background: #f76f75; // f8f8f8
 	--ion-tab-button-color-selected: #fff;
-	--ion-tab-button-color: #fff;
+	--ion-tab-button-color: #1f1f1f;
 
 	--status-ok: white;
 	--status-warn: white;

@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,28 +17,34 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
-import { UpdateTokenRequest } from '../requests/requests'
+import { ApiService } from '@services/api.service'
+import { StorageService } from '@services/storage.service'
+import { APIRequest, UpdateTokenRequest } from '@requests/requests'
 import { Injectable } from '@angular/core'
 import { AlertController, Platform } from '@ionic/angular'
 
-import { PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications'
+import { ActionPerformed, PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications'
 
 import { LocalNotifications } from '@capacitor/local-notifications'
 import FlavorUtils from './FlavorUtils'
 import { Capacitor } from '@capacitor/core'
+import { V2RegisterPushNotificationToken } from '@requests/v2-user'
+import { dashboardID } from '@requests/v2-dashboard'
 
 const LOGTAG = '[FirebaseUtils]'
 
 export const CURRENT_TOKENKEY = 'firebase_token'
 const NOTIFICATION_CONSENT_KEY = 'notification_consent'
 
+const firebaseTokenKey = 'last_firebase_token'
+
 @Injectable({
 	providedIn: 'root',
 })
 export default class FirebaseUtils {
 	private alreadyRegistered = false
+
+	private clickCallback: (id: dashboardID, groupID: number, epoch: number, chainID: number) => Promise<void>
 
 	constructor(
 		private api: ApiService,
@@ -48,6 +53,10 @@ export default class FirebaseUtils {
 		private alertController: AlertController,
 		private flavor: FlavorUtils
 	) {}
+
+	setNotificationClickCallback(callback: (id: dashboardID, groupID: number, epoch: number, chainID: number) => Promise<void>) {
+		this.clickCallback = callback
+	}
 
 	async hasSeenConsentScreenAndNotConsented() {
 		const hasSeenConsent = await this.storage.getBooleanSetting(NOTIFICATION_CONSENT_KEY, false)
@@ -117,7 +126,7 @@ export default class FirebaseUtils {
 		PushNotifications.addListener('registration', async (token) => {
 			console.log(LOGTAG + 'register token', token.value)
 			await this.storage.setItem(CURRENT_TOKENKEY, token.value)
-			this.updateRemoteNotificationToken(token.value)
+			updateRemoteNotificationToken(this.storage, this.api, token.value)
 		})
 
 		// Some issue with our setup and push will not work
@@ -131,12 +140,44 @@ export default class FirebaseUtils {
 		})
 
 		// Method called when tapping on a notification
-		/*PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
+		PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
 			//alert("Push action performed: " + JSON.stringify(notification));
-		})*/
+			console.log(LOGTAG + 'Push action performed: ', notification)
+			if (
+				notification &&
+				notification.notification &&
+				Object.prototype.hasOwnProperty.call(notification.notification.data, 'dashboard_id') &&
+				Object.prototype.hasOwnProperty.call(notification.notification.data, 'group_id') &&
+				Object.prototype.hasOwnProperty.call(notification.notification.data, 'epoch')
+			) {
+				this.clickNotification(
+					notification.notification.data.dashboard_id,
+					notification.notification.data.group_id,
+					notification.notification.data.epoch,
+					Object.prototype.hasOwnProperty.call(notification.notification.data, 'chain_id') ? notification.notification.data.chain_id : 1
+				)
+			}
+		})
 	}
 
-	private async inAppNotification(title, message) {
+	clickNotification(id: dashboardID, groupID: number, epoch: number, chainID: number, count: number = 0) {
+		// clickCallback is provided in dashboard page. I was not able to find a way to open the modal here directly
+		// as any reference to NotificationDetailComponent here will break the entire app ¯⁠\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯
+		// Room for improvement here if you know a way
+		if (!this.clickCallback) {
+			if (count < 20) {
+				setTimeout(() => {
+					this.clickNotification(id, groupID, epoch, chainID, ++count)
+				}, 200)
+			} else {
+				console.error(LOGTAG + 'clickNotification failed after 20 tries')
+			}
+			return
+		}
+		this.clickCallback(id, groupID, epoch, chainID)
+	}
+
+	private async inAppNotification(title: string, message: string) {
 		const alert = await this.alertController.create({
 			header: title,
 			message: message,
@@ -181,31 +222,34 @@ export default class FirebaseUtils {
 
 		await alert.present()
 	}
+}
 
-	async pushLastTokenUpstream(force: boolean) {
-		this.updateRemoteNotificationToken(await this.storage.getItem(CURRENT_TOKENKEY), force)
-	}
+export async function pushLastTokenUpstream(storage: StorageService, api: ApiService, force: boolean) {
+	updateRemoteNotificationToken(storage, api, await storage.getItem(CURRENT_TOKENKEY), force)
+}
 
-	private async updateRemoteNotificationToken(token: string, force = false) {
-		console.log(LOGTAG + ' updateRemoteNotificationToken called with token: ' + token)
+export async function updateRemoteNotificationToken(storage: StorageService, api: ApiService, token: string, force = false) {
+	console.log(LOGTAG + ' updateRemoteNotificationToken called with token: ' + token)
 
-		const firebaseTokenKey = 'last_firebase_token'
-		const loggedIn = await this.storage.isLoggedIn()
+	const loggedIn = await storage.isLoggedIn()
 
-		if (loggedIn && token != null) {
-			const lastToken = await this.storage.getItem(firebaseTokenKey)
+	if (loggedIn && token != null) {
+		const lastToken = await storage.getItem(firebaseTokenKey)
 
-			console.log(LOGTAG + ' user is logged in, last local token was: ' + lastToken)
-			if (force || token != lastToken) {
-				const request = new UpdateTokenRequest(token)
-				const result = await this.api.execute(request).catch((error) => {
-					console.warn('error in updateRemoteNotificationToken execute', error)
-					return false
-				})
-				if (request.wasSuccessful(result)) {
-					console.log(LOGTAG + ' update on remote was successful')
-					this.storage.setItem(firebaseTokenKey, token)
-				}
+		console.log(LOGTAG + ' user is logged in, last local token was: ' + lastToken)
+		if (force || token != lastToken) {
+			let request: APIRequest<unknown>
+			if (await storage.isV2()) {
+				request = new V2RegisterPushNotificationToken(token, await storage.getDeviceID())
+			} else {
+				request = new UpdateTokenRequest(token)
+			}
+			const result = await api.execute(request)
+			if (result.error) {
+				console.warn(LOGTAG + ' update on remote failed', result.error)
+			} else {
+				console.log(LOGTAG + ' update on remote was successful')
+				storage.setItem(firebaseTokenKey, token)
 			}
 		}
 	}

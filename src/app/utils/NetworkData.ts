@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -30,15 +29,24 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		genesisTs: 1606824023,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: 1,
+		name: 'Ethereum',
+		v2NetworkConfigKey: 'main_v2_prod',
+	},
+	{
+		key: 'main_v2_prod',
+		protocol: 'https',
+		host: 'v2-staging-mainnet.beaconcha.in',
+		net: '',
+		endpoint: '/api/',
+		version: 'i',
+		onlyDebug: true,
+		active: true,
+		supportedChainIds: 1,
 		name: 'Ethereum',
 	},
 	{
+		// todo change
 		key: 'gnosis',
 		protocol: 'https',
 		host: 'gnosischa.in',
@@ -47,30 +55,22 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		genesisTs: 1638993340,
-		clCurrency: NetworkMainCurrency.GNO,
-		elCurrency: NetworkMainCurrency.xDAI,
-		slotPerEpoch: 16,
-		slotsTime: 5,
-		epochsPerSyncPeriod: 512,
+		supportedChainIds: 100,
 		name: 'Gnosis',
+		v2NetworkConfigKey: 'gnosis_v2_prod',
 	},
 	{
-		key: 'prater',
+		// todo change
+		key: 'gnosis_v2_prod',
 		protocol: 'https',
-		host: 'beaconcha.in',
-		net: 'prater.',
+		host: 'v2-staging-gnosis.beaconcha.in',
+		net: '',
 		endpoint: '/api/',
-		version: 'v1',
-		onlyDebug: false,
+		version: 'i',
+		onlyDebug: true,
 		active: true,
-		genesisTs: 1616508000,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
-		name: 'Ethereum',
+		supportedChainIds: 100,
+		name: 'Gnosis',
 	},
 	{
 		key: 'sepolia',
@@ -81,12 +81,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		genesisTs: 1655733600,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: 11155111,
 		name: 'Ethereum',
 	},
 	{
@@ -98,29 +93,44 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: false,
 		active: true,
-		genesisTs: 1695902400,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: 17000,
+		name: 'Ethereum',
+		v2NetworkConfigKey: 'holesky_v2_prod',
+	},
+	{
+		key: 'main_v2',
+		protocol: 'http',
+		host: 'local.beaconcha.in:8083',
+		net: '',
+		endpoint: '/api/',
+		version: 'i',
+		onlyDebug: true,
+		active: true,
+		supportedChainIds: 1,
 		name: 'Ethereum',
 	},
 	{
-		key: 'local dev',
+		key: 'holesky_v2',
 		protocol: 'http',
-		host: '192.168.103.224:3333',
+		host: 'local.beaconcha.in:8083',
 		net: '',
 		endpoint: '/api/',
-		version: 'v1',
+		version: 'i',
 		onlyDebug: true,
 		active: true,
-		genesisTs: 1606824023,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: 17000,
+		name: 'Ethereum',
+	},
+	{
+		key: 'holesky_v2_prod',
+		protocol: 'https',
+		host: 'jkihuwegfsgjkhsdgf.beaconcha.in',
+		net: '',
+		endpoint: '/api/',
+		version: 'i',
+		onlyDebug: true,
+		active: true,
+		supportedChainIds: 17000,
 		name: 'Ethereum',
 	},
 	{
@@ -132,12 +142,7 @@ export const MAP: ApiNetwork[] = [
 		version: 'v1',
 		onlyDebug: true,
 		active: true,
-		genesisTs: 1606824023,
-		clCurrency: NetworkMainCurrency.ETH,
-		elCurrency: NetworkMainCurrency.ETH,
-		slotPerEpoch: 32,
-		slotsTime: 12,
-		epochsPerSyncPeriod: 256,
+		supportedChainIds: 17000,
 		name: 'Ethereum',
 	},
 ]
@@ -150,4 +155,86 @@ export function findConfigForKey(key: string): ApiNetwork {
 	}
 	console.log('config for ' + key + ' not found, using mainnet instead', key)
 	return MAP[0]
+}
+
+export const CHAIN_NETWORKS: ChainNetwork[] = [
+	{
+		id: 1,
+		name: 'ethereum',
+		legacyKey: 'main',
+		genesisTs: 1606824023,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+		testnet: false,
+	},
+	{
+		id: 17000,
+		name: 'holesky',
+		legacyKey: 'holesky',
+		genesisTs: 1695902400,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+		testnet: true,
+	},
+	{
+		id: 100,
+		name: 'gnosis',
+		legacyKey: 'gnosis',
+		genesisTs: 1638993340,
+		clCurrency: NetworkMainCurrency.GNO,
+		elCurrency: NetworkMainCurrency.xDAI,
+		slotPerEpoch: 16,
+		slotsTime: 5,
+		epochsPerSyncPeriod: 512,
+		testnet: false,
+	},
+	{
+		id: 11155111,
+		name: 'sepolia',
+		legacyKey: 'sepolia',
+		genesisTs: 1655733600,
+		clCurrency: NetworkMainCurrency.ETH,
+		elCurrency: NetworkMainCurrency.ETH,
+		slotPerEpoch: 32,
+		slotsTime: 12,
+		epochsPerSyncPeriod: 256,
+		testnet: true,
+	},
+]
+
+export function findChainNetworkById(id: number): ChainNetwork | null {
+	for (const entry of CHAIN_NETWORKS) {
+		if (entry.id == id) {
+			return entry
+		}
+	}
+	return CHAIN_NETWORKS[0]
+}
+
+export function findChainNetworkByName(name: string): ChainNetwork | null {
+	for (const entry of CHAIN_NETWORKS) {
+		if (entry.name == name) {
+			return entry
+		}
+	}
+	return CHAIN_NETWORKS[0]
+}
+
+export interface ChainNetwork {
+	id: number
+	name: string // do not change once set
+	legacyKey: string // pre 5.0.0 network key associated with that chain
+	genesisTs: number
+	elCurrency: NetworkMainCurrency
+	clCurrency: NetworkMainCurrency
+	slotPerEpoch: number
+	slotsTime: number
+	epochsPerSyncPeriod: number
+	testnet: boolean
 }

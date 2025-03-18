@@ -1,0 +1,68 @@
+<ion-header [translucent]="true">
+	<ion-toolbar class="top">
+		<ion-buttons slot="start" class="modal-buttons">
+			<ion-button (click)="closeModal()">
+				<ion-icon size="large" name="close-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+
+		<ion-title style="padding: 0px 10px">Duty {{ slotViz.nextDutyTs() | countdown | async }}</ion-title>
+
+		<ion-buttons slot="end" class="modal-buttons">
+			<ion-button (click)="openLegend()">
+				<ion-icon size="large" name="help-circle-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
+
+	<ion-item class="top-bar">
+		<ion-label class="top-bar-inner"> Filters </ion-label>
+
+		<ion-icon
+			class="top-bar-inner touch-icon-padding"
+			slot="end"
+			name="cube-outline"
+			(click)="filter('block')"
+			[style.opacity]="isFiltered('block') ? 0.4 : 1">
+		</ion-icon>
+
+		<ion-icon
+			class="top-bar-inner touch-icon-padding"
+			slot="end"
+			name="document-text-outline"
+			(click)="filter('attestation')"
+			[style.opacity]="isFiltered('attestation') ? 0.4 : 1">
+		</ion-icon>
+
+		<ion-icon
+			class="top-bar-inner touch-icon-padding"
+			slot="end"
+			name="sync-outline"
+			(click)="filter('sync')"
+			[style.opacity]="isFiltered('sync') ? 0.4 : 1">
+		</ion-icon>
+
+		<ion-icon
+			class="top-bar-inner touch-icon-padding"
+			slot="end"
+			name="person-remove-outline"
+			(click)="filter('slash')"
+			[style.opacity]="isFiltered('slash') ? 0.4 : 1">
+		</ion-icon>
+	</ion-item>
+</ion-header>
+
+<ion-content [ngClass]="{ 'ios-background': fadeInCompleted && online }" [fullscreen]="true">
+	<app-full-page-loading (fadeInCompleted)="fadeInCompleted = true" [loading]="initialLoading">
+		<app-full-page-offline (retry)="this.ionViewWillEnter()" [online]="online">
+			<app-slotgrid
+				class="grid"
+				*ngFor="let epoch of slotViz.slotViz()"
+				[epoch]="epoch.epoch"
+				[slots]="getSlots(epoch)"
+				[rowsToShow]="4"
+				[margin]="5"
+				[filterMap]="filterMap"></app-slotgrid>
+		</app-full-page-offline>
+	</app-full-page-loading>
+</ion-content>

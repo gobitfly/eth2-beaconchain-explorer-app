@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: app-local-proxy
+    network_mode: host
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./https-serve.conf:/etc/nginx/conf.d/https-serve.conf
+#      - ./cookie-manipulator-proxy.conf:/etc/nginx/conf.d/cookie-manipulator-proxy.conf
+      - ./server.crt:/etc/nginx/certificates/server.crt
+      - ./server.key:/etc/nginx/certificates/server.key

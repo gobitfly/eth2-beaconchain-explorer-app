@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
@@ -14,7 +14,7 @@
 		<meta name="msapplication-tap-highlight" content="no" />
 
 		<!-- add to homescreen for ios -->
-		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
 		<script>
@@ -33,7 +33,7 @@
 
 					var lastLogSession = parseInt(localStorage.getItem('last_log_session'))
 					if (isNaN(lastLogSession)) lastLogSession = 0
-					const newLogSession = (lastLogSession + 1) % 3
+					const newLogSession = (lastLogSession + 1) % 2
 					localStorage.setItem('last_log_session', newLogSession.toString())
 
 					var console = (function (oldCons, storage, debug) {
@@ -52,6 +52,19 @@
 									}
 									logSession.push({
 										text: '[LOG] [' + new Date().toLocaleString() + '] ' + text,
+										extra: extra ? ': ' + JSON.stringify(extra) : '',
+									})
+									storage.setItem('log_session_' + newLogSession, JSON.stringify(logSession))
+								} catch (e) {}
+							},
+							debug: (text, ...extra) => {
+								if (debug) oldCons.debug(text, ...extra)
+								try {
+									if (typeof text === 'object') {
+										text = JSON.stringify(text)
+									}
+									logSession.push({
+										text: '[DEBUG] [' + new Date().toLocaleString() + '] ' + text,
 										extra: extra ? ': ' + JSON.stringify(extra) : '',
 									})
 									storage.setItem('log_session_' + newLogSession, JSON.stringify(logSession))

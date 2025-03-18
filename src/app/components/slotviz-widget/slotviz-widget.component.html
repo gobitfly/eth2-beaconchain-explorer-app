@@ -1,0 +1,39 @@
+<div class="background">
+	<div class="inner">
+		<ion-item lines="none" (click)="openSlotViz()">
+			<ion-icon style="margin-right: 20px" class="left-icon" slot="start" name="pulse-outline"></ion-icon>
+
+			<ion-label> Next Duty {{ slotViz.nextDutyTs() | countdown | async }} </ion-label>
+
+			<div style="position: relative; display: inline-block">
+				<!-- Previous icon -->
+				<ion-icon
+					style="vertical-align: top"
+					id="previous"
+					*ngIf="!previousIconHidden"
+					[class]="previousIconColor()"
+					[name]="previousIcon()"></ion-icon>
+
+				<!-- Moving icon -->
+				<ng-container *ngIf="previousIcon()">
+					<ion-icon
+						class="next"
+						id="moved"
+						[name]="previousIcon()"
+						[@iconAnimation]="nextIconState"
+						style="margin-left: 10px; position: absolute"></ion-icon>
+				</ng-container>
+
+				<!-- Next icon -->
+				<ion-icon
+					class="next"
+					id="next"
+					[name]="nextIcon()"
+					[@newIconAnimation]="isNewIconVisible ? 'enter' : 'void'"
+					style="margin-left: 10px; position: relative"></ion-icon>
+			</div>
+		</ion-item>
+		<!-- <button (click)="triggerAnimation()">Trigger Animation</button>
+		<button (click)="resetAnimation()">Reset Animation</button> -->
+	</div>
+</div>

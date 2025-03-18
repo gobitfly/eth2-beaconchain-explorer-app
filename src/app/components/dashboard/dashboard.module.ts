@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -26,11 +25,21 @@ import { IonicModule } from '@ionic/angular'
 
 import { DashboardComponent } from './dashboard.component'
 import { PipesModule } from '../../pipes/pipes.module'
-import { ClientupdateComponentModule } from '../../components/clientupdate/clientupdate.module'
-import { MessageComponentModule } from '../../components/message/message.module'
+import { MessageComponentModule } from '@components/message/message.module'
 import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
 import { AdComponentModule } from '../ad/ad.module'
-import { PerformanceItemComponentModule } from '../dashboard/performance-item.module'
+import { PerformanceItemComponentModule } from './performance-item/performance-item.module'
+import { SuccessFailViewComponent } from './success-fail-view/success-fail-view.component'
+import { GridCellLeftComponent } from './grid-cell-left/grid-cell-left.component'
+import { GridCellRightComponent } from './grid-cell-right/grid-cell-right.component'
+import { SummaryChartModule } from './summary-chart/summary-chart.module'
+import { RewardChartModule } from './reward-chart/reward-chart.module'
+import { FullPageLoadingComponent } from '../full-page-loading/full-page-loading.component'
+import { FullPageOfflineComponent } from '../full-page-offline/full-page-offline.component'
+import { FirebaseUtilsModule } from '@utils/Firebase.module'
+import { GroupSelectorComponent } from './group-selector/group-selector.component'
+import { SlotvizWidgetComponent } from '@components/slotviz-widget/slotviz-widget.component'
+import { ClientupdateComponent } from '@components/clientupdate/clientupdate.component'
 
 @NgModule({
 	imports: [
@@ -38,11 +47,21 @@ import { PerformanceItemComponentModule } from '../dashboard/performance-item.mo
 		FormsModule,
 		IonicModule,
 		PipesModule,
-		ClientupdateComponentModule,
+		ClientupdateComponent,
 		MessageComponentModule,
 		TooltipModule,
 		AdComponentModule,
 		PerformanceItemComponentModule,
+		SummaryChartModule,
+		SuccessFailViewComponent,
+		GridCellLeftComponent,
+		GridCellRightComponent,
+		RewardChartModule,
+		FullPageLoadingComponent,
+		FullPageOfflineComponent,
+		FirebaseUtilsModule,
+		GroupSelectorComponent,
+		SlotvizWidgetComponent,
 	],
 	declarations: [DashboardComponent],
 	exports: [DashboardComponent],

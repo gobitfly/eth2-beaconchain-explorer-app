@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,94 +17,138 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiService } from '../services/api.service'
-import { StorageService } from '../services/storage.service'
-import { Injectable } from '@angular/core'
-import { GithubReleaseRequest, GithubReleaseResponse } from '../requests/requests'
+import { ApiService } from '@services/api.service'
+import { StorageService } from '@services/storage.service'
+import { Injectable, OnInit } from '@angular/core'
+import { GithubReleaseRequest, GithubReleaseResponse } from '@requests/requests'
 
-interface ClientInfo {
+export interface ClientInfo {
 	key: string
+	remoteKey: string // remote uses different keys now, acts more as a name
+	remoteId?: number // used to subscribe/unsubscribe on remote
 	name: string
 	repo: string
 	storageKey: string
+	type: 'cons' | 'exec' | '3rdparty'
 }
 
 export const Clients: ClientInfo[] = [
-	// Execution
+	// Consensus
 	{
 		key: 'LIGHTHOUSE',
+		remoteKey: 'Lighthouse',
 		name: 'Lighthouse',
 		repo: 'sigp/lighthouse',
 		storageKey: 'client_updates_lighthouse',
+		type: 'cons',
 	},
 
 	{
 		key: 'LODESTAR',
+		remoteKey: 'Lodestar',
 		name: 'Lodestar',
 		repo: 'chainsafe/lodestar',
 		storageKey: 'client_updates_lodestar',
+		type: 'cons',
 	},
 
 	{
 		key: 'PRYSM',
+		remoteKey: 'Prysm',
 		name: 'Prysm',
 		repo: 'prysmaticlabs/prysm',
 		storageKey: 'client_updates_prysm',
+		type: 'cons',
 	},
 
 	{
 		key: 'NIMBUS',
+		remoteKey: 'Nimbus',
 		name: 'Nimbus',
 		repo: 'status-im/nimbus-eth2',
 		storageKey: 'client_updates_nimbus',
+		type: 'cons',
 	},
 
 	{
 		key: 'TEKU',
+		remoteKey: 'Teku',
 		name: 'Teku',
 		repo: 'ConsenSys/teku',
 		storageKey: 'client_updates_teku',
+		type: 'cons',
 	},
-	// Consensus
+
+	// {
+	// 	key: 'GRANDINE',
+	// 	remoteKey: 'Grandine',
+	// 	name: 'Grandine',
+	// 	repo: 'grandinetech/grandine',
+	// 	storageKey: 'client_updates_grandine',
+	// 	type: 'cons',
+	// },
+
+	// Execution
 	{
 		key: 'BESU',
+		remoteKey: 'Besu',
 		name: 'Besu',
 		repo: 'hyperledger/besu',
 		storageKey: 'client_updates_besu',
+		type: 'exec',
 	},
 
 	{
 		key: 'ERIGON',
+		remoteKey: 'Erigon',
 		name: 'Erigon',
 		repo: 'erigontech/erigon',
 		storageKey: 'client_updates_erigon',
+		type: 'exec',
 	},
 
 	{
 		key: 'GETH',
+		remoteKey: 'Geth',
 		name: 'Geth',
 		repo: 'ethereum/go-ethereum',
 		storageKey: 'client_updates_geth',
+		type: 'exec',
 	},
 
 	{
 		key: 'NETHERMIND',
+		remoteKey: 'Nethermind',
 		name: 'Nethermind',
 		repo: 'NethermindEth/nethermind',
 		storageKey: 'client_updates_nethermind',
+		type: 'exec',
+	},
+
+	{
+		key: 'RETH',
+		remoteKey: 'Reth',
+		name: 'Reth',
+		repo: 'paradigmxyz/reth',
+		storageKey: 'client_updates_reth',
+		type: 'exec',
 	},
 	// Various
 	{
 		key: 'ROCKETPOOL',
+		remoteKey: 'Rocketpool Smart Node',
 		name: 'Rocketpool',
 		repo: 'rocket-pool/smartnode-install',
 		storageKey: 'smart_node_updates',
+		type: '3rdparty',
 	},
 	{
 		key: 'MEV-BOOST',
+		remoteKey: 'MEV-Boost',
 		name: 'MEV-Boost',
 		repo: 'flashbots/mev-boost',
 		storageKey: 'mev_boost_updates',
+		type: '3rdparty',
 	},
 ]
 
@@ -115,13 +158,28 @@ const SETTINGS_UPDATECHANNEL = 'setting_client_updatechannel'
 @Injectable({
 	providedIn: 'root',
 })
-export default class ClientUpdateUtils {
-	private oldClientInfoConverted = false
+export default class ClientUpdateUtils implements OnInit {
 	updates: Release[] = null
 	lastTry = 0
 	private locked = false
 
-	constructor(private api: ApiService, private storage: StorageService) {}
+	constructor(
+		private api: ApiService,
+		private storage: StorageService
+	) {}
+
+	ngOnInit() {
+		this.storage.getBooleanSetting('migrated_uu_5_0_0', false).then(async (migrated) => {
+			if (!migrated) {
+				const updateChannel = await this.getUpdateChannel()
+				if (updateChannel == 'PRERELEASE') {
+					this.setUpdateChannel('STABLE')
+				}
+				console.info('migrated update channel to stable')
+				this.storage.setBooleanSetting('migrated_uu_5_0_0', true)
+			}
+		})
+	}
 
 	getClientInfo(clientKey: string): ClientInfo {
 		if (clientKey == null) {
@@ -181,10 +239,6 @@ export default class ClientUpdateUtils {
 			this.remove(clientKey)
 			this.append(update)
 		}
-	}
-
-	private async isPreReleaseAllowed() {
-		return (await this.getUpdateChannel()) == 'PRERELEASE'
 	}
 
 	private append(info: Release) {
@@ -294,47 +348,11 @@ export default class ClientUpdateUtils {
 	}
 
 	private async getReleases(client: ClientInfo): Promise<Release> {
-		const req = new GithubReleaseRequest(client.repo, !(await this.isPreReleaseAllowed()))
-		const response = await this.api.execute(req).catch((error) => {
-			console.warn('error getReleases', error)
-			return null
-		})
-		const temp = req.parse(response)
-		if (temp.length <= 0) return null
-		console.log('Client updates data', response, temp)
-		return new Release(client, temp[0])
-	}
-
-	async convertOldToNewClientSettings() {
-		if (this.oldClientInfoConverted) {
-			return
-		}
-
-		const oldEth1StorageKey = 'setting_client_eth1'
-
-		let oldClient = await this.storage.getItem(oldEth1StorageKey)
-		if (oldClient != null) {
-			console.log('Old ETH1/ETH2 client settings found, converting them')
-
-			if (oldClient != 'none') {
-				this.setClient(oldClient, oldClient)
-			}
-			this.storage.remove(oldEth1StorageKey)
-
-			// both ETH1 and ETH2 clients where used simultaneously
-			// so only if the ETH1 client was != null, there was a possibility for an ETH2 client too
-			const oldEth2StorageKey = 'setting_client_eth2'
-
-			oldClient = await this.storage.getItem(oldEth2StorageKey)
-			if (oldClient != null) {
-				if (oldClient != 'none') {
-					this.setClient(oldClient, oldClient)
-				}
-				this.storage.remove(oldEth2StorageKey)
-			}
-		}
-
-		this.oldClientInfoConverted = true
+		const req = new GithubReleaseRequest(client.repo)
+		const temp = await this.api.execute(req)
+		if (temp.error) return null
+		console.log('Client updates data', temp)
+		return new Release(client, temp.data[0])
 	}
 }
 

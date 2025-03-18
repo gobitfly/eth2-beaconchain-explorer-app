@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,7 +17,7 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { StorageService, replacer } from '../services/storage.service'
+import { StorageService, replacer } from '@services/storage.service'
 import { Validator } from './ValidatorUtils'
 
 const LOGTAG = '[CacheModule]'
@@ -29,7 +28,7 @@ interface CachedData {
 	data: unknown
 }
 
-export class CacheModule {
+export abstract class CacheModule {
 	private staleTime
 
 	private keyPrefix = ''
@@ -92,18 +91,17 @@ export class CacheModule {
 				await this.clearHardCache()
 			}
 		} catch (e) {
-			console.warn('could not calculate cache size')
+			console.warn('could not calculate cache size', e)
 		}
 	}
 
 	private getStoreForCacheKey(cacheKey: string): Map<string, CachedData> {
 		// rationale: don't store big data objects in hardStorage due to severe performance impacts
-		const storeHard =
-			cacheKey.indexOf('app/dashboard') >= 0 ||
-			cacheKey.indexOf('produced?offset=0') >= 0 || // first page of blocks page
-			(cacheKey.indexOf('beaconcha.in') < 0 && cacheKey.indexOf('gnosischa.in') < 0 && cacheKey.indexOf('ads.bitfly') < 0)
+		const storeHard = this.storeInHardCache(cacheKey)
 		return storeHard ? this.cache : this.hotOnly
 	}
+
+	abstract storeInHardCache(cachekey: string): boolean
 
 	public async deleteAllHardStorageCacheKeyContains(search: string) {
 		if (!this.hardStorage) {
@@ -215,7 +213,7 @@ export class CacheModule {
 	}
 
 	protected invalidateCache(key: string) {
-		this.cache[this.getKey(key)] = null
+		this.cache.set(this.getKey(key), null)
 	}
 
 	public invalidateAllCache() {

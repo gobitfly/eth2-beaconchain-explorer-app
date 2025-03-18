@@ -1,5 +1,5 @@
 <!-- 
-    Copyright (C) 2020 - 2021 Bitfly GmbH
+    Copyright (C) 2020 - 2024 bitfly explorer GmbH
     Manuel Caspari (manuel@bitfly.at)
     
     This file is part of Beaconchain Dashboard.
@@ -21,7 +21,7 @@
 <div class="background" *ngIf="version">
 	<div class="inner">
 		<ion-item lines="none">
-			<ion-icon slot="start" name="logo-github" (click)="openGithub()"></ion-icon>
+			<ion-icon style="margin-right: 20px" slot="start" name="logo-github" (click)="openGithub()"></ion-icon>
 
 			<ion-label (click)="openGithub()"> {{ data.client.name }} Update: {{ version }} available </ion-label>
 

@@ -1,0 +1,63 @@
+/**
+ * Copyright (C) 2024 Bitfly GmbH
+ * 
+ * This file is part of Beaconchain Dashboard.
+ * 
+ * Beaconchain Dashboard is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Beaconchain Dashboard is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+@use '../../../theme/variables.scss';
+
+.status ion-icon {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	padding-bottom: 12px;
+}
+
+.status {
+	text-align: center;
+	background-color: var(--ion-toolbar-background) !important;
+	background-image: var(--status-bg-image);
+	padding-bottom: 0px;
+}
+
+.status-icon {
+	margin-top: 7px;
+	font-size: 69px;
+	color: var(--x-toolbar-title-color);
+}
+
+.status-text {
+	margin: 0 35px;
+}
+
+.container {
+	background-color: var(--ion-background-color);
+}
+
+.white {
+	color: var(--x-toolbar-title-color);
+	padding: 0px;
+	margin: 0px;
+}
+
+.inner {
+	margin: var(--edge-padding);
+}
+
+.background {
+	background-color: var(--ion-item-background);
+}

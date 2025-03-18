@@ -1,20 +1,29 @@
 import { Component, OnInit } from '@angular/core'
-import { DEBUG_SETTING_OVERRIDE_PACKAGE } from 'src/app/services/storage.service'
-import { CURRENT_TOKENKEY } from 'src/app/utils/FirebaseUtils'
-import { Tab3Page } from 'src/app/tab-preferences/tab-preferences.page'
+import { DEBUG_SETTING_OVERRIDE_PACKAGE } from '@services/storage.service'
+import { CURRENT_TOKENKEY, pushLastTokenUpstream } from '@utils/FirebaseUtils'
+import { Tab3Page } from 'src/app/tabs/tab-preferences/tab-preferences.page'
 import { Toast } from '@capacitor/toast'
-import { Clients } from '../../utils/ClientUpdateUtils'
-import { DevModeEnabled } from 'src/app/services/storage.service'
+import { Clients } from '@utils/ClientUpdateUtils'
+import { DevModeEnabled } from '@services/storage.service'
+import { V2RegisterPushNotificationToken } from '@requests/v2-user'
+import { CapacitorUpdater } from '@capgo/capacitor-updater'
+import versionInfo from '../../../version.json'
 
 @Component({
 	selector: 'app-dev',
 	templateUrl: './dev.page.html',
 	styleUrls: ['./dev.page.scss'],
+	standalone: false,
 })
 export class DevPage extends Tab3Page implements OnInit {
 	packageOverride = 'default'
 	firebaseToken = ''
 	notificationConsent = false
+	deviceID = ''
+	usev2api = false
+	showOldMachines = false
+	bundleCode = ''
+	session: string
 
 	ngOnInit() {
 		this.notificationBase.disableToggleLock()
@@ -26,7 +35,39 @@ export class DevPage extends Tab3Page implements OnInit {
 			this.firebaseToken = result
 		})
 
+		this.storage.getAuthUserv2().then((result) => {
+			this.session = result.Session
+		})
+
+		this.storage.getDeviceID().then((result) => {
+			this.deviceID = result
+		})
+
+		this.storage.isV2().then((result) => {
+			this.usev2api = result
+		})
+
 		this.firebaseUtils.hasNotificationConsent().then((result) => (this.notificationConsent = result))
+
+		this.storage.getAuthUserv2().then((result) => {
+			console.log('v2 auth', result)
+		})
+
+		this.storage.getBooleanSetting('debug_show_old_machines', false).then((result) => {
+			this.showOldMachines = result
+		})
+
+		this.bundleCode = versionInfo.buildNumber + ' - ' + versionInfo.formattedVersion
+	}
+
+	changeOldMachines() {
+		this.storage.setBooleanSetting('debug_show_old_machines', this.showOldMachines)
+	}
+
+	toastTest() {
+		Toast.show({
+			text: 'Test toast',
+		})
 	}
 
 	// --- Development methods ---
@@ -61,19 +102,8 @@ export class DevPage extends Tab3Page implements OnInit {
 		this.updateUtils.checkAllUpdates()
 	}
 
-	clearSyncQueue() {
-		this.sync.developDeleteQueue()
-		Toast.show({
-			text: 'Queue cleared',
-		})
-	}
-
-	forceSync() {
-		this.sync.fullSync()
-	}
-
 	updateFirebaseToken() {
-		this.firebaseUtils.pushLastTokenUpstream(true)
+		pushLastTokenUpstream(this.storage, this.api, true)
 	}
 
 	permanentDevMode() {
@@ -132,6 +162,7 @@ export class DevPage extends Tab3Page implements OnInit {
 		})
 	}
 
+	// @deprecated replaced by changeSession
 	async changeAccessToken() {
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
@@ -178,8 +209,47 @@ export class DevPage extends Tab3Page implements OnInit {
 		await alert.present()
 	}
 
+	async changeSession() {
+		const alert = await this.alertController.create({
+			cssClass: 'my-custom-class',
+			header: 'Session ID',
+			inputs: [
+				{
+					name: 'session',
+					type: 'text',
+					placeholder: 'Session ID',
+				},
+			],
+			buttons: [
+				{
+					text: 'Cancel',
+					role: 'cancel',
+					cssClass: 'secondary',
+					handler: () => {
+						return
+					},
+				},
+				{
+					text: 'Ok',
+					handler: async (alertData) => {
+						await this.storage.setAuthUserv2({
+							Session: alertData.session,
+						})
+						this.api.invalidateAllCache()
+						await this.oauth.postLogin()
+						this.dashboardUtils.dashboardAwareListener.notifyAll()
+						alert.dismiss()
+					},
+				},
+			],
+		})
+
+		await alert.present()
+	}
+
 	async restoreAuthUser() {
 		await this.storage.restoreAuthUser()
+		await this.oauth.postLogin()
 		this.alerts.confirmDialog('Success', 'Restart app with restored user?', 'OK', () => {
 			this.restartApp()
 		})
@@ -195,5 +265,75 @@ export class DevPage extends Tab3Page implements OnInit {
 
 	openLogSession(offset: number) {
 		this.storage.openLogSession(this.modalController, offset)
+	}
+
+	async migrateV2() {
+		await this.storage.setDashboardID(null)
+		await this.validatorUtils.debugSetMyLocalValidators('holesky', [99, 98, 97, 96, 95])
+
+		await this.storage.setBooleanSetting('migration_completed', false) // reset
+		await this.v2migrator.switchToV2(false)
+
+		this.merchant.restartApp()
+		//this.v2migrator.migrate()
+	}
+
+	async localBundleUpdate() {
+		const bundleURL = await this.storage.getItem('dev_bundle_url')
+		const alert = await this.alertController.create({
+			cssClass: 'my-custom-class',
+			header: 'Bundle URL',
+			message: 'This way of updating is insecure as it bypasses HTTPS. Proceed if you know what you are doing. Stay safe.',
+			inputs: [
+				{
+					name: 'url',
+					type: 'text',
+					placeholder: 'Bundle URL',
+					value: bundleURL,
+				},
+			],
+			buttons: [
+				{
+					text: 'Cancel',
+					role: 'cancel',
+					cssClass: 'secondary',
+					handler: () => {
+						return
+					},
+				},
+				{
+					text: 'Ok',
+					handler: async (alertData) => {
+						await this.storage.setItem('dev_bundle_url', alertData.url)
+						await this.appUpdater.updateBundle(alertData.url, true)
+					},
+				},
+			],
+		})
+
+		await alert.present()
+	}
+
+	changeToV2Api() {
+		console.log('use v2 api', this.usev2api)
+		this.v2migrator.switchToV2(this.usev2api)
+	}
+
+	syncClients() {
+		this.notificationBase.syncClientUpdates()
+	}
+
+	async registerV2Push() {
+		//const lastToken = await this.storage.getItem('last_firebase_token')
+		const deviceID = await this.storage.getDeviceID()
+		const result = this.api.execute(new V2RegisterPushNotificationToken('hallo', deviceID))
+		console.log('v2 register push', result)
+	}
+
+	resetBundleToBuildIn() {
+		CapacitorUpdater.reset({
+			// back to native bundle
+			toLastSuccessful: false,
+		})
 	}
 }

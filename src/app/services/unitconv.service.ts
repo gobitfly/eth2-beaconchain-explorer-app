@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -19,11 +18,12 @@
  */
 
 import { Injectable } from '@angular/core'
-import Unit, { convertDisplayable, MAPPING, convertEthUnits } from '../utils/EthereumUnits'
+import Unit, { convertDisplayable, MAPPING, convertEthUnits } from '@utils/EthereumUnits'
 import { StorageService } from './storage.service'
 import BigNumber from 'bignumber.js'
 import { ApiService } from './api.service'
-import { CoinbaseExchangeRequest, CoinbaseExchangeResponse } from '../requests/requests'
+import { CoinbaseExchangeRequest, CoinbaseExchangeResponse } from '@requests/requests'
+import { CHAIN_NETWORKS, ChainNetwork, findChainNetworkById } from '@utils/NetworkData'
 
 const STORAGE_KEY_CONS = 'prefered_unit' // cons
 const STORAGE_KEY_EXEC = 'prefered_unit_exec'
@@ -42,6 +42,7 @@ export class UnitconvService {
 	}
 	public lastPrice: LastPrice
 	private rplETHPrice: BigNumber = new BigNumber(1)
+	chainNetwork: ChainNetwork = CHAIN_NETWORKS[0]
 
 	private mGNOXDAI = { value: 'GNOXDAI', type: 'cons', unit: Unit.DAI_GNO_HELPER } as Currency // dummy var to help us get the price of mGNO in xDAI
 
@@ -51,12 +52,18 @@ export class UnitconvService {
 	*/
 	static currencyPipe: CurrencyPipe = { Cons: null, Exec: null, RPL: null }
 
-	constructor(private storage: StorageService, private api: ApiService) {
+	constructor(
+		private storage: StorageService,
+		private api: ApiService
+	) {
 		this.init()
 	}
 
 	private async init() {
 		await this.migrateToGnosisEra()
+
+		this.chainNetwork = findChainNetworkById(await this.api.getCurrentDashboardChainID())
+		console.log('unitconvservice chainNetwork', this.chainNetwork)
 
 		this.lastPrice = {
 			Cons: await this.getLastStoredPrice(this.pref.Cons),
@@ -73,7 +80,12 @@ export class UnitconvService {
 			this.save()
 		}
 
+		await this.loadCurrentChainNetwork()
 		await this.updatePriceData()
+	}
+
+	public async loadCurrentChainNetwork() {
+		this.chainNetwork = findChainNetworkById(await this.api.getCurrentDashboardChainID())
 	}
 
 	public async networkSwitchReload() {
@@ -145,11 +157,10 @@ export class UnitconvService {
 
 		// Coinbase spot name (for api calls)
 		if (result.coinbaseSpot) {
-			const network = this.api.getNetwork()
 			if (currency.type == 'cons') {
-				result.coinbaseSpot = result.coinbaseSpot.replace('XXX', network.clCurrency.coinbaseSpot)
+				result.coinbaseSpot = result.coinbaseSpot.replace('XXX', this.chainNetwork.clCurrency.coinbaseSpot)
 			} else if (currency.type == 'exec') {
-				result.coinbaseSpot = result.coinbaseSpot.replace('XXX', network.elCurrency.coinbaseSpot)
+				result.coinbaseSpot = result.coinbaseSpot.replace('XXX', this.chainNetwork.elCurrency.coinbaseSpot)
 			}
 		}
 		return result
@@ -168,11 +179,10 @@ export class UnitconvService {
 			type = type.type
 		}
 
-		const network = this.api.getNetwork()
 		if (type == 'cons') {
-			return network.clCurrency.internalName
+			return this.chainNetwork.clCurrency.internalName
 		} else if (type == 'exec') {
-			return network.elCurrency.internalName
+			return this.chainNetwork.elCurrency.internalName
 		} else if (type == 'rpl') {
 			return 'RPL'
 		}
@@ -270,7 +280,7 @@ export class UnitconvService {
 		this.pref.RPL = this.createCurrency(this.pref.RPL.value, 'rpl')
 	}
 
-	public convertToPref(value: BigNumber, from, type: RewardType) {
+	public convertToPref(value: BigNumber, from: string, type: RewardType) {
 		if (type == 'cons') {
 			return this.convert(value, from, this.pref.Cons)
 		}
@@ -322,6 +332,10 @@ export class UnitconvService {
 		return this.convertBase(value, from, MAPPING.get(to), displayable)
 	}
 
+	public weiToEth(value: BigNumber | number | string, displayable = true) {
+		return this.convertBase(value, 'WEI', Unit.ETHER, displayable)
+	}
+
 	private convertBase(value: BigNumber | number | string, from: string, to: Unit, displayable = true) {
 		if (!value || !from || !to) return value
 
@@ -370,7 +384,7 @@ export class UnitconvService {
 				}
 				this.storage.setBooleanSetting('migrated_gnosis', true)
 			} catch (e) {
-				console.warn('could not migrate to gnosis')
+				console.warn('could not migrate to gnosis', e)
 			}
 		}
 	}
@@ -425,7 +439,9 @@ export class UnitconvService {
 			this.lastPrice.mGNOXDAI = this.lastPrice.Exec.dividedBy(this.lastPrice.Cons)
 		}
 
-		console.log('skipFetchingMGNOtoDAIPrice', skipFetchingMGNOtoDAIPrice, this.lastPrice.mGNOXDAI.toString())
+		console.log('unitconvservice skipFetchingMGNOtoDAIPrice units', this.pref.Cons, this.pref.Exec)
+		console.log('unitconvservice skipFetchingMGNOtoDAIPrice details', this.lastPrice.Cons.toString(), this.lastPrice.Exec.toString())
+		console.log('unitconvservice skipFetchingMGNOtoDAIPrice', skipFetchingMGNOtoDAIPrice, this.lastPrice.mGNOXDAI.toString())
 
 		this.triggerPropertyChange()
 	}
@@ -452,15 +468,10 @@ export class UnitconvService {
 	}
 
 	private async getExchangeRate(unitPair: string): Promise<CoinbaseExchangeResponse> {
-		const req = new CoinbaseExchangeRequest(unitPair)
-		const response = await this.api.execute(req).catch((e) => {
-			console.warn('error in response getExchangeRate', e)
-			return null
-		})
-		const temp = req.parse(response)
-		if (temp.length <= 0) return null
-		console.log('requested exchange rate for ', unitPair, 'got', temp[0].amount, 'as response')
-		return temp[0]
+		const temp = await this.api.execute(new CoinbaseExchangeRequest(unitPair))
+		if (temp.error) return null
+		console.log('requested exchange rate for ', unitPair, 'got', temp.data.amount, 'as response')
+		return temp.data
 	}
 }
 
@@ -474,7 +485,7 @@ interface LastPrice {
 	mGNOXDAI: BigNumber
 }
 
-interface PreferredCurrency {
+export interface PreferredCurrency {
 	Cons: Currency
 	Exec: Currency
 	RPL: Currency

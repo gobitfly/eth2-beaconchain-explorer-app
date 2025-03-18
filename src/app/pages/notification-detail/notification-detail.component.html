@@ -1,0 +1,153 @@
+<ion-header [translucent]="true">
+	<ion-toolbar class="top">
+		<ion-buttons slot="start" class="modal-buttons">
+			<ion-button (click)="closeModal()">
+				<ion-icon size="large" name="close-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+
+		<ion-title style="padding: 0px 10px">Notification</ion-title>
+		<ion-buttons slot="end" class="modal-buttons">
+			<ion-button (click)="collapse()">
+				<ion-icon *ngIf="state() == 'collapsed'" size="large" name="chevron-expand-outline"></ion-icon>
+				<ion-icon *ngIf="state() == 'expanded'" size="large" name="chevron-collapse-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
+</ion-header>
+
+<ion-content [ngClass]="{ 'ios-background': fadeInCompleted && online }" [fullscreen]="true" [scrollEvents]="true" (ionScroll)="onScroll($event)">
+	<app-full-page-loading (fadeInCompleted)="fadeInCompleted = true" [loading]="initialLoading">
+		<app-full-page-offline (retry)="this.ionViewWillEnter()" [online]="online">
+			<div [hidden]="!data()">
+				<div class="container">
+					<ion-list class="status">
+						<div lines="none" class="status-container">
+							<div [ngStyle]="{ opacity: currentY | fadeoutpipe: 73 }">
+								<ion-icon class="status-icon" name="mail-open-outline"> </ion-icon>
+							</div>
+
+							<div class="status-text">
+								<ion-label class="white" [ngStyle]="{ opacity: currentY | fadeoutpipe: 123 }">
+									<span style="opacity: 0.8">Your Dashboard<br /></span> {{ data()?.dashboard_name }}<span style="opacity: 0.8"> in Group</span>
+									{{ data()?.group_name }}
+								</ion-label>
+
+								<div
+									class="white"
+									(click)="toggleDateState()"
+									style="padding-bottom: 5px; padding-top: 20px"
+									[ngStyle]="{ opacity: currentY | fadeoutpipe: 163 }">
+									<div style="display: inline-block">
+										<ion-label *ngIf="dateState == 'ts'">
+											{{ timestamp | date: locale() }}
+										</ion-label>
+										<ion-label *ngIf="dateState == 'epoch'"> Epoch {{ epoch }} </ion-label>
+										<ion-icon name="repeat-outline" style="opacity: 0.8; font-size: 0.8rem"></ion-icon>
+									</div>
+								</div>
+							</div>
+						</div>
+					</ion-list>
+				</div>
+
+				<div class="background">
+					<div class="inner">
+						<!-- Non accordion single row stuff -->
+						<ion-item slot="header" class="accordion-header" *ngIf="groupEfficiency()">
+							<ion-icon slot="start" name="analytics-outline"></ion-icon>
+							<ion-label
+								>Group Efficiency below <mark>{{ groupEfficiency().efficiency | number: '1.0-2' }}%</mark></ion-label
+							>
+						</ion-item>
+
+						<ion-accordion-group (ionChange)="accordionChange()" [multiple]="true" [value]="defaultOpenAccordions()" #accordionGroup>
+							<!-- Please be aware of the priority segments. If you add new notifications please fit it in the according category -->
+							<!-- Note that this priority only comes into play if multiple notifications happened in this epoch and specifies the display order -->
+
+							<!-- Priority 1: Slashed -->
+
+							<app-accordion-indexslot
+								name="Validators Slashed"
+								key="slashed"
+								icon="alert-circle-outline"
+								[data]="data()?.slashed"></app-accordion-indexslot>
+
+							<!-- Priority 2: Important notifications that might require user to take immediate action -->
+
+							<app-accordion-indexslot
+								name="Validators Offline"
+								key="validator_offline"
+								icon="cloud-offline-outline"
+								[data]="data()?.validator_offline"></app-accordion-indexslot>
+
+							<app-accordion-indexslot
+								name="Proposals Missed"
+								extraName="Slots"
+								key="proposal_missed"
+								icon="cube-outline"
+								[data]="data()?.proposal_missed"></app-accordion-indexslot>
+
+							<app-accordion-indexslot
+								name="Attestations Missed"
+								extraName="Epoch"
+								key="attestation_missed"
+								icon="cloud-offline-outline"
+								[data]="data()?.attestation_missed"></app-accordion-indexslot>
+
+							<!-- Priority 3: Use needs to be aware of something that comes up soon, in case it might affect his workflow (planned maintenance etc) -->
+
+							<!-- Upcoming proposal is minutes away, upcoming sync hours. So display proposal first -->
+							<app-accordion-indexslot
+								name="Upcoming Proposals"
+								extraName="Slots"
+								key="upcoming_proposals"
+								icon="cube-outline"
+								[data]="data()?.proposal_upcoming"></app-accordion-indexslot>
+
+							<app-accordion-indexslot
+								name="Sync Committee"
+								key="sync_committee"
+								icon="sync-circle-outline"
+								[data]="data()?.sync"></app-accordion-indexslot>
+
+							<!-- Priority 4: Infos -->
+
+							<app-accordion-indexslot
+								name="Validators Back Online"
+								key="validator_back_online"
+								extraName="Epochs Offline"
+								icon="cloud-outline"
+								[data]="data()?.validator_online"></app-accordion-indexslot>
+
+							<app-accordion-indexslot
+								name="Proposed Blocks"
+								extraName="Blocks"
+								key="proposal_done"
+								icon="cube-outline"
+								[data]="data()?.proposal_success"></app-accordion-indexslot>
+
+							<app-accordion-indexslot
+								name="Withdrawals"
+								key="withdrawal"
+								extraName="Amount"
+								icon="wallet-outline"
+								[data]="data()?.withdrawal"></app-accordion-indexslot>
+
+							<app-accordion-indexslot
+								name="RP Min Collateral"
+								key="min_collateral_reached"
+								icon="information-circle-outline"
+								[data]="data()?.min_collateral"></app-accordion-indexslot>
+							<app-accordion-indexslot
+								name="RP Max Collateral"
+								key="max_collateral_reached"
+								icon="information-circle-outline"
+								[data]="data()?.max_collateral"></app-accordion-indexslot>
+						</ion-accordion-group>
+					</div>
+				</div>
+			</div>
+		</app-full-page-offline>
+	</app-full-page-loading>
+</ion-content>

@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -26,6 +25,7 @@ import { fromEvent, Subscription } from 'rxjs'
 	selector: 'app-licences',
 	templateUrl: './licences.page.html',
 	styleUrls: ['./licences.page.scss'],
+	standalone: false,
 })
 export class LicencesPage implements OnInit {
 	private backbuttonSubscription: Subscription
@@ -39,7 +39,7 @@ export class LicencesPage implements OnInit {
 		})
 	}
 
-	populatePre(url) {
+	populatePre(url: string) {
 		const xhr = new XMLHttpRequest()
 		xhr.onload = function () {
 			document.getElementById('contents').textContent += this.responseText

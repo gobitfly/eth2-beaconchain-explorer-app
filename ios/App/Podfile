@@ -24,7 +24,10 @@ def capacitor_pods
   pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
   pod 'CapacitorToast', :path => '../../node_modules/@capacitor/toast'
+  pod 'CapawesomeCapacitorAppUpdate', :path => '../../node_modules/@capawesome/capacitor-app-update'
+  pod 'CapgoCapacitorUpdater', :path => '../../node_modules/@capgo/capacitor-updater'
   pod 'CapacitorNavigationbarnx', :path => '../../node_modules/capacitor-navigationbarnx'
+  pod 'StorageMirror', :path => '../../storage-mirror'
   pod 'CordovaPlugins', :path => '../capacitor-cordova-ios-plugins'
 end
 

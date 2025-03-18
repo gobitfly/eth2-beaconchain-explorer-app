@@ -1,5 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -20,19 +20,22 @@
 import { BehaviorSubject, Observable, Subscription } from 'rxjs'
 import { CollectionViewer, DataSource } from '@angular/cdk/collections'
 
+export type loadMoreType<T> = (cursor: string) => Promise<{ data: T[]; next_cursor: string }>
 export class InfiniteScrollDataSource<T> extends DataSource<T> {
 	public static ALL_ITEMS_AT_ONCE = 0
 
 	private pageSize = 100
-	private cachedData: T[] = []
+	cachedData: T[] = []
 	private fetchedPages = new Set<number>()
 	private dataStream = new BehaviorSubject<T[]>(this.cachedData)
 	private subscription = new Subscription()
 
-	private loadMore: (offset: number) => Promise<T[]>
+	private loadMore: loadMoreType<T>
 	private reachedMax = false
 
-	constructor(pageSize: number, loadMore: (offset: number) => Promise<T[]>) {
+	private cursor: string = undefined
+
+	constructor(pageSize: number, loadMore: loadMoreType<T>) {
 		super()
 		this.pageSize = pageSize
 		this.loadMore = loadMore
@@ -40,11 +43,11 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 
 	connect(collectionViewer: CollectionViewer): Observable<T[]> {
 		this.subscription.add(
-			collectionViewer.viewChange.subscribe((range) => {
+			collectionViewer.viewChange.subscribe(async (range) => {
 				const startPage = this.getPageForIndex(range.start)
-				const endPage = this.getPageForIndex(range.end + 1)
+				const endPage = this.getPageForIndex(range.end)
 				for (let i = startPage; i <= endPage; i++) {
-					this.fetchPage(i)
+					await this.fetchPage(i)
 				}
 			})
 		)
@@ -60,31 +63,39 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 		return Math.floor(index / this.pageSize)
 	}
 
-	private async fetchPage(page: number) {
+	protected async fetchPage(page: number) {
 		if (this.fetchedPages.has(page) || this.reachedMax) {
 			return
 		}
 		this.fetchedPages.add(page)
 
-		const newEntries = await this.loadMore(page * this.pageSize)
+		const newEntries = await this.loadMore(this.cursor)
+		if (!newEntries.data) {
+			return Promise.resolve()
+		}
+		this.cursor = newEntries.next_cursor
+		if (!this.cursor) {
+			this.reachedMax = true
+		}
 
 		let deleteAmount = this.pageSize
 		if (this.pageSize == InfiniteScrollDataSource.ALL_ITEMS_AT_ONCE) {
 			deleteAmount = this.cachedData.length
 		}
 
-		this.cachedData.splice(page * this.pageSize, deleteAmount, ...newEntries)
+		this.cachedData.splice(page * this.pageSize, deleteAmount, ...newEntries.data)
 		this.dataStream.next(this.cachedData)
 
-		if (newEntries.length < this.pageSize) {
-			this.reachedMax = true
-		}
+		// if (newEntries.data.length < this.pageSize) {
+		// 	this.reachedMax = true
+		// }
 		return Promise.resolve()
 	}
 
 	public async reset() {
 		this.fetchedPages.clear()
 		this.cachedData = []
+		this.cursor = undefined
 		this.dataStream.next(this.cachedData)
 		this.reachedMax = false
 		return await this.fetchPage(0)
@@ -102,7 +113,11 @@ export class InfiniteScrollDataSource<T> extends DataSource<T> {
 		return this.cachedData
 	}
 
-	public setLoadFrom(loadMore: (offset: number) => Promise<T[]>) {
+	public hasReachedEnd(): boolean {
+		return this.reachedMax
+	}
+
+	public setLoadFrom(loadMore: loadMoreType<T>) {
 		this.loadMore = loadMore
 	}
 }

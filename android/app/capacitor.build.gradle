@@ -22,8 +22,11 @@ dependencies {
     implementation project(':capacitor-splash-screen')
     implementation project(':capacitor-status-bar')
     implementation project(':capacitor-toast')
+    implementation project(':capawesome-capacitor-app-update')
+    implementation project(':capgo-capacitor-updater')
     implementation project(':capacitor-navigationbarnx')
-    implementation "com.android.billingclient:billing:7.0.0"
+    implementation project(':storage-mirror')
+    implementation "com.android.billingclient:billing:7.1.1"
 }
 
 

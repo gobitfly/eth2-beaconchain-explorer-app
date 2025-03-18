@@ -1,0 +1,86 @@
+<ion-header>
+	<ion-toolbar class="top">
+		<ion-title>Monitoring</ion-title>
+	</ion-toolbar>
+	<ion-segment [(ngModel)]="selectedChart" mode="md" scrollable="true">
+		<ion-segment-button value="cpu" [disabled]="scrolling" [class]="selectedChart == 'cpu' ? 'segment-button-checked' : ''">
+			<ion-label>CPU</ion-label>
+		</ion-segment-button>
+		<ion-segment-button value="memory" [disabled]="scrolling">
+			<ion-label [class]="selectedChart == 'memory' ? 'segment-button-checked' : ''">Memory</ion-label>
+		</ion-segment-button>
+		<ion-segment-button value="sync" [disabled]="scrolling" [class]="selectedChart == 'sync' ? 'segment-button-checked' : ''">
+			<ion-label>Sync</ion-label>
+		</ion-segment-button>
+	</ion-segment>
+</ion-header>
+
+<ion-content [fullscreen]="true" [scrollEvents]="true" (ionScrollStart)="onScrollStarted()" (ionScrollEnd)="onScrollEnded()">
+	<app-full-page-loading [fixInfiniteScroll]="true" [loading]="initialLoading">
+		<app-full-page-offline (retry)="this.doRefresh(null)" [online]="online">
+			<ion-item class="top-bar" *ngIf="!this.data || showData" (click)="openTimeSelection()">
+				<ion-label>Last {{ this.selectedTimeFrame }}</ion-label>
+				<ion-icon class="opacity-icon" slot="end" name="time-outline"></ion-icon>
+			</ion-item>
+
+			<div *ngIf="this.data && showData">
+				<div style="margin-top: 0px; margin-bottom: 10px" *ngIf="!this.merchant.hasMachineMonitoringPremium()">
+					<app-ad location="machines"></app-ad>
+				</div>
+
+				<div *ngFor="let key of orderedKeys" class="card">
+					<app-machinechart
+						[priority]="true"
+						[title]="key ? key : 'Machine'"
+						[subtitleLeft]="data.get(key)| delegate: clientFormatter"
+						[subtitleRight]="data.get(key).formattedDate | date:'short'"
+						[icon]="data.get(key)| delegate: onlineStateDelegate | async"
+						[key]="key"
+						[clickAction]="key | delegate: machineClickDelegate"
+						[chartData]="data.get(key)| delegate: cpuDelegate"
+						[hidden]="selectedChart != 'cpu'">
+					</app-machinechart>
+
+					<app-machinechart
+						[title]="key ? key : 'Machine'"
+						[subtitleLeft]="data.get(key)| delegate: clientFormatter"
+						[subtitleRight]="data.get(key).formattedDate | date:'short'"
+						[icon]="data.get(key)| delegate: onlineStateDelegate | async"
+						[key]="key"
+						[clickAction]="key | delegate: machineClickDelegate"
+						[chartData]="data.get(key)| delegate: memoryDelegate"
+						[hidden]="selectedChart != 'memory'">
+					</app-machinechart>
+
+					<app-machinechart
+						[title]="key ? key : 'Machine'"
+						[subtitleLeft]="data.get(key)| delegate: clientFormatter"
+						[subtitleRight]="data.get(key).formattedDate | date:'short'"
+						[icon]="data.get(key)| delegate: onlineStateDelegate | async"
+						[key]="key"
+						[clickAction]="key | delegate: machineClickDelegate"
+						[chartData]="data.get(key)| delegate: syncDelegate"
+						[hidden]="selectedChart != 'sync'">
+					</app-machinechart>
+				</div>
+			</div>
+
+			<div *ngIf="this.data && !showData">
+				<div class="nothingfound">
+					<ion-icon class="opacity-icon" name="pulse-outline"></ion-icon><br />
+					<ion-label><strong class="title">Machine Monitoring</strong></ion-label
+					><br /><br />
+
+					<ion-label>Monitor your {{ api.getNetwork().name }} staking machines on the go.</ion-label>
+					<br /><br />
+					<ion-button (click)="login()" *ngIf="!loggedIn">Login</ion-button>
+					<ion-button *ngIf="loggedIn" (click)="openBrowser('https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node')"
+						>Setup Monitoring</ion-button
+					>
+				</div>
+			</div>
+
+			<div class="bottomFiller"></div>
+		</app-full-page-offline>
+	</app-full-page-loading>
+</ion-content>

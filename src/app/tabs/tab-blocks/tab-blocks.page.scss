@@ -1,0 +1,88 @@
+// Copyright (C) 2022 bitfly explorer GmbH
+//
+// This file is part of Beaconchain Dashboard.
+//
+// Beaconchain Dashboard is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Beaconchain Dashboard is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+
+@use '../../../theme/variables.scss';
+
+.toolbar-btn::part(native) {
+	--ion-color-contrast: var(--x-toolbar-title-color);
+	--color: var(--x-toolbar-title-color);
+	color: var(--x-toolbar-title-color);
+	background: transparent !important;
+	--background: transparent !important;
+}
+
+.nothingfound ion-icon {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	padding-bottom: 12px;
+	font-size: 55px;
+	color: var(--ion-text-color-lighter);
+}
+
+.top-bar {
+	padding: 0px !important;
+	background: var(--ion-item-background);
+	margin-bottom: 0px !important;
+}
+
+.next-block-hint {
+	opacity: 0.6;
+	font-size: var(--smaller-info-size);
+	font-weight: 400; //var(--smaller-label-weight);
+
+	text-align: center;
+	margin: 6px 6px 6px 6px;
+}
+
+.nothingfound {
+	text-align: center;
+	padding: 30px;
+	margin-left: 6%;
+	margin-right: 6%;
+	margin-top: 25px;
+	color: var(--ion-text-color-lighter);
+}
+
+ion-label {
+	//font-weight: normal;
+	//color: var(--ion-text-color-lighter);
+	opacity: var(--default-secondary-transparency);
+}
+
+cdk-virtual-scroll-viewport {
+	margin-left: 0px;
+	margin-right: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	width: 100%;
+	height: 95%;
+	padding-bottom: 120px;
+}
+
+.center {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+}
+
+.status-icon {
+	margin-top: 7px;
+	font-size: 69px;
+}

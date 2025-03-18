@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -26,9 +25,10 @@ import { FormsModule } from '@angular/forms'
 import { TabsPageRoutingModule } from './tabs-routing.module'
 
 import { TabsPage } from './tabs.page'
+import { FirebaseUtilsModule } from '@utils/Firebase.module'
 
 @NgModule({
-	imports: [IonicModule, CommonModule, FormsModule, TabsPageRoutingModule],
+	imports: [IonicModule, CommonModule, FormsModule, TabsPageRoutingModule, FirebaseUtilsModule],
 	declarations: [TabsPage],
 })
 export class TabsPageModule {}

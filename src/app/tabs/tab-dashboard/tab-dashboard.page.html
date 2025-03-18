@@ -1,0 +1,110 @@
+<!-- 
+    Copyright (C) 2020 - 2024 bitfly explorer GmbH
+    Manuel Caspari (manuel@bitfly.at)
+    
+    This file is part of Beaconchain Dashboard.
+
+    Beaconchain Dashboard is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Beaconchain Dashboard is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<ion-header [translucent]="true">
+	<ion-toolbar class="top">
+		<ion-buttons slot="start" (click)="openDashboardAndGroupSelect()">
+			<ion-icon slot="icon-only" ios="apps-outline" md="apps-outline" id="network-icon"></ion-icon>
+		</ion-buttons>
+		<ion-title> Dashboard </ion-title>
+		<ion-label class="sub-text">{{ dashboardName }}</ion-label>
+		<ion-buttons slot="primary" id="options-dashboard" *ngIf="overallData && !overallData.isEmpty()">
+			<ion-label>{{formattedSelectedTimeframe()}}</ion-label>
+		</ion-buttons>
+	</ion-toolbar>
+	<app-offline *ngIf="!online"></app-offline>
+</ion-header>
+
+<ion-content
+	[ngClass]="{'ios-background': (!dashboardID || fadeInCompleted) && online}"
+	[fullscreen]="true"
+	[scrollEvents]="true"
+	(ionScroll)="onScroll($event)"
+	(ionScrollStart)="onScrollStarted()"
+	(ionScrollEnd)="onScrollEnded()">
+	<ion-popover trigger="options-dashboard" triggerAction="click" [dismissOnSelect]="true" *ngIf="overallData && !overallData.isEmpty()">
+		<ng-template>
+			<ion-content>
+				<ion-list>
+					<ion-item
+						[button]="true"
+						[detail]="false"
+						[class]="overallData.timeframe() == Period.AllTime ? 'selected':''"
+						(click)="changeTimeframe(Period.AllTime)"
+						>Show All Time</ion-item
+					>
+					<ion-item
+						[button]="true"
+						[detail]="false"
+						[class]="overallData.timeframe() == Period.Last1h ? 'selected':''"
+						(click)="changeTimeframe(Period.Last1h)"
+						>Show Last Hour</ion-item
+					>
+					<ion-item
+						[button]="true"
+						[detail]="false"
+						[class]="overallData.timeframe() == Period.Last24h ? 'selected':''"
+						(click)="changeTimeframe(Period.Last24h)"
+						>Show Last 24h</ion-item
+					>
+					<ion-item
+						[button]="true"
+						[detail]="false"
+						[class]="overallData.timeframe() == Period.Last7d ? 'selected':''"
+						(click)="changeTimeframe(Period.Last7d)"
+						>Show Last 7d</ion-item
+					>
+					<ion-item
+						[button]="true"
+						[detail]="false"
+						[class]="overallData.timeframe() == Period.Last30d ? 'selected':''"
+						(click)="changeTimeframe(Period.Last30d)"
+						>Show Last 30d</ion-item
+					>
+				</ion-list>
+			</ion-content>
+		</ng-template>
+	</ion-popover>
+	<!-- <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)" *ngIf="!scrolling" [disabled]="!overallData">
+		<ion-refresher-content></ion-refresher-content>
+	</ion-refresher> -->
+
+	<app-full-page-offline (retry)="this.doRefresh(null)" [online]="online || (overallData && overallData.isReadyToDisplay())">
+		<div class="setup-head" *ngIf="!loading && (!overallData || overallData.isEmpty())">
+			<div class="inner-setup-head">
+				<ion-icon class="setup-icon" name="color-wand-outline" [ngStyle]="{'opacity': currentY | fadeoutpipe: 100 }"> </ion-icon>
+				<h2 [ngStyle]="{'opacity': currentY | fadeoutpipe: 180 }">Let´s get started</h2>
+			</div>
+		</div>
+
+		<app-validator-dashboard
+			(fadeInCompleted)="fadeInCompleted=true"
+			(changedGroup)="changedGroup()"
+			[online]="online"
+			[data]="overallData"
+			[currentY]="currentY"
+			[scrolling]="scrolling"
+			[updates]="updates.updates"
+			*ngIf="loading || (overallData && !overallData.isEmpty() && dashboardID)">
+		</app-validator-dashboard>
+
+		<app-help *ngIf="!loading && (!overallData || overallData.isEmpty())"></app-help>
+	</app-full-page-offline>
+</ion-content>

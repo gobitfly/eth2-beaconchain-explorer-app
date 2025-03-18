@@ -1,5 +1,5 @@
 <!-- 
-    Copyright (C) 2020 - 2021 Bitfly GmbH
+    Copyright (C) 2020 - 2024 bitfly explorer GmbH
     Manuel Caspari (manuel@bitfly.at)
     
     This file is part of Beaconchain Dashboard.
@@ -19,7 +19,7 @@
  -->
 
 <ion-tabs>
-	<ion-tab-bar slot="bottom">
+	<ion-tab-bar slot="bottom" translucent="true" class="tab-bar-translucent">
 		<ion-tab-button tab="dashboard">
 			<ion-icon name="speedometer-outline" class="opacity-icon"></ion-icon>
 			<!-- <ion-label>Dashboard</ion-label> -->
@@ -36,7 +36,7 @@
 		</ion-tab-button>
 
 		<ion-tab-button tab="machines">
-			<ion-icon name="pulse-outline" class="opacity-icon"></ion-icon>
+			<ion-icon name="hardware-chip-outline" class="opacity-icon"></ion-icon>
 			<!-- <ion-label>Monitoring</ion-label> -->
 		</ion-tab-button>
 
@@ -45,6 +45,6 @@
 			<!--  <ion-label> Preferences</ion-label> -->
 		</ion-tab-button>
 	</ion-tab-bar>
-
-	<section style="display: none" id="preload"></section>
 </ion-tabs>
+
+<section style="display: none" id="preload"></section>

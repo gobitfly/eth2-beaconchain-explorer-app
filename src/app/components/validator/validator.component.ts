@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,126 +17,111 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, Input } from '@angular/core'
-import { ValidatorResponse } from 'src/app/requests/requests'
+import { Component, Input } from '@angular/core'
 import * as blockies from 'ethereum-blockies'
-import { ValidatorUtils, getDisplayName, Validator, ValidatorState } from 'src/app/utils/ValidatorUtils'
-import { UnitconvService } from '../../services/unitconv.service'
-import { AlertService } from 'src/app/services/alert.service'
-import BigNumber from 'bignumber.js'
-import OverviewController from 'src/app/controllers/OverviewController'
+import { getDisplayName, ValidatorState } from '@utils/ValidatorUtils'
+import { UnitconvService } from '@services/unitconv.service'
+import { MobileValidatorDashboardValidatorsTableRow } from '@requests/types/mobile'
 
+type SyncState = 'none' | 'current' | 'next'
 @Component({
 	selector: 'app-validator',
 	templateUrl: './validator.component.html',
 	styleUrls: ['./validator.component.scss'],
+	standalone: false,
 })
-export class ValidatorComponent implements OnInit {
-	fadeIn = 'fade-in'
+export class ValidatorComponent {
+	@Input() validator: MobileValidatorDashboardValidatorsTableRow
+	@Input() first: boolean
+	@Input() last: boolean
+	@Input() selected: boolean
 
-	@Input() validator: Validator
-
-	data: ValidatorResponse
 	name: string
 	imgData: string
-
-	tagged: boolean
 
 	state: string
 
 	stateCss: string
+	labels: string
+	efficiency: number
+	sync: SyncState = 'none'
 
-	balance = null
+	constructor(public unit: UnitconvService) {}
 
-	overviewController = new OverviewController()
-
-	constructor(private validatorUtils: ValidatorUtils, public unit: UnitconvService, private alerts: AlertService) {}
-
-	async ngOnChanges() {
-		this.data = this.validator.data
-		this.balance = this.calculateBalanceShare(this.validator)
-
+	ngOnChanges() {
 		this.name = getDisplayName(this.validator)
 		this.imgData = this.getBlockies()
-		this.tagged = !!(await this.validatorUtils.getValidatorLocal(this.validator.pubkey))
 		this.state = this.interpretState(this.validator)
 		this.stateCss = this.interpretStateCss(this.validator)
-	}
-
-	setInput(validator: Validator) {
-		this.validator = validator
-		this.data = validator.data
-		this.balance = this.calculateBalanceShare(this.validator)
-	}
-
-	calculateBalanceShare(validator) {
-		return this.overviewController.sumBigIntBalanceRP([validator], (cur) => new BigNumber(cur.data.balance))
-	}
-
-	ngOnInit() {
-		setTimeout(() => {
-			this.fadeIn = null
-		}, 500)
-	}
-
-	tag(event) {
-		event.stopPropagation()
-		this.validatorUtils.convertToValidatorModelAndSaveValidatorLocal(false, this.data)
-		this.tagged = true
-	}
-
-	untag(event) {
-		event.stopPropagation()
-
-		this.alerts.confirmDialog('Remove validator', 'Do you want to remove this validator?', 'Delete', () => {
-			this.confirmUntag()
-		})
-	}
-
-	private confirmUntag() {
-		this.validatorUtils.deleteValidatorLocal(this.data, false)
-		this.tagged = false
+		this.labels = this.getLabels(this.validator)
+		this.efficiency = this.validator.efficiency
+		this.sync = this.getSyncState(this.validator)
 	}
 
 	private getBlockies() {
 		// TODO: figure out why the first blockie image is always black
-		blockies.create({ seed: this.data.pubkey }).toDataURL()
-		const dataurl = blockies.create({ seed: this.data.pubkey, size: 8, scale: 7 }).toDataURL()
+		blockies.create({ seed: this.validator.index + '' }).toDataURL()
+		const dataurl = blockies.create({ seed: this.validator.index + '', size: 8, scale: 7 }).toDataURL()
 		return dataurl
 	}
 
-	interpretState(item: Validator) {
-		switch (item.state) {
-			case ValidatorState.ACTIVE:
+	getSyncState(item: MobileValidatorDashboardValidatorsTableRow): SyncState {
+		if (item.is_in_next_sync_committee) {
+			return 'next'
+		}
+		if (item.is_in_sync_committee) {
+			return 'current'
+		}
+		return 'none'
+	}
+
+	getLabels(item: MobileValidatorDashboardValidatorsTableRow) {
+		if (item.rocket_pool) {
+			return '<mark>RP</mark>'
+		}
+		return '<ion-icon name="sync-outline"></ion-icon>'
+	}
+
+	interpretState(item: MobileValidatorDashboardValidatorsTableRow) {
+		switch (item.status) {
+			case ValidatorState.ACTIVE_ONLINE:
 				return 'Active'
-			case ValidatorState.OFFLINE:
+			case ValidatorState.ACTIVE_OFFLINE:
 				return 'Offline'
 			case ValidatorState.SLASHED:
 				return 'Slashed'
 			case ValidatorState.EXITED:
 				return 'Exited'
-			case ValidatorState.WAITING:
+			case ValidatorState.PENDING:
 				return 'Waiting for Activation'
-			case ValidatorState.ELIGABLE:
+			case ValidatorState.DEPOSITED:
 				return 'Waiting for deposit processing'
+			case ValidatorState.EXITING_ONLINE:
+				return 'Exiting (Active)'
+			case ValidatorState.EXITING_OFFLINE:
+				return 'Exiting (Offline)'
+			case ValidatorState.SLASHING_ONLINE:
+				return 'Slashing (Active)'
+			case ValidatorState.SLASHING_OFFLINE:
+				return 'Slashing (Offline)'
 			default:
 				return 'Unknown'
 		}
 	}
 
-	interpretStateCss(item: Validator) {
-		switch (item.state) {
-			case ValidatorState.ACTIVE:
+	interpretStateCss(item: MobileValidatorDashboardValidatorsTableRow) {
+		switch (item.status) {
+			case ValidatorState.ACTIVE_ONLINE || ValidatorState.EXITING_ONLINE || ValidatorState.SLASHING_ONLINE:
 				return 'online'
-			case ValidatorState.OFFLINE:
+			case ValidatorState.ACTIVE_OFFLINE || ValidatorState.EXITING_OFFLINE || ValidatorState.SLASHING_OFFLINE:
 				return 'offline'
 			case ValidatorState.SLASHED:
 				return 'slashed'
 			case ValidatorState.EXITED:
 				return 'exited'
-			case ValidatorState.WAITING:
+			case ValidatorState.DEPOSITED:
 				return 'waiting'
-			case ValidatorState.ELIGABLE:
+			case ValidatorState.PENDING:
 				return 'waiting'
 			default:
 				return ''

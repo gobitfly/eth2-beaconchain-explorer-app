@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -20,10 +19,11 @@
 
 import { Pipe, PipeTransform } from '@angular/core'
 import BigNumber from 'bignumber.js'
-import { UnitconvService } from '../services/unitconv.service'
+import { UnitconvService } from '@services/unitconv.service'
 
 @Pipe({
 	name: 'mcurrency',
+	standalone: false,
 })
 export class McurrencyPipe implements PipeTransform {
 	constructor(private unit: UnitconvService) {}

@@ -1,6 +1,6 @@
 <ion-header>
-	<ion-toolbar>
-		<ion-buttons slot="start">
+	<ion-toolbar class="top">
+		<ion-buttons slot="start" class="modal-buttons">
 			<ion-button (click)="closeModal()">
 				<ion-icon size="large" name="close-outline"></ion-icon>
 			</ion-button>
@@ -44,13 +44,18 @@
 			[hidden]="selectedTab != 'cpu'"
 			title="CPU Processes"
 			[key]="key"
-			priority="true"
+			[priority]="true"
 			[chartData]="data | delegate: cpuDelegate"
 			[subtitleLeft]="cpuProcessLabelNode"
 			[subtitleRight]="cpuProcessLabelVal">
 		</app-machinechart>
 
-		<app-machinechart title="CPU System" [key]="key" [chartData]="data | delegate: cpuSystemDelegate" priority="true" [subtitleLeft]="cpuLabelTotal">
+		<app-machinechart
+			title="CPU System"
+			[key]="key"
+			[chartData]="data | delegate: cpuSystemDelegate"
+			[priority]="true"
+			[subtitleLeft]="cpuLabelTotal">
 		</app-machinechart>
 
 		<div class="bottomFiller"></div>

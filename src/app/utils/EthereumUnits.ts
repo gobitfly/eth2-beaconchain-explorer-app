@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -42,7 +41,7 @@ export default class Unit {
 
 	public static XDAI = new Unit('DAI', new BigNumber('1'), 4, 'XXX-DAI', 'xDAI')
 	public static GNO = new Unit('GNO', new BigNumber('0.03125'), 5, 'XXX-GNO', 'GNO')
-	public static MGNO = new Unit('mGNO', new BigNumber('1'), 5, 'XXX-GNO', 'mGNO')
+	// public static MGNO = new Unit('mGNO', new BigNumber('1'), 5, 'XXX-GNO', 'mGNO')
 
 	public static USDETH = new Unit('$', new BigNumber('1'), 2, 'XXX-USD', 'Dollar')
 	public static EURETH = new Unit('€', new BigNumber('1'), 2, 'XXX-EUR', 'Euro')
@@ -59,7 +58,7 @@ export default class Unit {
 	public static NZDETH = new Unit('NZ$', new BigNumber('1'), 2, 'XXX-NZD', 'New Zealand Dollar')
 	public static BTCETH = new Unit('₿', new BigNumber('1'), 6, 'XXX-BTC', 'Bitcoin')
 
-	private constructor(symbol: string, value: BigNumber, rounding = 2, coinbaseSpot = null, settingsName = null) {
+	private constructor(symbol: string, value: BigNumber, rounding = 2, coinbaseSpot: string = null, settingsName: string = null) {
 		this.display = symbol
 		this.value = value
 		this.rounding = rounding
@@ -105,7 +104,7 @@ export const MAPPING = new Map([
 	['NO_CURRENCY', Unit.NO_CURRENCY],
 	['RETH', Unit.RETH],
 	['GNO', Unit.GNO],
-	['mGNO', Unit.MGNO],
+	// ['mGNO', Unit.MGNO],
 	['xDAI', Unit.XDAI],
 
 	['RUBLE', Unit.RUBETH],

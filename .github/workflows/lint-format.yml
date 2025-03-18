@@ -13,15 +13,28 @@ jobs:
     name: lint-format
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
-    - name: Setup Node Environment
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
-    - name: Install Dependencies
-      run: npm ci
-    - name: Check File Format
-      run: npm run prettier-check
-    - name: Lint Files
-      run: npm run lint
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node Environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+          cache: 'npm' # Enables caching for npm dependencies
+
+      - name: Restore npm Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Check File Format
+        run: npm run prettier-check
+
+      - name: Lint Files
+        run: npm run lint

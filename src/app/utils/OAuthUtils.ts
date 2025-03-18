@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,19 +17,21 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ApiService } from '../services/api.service'
+import { ApiService } from '@services/api.service'
 import { Injectable } from '@angular/core'
-import { StorageService } from '../services/storage.service'
-import FirebaseUtils from './FirebaseUtils'
-import { ValidatorUtils } from './ValidatorUtils'
+import { StorageService } from '@services/storage.service'
+import { pushLastTokenUpstream } from './FirebaseUtils'
 import { LoadingController, Platform } from '@ionic/angular'
-import { SyncService } from '../services/sync.service'
 import { MerchantUtils } from './MerchantUtils'
 
 import { Toast } from '@capacitor/toast'
 import { Device } from '@capacitor/device'
-import { OAuth2Client } from '@byteowls/capacitor-oauth2'
+import { OAuth2AuthenticateOptions, OAuth2Client } from '@byteowls/capacitor-oauth2'
 import FlavorUtils from './FlavorUtils'
+import { mergeLocalDashboardToRemote } from './DashboardUtils'
+import { getProperty } from '@requests/requests'
+import { AlertService } from '@services/alert.service'
+import { NotificationBase } from '../tabs/tab-preferences/notification-base'
 
 @Injectable({
 	providedIn: 'root',
@@ -39,47 +40,76 @@ export class OAuthUtils {
 	constructor(
 		private api: ApiService,
 		private storage: StorageService,
-		private firebaseUtils: FirebaseUtils,
-		private validatorUtils: ValidatorUtils,
 		private loadingController: LoadingController,
-		private sync: SyncService,
 		private merchantUtils: MerchantUtils,
 		private flavor: FlavorUtils,
-		private platform: Platform
+		private platform: Platform,
+		private alert: AlertService,
+		private notificationBase: NotificationBase
 	) {
 		//registerWebPlugin(OAuth2Client);
 	}
 
 	async login(statusCallback: (finished: boolean) => void = null) {
-		return OAuth2Client.authenticate(await this.getOAuthOptions())
-			.then(async (response: AccessTokenResponse) => {
+		let authOptions: OAuth2AuthenticateOptions = await this.getOAuthOptionsv1()
+		const isV2 = await this.storage.isV2()
+		if (isV2) {
+			authOptions = await this.getOAuthOptionsv2()
+		}
+		return OAuth2Client.authenticate(authOptions)
+			.then(async (response: unknown) => {
 				const loadingScreen = await this.presentLoading()
 				loadingScreen.present()
 
-				let result = response.access_token_response
-				if (typeof result === 'string') {
-					result = JSON.parse(response.access_token_response as string)
+				let obj = response
+				if (typeof response === 'string') {
+					obj = JSON.parse(response as string)
 				}
-				result = result as Token
-				const accessToken = result.access_token
-				const refreshToken = result.refresh_token
 
-				// inconsistent on ios, just assume a 10min lifetime for first token and then just refresh it
-				// and kick off real expiration times
-				const expiresIn = Date.now() + 10 * 60 * 1000
+				// different responses based on the platform yay
+				let accessToken = getProperty(obj, 'access_token')
+				if (!accessToken) {
+					accessToken = getProperty(obj, 'access_token_response')
+						? getProperty(getProperty(obj, 'access_token_response'), 'access_token')
+						: getProperty(obj, 'authorization_response')
+							? getProperty(getProperty(obj, 'authorization_response'), 'access_token')
+							: undefined
+				}
+				let refreshToken = getProperty(obj, 'refresh_token')
+				if (!refreshToken) {
+					refreshToken = getProperty(obj, 'access_token_response')
+						? getProperty(getProperty(obj, 'access_token_response'), 'refresh_token')
+						: getProperty(obj, 'authorization_response')
+							? getProperty(getProperty(obj, 'authorization_response'), 'refresh_token')
+							: undefined
+				}
 
-				console.log('successful', accessToken, refreshToken, expiresIn)
-				await this.storage.setAuthUser({
-					accessToken: accessToken,
-					refreshToken: refreshToken,
-					expiresIn: expiresIn,
-				})
+				if (!accessToken) {
+					throw new Error('invalid access token')
+				}
 
-				this.validatorUtils.clearDeletedSet()
-				await this.firebaseUtils.pushLastTokenUpstream(true)
-				await this.sync.fullSync()
+				if (isV2) {
+					console.log('successful v2 auth')
 
-				const isPremium = await this.merchantUtils.hasMachineHistoryPremium()
+					await this.storage.setAuthUserv2({
+						Session: accessToken as string,
+					})
+
+					await this.api.initV2Cookies()
+				} else {
+					// inconsistent on ios, just assume a 10min lifetime for first token and then just refresh it
+					// and kick off real expiration times
+					const expiresIn = Date.now() + 10 * 60 * 1000
+
+					await this.storage.setAuthUser({
+						accessToken: accessToken as string,
+						refreshToken: refreshToken as string,
+						expiresIn: expiresIn,
+					})
+				}
+
+				await this.postLogin()
+				const isPremium = this.merchantUtils.isPremium()
 
 				loadingScreen.dismiss()
 				if (isPremium) {
@@ -95,11 +125,29 @@ export class OAuthUtils {
 			.catch((reason: unknown) => {
 				if (statusCallback) statusCallback(true)
 				console.error('OAuth rejected', reason)
-				Toast.show({
-					text: 'Could not log in, please try again later.',
-				})
+				this.alert.showError(
+					'Login Failed',
+					'Your credentials are correct but there has been a problem signing you in at this moment. Please try again in 20min. If this error persists please reach out to us.',
+					100
+				)
 				return false
 			})
+	}
+
+	async postLogin() {
+		await pushLastTokenUpstream(this.storage, this.api, true)
+		//await this.sync.fullSync()
+
+		await this.merchantUtils.getUserInfo(true, () => {
+			console.warn('can not get user info')
+			Toast.show({
+				text: 'Could not log in, please try again later.',
+			})
+		})
+
+		await mergeLocalDashboardToRemote(this.api, this.storage)
+
+		await this.notificationBase.syncClientUpdates()
 	}
 
 	private async presentLoading() {
@@ -120,7 +168,7 @@ export class OAuthUtils {
 		return hash.toString(16)
 	}
 
-	private async getOAuthOptions() {
+	private async getOAuthOptionsv1() {
 		const api = this.api
 		const endpointUrl = api.getResourceUrl('user/token')
 
@@ -141,8 +189,10 @@ export class OAuthUtils {
 			}
 		}
 
+		const oAuthURL = api.getBaseUrl() + '/user/authorize'
+
 		return {
-			authorizationBaseUrl: api.getBaseUrl() + '/user/authorize',
+			authorizationBaseUrl: oAuthURL,
 			accessTokenEndpoint: endpointUrl,
 			web: {
 				appId: clientID,
@@ -164,13 +214,42 @@ export class OAuthUtils {
 			},
 		}
 	}
-}
 
-interface AccessTokenResponse {
-	access_token_response: Token | string
-}
+	private async getOAuthOptionsv2() {
+		const responseType = 'token'
+		const clientName = await this.storage.getDeviceName()
 
-interface Token {
-	access_token: string
-	refresh_token: string
+		let callback = 'beaconchainmobile://callback'
+		if (this.platform.is('ios') || this.platform.is('android')) {
+			if (await this.flavor.isBetaFlavor()) {
+				callback = 'beaconchainmobilebeta://callback'
+			}
+		}
+
+		const oAuthURL = this.api.getBaseUrl() + '/login'
+
+		const clientID = await this.storage.getDeviceID()
+
+		return {
+			authorizationBaseUrl: oAuthURL,
+			web: {
+				appId: clientID + ':' + clientName,
+				responseType: responseType,
+				redirectUrl: callback,
+				windowOptions: 'height=600,left=0,top=0',
+			},
+			android: {
+				appId: clientID + ':' + clientName,
+				responseType: responseType,
+				redirectUrl: callback,
+				handleResultOnNewIntent: true,
+				handleResultOnActivityResult: true,
+			},
+			ios: {
+				appId: clientID + ':' + clientName,
+				responseType: responseType,
+				redirectUrl: callback,
+			},
+		}
+	}
 }

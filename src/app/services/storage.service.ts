@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,20 +17,24 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable, isDevMode } from '@angular/core'
-import { Plugins } from '@capacitor/core'
+import { Injectable, isDevMode, OnInit } from '@angular/core'
 import * as StorageTypes from '../models/StorageTypes'
-import { MAP, findConfigForKey } from '../utils/NetworkData'
-import { CacheModule } from '../utils/CacheModule'
-import BigNumber from 'bignumber.js'
-import { Platform } from '@ionic/angular'
+import { findConfigForKey } from '@utils/NetworkData'
+import { CacheModule } from '@utils/CacheModule'
+import { ModalController, Platform } from '@ionic/angular'
 
 import { Preferences } from '@capacitor/preferences'
-import { LogviewPage } from '../pages/logview/logview.page'
-const { StorageMirror } = Plugins
+import { LogviewPage } from '@pages/logview/logview.page'
+import { Device } from '@capacitor/device'
+import { Aggregation, dashboardID, Period } from '@requests/v2-dashboard'
+import { StorageMirror } from 'storage-mirror'
+import { environment } from 'src/environments/environment'
 
 const AUTH_USER = 'auth_user'
+const AUTH_USER_V2 = 'auth_user_v2'
 const PREFERENCES = 'network_preferences'
+const WIDGET_PREFERENCES = 'widget_network_preferences'
+const DASHBOARD_ID = 'dashboard_id'
 
 export const SETTING_NOTIFY = 'setting_notify'
 export const CPU_THRESHOLD = 'cpu_usage_threshold'
@@ -42,43 +45,86 @@ export const DEBUG_SETTING_OVERRIDE_PACKAGE = 'debug_setting_override_package'
 @Injectable({
 	providedIn: 'root',
 })
-export class StorageService extends CacheModule {
+export class StorageService extends CacheModule implements OnInit {
 	constructor(private platform: Platform) {
 		super()
+	}
+
+	ngOnInit() {
 		this.reflectiOSStorage()
+	}
+
+	storeInHardCache(): boolean {
+		return false
 	}
 
 	// --- upper level helper ---
 
+	async getDeviceID() {
+		return (await Device.getId()).identifier
+	}
+
 	async backupAuthUser() {
-		return this.setObject(AUTH_USER + '_backup', await this.getAuthUser())
+		return this.setObject(AUTH_USER_V2 + '_backup', await this.getAuthUserv2())
 	}
 
 	async restoreAuthUser() {
-		return this.setAuthUser((await this.getObject(AUTH_USER + '_backup')) as StorageTypes.AuthUser)
+		return this.setAuthUserv2((await this.getObject(AUTH_USER_V2 + '_backup')) as StorageTypes.AuthUserv2)
 	}
 
+	/**@deprecated */
 	async getAuthUser(): Promise<StorageTypes.AuthUser> {
 		return this.getObject(AUTH_USER) as Promise<StorageTypes.AuthUser>
 	}
 
+	/**@deprecated */
 	async setAuthUser(value: StorageTypes.AuthUser) {
 		return this.setObject(AUTH_USER, value)
 	}
 
+	async getAuthUserv2(): Promise<StorageTypes.AuthUserv2> {
+		return this.getObject(AUTH_USER_V2) as Promise<StorageTypes.AuthUserv2>
+	}
+
+	async setAuthUserv2(value: StorageTypes.AuthUserv2) {
+		const expires = new Date()
+		expires.setMonth(expires.getMonth() + 12)
+		document.cookie = 'session_id' + '=' + value.Session + ';domain=.beaconcha.in;path=/;expires=' + expires
+		return this.setObject(AUTH_USER_V2, value)
+	}
+
+	async isV2() {
+		return this.getBooleanSetting('use_v2_api', false)
+	}
+
+	setV2(value: boolean) {
+		return this.setBooleanSetting('use_v2_api', value)
+	}
+
+	async getDeviceName(): Promise<string> {
+		return (await Device.getInfo()).model
+	}
+
 	async isLoggedIn(): Promise<boolean> {
-		const user = await this.getAuthUser()
-		if (!user || !user.accessToken) return false
-		return true
+		if (await this.isV2()) {
+			const user = await this.getAuthUserv2()
+			if (!user || !user.Session) return false
+			return true
+		} else {
+			const user = await this.getAuthUser()
+			if (!user || !user.accessToken) return false
+			return true
+		}
 	}
 
 	async removeAuthUser() {
+		this.remove(AUTH_USER_V2)
 		return this.remove(AUTH_USER)
 	}
 
 	public async isDebugMode() {
 		const devMode = isDevMode()
-		if (devMode) return true
+		if (devMode || environment.debug) return true
 		const permanentDevMode = (await this.getObject('dev_mode')) as DevModeEnabled
 		return permanentDevMode && permanentDevMode.enabled
 	}
@@ -95,21 +141,29 @@ export class StorageService extends CacheModule {
 		return await this.setObject(PREFERENCES, value)
 	}
 
+	/**
+	 * Since v2 this is inferred at runtime so we write back the actual config for widget
+	 * @param network
+	 */
+	async setWidgetNetworkConfig(network: StorageTypes.ApiNetwork) {
+		await this.setObject(WIDGET_PREFERENCES, network)
+	}
+
 	async loadPreferencesToggles(network: string): Promise<boolean> {
 		const notifyLocal = await this.getBooleanSetting(network + SETTING_NOTIFY, null)
 		return notifyLocal
 	}
 
-	setBooleanSetting(key, value) {
-		this.setSetting(key, value)
+	setBooleanSetting(key: string, value: boolean) {
+		return this.setSetting(key, value)
 	}
 
 	getBooleanSetting(key: string, defaultV = true): Promise<boolean> {
 		return this.getSetting(key, defaultV) as Promise<boolean>
 	}
 
-	setSetting(key, value) {
-		this.setObject(key, { value: value } as ValueWrapper)
+	setSetting(key: string, value: unknown) {
+		return this.setObject(key, { value: value } as ValueWrapper)
 	}
 
 	getSetting(key: string, defaultV: unknown = 0) {
@@ -119,11 +173,11 @@ export class StorageService extends CacheModule {
 		})
 	}
 
-	async getStakingShare(): Promise<BigNumber> {
-		const value = await this.getItem('staking_share')
-		if (!value) return null
-		return new BigNumber(value)
-	}
+	// async getStakingShare(): Promise<BigNumber> {
+	// 	const value = await this.getItem('staking_share')
+	// 	if (!value) return null
+	// 	return new BigNumber(value)
+	// }
 
 	async setLastEpochRequestTime(time: number) {
 		await this.setObject('last_epoch_time', { ts: time } as EpochRequestTime)
@@ -145,7 +199,7 @@ export class StorageService extends CacheModule {
 		}
 	}
 
-	async openLogSession(modalCtr, offset: number) {
+	async openLogSession(modalCtr: ModalController, offset: number) {
 		let lastLogSession = parseInt(window.localStorage.getItem('last_log_session'))
 		if (isNaN(lastLogSession)) lastLogSession = 0
 
@@ -153,7 +207,7 @@ export class StorageService extends CacheModule {
 			component: LogviewPage,
 			cssClass: 'my-custom-class',
 			componentProps: {
-				logs: JSON.parse(window.localStorage.getItem('log_session_' + ((lastLogSession + (3 - offset)) % 3))),
+				logs: JSON.parse(window.localStorage.getItem('log_session_' + ((lastLogSession + (2 - offset)) % 2))),
 			},
 		})
 		return await modal.present()
@@ -192,16 +246,17 @@ export class StorageService extends CacheModule {
 		this.reflectiOSStorage()
 	}
 
-	// sigh
+	// iOS widget can't access app storage, so we need to reflect certain keys
+	// to a common shared space that the widget can access
 	private reflectiOSStorage() {
 		try {
 			if (!this.platform.is('ios')) return
-			const reflectKeys = ['CapacitorStorage.prefered_unit', 'CapacitorStorage.network_preferences', 'CapacitorStorage.auth_user']
-			for (let i = 0; i < MAP.length; i++) {
-				if (MAP[i].key.indexOf('invalid') > -1) continue
-				if (MAP[i].key.indexOf('local') > -1) continue
-				reflectKeys.push('CapacitorStorage.validators_' + MAP[i].key)
-			}
+			const reflectKeys = [
+				'CapacitorStorage.prefered_unit',
+				'CapacitorStorage.' + WIDGET_PREFERENCES,
+				'CapacitorStorage.' + AUTH_USER_V2,
+				'CapacitorStorage.' + DASHBOARD_ID,
+			]
 
 			StorageMirror.reflect({
 				keys: reflectKeys,
@@ -239,9 +294,56 @@ export class StorageService extends CacheModule {
 		await Preferences.clear()
 		this.reflectiOSStorage()
 	}
+
+	async getDashboardID(): Promise<dashboardID> {
+		const data = (await this.getObject(DASHBOARD_ID)) as DashboardSetting
+		if (!data) return null
+		return data.id as dashboardID
+	}
+
+	async setDashboardID(id: dashboardID): Promise<void> {
+		await this.setObject(DASHBOARD_ID, {
+			id: id,
+		} as DashboardSetting)
+	}
+
+	async getDashboardTimeframe(): Promise<Period> {
+		const data = (await this.getObject('dashboard_timeframe')) as Period
+		if (!data) return Period.AllTime
+		return data
+	}
+
+	async getDashboardSummaryAggregation(): Promise<Aggregation> {
+		const data = (await this.getObject('dashboard_summary_aggregation')) as Aggregation
+		if (!data) return Aggregation.Hourly
+		return data
+	}
+
+	async setDashboardSummaryAggregation(aggregation: Aggregation): Promise<void> {
+		await this.setObject('dashboard_summary_aggregation', aggregation)
+	}
+
+	async setDashboardTimeframe(timeframe: Period): Promise<void> {
+		return await this.setObject('dashboard_timeframe', timeframe)
+	}
+
+	async setDashboardGroupID(groupID: number): Promise<void> {
+		return await this.setObject('dashboard_group_id', groupID)
+	}
+
+	async getDashboardGroupID(): Promise<number> {
+		const data = (await this.getObject('dashboard_group_id')) as number
+		if (data === null || data === undefined) return -1
+		return data
+	}
 }
 
-export function replacer(key, value) {
+interface DashboardSetting {
+	id: dashboardID
+}
+
+export function replacer(key: string, value: unknown) {
+	// @ts-expect-error: noImplicitThis disabled for this line
 	const originalObject = this[key]
 	if (originalObject instanceof Map) {
 		return {
@@ -253,7 +355,8 @@ export function replacer(key, value) {
 	}
 }
 
-function reviver(key, value) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function reviver(_: string, value: any) {
 	if (typeof value === 'object' && value !== null) {
 		if (value.dataType === 'Map') {
 			return new Map(value.value)

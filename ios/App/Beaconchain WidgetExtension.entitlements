@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.in.beaconcha.mobile</string>
+		<string>group.in.beaconcha.mobile2</string>
 	</array>
 </dict>
 </plist>

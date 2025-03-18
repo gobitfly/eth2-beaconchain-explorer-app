@@ -9,8 +9,8 @@ import { MachineDetailPageRoutingModule } from './machine-detail-routing.module'
 import { MachineDetailPage } from './machine-detail.page'
 import { TooltipModule } from 'ng2-tooltip-directive-major-angular-updates'
 import { PipesModule } from '../../pipes/pipes.module'
-import { MachineChartComponentModule } from 'src/app/components/machinechart/machinechart.module'
-import { MessageComponentModule } from 'src/app/components/message/message.module'
+import { MachineChartComponentModule } from '@components/machinechart/machinechart.module'
+import { MessageComponentModule } from '@components/message/message.module'
 
 @NgModule({
 	imports: [

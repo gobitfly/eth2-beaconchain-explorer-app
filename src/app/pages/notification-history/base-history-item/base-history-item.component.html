@@ -1,0 +1,22 @@
+<div class="infi-item-container" [ngClass]="{ 'infi-item-first': first }">
+	<div class="inner">
+		<ion-item lines="none">
+			<div slot="start" class="start">
+				<div class="date-container">
+					<div class="smaller-info" style="margin: auto; font-size: 1.1rem !important">{{ day }}</div>
+					<div class="smaller-info" style="margin: auto; font-size: var(--smaller-info-size)">{{ month }}</div>
+				</div>
+			</div>
+
+			<div class="infi-item-middle-container">
+				<ion-text class="title">{{ title }} </ion-text>
+				<ng-content></ng-content>
+			</div>
+
+			<div slot="end" class="status-container">
+				{{ time }}
+			</div>
+		</ion-item>
+	</div>
+</div>
+<div [ngClass]="{ 'infi-item-last-padding': last }"></div>

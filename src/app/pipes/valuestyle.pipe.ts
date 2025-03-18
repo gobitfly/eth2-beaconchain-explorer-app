@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -27,9 +26,10 @@ const NEGATIVE = 'negative-value'
 
 @Pipe({
 	name: 'valuestyle',
+	standalone: false,
 })
 export class ValuestylePipe implements PipeTransform {
-	transform(tempvalue: number | string | BigNumber, ...args: (number | BigNumber)[]): string {
+	transform(tempvalue: number | string | BigNumber, ...args: (number | BigNumber | string)[]): string {
 		const value = tempvalue instanceof BigNumber ? tempvalue : new BigNumber(tempvalue)
 		const firstDrop = args[0] instanceof BigNumber ? args[0] : new BigNumber(args[0])
 

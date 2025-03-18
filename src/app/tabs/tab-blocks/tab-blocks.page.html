@@ -1,0 +1,77 @@
+<ion-header>
+	<ion-toolbar class="top">
+		<ion-buttons slot="start" (click)="openDashboardAndGroupSelect()">
+			<ion-icon slot="icon-only" ios="apps-outline" md="apps-outline" id="network-icon"></ion-icon>
+		</ion-buttons>
+		<ion-title>Blocks</ion-title>
+		<ion-buttons slot="end">
+			<ion-button
+				style="margin: 0px"
+				(click)="unit.switchCurrencyPipe()"
+				*ngIf="(unit.pref.Exec.value != 'ETHER' && unit.pref.Exec.value != 'FINNEY') || classReference.currencyPipe.Exec != null ">
+				<ion-icon name="swap-vertical-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+	</ion-toolbar>
+
+	<ion-item class="top-bar" [hidden]="!dataSource || !dataSource.hasItems()">
+		<ion-label class="top-bar-inner"
+			>Proposal Luck:
+			<span
+				style="padding-left: 2px"
+				*ngIf="summaryGroup() && summaryGroup().luck.proposal.percent"
+				[class]="summaryGroup().luck.proposal.percent | valuestyle: 100"
+				>{{ summaryGroup().luck.proposal.percent | number:'1.0-1' }}%</span
+			>
+			<span *ngIf="!summaryGroup()">-</span>
+		</ion-label>
+
+		<ion-icon class="opacity-icon top-bar-inner touch-icon-padding" slot="end" name="help-circle-outline" (click)="luckHelp()"></ion-icon>
+	</ion-item>
+	<app-offline *ngIf="!online"></app-offline>
+</ion-header>
+
+<ion-content [fullscreen]="true" role="feed" [scrollY]="false">
+	<ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+		<ion-refresher-content></ion-refresher-content>
+	</ion-refresher>
+
+	<app-full-page-loading [fixInfiniteScroll]="true" [loading]="initialLoading">
+		<app-full-page-offline (retry)="this.doRefresh(null)" [fixInfiniteScroll]="true" [online]="online || dataSource?.hasItems()">
+			<p class="next-block-hint" *ngIf="summaryGroup() && !initialLoading && dataSource && dataSource.hasItems()">
+				<span *ngIf="!(expectedNextBlockTs() | timeago).includes('ago')">On average, next block expected in</span>
+				<span *ngIf="(expectedNextBlockTs() | timeago).includes('ago')">On average, next block was expected</span>
+				<br />
+				<span style="font-style: normal">~{{ expectedNextBlockTs() | timeago }} </span>
+			</p>
+
+			<app-ad location="blocks" *ngIf="dataSource && dataSource.hasItems() && !initialLoading"></app-ad>
+
+			<div class="nothingfound" *ngIf="(!dataSource || dataSource && !dataSource.hasItems()) && !initialLoading && initialized">
+				<ion-icon name="telescope-outline"></ion-icon>
+				<h2>No Blocks So Far</h2>
+				<ion-label>Your proposed blocks will show up here.</ion-label>
+			</div>
+
+			<cdk-virtual-scroll-viewport
+				itemSize="89"
+				minBufferPx="1200"
+				maxBufferPx="1600"
+				class="ion-content-scroll-host"
+				[hidden]="!dataSource || !dataSource.hasItems() || initialLoading">
+				<div *cdkVirtualFor="let item of dataSource; index as idx " style="background-color: var(--ion-card-background)">
+					<app-block
+						[chainID]="chainID"
+						[block]="item"
+						[first]="idx == 0"
+						[last]="idx == dataSource.cachedData.length - 1"
+						(click)="clickBlock(item)"
+						role="article"></app-block>
+				</div>
+				<div style="text-align: center; padding-top: 10px; padding-bottom: 70px" *ngIf="loadMore">
+					<i style="letter-spacing: 0.9px; opacity: 0.8">Loading...</i>
+				</div>
+			</cdk-virtual-scroll-viewport>
+		</app-full-page-offline>
+	</app-full-page-loading>
+</ion-content>

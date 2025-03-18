@@ -1,0 +1,7 @@
+<ion-item class="group-selector">
+	<span class="group-label" class="group-label">Selected Group:</span>
+	<ion-select slot="end" class="top-bar-inner" interface="popover" (ionChange)="selectGroup($event)" [value]="preSelectGroupID ?? -1">
+		<ion-select-option [value]="-1"> All Groups</ion-select-option>
+		<ion-select-option *ngFor="let item of groups" [value]="item.id"> {{ item.name }} ({{ item.count }})</ion-select-option>
+	</ion-select>
+</ion-item>

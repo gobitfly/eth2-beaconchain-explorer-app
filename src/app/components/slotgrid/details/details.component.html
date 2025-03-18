@@ -1,0 +1,45 @@
+<div class="popover">
+	<div class="popover-header">
+		<div class="flex-header">
+			<h3>Slot {{ slot.slot }}</h3>
+			<ion-icon style="float: right" name="open-outline" (click)="openSlot()"></ion-icon>
+		</div>
+		<small *ngIf="slot.status == 'scheduled'">Scheduled</small>
+		<small *ngIf="slot.status == 'proposed'">Proposed by network</small>
+		<small *ngIf="slot.status == 'missed'">Missed by network</small>
+		<small *ngIf="slot.status == 'orphaned'">Orphaned by network</small>
+		<small style="float: right">{{ slotTs | countdown | async }}</small>
+	</div>
+	<div class="popover-content">
+		<div *ngIf="slot.attestations">
+			<span>Attestations: </span>
+			<span [ngClass]="getAttestationColor(slot)"> {{ slot.attestations?.success?.total_count || 0 }}</span
+			><span>
+				/
+				{{ slot.attestations?.success?.total_count + slot.attestations?.failed?.total_count + +slot.attestations?.scheduled?.total_count }}
+			</span>
+		</div>
+		<div *ngIf="slot.proposal">
+			<span>Proposal: </span>
+			<span [ngClass]="getProposalColor(slot)"> Validator {{ slot.proposal?.validator }} </span>
+		</div>
+		<div *ngIf="slot.sync">
+			<span>Sync: </span>
+			<span [ngClass]="getSyncColor(slot)"> {{ slot.sync?.success?.total_count || 0 }}</span
+			><span>
+				/
+				{{ slot.sync?.success?.total_count + slot.sync?.failed?.total_count + +slot.sync?.scheduled?.total_count }}
+			</span>
+		</div>
+		<div *ngIf="slot.slashing">
+			<span>Slashing: </span>
+			<span *ngIf="getSlashingColor(slot) == 'success?'" [ngClass]="getSlashingColor(slot)"> Slashed {{ slot.slashing?.success?.total_count }}</span
+			><span>Validators </span>
+			<span *ngIf="getSlashingColor(slot) == 'danger'" [ngClass]="getSlashingColor(slot)"> {{ slot.slashing?.failed?.total_count }}</span
+			><span>> Validators Slashed </span>
+		</div>
+		<div *ngIf="!slot.slashing && !slot.sync && !slot.proposal && !slot.attestations">
+			<span>You have no duties this slot</span>
+		</div>
+	</div>
+</div>

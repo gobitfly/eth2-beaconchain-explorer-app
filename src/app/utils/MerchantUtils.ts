@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,100 +17,296 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core'
-import 'cordova-plugin-purchase/www/store.d'
+import { computed, effect, Injectable, OnInit, Signal, signal, WritableSignal } from '@angular/core'
+import 'cordova-plugin-purchase'
 import { Platform } from '@ionic/angular'
-import { PostMobileSubscription, SubscriptionData } from '../requests/requests'
-import { AlertService, PURCHASEUTILS } from '../services/alert.service'
-import { ApiService } from '../services/api.service'
-import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from '../services/storage.service'
+import { AlertService, PURCHASEUTILS } from '@services/alert.service'
+import { ApiService } from '@services/api.service'
+import { DEBUG_SETTING_OVERRIDE_PACKAGE, StorageService } from '@services/storage.service'
 
 import { SplashScreen } from '@capacitor/splash-screen'
+import { SubscriptionData, V2Me, V2PurchaseValidation } from '@requests/v2-user'
+import { UserInfo, UserSubscription } from '@requests/types/user'
+import { Aggregation } from '@requests/v2-dashboard'
+import { ONE_DAY, ONE_HOUR } from './TimeUtils'
+import ThemeUtils from './ThemeUtils'
+import { ApiResult } from '@requests/requests'
 
 export const PRODUCT_STANDARD = 'standard'
-const MAX_PRODUCT = 'whale'
+
+export const AggregationTimeframes: Aggregation[] = [Aggregation.Epoch, Aggregation.Hourly, Aggregation.Daily, Aggregation.Weekly]
 
 @Injectable({
 	providedIn: 'root',
 })
-export class MerchantUtils {
-	DEPRECATED_PACKAGES = [
+export class MerchantUtils implements OnInit {
+	store?: CdvPurchase.Store
+
+	DEPRECATED_PACKAGES: Package[] = [
 		{
 			name: 'Plankton',
 			price: '$1.99',
-			maxValidators: 100,
-			maxTestnetValidators: 100,
-			maxBeaconNodes: 1,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: false,
-			customTheme: false,
-			supportUs: true,
+			priceMicros: 1990000,
+			currency: 'USD',
 			purchaseKey: 'plankton',
+			renewFrame: null,
 		},
 	]
 
-	PACKAGES: Package[] = [
-		{
-			name: 'Free',
-			price: '$0.00',
-			maxValidators: 100,
-			maxTestnetValidators: 100,
-			maxBeaconNodes: 1,
-			deviceMonitoringHours: 3,
-			deviceMonitorAlerts: false,
-			noAds: false,
-			widgets: false,
-			customTheme: false,
-			supportUs: false,
-			purchaseKey: null,
-		},
-		{
-			name: 'Goldfish',
-			price: '$4.99',
-			maxValidators: 100,
-			maxTestnetValidators: 100,
-			maxBeaconNodes: 2,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: true,
-			customTheme: true,
-			supportUs: true,
-			purchaseKey: 'goldfish',
-		},
-		{
-			name: 'Whale',
-			price: '$19.99',
-			maxValidators: 280,
-			maxTestnetValidators: 280,
-			maxBeaconNodes: 10,
-			deviceMonitoringHours: 30 * 24,
-			deviceMonitorAlerts: true,
-			noAds: true,
-			widgets: true,
-			customTheme: true,
-			supportUs: true,
-			purchaseKey: 'whale',
-		},
-	]
-
-	currentPlan = PRODUCT_STANDARD // use getCurrentPlanConfirmed instead
+	PACKAGES: Package[]
 
 	purchaseIntent = '' // temp workaround until new api is live
 
-	constructor(private alertService: AlertService, private api: ApiService, private platform: Platform, private storage: StorageService) {
+	userInfo: WritableSignal<UserInfo | null> = signal(null)
+
+	userAllowedChartAggregations = computed(() => {
+		function add(list: Aggregation[], value: number, aggregation: Aggregation) {
+			if (value === 0) return
+			list.push(aggregation)
+		}
+
+		const result: Aggregation[] = []
+		add(result, this.userInfo()?.premium_perks?.chart_history_seconds?.epoch ?? 0, Aggregation.Epoch)
+		add(result, this.userInfo()?.premium_perks?.chart_history_seconds?.daily ?? 0, Aggregation.Daily)
+		add(result, this.userInfo()?.premium_perks?.chart_history_seconds?.hourly ?? 43200, Aggregation.Hourly)
+		add(result, this.userInfo()?.premium_perks?.chart_history_seconds?.weekly ?? 0, Aggregation.Weekly)
+
+		return result
+	})
+
+	initialize: Promise<void>
+
+	constructor(
+		private alertService: AlertService,
+		private api: ApiService,
+		private platform: Platform,
+		private storage: StorageService,
+		private theme: ThemeUtils
+	) {
+		effect(() => {
+			if (this.userInfo()) {
+				const hasTheming = this.userInfo()?.premium_perks?.mobile_app_custom_themes == true
+				if (!hasTheming && this.theme.currentThemeColor != 'gnosis') {
+					this.theme.resetTheming()
+				}
+			}
+		})
+		this.initPackages()
 		if (!this.platform.is('ios') && !this.platform.is('android')) {
 			console.info('merchant is not supported on this platform')
 			return
 		}
+		this.platform.ready().then(() => {
+			console.log('store initialized')
+			// MUST WAIT for Cordova to initialize before referencing CdvPurchase namespace
+			this.store = CdvPurchase.store
+		})
+	}
 
-		this.init()
+	initPackages(appendix: string = '') {
+		this.PACKAGES = [
+			{
+				name: 'Free',
+				price: '€0.00',
+				priceMicros: 0,
+				currency: 'EUR',
+				purchaseKey: null,
+				renewFrame: null,
+			},
+			{
+				name: 'Guppy',
+				price: '€9.99',
+				priceMicros: 9990000,
+				currency: 'EUR',
+				purchaseKey: 'guppy' + appendix,
+				renewFrame: 'monthly',
+			},
+			{
+				name: 'Guppy',
+				price: '€107.88',
+				priceMicros: 107880000,
+				currency: 'EUR',
+				purchaseKey: 'guppy.yearly' + appendix,
+				renewFrame: 'yearly',
+			},
+			{
+				name: 'Dolphin',
+				price: '€29.99',
+				priceMicros: 29990000,
+				currency: 'EUR',
+				purchaseKey: 'dolphin' + appendix,
+				renewFrame: 'monthly',
+			},
+			{
+				name: 'Dolphin',
+				price: '€311.88',
+				priceMicros: 311880000,
+				currency: 'EUR',
+				purchaseKey: 'dolphin.yearly' + appendix,
+				renewFrame: 'yearly',
+			},
+			{
+				name: 'Orca',
+				price: '€49.99',
+				priceMicros: 49990000,
+				currency: 'EUR',
+				purchaseKey: 'orca' + appendix,
+				renewFrame: 'monthly',
+			},
+			{
+				name: 'Orca',
+				price: '€479.88',
+				priceMicros: 479880000,
+				currency: 'EUR',
+				purchaseKey: 'orca.yearly' + appendix,
+				renewFrame: 'yearly',
+			},
+		]
+	}
+
+	ngOnInit() {
+		this.initialize = this.init()
+	}
+
+	public async getUserInfoOnNetwork(chainID: number, forceRefresh: boolean): Promise<ApiResult<UserInfo>> {
+		if (await this.storage.getAuthUserv2()) {
+			const result = await this.api.executeOnChainID(new V2Me().withAllowedCacheResponse(!forceRefresh), null, chainID)
+			if (result.error) {
+				console.warn('failed to get user info', result.error)
+				return result
+			}
+
+			const override = (await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')) as string
+			if (override != 'default') {
+				return {
+					data: this.overridePerks(result.data, override),
+					error: undefined,
+				} as ApiResult<UserInfo>
+			}
+			return result
+		} else {
+			return {
+				data: this.overridePerks(undefined, 'standard'),
+				error: undefined,
+			} as ApiResult<UserInfo>
+		}
+	}
+
+	public async getUserInfo(forceRefresh: boolean = false, errHandler: (err: Error) => void = () => {}) {
+		if (await this.storage.getAuthUserv2()) {
+			if (!forceRefresh) {
+				this.userInfo.set(await (this.storage.getObject('userInfo') as Promise<UserInfo | null>))
+			}
+			const result = await this.api.set(new V2Me().withAllowedCacheResponse(!forceRefresh), this.userInfo)
+			if (result.error) {
+				console.warn('failed to get user info', result.error)
+				errHandler(result.error)
+				return
+			}
+
+			if (this.userInfo()) {
+				this.storage.setObject('userInfo', this.userInfo())
+				if (this.userInfo().api_keys && this.userInfo().api_keys.length > 0) {
+					this.api.setApiKey(this.userInfo().api_keys[0])
+				}
+			}
+		} else {
+			this.userInfo.set(this.overridePerks(this.userInfo(), 'standard'))
+		}
+		// check for override
+		const override = (await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')) as string
+		if (override != 'default') {
+			this.userInfo.set(this.overridePerks(this.userInfo(), override))
+		}
+	}
+
+	// debug
+	private overridePerks(sourcePerks: UserInfo, target: string) {
+		const userInfoShadow =
+			sourcePerks ||
+			({
+				premium_perks: {
+					ad_free: false,
+					validator_dashboards: 1,
+					validators_per_dashboard: 20,
+					validator_groups_per_dashboard: 1,
+					chart_history_seconds: {
+						epoch: 0,
+						hourly: 12 * ONE_HOUR,
+						daily: 0,
+						weekly: 0,
+					},
+				},
+				subscriptions: [],
+			} as UserInfo)
+		switch (target) {
+			case 'standard':
+				userInfoShadow.premium_perks.ad_free = false
+				userInfoShadow.premium_perks.validator_dashboards = 1
+				userInfoShadow.premium_perks.validators_per_dashboard = 20
+				userInfoShadow.premium_perks.validator_groups_per_dashboard = 1
+				userInfoShadow.premium_perks.chart_history_seconds = {
+					epoch: 0,
+					hourly: 12 * ONE_HOUR,
+					daily: 0,
+					weekly: 0,
+				}
+				break
+			case 'guppy':
+				userInfoShadow.premium_perks.ad_free = true
+				userInfoShadow.premium_perks.validator_dashboards = 1
+				userInfoShadow.premium_perks.validators_per_dashboard = 100
+				userInfoShadow.premium_perks.validator_groups_per_dashboard = 3
+				userInfoShadow.premium_perks.chart_history_seconds = {
+					epoch: 1 * ONE_DAY,
+					hourly: 7 * ONE_DAY,
+					daily: 30 * ONE_DAY,
+					weekly: 0,
+				}
+				break
+			case 'dolphin':
+				userInfoShadow.premium_perks.ad_free = true
+				userInfoShadow.premium_perks.validator_dashboards = 2
+				userInfoShadow.premium_perks.validators_per_dashboard = 300
+				userInfoShadow.premium_perks.validator_groups_per_dashboard = 10
+				userInfoShadow.premium_perks.chart_history_seconds = {
+					epoch: 5 * ONE_DAY,
+					hourly: 30 * ONE_DAY,
+					daily: 60 * ONE_DAY,
+					weekly: 56 * ONE_DAY, // todo
+				}
+				break
+			case 'orca':
+				userInfoShadow.premium_perks.ad_free = true
+				userInfoShadow.premium_perks.validator_dashboards = 2
+				userInfoShadow.premium_perks.validators_per_dashboard = 1000
+				userInfoShadow.premium_perks.validator_groups_per_dashboard = 30
+				userInfoShadow.premium_perks.chart_history_seconds = {
+					epoch: 21 * ONE_DAY,
+					hourly: 180 * ONE_DAY,
+					daily: 360 * ONE_DAY,
+					weekly: 999 * ONE_DAY,
+				}
+				break
+		}
+		return userInfoShadow
+	}
+
+	clearTempUserInfo() {
+		return this.storage.setObject('userInfo', this.userInfo())
+	}
+
+	public getMonthlyBilledPackages(): Package[] {
+		return this.PACKAGES.filter((pkg) => pkg.renewFrame == null || pkg.renewFrame == 'monthly')
+	}
+
+	public getYearlyBilledPackages(): Package[] {
+		return this.PACKAGES.filter((pkg) => pkg.renewFrame == null || pkg.renewFrame == 'yearly')
 	}
 
 	private async init() {
 		try {
+			await this.getUserInfo()
 			await this.initProducts()
 			this.initCustomValidator()
 			this.setupListeners()
@@ -125,7 +320,7 @@ export class MerchantUtils {
 	}
 
 	private initCustomValidator() {
-		CdvPurchase.store.validator = async (
+		this.store.validator = async (
 			product: CdvPurchase.Validator.Request.Body,
 			callback: CdvPurchase.Callback<CdvPurchase.Validator.Response.Payload>
 		) => {
@@ -152,67 +347,57 @@ export class MerchantUtils {
 		window.location.reload()
 	}
 
-	async refreshToken() {
-		let refreshSuccess = (await this.api.refreshToken()) != null
-		if (!refreshSuccess) {
-			console.log('refreshing token after purchase failed, scheduling retry')
-			const loading = await this.alertService.presentLoading('This can take a minute')
-			loading.present()
-			await this.sleep(35000)
-			refreshSuccess = (await this.api.refreshToken()) != null
-			if (!refreshSuccess) {
-				this.alertService.showError(
-					'Purchase Error',
-					'We could not confirm your purchase. Please try again later or contact us if this problem persists.',
-					PURCHASEUTILS + 2
-				)
-			}
-			loading.dismiss()
-		}
-	}
-
 	private async registerPurchaseOnRemote(data: SubscriptionData): Promise<boolean> {
-		const request = new PostMobileSubscription(data)
-		const response = await this.api.execute(request)
-		const result = request.wasSuccessful(response, false)
+		const result = await this.api.execute(new V2PurchaseValidation(data))
 
-		if (!result) {
-			console.log('registering purchase receipt failed', response)
+		if (result.error) {
+			console.log('registering purchase receipt failed', result)
 		}
 
-		return result
+		return result.error == null
 	}
 
 	private async initProducts() {
 		let platform = CdvPurchase.Platform.GOOGLE_PLAY
+		let appendix = ''
 		if (this.platform.is('ios')) {
 			platform = CdvPurchase.Platform.APPLE_APPSTORE
+			appendix = '.apple'
 		}
+
 		for (let i = 0; i < this.PACKAGES.length; i++) {
 			if (this.PACKAGES[i].purchaseKey) {
-				CdvPurchase.store.register({
-					id: this.PACKAGES[i].purchaseKey,
+				this.store.register({
+					id: this.PACKAGES[i].purchaseKey + appendix,
 					platform: platform,
 					type: CdvPurchase.ProductType.PAID_SUBSCRIPTION,
 				} as CdvPurchase.IRegisterProduct)
 			}
 		}
 
-		await CdvPurchase.store.initialize()
-		for (let i = 0; i < CdvPurchase.store.products.length; i++) {
-			const lastIndex = CdvPurchase.store.products[i].offers[0].pricingPhases.length - 1
+		await this.store.initialize()
+		for (let i = 0; i < this.store.products.length; i++) {
+			const lastIndex = this.store.products[i].offers[0].pricingPhases.length - 1
 			if (lastIndex < 0) {
-				console.warn('no pricingphases found', CdvPurchase.store.products[i])
+				console.warn('no pricingphases found', this.store.products[i])
 				continue
 			}
 
-			this.updatePrice(CdvPurchase.store.products[i].id, CdvPurchase.store.products[i].offers[0].pricingPhases[lastIndex].price)
+			this.updatePrice(this.store.products[i].id, this.store.products[i].offers[0].pricingPhases[lastIndex])
 		}
 	}
 
-	private updatePrice(id, price) {
+	private updatePrice(id: string, prices: CdvPurchase.PricingPhase) {
+		if (this.platform.is('ios')) {
+			id = id.replace('.apple', '')
+		}
+
 		for (let i = 0; i < this.PACKAGES.length; i++) {
-			if (this.PACKAGES[i].purchaseKey == id) this.PACKAGES[i].price = price
+			if (this.PACKAGES[i].purchaseKey == id) {
+				this.PACKAGES[i].price = prices.price
+				this.PACKAGES[i].priceMicros = prices.priceMicros
+				this.PACKAGES[i].currency = prices.currency
+			}
 		}
 	}
 
@@ -220,11 +405,11 @@ export class MerchantUtils {
 
 	private setupListeners() {
 		// General query to all products
-		CdvPurchase.store
+		this.store
 			.when()
 			.approved((p: CdvPurchase.Transaction) => {
 				// Handle the product deliverable
-				this.currentPlan = p.products[0].id
+				//this.currentPlan = p.products[0].id
 
 				//this.ref.detectChanges();
 				return p.verify()
@@ -235,27 +420,39 @@ export class MerchantUtils {
 		// })
 	}
 
-	sleep(ms) {
+	sleep(ms: number) {
 		return new Promise((resolve) => setTimeout(resolve, ms))
 	}
 
 	manageSubscriptions() {
-		CdvPurchase.store.manageSubscriptions()
+		this.store.manageSubscriptions()
 	}
 
 	async restore(product: string) {
 		this.restorePurchase = true
 		this.purchaseIntent = product
-		await CdvPurchase.store.restorePurchases()
+		await this.store.restorePurchases()
 	}
 
 	async purchase(product: string) {
-		const offer = CdvPurchase.store.get(product).getOffer()
+		if (this.platform.is('ios')) {
+			// you don't wanna know :)
+			product += '.apple'
+		}
+		console.log('purchasing product', product)
+		const storeProduct = this.store.get(product)
+		if (storeProduct == null) {
+			console.log('store', this.store)
+			this.alertService.showError('Purchase failed', `Product ${product} can not be purchased at the moment, please try again later.`, PURCHASEUTILS)
+			return
+		}
+
+		const offer = storeProduct.getOffer()
 		const loading = await this.alertService.presentLoading('')
 		loading.present()
 		this.restorePurchase = true
 		this.purchaseIntent = product
-		CdvPurchase.store.order(offer).then(
+		this.store.order(offer).then(
 			() => {
 				setTimeout(() => {
 					loading.dismiss()
@@ -265,12 +462,12 @@ export class MerchantUtils {
 				loading.dismiss()
 				this.alertService.showError('Purchase failed', `Failed to purchase: ${e}`, PURCHASEUTILS + 1)
 				console.warn('purchase error', e)
-				this.currentPlan = PRODUCT_STANDARD
+				//this.currentPlan = PRODUCT_STANDARD
 			}
 		)
 	}
 
-	private async confirmPurchaseOnRemote(product) {
+	private async confirmPurchaseOnRemote(product: CdvPurchase.Validator.Request.Body) {
 		const isIOS = this.platform.is('ios')
 
 		// TODO in the future replace isIOS ? product.transaction.appStoreReceipt : product.transaction.purchaseToken
@@ -279,10 +476,12 @@ export class MerchantUtils {
 			currency: product.currency,
 			id: isIOS ? this.purchaseIntent : product.id,
 			priceMicros: product.priceMicros,
-			valid: product.valid,
+			valid: true,
 			transaction: {
 				id: product.id,
-				receipt: isIOS ? product.transaction.id : product.transaction.purchaseToken,
+				receipt: isIOS
+					? (product.transaction as CdvPurchase.Validator.Request.ApiValidatorBodyTransactionApple).id
+					: (product.transaction as CdvPurchase.Validator.Request.ApiValidatorBodyTransactionGoogle).purchaseToken,
 				type: product.transaction.type,
 			},
 		}
@@ -308,7 +507,15 @@ export class MerchantUtils {
 			loading.dismiss()
 		}
 
-		if (result) await this.refreshToken()
+		if (result) {
+			await this.getUserInfo(true, () => {
+				this.alertService.showError(
+					'Purchase Error',
+					'We could not confirm your purchase. Please try again later or contact us if this problem persists.',
+					PURCHASEUTILS + 2
+				)
+			})
+		}
 
 		loading.dismiss()
 
@@ -333,46 +540,17 @@ export class MerchantUtils {
 			}
 		)
 	}
-
-	async getCurrentPlanConfirmed(): Promise<string> {
-		if (this.api.debug) {
-			const debugPackage = await this.storage.getSetting(DEBUG_SETTING_OVERRIDE_PACKAGE, 'default')
-			if (debugPackage != 'default') {
-				return debugPackage as string
-			}
-		}
-
-		const authUser = await this.storage.getAuthUser()
-		if (!authUser || !authUser.accessToken) return PRODUCT_STANDARD
-		const jwtParts = authUser.accessToken.split('.')
-		const claims: ClaimParts = JSON.parse(atob(jwtParts[1]))
-		if (claims && claims.package) {
-			return claims.package
-		}
-		return PRODUCT_STANDARD
-	}
-
-	async getDefaultTheme(): Promise<string> {
-		const authUser = await this.storage.getAuthUser()
-		if (!authUser || !authUser.accessToken) return ''
-		const jwtParts = authUser.accessToken.split('.')
-		const claims: ClaimParts = JSON.parse(atob(jwtParts[1]))
-		if (claims && Object.prototype.hasOwnProperty.call(claims, 'theme') && claims.theme) {
-			return claims.theme
-		}
-		return ''
-	}
-
 	findProduct(name: string): Package {
+		console.log('find product', name, this.PACKAGES)
 		for (let i = 0; i < this.PACKAGES.length; i++) {
 			const current = this.PACKAGES[i]
-			if (current.purchaseKey == name) {
+			if (current.purchaseKey == name || this.mapv2Tov1(current.purchaseKey) == name) {
 				return current
 			}
 		}
 		for (let i = 0; i < this.DEPRECATED_PACKAGES.length; i++) {
 			const current = this.DEPRECATED_PACKAGES[i]
-			if (current.purchaseKey == name) {
+			if (current.purchaseKey == name || this.mapv2Tov1(current.purchaseKey) == name) {
 				return current
 			}
 		}
@@ -380,69 +558,84 @@ export class MerchantUtils {
 		return null
 	}
 
-	private async isNotFreeTier() {
-		const currentPlan = await this.getCurrentPlanConfirmed()
-		return currentPlan != PRODUCT_STANDARD && currentPlan != ''
+	isPremium = computed(() => {
+		if (!this.userInfo()) return false
+		return this.userInfo().premium_perks.ad_free
+	})
+
+	canBulkAdd = computed(() => {
+		if (!this.userInfo()) return false
+		return this.userInfo().premium_perks.bulk_adding
+	})
+
+	getCurrentPlanMaxValidator = computed(() => {
+		if (!this.isPremium()) return 20
+		return this.userInfo().premium_perks.validators_per_dashboard
+	})
+
+	getCurrentPlanMaxGroups = computed(() => {
+		if (!this.isPremium()) return 1
+		return this.userInfo().premium_perks.validator_groups_per_dashboard
+	})
+
+	highestPackageDashboardsAllowed = computed(() => {
+		return 2 // todo
+	})
+
+	highestPackageGroupsPerDashboardAllowed = computed(() => {
+		return 30 // todo
+	})
+
+	mapv2Tov1(name: string): string {
+		if (name == null) return null
+		if (name.indexOf('guppy') >= 0) return 'plankton'
+		if (name.indexOf('dolphin') >= 0) return 'goldfish'
+		if (name.indexOf('orca') >= 0) return 'whale'
+		return name
 	}
 
-	async hasPremiumTheming() {
-		const currentPlan = await this.getCurrentPlanConfirmed()
-		return currentPlan != PRODUCT_STANDARD && currentPlan != '' && currentPlan != 'plankton'
+	mapv1Tov2(name: string): string {
+		if (name == null) return null
+		if (name.indexOf('plankton') >= 0) return 'guppy'
+		if (name.indexOf('goldfish') >= 0) return 'dolphin'
+		if (name.indexOf('whale') >= 0) return 'orca'
+		return name
 	}
 
-	async hasCustomizableNotifications() {
-		return await this.isNotFreeTier()
+	removeApplePrefix(name: string): string {
+		if (name == null) return null
+		if (name.indexOf('.apple')) {
+			name = name.replace('.apple', '')
+		}
+		return name
 	}
 
-	async hasAdFree() {
-		return await this.isNotFreeTier()
-	}
+	hasMachineMonitoringPremium = computed(() => {
+		if (!this.isPremium()) return false
+		return this.userInfo().premium_perks.machine_monitoring_history_seconds > 10800
+	})
 
-	async hasMachineHistoryPremium() {
-		return await this.isNotFreeTier()
-	}
-
-	async getCurrentPlanMaxValidator(): Promise<number> {
-		const currentPlan = await this.getCurrentPlanConfirmed()
-		const currentProduct = this.findProduct(currentPlan)
-		if (currentProduct == null) return 100
-
-		const notMainnet = this.api.isNotEthereumMainnet()
-		if (notMainnet) return currentProduct.maxTestnetValidators
-		return currentProduct.maxValidators
-	}
-
-	getHighestPackageValidator(): number {
-		const currentProduct = this.findProduct(MAX_PRODUCT)
-		if (currentProduct == null) return 100
-
-		const notMainnet = this.api.isNotEthereumMainnet()
-		if (notMainnet) return currentProduct.maxTestnetValidators
-		return currentProduct.maxValidators
-	}
-}
-
-interface ClaimParts {
-	userID: number
-	appID: number
-	deviceID: number
-	package: string
-	exp: number
-	iss: string
-	theme: string
+	getUsersSubscription: Signal<UserSubscription> = computed(() => {
+		const none = {
+			product_id: '',
+			product_name: '',
+			product_category: '',
+			product_store: '',
+			start: 0,
+			end: 0,
+		}
+		if (!this.userInfo()) return none
+		const appSubs = this.userInfo().subscriptions.filter((sub) => sub.product_category == 'premium')
+		if (appSubs.length == 0) return none
+		return appSubs[0]
+	})
 }
 
 export interface Package {
 	name: string
 	price: string
-	maxValidators: number
-	maxTestnetValidators: number
-	maxBeaconNodes: number
-	deviceMonitoringHours: number
-	deviceMonitorAlerts: boolean
-	noAds: boolean
-	widgets: boolean
-	customTheme: boolean
-	supportUs: boolean
+	priceMicros: number
+	currency: string
 	purchaseKey: string
+	renewFrame: 'monthly' | 'yearly' | null
 }

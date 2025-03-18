@@ -1,0 +1,58 @@
+<ion-header [translucent]="true">
+	<ion-toolbar class="top">
+		<ion-buttons slot="start" class="modal-buttons">
+			<ion-button (click)="closeModal()">
+				<ion-icon size="large" name="close-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+
+		<ion-buttons slot="end" class="modal-buttons">
+			<ion-button (click)="selectSort()">
+				<ion-icon size="large" name="filter-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+
+		<ion-title style="padding: 0px 10px">Notification</ion-title>
+	</ion-toolbar>
+
+	<ion-toolbar>
+		<ion-searchbar
+			class="top-bar-inner"
+			style="padding: 0px"
+			#searchbarRef
+			showCancelButton="focus"
+			enterkeyhint="search"
+			(ionInput)="searchEvent($event)"
+			(ionClear)="cancelSearch()"
+			(ionCancel)="cancelSearch()"
+			placeholder="Search for validator"
+			animated>
+		</ion-searchbar>
+		<!-- <ion-button slot="end" *ngIf="selectMode" class="toolbar-btn" style="padding: 0 10px" (click)="moveSelected()">Move</ion-button> -->
+	</ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" [scrollY]="false">
+	<ion-list-header
+		><ion-label>{{ title }}</ion-label></ion-list-header
+	>
+
+	<cdk-virtual-scroll-viewport
+		itemSize="61"
+		minBufferPx="1600"
+		maxBufferPx="2000"
+		[hidden]="!dataSource || !dataSource.hasItems()"
+		class="ion-content-scroll-host">
+		<div *cdkVirtualFor="let val of dataSource; index as idx" style="background-color: var(--ion-card-background)">
+			<app-notification-item
+				[first]="idx == 0"
+				[last]="idx == dataSource.cachedData.length - 1"
+				[title]="ac.arrayComputed(val, getTitle)"
+				[extra]="ac.arrayComputed(val, getExtra)"
+				[extraName]="extraName"
+				[imgSeed]="ac.arrayComputed(val, getImageSeed)"
+				[titlePrefix]="ac.arrayComputed(val, getTitlePrefix)"
+				[externalLink]="ac.arrayComputed(val, getExternalLink)"></app-notification-item>
+		</div>
+	</cdk-virtual-scroll-viewport>
+</ion-content>

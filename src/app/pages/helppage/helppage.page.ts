@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -26,6 +25,7 @@ import { fromEvent, Subscription } from 'rxjs'
 	selector: 'app-helppage',
 	templateUrl: './helppage.page.html',
 	styleUrls: ['./helppage.page.scss'],
+	standalone: false,
 })
 export class HelppagePage implements OnInit {
 	private backbuttonSubscription: Subscription

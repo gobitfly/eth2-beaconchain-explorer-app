@@ -1,18 +1,10 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./out-tsc/spec",
-    "types": [
-      "jasmine",
-      "node"
-    ]
-  },
-  "files": [
-    "src/test.ts",
-    "src/polyfills.ts"
-  ],
-  "include": [
-    "src/**/*.spec.ts",
-    "src/**/*.d.ts"
-  ]
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"outDir": "./out-tsc/spec",
+		"target": "es2016",
+		"types": ["vitest/globals", "node"]
+	},
+	"files": ["src/test-setup.ts"],
+	"include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
 }

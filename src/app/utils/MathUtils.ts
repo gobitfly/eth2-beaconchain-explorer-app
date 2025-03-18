@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -19,6 +18,7 @@
  */
 
 import BigNumber from 'bignumber.js'
+import { findChainNetworkById } from './NetworkData'
 
 export function sumBigInt<T>(validators: T[], field: (cur: T) => BigNumber) {
 	let sum = new BigNumber('0')
@@ -48,6 +48,28 @@ export function findLowest<T>(validators: T[], field: (cur: T) => number): numbe
 		if (resolvedField < lowest) lowest = resolvedField
 	})
 	return lowest
+}
+
+export function slotToEpoch(chainID: number, slot: number): number {
+	const network = findChainNetworkById(chainID)
+	return Math.floor(slot / network.slotPerEpoch)
+}
+
+/**
+ * @returns the epoch at which the sync committee started, inclusive
+ */
+export function startEpochSyncCommittee(chainID: number, currentSlot: number): number {
+	const network = findChainNetworkById(chainID)
+	const period = Math.floor(slotToEpoch(chainID, currentSlot) / network.epochsPerSyncPeriod)
+	return period * network.epochsPerSyncPeriod
+}
+
+/**
+ * @returns the epoch at which the sync committee ended, exclusive
+ */
+export function endEpochSyncCommittee(chainID: number, currentSlot: number): number {
+	const network = findChainNetworkById(chainID)
+	return startEpochSyncCommittee(chainID, currentSlot) + network.epochsPerSyncPeriod
 }
 
 export default class {}

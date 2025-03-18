@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -19,8 +18,27 @@
  */
 
 package in.beaconcha.mobile;
+import android.app.Activity;
+import android.webkit.WebView;
+
 import com.getcapacitor.BridgeActivity;
+
+import java.io.File;
 
 public class MainActivity extends BridgeActivity {
 
+    @Override
+    public void onStart() {
+        // reset bundle to locally shipped
+        /*var prefs = this.getApplicationContext().getSharedPreferences(com.getcapacitor.plugin.WebView.WEBVIEW_PREFS_NAME, Activity.MODE_PRIVATE);
+        var editor = prefs.edit();
+        editor.putString(com.getcapacitor.plugin.WebView.CAP_SERVER_PATH, new File("public").getPath());
+
+        editor.commit();*/
+
+        super.onStart();
+        // Disable the rubber-band over-scroll effect that causes the app UI to get stretched.
+        WebView v = getBridge().getWebView();
+        v.setOverScrollMode(v.OVER_SCROLL_NEVER);
+    }
 }

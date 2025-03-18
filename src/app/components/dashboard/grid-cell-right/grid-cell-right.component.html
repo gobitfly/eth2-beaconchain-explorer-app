@@ -1,0 +1,13 @@
+<div class="grid-cell right">
+	<div class="grid">
+		<ion-label class="value" (click)="onClick($event)">
+			<ng-content></ng-content>
+		</ion-label>
+	</div>
+	<div class="grid">
+		<ion-label class="income-title right">
+			<ng-container *ngIf="tooltipText == null">{{ name }}</ng-container>
+			<ng-container *ngIf="tooltipText != null" [tooltip]="tooltipText" trigger="click" [hideDelayAfterClick]="5000">{{ name }}</ng-container>
+		</ion-label>
+	</div>
+</div>

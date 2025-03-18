@@ -1,0 +1,75 @@
+<ion-header [translucent]="true">
+	<ion-toolbar class="top">
+		<ion-buttons slot="start">
+			<ion-back-button defaultHref="/tabs/preferences"></ion-back-button>
+		</ion-buttons>
+
+		<ion-title style="padding: 0px 10px">History</ion-title>
+	</ion-toolbar>
+	<ion-segment [(ngModel)]="selectedTab" (ionChange)="tabChange()" mode="md" scrollable="true">
+		<ion-segment-button *ngFor="let item of tabs" [value]="item.key" [class]="selectedTab === item.key ? 'segment-button-checked' : ''">
+			<ion-label>{{ item.title }}</ion-label>
+		</ion-segment-button>
+	</ion-segment>
+</ion-header>
+
+<ion-content [fullscreen]="true" [scrollY]="false">
+	<app-full-page-loading [fixInfiniteScroll]="true" [loading]="initialLoadings.get(selectedTab)()">
+		<app-full-page-offline [fixInfiniteScroll]="true" (retry)="this.ionViewWillEnter()" [online]="online">
+			<ng-container *ngFor="let tab of tabs">
+				<ng-container *ngIf="selectedTab === tab.key">
+					<div
+						class="nothingfound"
+						*ngIf="
+							(!dataSources.get(tab.key)() || (dataSources.get(tab.key)() && !dataSources.get(tab.key)()?.hasItems())) &&
+							!initialLoadings.get(tab.key)()
+						">
+						<ion-icon name="telescope-outline"></ion-icon>
+						<h2>No Notifications</h2>
+						<ion-label>Any notifications you receive will show up in this history.</ion-label>
+					</div>
+
+					<div class="next-block-hint" *ngIf="dataSources.get(tab.key)() && dataSources.get(tab.key)()?.hasItems()">
+						<ion-label class="hint-label">{{ visibleMonth }}</ion-label>
+						<ion-icon class="hint-icon opacity-icon" name="help-circle-outline" (click)="showDayDetails()"></ion-icon>
+					</div>
+
+					<cdk-virtual-scroll-viewport
+						itemSize="115"
+						minBufferPx="1600"
+						maxBufferPx="2000"
+						[hidden]="!dataSources.get(tab.key)() || !dataSources.get(tab.key)().hasItems()"
+						class="ion-content-scroll-host"
+						(scrolledIndexChange)="onScrolledIndexChange($event)">
+						<div *cdkVirtualFor="let item of dataSources.get(tab.key)(); index as idx" style="background-color: var(--ion-card-background)">
+							<app-validator-history-item
+								*ngIf="selectedTab == 'validator-dashboard'"
+								[data]="item"
+								[first]="idx === 0"
+								[last]="idx === dataSources.get(tab.key)().cachedData.length - 1">
+							</app-validator-history-item>
+							<app-network-history-item
+								*ngIf="selectedTab == 'network'"
+								[data]="item"
+								[first]="idx === 0"
+								[last]="idx === dataSources.get(tab.key)().cachedData.length - 1">
+							</app-network-history-item>
+							<app-machine-history-item
+								*ngIf="selectedTab == 'machines'"
+								[data]="item"
+								[first]="idx === 0"
+								[last]="idx === dataSources.get(tab.key)().cachedData.length - 1">
+							</app-machine-history-item>
+							<app-client-history-item
+								*ngIf="selectedTab == 'eth-clients'"
+								[data]="item"
+								[first]="idx === 0"
+								[last]="idx === dataSources.get(tab.key)().cachedData.length - 1">
+							</app-client-history-item>
+						</div>
+					</cdk-virtual-scroll-viewport>
+				</ng-container>
+			</ng-container>
+		</app-full-page-offline>
+	</app-full-page-loading>
+</ion-content>

@@ -1,6 +1,5 @@
 /* 
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  // 
  *  // This file is part of Beaconchain Dashboard.
  *  // 
@@ -18,53 +17,20 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import '../../../theme/variables.scss';
-
-.blockie {
-	position: absolute;
-	top: 20px;
-	left: 22px;
-	border-radius: 20%;
-	height: 59px;
-	width: 56px;
-	image-rendering: pixelated;
-}
-
-.container {
-}
-
-.blocknr {
-	top: 83px;
-	text-align: center;
-	padding-top: 75px;
-	width: 66px;
-	font-size: 0.72rem;
-}
-
-.inner {
-	padding-top: 0px;
-	padding-bottom: 0px;
-}
+@use '../../../theme/variables.scss';
 
 ion-item {
 	background: var(--ion-card-background);
+	margin: auto;
 }
 
 ion-icon {
 	position: absolute !important;
-	top: 2px;
-	right: 20px;
+	top: 5px;
+	right: 5px;
 	margin-top: 0px !important;
 	padding-top: 0px !important;
 	margin-bottom: 29px;
-	height: 56px;
-}
-
-.info {
-	margin-top: 15px;
-	margin-left: 0px;
-	margin-right: 5px;
-	margin-bottom: 15px;
 }
 
 .balance {
@@ -76,9 +42,10 @@ ion-icon {
 	font-weight: bold;
 }
 
-.smaller-info {
-	font-size: 0.8rem;
-	color: var(--ion-text-color-secondary);
+.status-container {
+	height: 78px;
+	margin-right: 2px;
+	margin-left: 0px;
 }
 
 .smoothing {
@@ -87,4 +54,16 @@ ion-icon {
 
 .ethpool {
 	color: #ee7112;
+}
+
+.orphaned {
+	color: var(--ion-color-warning) !important;
+}
+
+.missed {
+	color: var(--ion-color-danger) !important;
+}
+
+.scheduled {
+	color: var(--ion-color-secondary) !important;
 }

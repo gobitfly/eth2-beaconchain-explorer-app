@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -27,7 +26,7 @@ import { IonicModule } from '@ionic/angular'
 import { HelppagePageRoutingModule } from './helppage-routing.module'
 
 import { HelppagePage } from './helppage.page'
-import { HelpComponentModule } from '../../components/help/help.module'
+import { HelpComponentModule } from '@components/help/help.module'
 
 @NgModule({
 	imports: [CommonModule, FormsModule, IonicModule, HelppagePageRoutingModule, HelpComponentModule],

@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -27,10 +26,6 @@ const routes: Routes = [
 		loadChildren: () => import('./tabs/tabs.module').then((m) => m.TabsPageModule),
 	},
 	{
-		path: 'validatordetail',
-		loadChildren: () => import('./pages/validatordetail/validatordetail.module').then((m) => m.ValidatordetailPageModule),
-	},
-	{
 		path: 'helppage',
 		loadChildren: () => import('./pages/helppage/helppage.module').then((m) => m.HelppagePageModule),
 	},
@@ -51,20 +46,12 @@ const routes: Routes = [
 		loadChildren: () => import('./pages/dev/dev.module').then((m) => m.DevPageModule),
 	},
 	{
-		path: 'notifications',
-		loadChildren: () => import('./pages/notifications/notifications.module').then((m) => m.NotificationsPageModule),
-	},
-	{
 		path: 'logview',
 		loadChildren: () => import('./pages/logview/logview.module').then((m) => m.LogviewPageModule),
 	},
 	{
-		path: 'merge-checklist',
-		loadChildren: () => import('./pages/merge-checklist/merge-checklist.module').then((m) => m.MergeChecklistPageModule),
-	},
-	{
 		path: 'tab-blocks',
-		loadChildren: () => import('./tab-blocks/tab-blocks.module').then((m) => m.TabBlocksPageModule),
+		loadChildren: () => import('./tabs/tab-blocks/tab-blocks.module').then((m) => m.TabBlocksPageModule),
 	},
 	{
 		path: 'block-detail',
@@ -73,6 +60,11 @@ const routes: Routes = [
 	{
 		path: 'clients',
 		loadChildren: () => import('./pages/clients/clients.module').then((m) => m.ClientsPageModule),
+	},
+	{
+		path: 'notification-history',
+		loadChildren: () =>
+			import('./pages/notification-history/notification-history-routing.module').then((m) => m.NotificationHistoryPageRoutingModule),
 	},
 ]
 @NgModule({

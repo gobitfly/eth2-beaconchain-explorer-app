@@ -1,5 +1,5 @@
 <!-- 
-    Copyright (C) 2020 - 2021 Bitfly GmbH
+    Copyright (C) 2020 - 2024 bitfly explorer GmbH
     Manuel Caspari (manuel@bitfly.at)
     
     This file is part of Beaconchain Dashboard.
@@ -18,44 +18,32 @@
     along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  -->
 
-<div class="container" [class]="fadeIn">
+<div
+	class="infi-item-container"
+	[ngClass]="{ 'infi-item-first': first }"
+	[ngStyle]="{ 'border-left': selected ? '6px solid var(--ion-color-primary)' : 'none' }">
 	<div class="inner">
 		<ion-item lines="none">
 			<div slot="start">
-				<img class="blockie" src="{{ imgData }}" />
-				<ion-label class="pubkey">{{ data.pubkey | slice : 0 : 5 }}</ion-label>
+				<img class="infi-item-blockie" src="{{ imgData }}" />
+				<ion-label class="infi-item-container-below-blockie smallest-info">{{ validator.public_key | slice: 0 : 7 }}</ion-label>
 			</div>
 
-			<div class="info">
-				<ion-text class="title">{{ name }}</ion-text>
-				<ion-label> {{ balance | mcurrency : 'GWEI' : unit.pref.Cons }} </ion-label>
-
-				<ion-label class="smaller-info" style="padding-bottom: 6px">
-					{{ validator.attrEffectiveness && validator.attrEffectiveness != -1 ? 'Eff.:' + validator.attrEffectiveness + '%' : '' }}
-					<span *ngIf="validator.share != null || validator.rplshare != null"
-						><span *ngIf="validator.attrEffectiveness && validator.attrEffectiveness != -1"> | </span>Share:
-					</span>
-					<span *ngIf="validator.share != null">{{ validator.share | percent : '1.0-1' }}</span>
-					<span *ngIf="validator.rocketpool && validator.rplshare != null"
-						><span *ngIf="validator.share != null">, </span>RPL: {{ validator.rplshare | percent : '1.0-1' }}
-					</span>
-				</ion-label>
-				<span>
-					<ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge>
-					<ion-badge class="rpl" *ngIf="validator.rocketpool"
-						>Rocketpool {{ validator.rocketpool.node_deposit_balance | mcurrency : 'WEI' : 'ETHER' : false }}</ion-badge
-					>
-					<ion-badge class="vacant" *ngIf="validator.rocketpool && validator.rocketpool.is_vacant">Vacant</ion-badge>
-					<ion-badge class="sync" *ngIf="validator.currentSyncCommittee">Sync</ion-badge>
-				</span>
-
-				<!--<ion-label class="smaller-info"
-          *ngIf="validator.data.lastattestationslot">Last Attestation:
-          {{ validator.data.lastattestationslot }}</ion-label>-->
+			<div class="infi-item-middle-container">
+				<ion-text class="title">
+					{{ name }}
+					<span class="labels" [innerHTML]="labels"></span>
+					<div class="sync-container">
+						<ion-icon *ngIf="sync != 'none'" [ngClass]="{ 'sync-active': sync == 'current' }" name="sync-outline"></ion-icon>
+					</div>
+				</ion-text>
+				<ion-label class="smaller-info smaller-pad"> Balance: {{ validator.balance | mcurrency: 'WEI' : unit.pref.Cons }} </ion-label>
+				<ion-label class="smaller-info smaller-pad"> Efficiency: {{ efficiency | number: '1.0-2' }}% </ion-label>
 			</div>
-
-			<ion-icon slot="end" name="bookmark-outline" *ngIf="!tagged" (click)="tag($event)"></ion-icon>
-			<ion-icon slot="end" class="bookmarked" name="bookmark" *ngIf="tagged" (click)="untag($event)"></ion-icon>
+			<div slot="end" class="status-container">
+				<ion-badge [class]="stateCss" class="onlinestate">{{ state }}</ion-badge>
+			</div>
 		</ion-item>
 	</div>
 </div>
+<div [ngClass]="{ 'infi-item-last-padding': last }"></div>

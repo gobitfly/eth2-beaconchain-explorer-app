@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,59 +17,316 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochResponse, ProposalLuckResponse, SyncCommitteeResponse, ValidatorResponse } from '../requests/requests'
-import { sumBigInt, findHighest, findLowest } from '../utils/MathUtils'
 import BigNumber from 'bignumber.js'
-import { getValidatorQueryString, ValidatorState, Validator } from '../utils/ValidatorUtils'
-import { formatDate } from '@angular/common'
-import { SyncCommitteesStatistics, SyncCommitteesStatisticsResponse } from '../requests/requests'
-import { UnitconvService } from '../services/unitconv.service'
-import { ApiNetwork } from '../models/StorageTypes'
+import {
+	Aggregation,
+	dashboardID,
+	EfficiencyType,
+	Period,
+	V2DashboardOverview,
+	V2DashboardRewardChart,
+	V2DashboardRocketPool,
+	V2DashboardSummaryChart,
+	V2DashboardSummaryGroupTable,
+	V2DashboardSummaryTable,
+	V2GetValidatorStatusOfGroup,
+} from '@requests/v2-dashboard'
+import { ApiService, LatestStateWithTime } from '@services/api.service'
+import {
+	VDBGroupSummaryData,
+	VDBOverviewData,
+	VDBOverviewValidators,
+	VDBRocketPoolTableRow,
+	VDBSummaryTableRow,
+	VDBSummaryValidatorsData,
+} from '@requests/types/validator_dashboard'
+import { computed, Injectable, signal, Signal, WritableSignal } from '@angular/core'
+import { ChartData } from '@requests/types/common'
+import { ChainNetwork, findChainNetworkById } from '@utils/NetworkData'
+import { sumBigInt } from '@utils/MathUtils'
+import { UnitconvService } from '@services/unitconv.service'
+export interface SummaryChartOptions {
+	aggregation: Aggregation
+	startTime: number
+	endTime: number
+	force: boolean
+}
 
-export type OverviewData = {
-	overallBalance: BigNumber
-	validatorCount: number
-	requiredValidatorsForOKState: number
-	exitedValidatorsCount: number
-	activeValidatorCount: number
-	consensusPerformance: Performance
-	executionPerformance: Performance
-	combinedPerformance: Performance
-	slashedCount: number
-	awaitingActivationCount: number
-	activationeligibilityCount: number
-	bestRank: number
-	worstRank: number
-	bestTopPercentage: number
-	worstTopPercentage: number
-	displayAttrEffectiveness: boolean
-	attrEffectiveness: number
-	proposalLuckResponse: ProposalLuckResponse
-	dashboardState: DashboardStatus
-	lazyLoadChart: boolean
-	lazyChartValidators: string
-	foreignValidator: boolean
-	foreignValidatorItem?: Validator
-	foreignValidatorWithdrawalCredsAre0x01: boolean
-	effectiveBalance: BigNumber
-	currentEpoch: EpochResponse
-	rocketpool: Rocketpool
-	currentSyncCommittee: SyncCommitteeResponse
-	nextSyncCommittee: SyncCommitteeResponse
-	syncCommitteesStats: SyncCommitteesStatistics
-	proposalLuck: ProposalLuckResponse
-	withdrawalsEnabledForAll: boolean
+@Injectable({ providedIn: 'root' })
+export class OverviewProvider {
+	constructor(
+		private api: ApiService,
+		private unit: UnitconvService
+	) {}
+
+	clearRequestCache(data: OverviewData2) {
+		if (!data) return
+		return this.api.clearAllAssociatedCacheKeys(data.associatedCacheKey)
+	}
+
+	async setSummaryChartOptions(data: OverviewData2, options: SummaryChartOptions, force: boolean = false) {
+		data.summaryChartOptionsInternal.set(options)
+		const aggregation = options.aggregation
+
+		let startTime = options.startTime
+		if (startTime == null) {
+			startTime = Date.now() / 1000 - 12 * 60 * 60
+			if (aggregation == Aggregation.Epoch) {
+				startTime = Date.now() / 1000 - 8 * 60 * 60
+			} else if (aggregation == Aggregation.Daily) {
+				startTime = Date.now() / 1000 - 21 * 24 * 60 * 60
+			} else if (aggregation == Aggregation.Weekly) {
+				startTime = Date.now() / 1000 - 8 * 7 * 24 * 60 * 60
+			}
+		}
+
+		const request = new V2DashboardSummaryChart(data.id, EfficiencyType.All, aggregation, startTime, options.endTime)
+			.withAllowedCacheResponse(!force)
+			.withCustomCacheKey('summary-chart-initial-' + aggregation + data.id)
+		if (options.force) {
+			request.withAllowedCacheResponse(false)
+		}
+		const result = await this.api.set(request, data.summaryChart, data.associatedCacheKey)
+		if (result.error) {
+			console.error('Error fetching summary chart', result.error)
+		}
+	}
+
+	async setGroup(data: OverviewData2, groupID: number, force: boolean = false) {
+		if (groupID == -1) {
+			data.groupValidatorStatus.set(null)
+			return
+		}
+		const result = await this.api.set(
+			new V2GetValidatorStatusOfGroup(data.id, groupID, Period.AllTime).withAllowedCacheResponse(!force),
+			data.groupValidatorStatus,
+			data.associatedCacheKey
+		)
+		if (result.error) {
+			console.error('Error fetching group dashboard status', result.error)
+		}
+	}
+
+	async setTimeframe(data: OverviewData2, timeframe: Period, groupID: number, force: boolean = false) {
+		data.timeframeInternal.set(timeframe)
+		const period = timeframe
+
+		return Promise.all([
+			this.api.set(new V2DashboardSummaryTable(data.id, period, null).withAllowedCacheResponse(!force), data.summary, data.associatedCacheKey),
+			this.api.set(
+				new V2DashboardSummaryGroupTable(data.id, groupID, period, null).withAllowedCacheResponse(!force),
+				data.summaryGroup,
+				data.associatedCacheKey
+			),
+		])
+	}
+
+	async create(
+		id: dashboardID,
+		timeframe: Period,
+		groupID: number,
+		summaryChartOptions: SummaryChartOptions,
+		associatedCacheKey: string = null
+	): Promise<OverviewData2> {
+		if (!id) return null
+
+		const temp = new OverviewData2(id, associatedCacheKey, this.unit)
+
+		const overview = this.api.set(new V2DashboardOverview(id), temp.overviewData, associatedCacheKey)
+		this.setTimeframe(temp, timeframe, groupID, false)
+
+		this.api.set(new V2DashboardRocketPool(id), temp.rocketpool, associatedCacheKey)
+		this.api.set(new V2DashboardRewardChart(id).withCustomCacheKey('reward-chart-initial-' + id), temp.rewardChart, associatedCacheKey)
+
+		this.api.getLatestState().then((latestState) => {
+			temp.latestState.set(latestState)
+		})
+
+		temp.summaryChartOptionsInternal.set(summaryChartOptions)
+
+		//this.setSummaryChartOptions(temp, summaryChartOptions) // Summary Chart handles its own fetch logic, so below is not necessary
+
+		// wait after all requests are made
+		const overviewResult = await overview
+		if (overviewResult.error) {
+			throw overviewResult.error
+		}
+
+		return temp
+	}
+}
+
+function getPeriodDisplayable(period: Period): string {
+	if (period == Period.AllTime) return 'All'
+	if (period == Period.Last1h) return '1h'
+	if (period == Period.Last24h) return '24h'
+	if (period == Period.Last7d) return '7d'
+	if (period == Period.Last30d) return '30d'
+}
+export class OverviewData2 {
+	associatedCacheKey: string = null
+
+	loading: WritableSignal<boolean> = signal(false)
+	id: dashboardID
+
+	overviewData: WritableSignal<VDBOverviewData> = signal(null)
+	summary: WritableSignal<VDBSummaryTableRow[]> = signal(null)
+	summaryGroup: WritableSignal<VDBGroupSummaryData> = signal(null)
+	latestState: WritableSignal<LatestStateWithTime> = signal(null)
+	rocketpool: WritableSignal<VDBRocketPoolTableRow[]> = signal(null)
+	summaryChart: WritableSignal<ChartData<number, number>> = signal(null)
+	rewardChart: WritableSignal<ChartData<number, string>> = signal(null)
+	groupValidatorStatus: WritableSignal<VDBSummaryValidatorsData[]> = signal(null)
+
+	timeframeInternal: WritableSignal<Period> = signal(null)
+	timeframe = computed(() => this.timeframeInternal())
+	timeframeDisplay = computed(() => getPeriodDisplayable(this.timeframe()))
+
+	selectedGroupID: WritableSignal<number> = signal(-1)
+	summaryCurrentGroup = computed(() => {
+		// todo: efficiency should be provided by summaryGroup
+		if (!this.summary()) return null
+		return this.summary().find((group) => group.group_id == this.selectedGroupID())
+	})
+
+	summaryChartOptionsInternal: WritableSignal<SummaryChartOptions> = signal(null)
+	summaryChartOptions = computed(() => this.summaryChartOptionsInternal())
+
+	foreignValidator: boolean = false
+	unit: UnitconvService
+
+	chainNetwork: Signal<ChainNetwork> = computed(() => {
+		if (!this.overviewData()) return findChainNetworkById(1)
+		return findChainNetworkById(this.overviewData().network)
+	})
+
+	constructor(id: dashboardID, associatedCacheKey: string, unit: UnitconvService) {
+		this.id = id
+		this.associatedCacheKey = associatedCacheKey
+		this.unit = unit
+	}
+
+	isEmpty = computed(() => {
+		return this.validatorCount() == 0
+	})
+
+	validatorCount: Signal<number> = computed(() => {
+		if (!this.overviewData()) return 0
+		// if group is selected, just return count for that group
+		if (this.groupValidatorStatus()) {
+			return this.groupValidatorStatus().reduce((acc, group) => acc + group.validators.length, 0)
+		}
+
+		return getValidatorCount(this.overviewData())
+	})
+
+	dashboardState: Signal<DashboardStatus> = computed(() => {
+		let validators = this.overviewData()?.validators
+		// if group is selected, calculate validator states of that group
+		if (this.groupValidatorStatus()) {
+			validators = {
+				online: this.groupValidatorStatus().find((item) => item.category == 'online')?.validators.length,
+				offline: this.groupValidatorStatus().find((item) => item.category == 'offline')?.validators.length,
+				slashed: this.groupValidatorStatus().find((item) => item.category == 'slashed')?.validators.length,
+				exited: this.groupValidatorStatus().find((item) => item.category == 'exited')?.validators.length,
+				pending: this.groupValidatorStatus().find((item) => item.category == 'pending')?.validators.length,
+			} as VDBOverviewValidators
+		}
+
+		return getDashboardState(validators, this.validatorCount(), this.foreignValidator)
+	})
+
+	consensusPerformance: Signal<Performance> = computed(() => {
+		return getConsensusPerformance(this.overviewData())
+	})
+
+	executionPerformance: Signal<Performance> = computed(() => {
+		return getExecutionPerformance(this.overviewData())
+	})
+
+	combinedPerformance: Signal<Performance> = computed(() => {
+		return getCombinedPerformance(this.consensusPerformance(), this.executionPerformance(), this.unit)
+	})
+
+	showSyncStats: Signal<boolean> = computed(() => {
+		if (this.summaryGroup() == null) return false
+		return (
+			this.summaryGroup().sync_count.current_validators > 0 ||
+			this.summaryGroup().sync_count.past_periods > 0 ||
+			this.summaryGroup().sync_count.upcoming_validators > 0
+		)
+	})
+
+	syncEfficiency: Signal<number> = computed(() => {
+		if (this.summaryGroup() == null) return 0
+		const total = this.summaryGroup().sync.status_count.success + this.summaryGroup().sync.status_count.failed
+		if (total == 0) return 0
+		return (this.summaryGroup().sync.status_count.success * 100) / total
+	})
+
+	syncCount: Signal<number> = computed(() => {
+		if (this.summaryGroup() == null) return 0
+		return this.summaryGroup().sync_count.past_periods + this.summaryGroup().sync_count.current_validators > 0 ? 1 : 0
+	})
+
+	isReadyToDisplay: Signal<boolean> = computed(() => {
+		return this.overviewData() != null && this.summary() != null && this.summaryGroup() != null
+	})
+
+	rpTotalRPLClaimed: Signal<BigNumber> = computed(() => {
+		if (this.rocketpool() == null) return new BigNumber(0)
+		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl_claimed))
+		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl_unclaimed))
+
+		return claimed.plus(unclaimed)
+	})
+
+	avgNetworkEfficiency: Signal<number> = computed(() => {
+		if (this.summary() == null) return 0
+		return this.summary()[0].average_network_efficiency
+	})
+
+	getTotalMissedRewards: Signal<BigNumber> = computed(() => {
+		if (this.summaryGroup() == null) return new BigNumber(0)
+		return new BigNumber(this.summaryGroup().missed_rewards.attestations)
+			.plus(new BigNumber(this.summaryGroup().missed_rewards.proposer_rewards.cl))
+			.plus(new BigNumber(this.summaryGroup().missed_rewards.proposer_rewards.el))
+			.plus(new BigNumber(this.summaryGroup().missed_rewards.sync))
+	})
+
+	totalSmoothingPool: Signal<BigNumber> = computed(() => {
+		if (this.rocketpool() == null) return new BigNumber(0)
+		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.smoothingpool_claimed))
+		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.smoothingpool_unclaimed))
+		return claimed.plus(unclaimed)
+	})
+
+	totalRPL: Signal<BigNumber> = computed(() => {
+		if (this.rocketpool() == null) return new BigNumber(0)
+		const claimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl_claimed))
+		const unclaimed = sumBigInt(this.rocketpool(), (rp) => new BigNumber(rp.rpl_unclaimed))
+		return claimed.plus(unclaimed)
+	})
+}
+
+export function getValidatorCount(overviewData: VDBOverviewData): number {
+	return (
+		overviewData.validators.exited +
+		overviewData.validators.offline +
+		overviewData.validators.online +
+		overviewData.validators.slashed +
+		overviewData.validators.pending
+	)
 }
 
 export type Performance = {
 	performance1d: BigNumber
-	performance31d: BigNumber
+	performance30d: BigNumber
 	performance7d: BigNumber
-	performance365d: BigNumber
 	total: BigNumber
 	apr7d: number
-	apr31d: number
-	apr365d: number
+	apr30d: number
+	aprTotal: number
 }
 
 export type Rocketpool = {
@@ -123,813 +379,216 @@ export type Description = {
 	extendedDescriptionPre: string
 }
 
-const VALIDATOR_32ETH = new BigNumber(32000000000)
-
-export default class OverviewController {
-	constructor(private refreshCallback: () => void = null, private userMaxValidators = 280, private unit: UnitconvService = null) {}
-
-	public processDashboard(
-		validators: Validator[],
-		currentEpoch: EpochResponse,
-		syncCommitteesStatsResponse = null,
-		proposalLuckResponse: ProposalLuckResponse = null,
-		network: ApiNetwork
-	) {
-		return this.process(validators, currentEpoch, false, syncCommitteesStatsResponse, proposalLuckResponse, network)
+// VDBSummaryValidators just 3 states?
+function getDashboardState(validators: VDBOverviewValidators, validatorCount: number, foreignValidator: boolean): DashboardStatus {
+	if (!validators) return null
+	// create status object with some default values
+	const dashboardStatus: DashboardStatus = {
+		state: StateType.none,
+		title: `${validators.online} / ${validatorCount}`,
+		iconCss: 'ok',
+		icon: 'checkmark-circle-outline',
+		description: [],
+		extendedDescription: '',
+		extendedDescriptionPre: '',
 	}
 
-	public processDetail(validators: Validator[], currentEpoch: EpochResponse, network: ApiNetwork) {
-		return this.process(validators, currentEpoch, true, null, null, network)
+	////
+	// Attention: The order of all the updateStateX functions matters!
+	// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
+
+	// handle slashed validators
+	updateStateSlashed(dashboardStatus, validators.slashed, validatorCount, foreignValidator)
+
+	// handle offline validators
+	updateStateOffline(dashboardStatus, validatorCount, validators.offline, foreignValidator)
+
+	// handle awaiting activation validators
+	if (validators.pending > 0) {
+		updateStateAwaiting(dashboardStatus, validators.pending, validatorCount, foreignValidator)
 	}
 
-	private process(
-		validators: Validator[],
-		currentEpoch: EpochResponse,
-		foreignValidator = false,
-		syncCommitteesStatsResponse = null,
-		proposalLuckResponse: ProposalLuckResponse = null,
-		network: ApiNetwork
-	): OverviewData {
-		if (!validators || validators.length <= 0 || currentEpoch == null) return null
+	// handle exited validators
+	updateExitedState(dashboardStatus, validators.exited, validatorCount, foreignValidator)
 
-		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
-		const validatorDepositActive = sumBigInt(validators, (cur) => {
-			if (cur.data.activationepoch <= currentEpoch.epoch) {
-				if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+	// handle ok state, always call last
+	updateStateOk(dashboardStatus, validators.online, validatorCount, foreignValidator)
 
-				let nodeDeposit
-				if (cur.rocketpool.node_deposit_balance) {
-					nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
-				} else {
-					nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
-				}
-				return nodeDeposit.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-			} else {
-				return new BigNumber(0)
-			}
-		})
-
-		const overallBalance = this.sumBigIntBalanceRP(validators, (cur) => new BigNumber(cur.data.balance))
-		const validatorCount = validators.length
-		const activeValidators = this.getActiveValidators(validators)
-		const offlineValidators = this.getOfflineValidators(validators)
-
-		const consensusPerf = this.getConsensusPerformance(validators, validatorDepositActive)
-
-		const executionPerf = this.getExecutionPerformance(validators, validatorDepositActive)
-
-		const smoothingPoolClaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
-			true,
-			validators,
-			(cur) => cur.rocketpool.claimed_smoothing_pool,
-			(cur) => cur.execshare
-		).dividedBy(new BigNumber('1e9'))
-
-		const smoothingPoolUnclaimed = this.sumRocketpoolSmoothingBigIntPerNodeAddress(
-			true,
-			validators,
-			(cur) => cur.rocketpool.unclaimed_smoothing_pool,
-			(cur) => cur.execshare
-		).dividedBy(new BigNumber('1e9'))
-
-		const combinedPerf = {
-			performance1d: consensusPerf.performance1d.plus(this.unit.convertELtoCL(executionPerf.performance1d)),
-			performance31d: consensusPerf.performance31d.plus(this.unit.convertELtoCL(executionPerf.performance31d)),
-			performance7d: consensusPerf.performance7d.plus(this.unit.convertELtoCL(executionPerf.performance7d)),
-			performance365d: consensusPerf.performance365d.plus(this.unit.convertELtoCL(executionPerf.performance365d)),
-			apr31d: this.getAPRFrom(31, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance31d).plus(consensusPerf.performance31d)),
-			apr7d: this.getAPRFrom(7, validatorDepositActive, this.unit.convertELtoCL(executionPerf.performance7d).plus(consensusPerf.performance7d)),
-			apr365d: this.getAPRFrom(
-				365,
-				validatorDepositActive,
-				this.unit.convertELtoCL(executionPerf.performance365d).plus(consensusPerf.performance365d)
-			),
-			total: consensusPerf.total.plus(this.unit.convertELtoCL(executionPerf.total)).plus(smoothingPoolClaimed).plus(smoothingPoolUnclaimed),
-		} as Performance
-
-		let attrEffectiveness = 0
-		let displayAttrEffectiveness = false
-		if (activeValidators.length > 0) {
-			displayAttrEffectiveness = true
-
-			attrEffectiveness = sumBigInt(activeValidators, (cur) =>
-				cur.attrEffectiveness ? new BigNumber(cur.attrEffectiveness.toString()) : new BigNumber(0)
-			)
-				.dividedBy(activeValidators.length)
-				.decimalPlaces(1)
-				.toNumber()
-
-			const attrChecked = Math.min(Math.max(attrEffectiveness, 0), 100)
-			if (attrEffectiveness != attrChecked) {
-				console.warn(`Effectiveness out of range: ${attrEffectiveness} (displaying "NaN")`)
-				attrEffectiveness = -1 // display "NaN" if something went wrong
-			}
-		}
-
-		let bestRank = 0
-		let bestTopPercentage = 0
-		let worstRank = 0
-		let worstTopPercentage = 0
-		const rankRelevantValidators = activeValidators.concat(offlineValidators)
-		if (rankRelevantValidators.length > 0) {
-			bestRank = findLowest(rankRelevantValidators, (cur) => cur.data.rank7d)
-			bestTopPercentage = findLowest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
-			worstRank = findHighest(rankRelevantValidators, (cur) => cur.data.rank7d)
-			worstTopPercentage = findHighest(rankRelevantValidators, (cur) => cur.data.rankpercentage)
-		}
-
-		const rocketpoolValiCount = sumBigInt(validators, (cur) => (cur.rocketpool ? new BigNumber(1) : new BigNumber(0)))
-		const feeSum = sumBigInt(validators, (cur) =>
-			cur.rocketpool ? new BigNumber(cur.rocketpool.minipool_node_fee).multipliedBy('100') : new BigNumber('0')
-		)
-		let feeAvg = 0
-		if (feeSum.decimalPlaces(3).toNumber() != 0) {
-			feeAvg = feeSum.dividedBy(rocketpoolValiCount).decimalPlaces(1).toNumber()
-		}
-
-		const currentSync = validators.find((cur) => !!cur.currentSyncCommittee)
-		const nextSync = validators.find((cur) => !!cur.nextSyncCommittee)
-
-		let foreignWCAre0x01 = false
-		if (foreignValidator) {
-			foreignWCAre0x01 = validators[0].data.withdrawalcredentials.startsWith('0x01')
-		}
-
-		return {
-			overallBalance: overallBalance,
-			validatorCount: validatorCount,
-			bestRank: bestRank,
-			bestTopPercentage: bestTopPercentage,
-			worstRank: worstRank,
-			worstTopPercentage: worstTopPercentage,
-			attrEffectiveness: attrEffectiveness,
-			displayAttrEffectiveness: displayAttrEffectiveness,
-			consensusPerformance: consensusPerf,
-			executionPerformance: executionPerf,
-			combinedPerformance: combinedPerf,
-			dashboardState: this.getDashboardState(validators, currentEpoch, foreignValidator, network),
-			lazyLoadChart: true,
-			lazyChartValidators: getValidatorQueryString(validators, 2000, this.userMaxValidators - 1),
-			foreignValidator: foreignValidator,
-			foreignValidatorItem: foreignValidator ? validators[0] : null,
-			foreignValidatorWithdrawalCredsAre0x01: foreignWCAre0x01,
-			effectiveBalance: effectiveBalance,
-			currentEpoch: currentEpoch,
-			currentSyncCommittee: currentSync ? currentSync.currentSyncCommittee : null,
-			nextSyncCommittee: nextSync ? nextSync.nextSyncCommittee : null,
-			syncCommitteesStats: this.calculateSyncCommitteeStats(syncCommitteesStatsResponse, network),
-			proposalLuckResponse: proposalLuckResponse,
-			withdrawalsEnabledForAll:
-				validators.filter((cur) => (cur.data.withdrawalcredentials.startsWith('0x01') ? true : false)).length == validatorCount,
-			rocketpool: {
-				minRpl: this.sumRocketpoolBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.node_min_rpl_stake,
-					(cur) => cur.rplshare
-				),
-				maxRpl: this.sumRocketpoolBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.node_max_rpl_stake,
-					(cur) => cur.rplshare
-				),
-				currentRpl: this.sumRocketpoolBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.node_rpl_stake,
-					(cur) => cur.rplshare
-				),
-				totalClaims: this.sumRocketpoolBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.rpl_cumulative_rewards,
-					(cur) => cur.rplshare
-				),
-				fee: feeAvg,
-				status: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_status : null,
-				depositType: foreignValidator && validators[0].rocketpool ? validators[0].rocketpool.minipool_deposit_type : null,
-				smoothingPoolClaimed: smoothingPoolClaimed,
-				smoothingPoolUnclaimed: smoothingPoolUnclaimed,
-				rplUnclaimed: this.sumRocketpoolBigIntPerNodeAddress(
-					true,
-					validators,
-					(cur) => cur.rocketpool.unclaimed_rpl_rewards,
-					(cur) => cur.rplshare
-				),
-				smoothingPool: validators.find((cur) => (cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == true : false)) != null ? true : false,
-				hasNonSmoothingPoolAsWell:
-					validators.find((cur) => (cur.rocketpool ? cur.rocketpool.smoothing_pool_opted_in == false : true)) != null ? true : false,
-				cheatingStatus: this.getRocketpoolCheatingStatus(validators),
-				depositCredit: this.sumRocketpoolBigIntPerNodeAddress(
-					false,
-					validators,
-					(cur) => (cur.rocketpool.node_deposit_credit ? cur.rocketpool.node_deposit_credit.toString() : '0'),
-					() => 1
-				),
-				vacantPools: validators.filter((cur) => cur.rocketpool && cur.rocketpool.is_vacant).length,
-			},
-		} as OverviewData
+	if (dashboardStatus.state == StateType.mixed) {
+		// remove extended description if more than one state is shown
+		dashboardStatus.extendedDescription = ''
+		dashboardStatus.extendedDescriptionPre = ''
 	}
 
-	private getExecutionPerformance(validators: Validator[], validatorDepositActive: BigNumber) {
-		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance1d.toString()).multipliedBy(
-				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
-			)
-		)
-		const performance31d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance31d.toString()).multipliedBy(
-				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
-			)
-		)
-		const performance7d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance7d.toString()).multipliedBy(
-				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
-			)
-		)
-		const performance365d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performance365d.toString()).multipliedBy(
-				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
-			)
-		)
-		const total = this.sumBigIntPerformanceRP(validators, (cur) =>
-			this.sumExcludeSmoothingPool(cur, (fieldCur) => fieldCur.execution.performanceTotal.toString()).multipliedBy(
-				new BigNumber(cur.execshare == null ? 1 : cur.execshare)
-			)
-		)
+	return dashboardStatus
+}
 
-		return {
-			performance1d: performance1d,
-			performance31d: performance31d,
-			performance7d: performance7d,
-			performance365d: performance365d,
-			apr31d: this.getAPRFrom(31, validatorDepositActive, performance31d),
-			apr7d: this.getAPRFrom(7, validatorDepositActive, performance7d),
-			apr365d: this.getAPRFrom(365, validatorDepositActive, performance365d),
-			total: total,
-		}
+function descriptionSwitch(myText: string, foreignText: string, foreignValidator: boolean) {
+	return foreignValidator ? foreignText : myText
+}
+
+function singularPluralSwitch(totalValidatorCount: number, validatorCount: number, verbSingular: string, verbPlural: string): string {
+	if (totalValidatorCount != validatorCount && validatorCount == 1) {
+		return ` ${verbSingular}`
+	} else {
+		return ` ${verbPlural}`
+	}
+}
+
+function updateStateSlashed(dashboardStatus: DashboardStatus, slashedCount: number, validatorCount: number, foreignValidator: boolean) {
+	if (slashedCount == 0) {
+		return
 	}
 
-	private sumExcludeSmoothingPool(cur: Validator, field: (cur: Validator) => string) {
-		// Exclude rocketpool minipool from execution rewards collection
-		if (!cur.rocketpool || !cur.rocketpool.smoothing_pool_opted_in) {
-			return cur.execution ? new BigNumber(field(cur)).dividedBy(new BigNumber('1e9')) : new BigNumber(0)
-		}
-		return new BigNumber(0)
+	if (dashboardStatus.state == StateType.none) {
+		dashboardStatus.icon = 'alert-circle-outline'
+		dashboardStatus.iconCss = 'err'
+		dashboardStatus.state = StateType.slashed
+	} else {
+		dashboardStatus.state = StateType.mixed
 	}
 
-	private getConsensusPerformance(validators: Validator[], validatorDepositActive: BigNumber): Performance {
-		const performance1d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.performance1d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		)
-		const performance31d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.performance31d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		)
-		const performance7d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.performance7d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		)
-		const performance365d = this.sumBigIntPerformanceRP(validators, (cur) =>
-			new BigNumber(cur.data.performance365d).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		)
-		const total = this.sumBigIntPerformanceRP(validators, (cur) => {
-			if (cur.data.performancetotal !== undefined) {
-				return new BigNumber(cur.data.performancetotal).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-			} else {
-				return new BigNumber(0)
-			}
-		})
+	const pre = validatorCount == slashedCount ? 'All' : `${slashedCount}`
+	const helpingVerb = singularPluralSwitch(validatorCount, slashedCount, 'was', 'were')
+	dashboardStatus.description.push({
+		text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' slashed', 'This validator was slashed', foreignValidator),
+		highlight: true,
+	})
+}
 
-		return {
-			performance1d: performance1d,
-			performance31d: performance31d,
-			performance7d: performance7d,
-			performance365d: performance365d,
-			apr31d: this.getAPRFrom(31, validatorDepositActive, performance31d),
-			apr7d: this.getAPRFrom(7, validatorDepositActive, performance7d),
-			apr365d: this.getAPRFrom(365, validatorDepositActive, performance365d),
-			total: total,
-		}
+function updateStateAwaiting(dashboardStatus: DashboardStatus, awaitingCount: number, validatorCount: number, foreignValidator: boolean) {
+	if (awaitingCount == 0) {
+		return
 	}
 
-	private getRocketpoolCheatingStatus(validators: Validator[]): RocketpoolCheatingStatus {
-		let strikes = 0
-		let penalties = 0
-
-		validators.forEach((cur) => {
-			if (cur.rocketpool && cur.rocketpool.node_address) {
-				const penalty_count = cur.rocketpool.penalty_count
-				if (penalty_count >= 3) {
-					penalties += penalty_count
-				} else {
-					strikes += penalty_count
-				}
-			}
-		})
-
-		return {
-			strikes: strikes,
-			penalties: penalties,
-		}
+	if (dashboardStatus.state == StateType.none) {
+		dashboardStatus.icon = 'timer-outline'
+		dashboardStatus.iconCss = 'waiting'
+		dashboardStatus.state = StateType.activation
 	}
 
-	public sumBigIntBalanceRP(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
-		return sumBigInt(validators, (cur) => {
-			const fieldVal = field(cur)
-			if (!cur.rocketpool) return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-			if (!cur.rocketpool.node_address) {
-				return fieldVal.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-			}
+	const pre = validatorCount == awaitingCount ? 'All' : `${awaitingCount}`
+	const helpingVerb = singularPluralSwitch(validatorCount, awaitingCount, 'is', 'are')
+	dashboardStatus.description.push({
+		text: descriptionSwitch(
+			pre + ' of your validators' + helpingVerb + ' waiting for activation',
+			'This validator is waiting for activation',
+			foreignValidator
+		),
+		highlight: true,
+	})
+}
 
-			let nodeDeposit
-			if (cur.rocketpool.node_deposit_balance) {
-				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
-			} else {
-				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
-			}
-
-			const rewards = new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
-
-			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
-			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
-			const rewardNodeFromPool = new BigNumber(rewards)
-				.multipliedBy(new BigNumber(1 - nodeShare))
-				.multipliedBy(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))
-
-			// if negative, rocketpool reimburses the rETH holder by taking it from the node operator
-			let wholeBalance
-			if (rewards.isNegative()) {
-				wholeBalance = nodeDeposit.plus(rewards)
-				// if less than what the user deposited upfront, he lost everything and we put the balance to 0
-				// the validator can leak below that of course, but that's now at the expense of the rETH holders
-				if (wholeBalance.isNegative()) {
-					wholeBalance = new BigNumber(0)
-				}
-			} else {
-				wholeBalance = nodeDeposit.plus(rewardNode).plus(rewardNodeFromPool)
-			}
-
-			return wholeBalance.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
-		})
+function updateExitedState(dashboardStatus: DashboardStatus, exitedCount: number, validatorCount: number, foreignValidator: boolean) {
+	if (exitedCount == 0) {
+		return
 	}
 
-	private sumBigIntPerformanceRP(validators: Validator[], field: (cur: Validator) => BigNumber): BigNumber {
-		return sumBigInt(validators, (cur) => {
-			if (!cur.rocketpool) return field(cur)
-			if (!cur.rocketpool.node_address) return field(cur)
-
-			let fieldResolved = field(cur)
-			if (fieldResolved.s == null && fieldResolved.e == null) {
-				fieldResolved = new BigNumber(0)
-			}
-
-			let nodeDeposit
-			if (cur.rocketpool.node_deposit_balance) {
-				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
-			} else {
-				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
-			}
-
-			const rewards = new BigNumber(fieldResolved.toString())
-
-			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
-
-			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
-			const rewardNodeFromPool = new BigNumber(rewards)
-				.multipliedBy(new BigNumber(1 - nodeShare))
-				.multipliedBy(new BigNumber(cur.rocketpool.minipool_node_fee.toString()))
-
-			// if negative, rocketpool reimburses the rETH holder by taking it from the node operator
-			let resultReward
-			if (rewards.isNegative()) {
-				resultReward = rewards
-				const negativeDepositBalance = nodeDeposit.multipliedBy(-1)
-				if (resultReward.isLessThan(negativeDepositBalance)) {
-					resultReward = negativeDepositBalance
-				}
-			} else {
-				resultReward = rewardNode.plus(rewardNodeFromPool)
-			}
-
-			return resultReward
-		})
+	const allValidatorsExited = validatorCount == exitedCount
+	if (dashboardStatus.state == StateType.none && allValidatorsExited) {
+		dashboardStatus.icon = descriptionSwitch('ribbon-outline', 'home-outline', foreignValidator)
+		dashboardStatus.iconCss = 'ok'
+		dashboardStatus.state = StateType.exited
+		dashboardStatus.extendedDescription = descriptionSwitch('Thank you for your service', null, foreignValidator)
+	} else {
+		dashboardStatus.state = StateType.mixed
 	}
 
-	private sumRocketpoolBigIntPerNodeAddress(
-		applyShare: boolean,
-		validators: Validator[],
-		field: (cur: Validator) => string,
-		share: (cur: Validator) => number
-	): BigNumber {
-		const nodesAdded = new Set()
-		return sumBigInt(validators, (cur) => {
-			if (!cur.rocketpool) return new BigNumber(0)
-			if (!cur.rocketpool.node_address) return new BigNumber(0)
-			if (nodesAdded.has(cur.rocketpool.node_address)) return new BigNumber(0)
-			nodesAdded.add(cur.rocketpool.node_address)
-			const temp = new BigNumber(field(cur).toString())
-			if (applyShare) {
-				return temp.multipliedBy(share(cur) == null ? 1 : share(cur))
-			}
-			return temp
-		})
+	const pre = allValidatorsExited ? 'All' : `${exitedCount}`
+	const helpingVerb = singularPluralSwitch(validatorCount, exitedCount, 'has', 'have')
+	// exit message is only highlighted if it is about foreign validators or if all validators are exited
+	const highlight = foreignValidator || allValidatorsExited
+	dashboardStatus.description.push({
+		text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' exited', 'This validator has exited', foreignValidator),
+		highlight: highlight,
+	})
+}
+
+function updateStateOffline(dashboardStatus: DashboardStatus, validatorCount: number, offlineCount: number, foreignValidator: boolean) {
+	if (offlineCount == 0) {
+		return
 	}
 
-	private sumRocketpoolSmoothingBigIntPerNodeAddress(
-		applyShare: boolean,
-		validators: Validator[],
-		field: (cur: Validator) => string,
-		share: (cur: Validator) => number
-	): BigNumber {
-		const totalMinipoolFeeForNodeCache = new Map<string, number>()
-
-		return sumBigInt(validators, (cur) => {
-			if (!cur.rocketpool) return new BigNumber(0)
-			if (!cur.rocketpool.node_address) return new BigNumber(0)
-
-			if (!totalMinipoolFeeForNodeCache.has(cur.rocketpool.node_address)) {
-				const totalMinipoolFeeForNode = validators
-					.filter((item) => {
-						if (!item.rocketpool) return false
-						if (!item.rocketpool.node_address) return false
-						return item.rocketpool.node_address == cur.rocketpool.node_address
-					})
-					.reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue.rocketpool.minipool_node_fee.toString()), 0)
-				totalMinipoolFeeForNodeCache.set(cur.rocketpool.node_address, totalMinipoolFeeForNode)
-			}
-
-			const nodeFeeShare =
-				parseFloat(cur.rocketpool.minipool_node_fee.toString()) / (totalMinipoolFeeForNodeCache.get(cur.rocketpool.node_address) || 1)
-			let temp = new BigNumber(field(cur).toString())
-			temp = temp.multipliedBy(nodeFeeShare)
-			if (applyShare) {
-				return temp.multipliedBy(share(cur) == null ? 1 : share(cur))
-			}
-			return temp
-		})
+	if (dashboardStatus.state == StateType.none) {
+		dashboardStatus.icon = 'alert-circle-outline'
+		dashboardStatus.iconCss = 'warn'
+		dashboardStatus.state = StateType.offline
+	} else {
+		dashboardStatus.state = StateType.mixed
 	}
 
-	private getAPRFrom(days: number, validatorDepositActive: BigNumber, performance: BigNumber): number {
-		return new BigNumber(performance.toString())
-			.multipliedBy(36500 / days)
-			.dividedBy(validatorDepositActive)
-			.decimalPlaces(1)
-			.toNumber()
+	const pre = validatorCount == offlineCount ? 'All' : `${offlineCount}`
+	const helpingVerb = singularPluralSwitch(validatorCount, offlineCount, 'is', 'are')
+	dashboardStatus.description.push({
+		text: descriptionSwitch(pre + ' of your validators' + helpingVerb + ' offline', 'This validator is offline', foreignValidator),
+		highlight: true,
+	})
+}
+
+function updateStateOk(dashboardStatus: DashboardStatus, activeCount: number, validatorCount: number, foreignValidator: boolean) {
+	if (dashboardStatus.state != StateType.mixed && dashboardStatus.state != StateType.none) {
+		return
 	}
 
-	private getDashboardState(validators: Validator[], currentEpoch: EpochResponse, foreignValidator, network: ApiNetwork): DashboardStatus {
-		// collect data
-		const validatorCount = validators.length
-		const activeValidators = this.getActiveValidators(validators)
-		const activeValidatorCount = activeValidators.length
-		const slashedValidators = this.getSlashedValidators(validators)
-		const slashedCount = slashedValidators.length
-		const exitedValidators = this.getExitedValidators(validators)
-		const exitedValidatorsCount = exitedValidators.length
-		const awaitingActivation = this.getWaitingForActivationValidators(validators)
-		const awaitingCount = awaitingActivation.length
-		const activationEligibility = this.getEligableValidators(validators)
-		const eligibilityCount = activationEligibility.length
-
-		// create status object with some default values
-		const dashboardStatus: DashboardStatus = {
-			state: StateType.none,
-			title: `${activeValidatorCount} / ${validatorCount}`,
-			iconCss: 'ok',
-			icon: 'checkmark-circle-outline',
-			description: [],
-			extendedDescription: '',
-			extendedDescriptionPre: '',
-		}
-
-		////
-		// Attention: The order of all the updateStateX functions matters!
-		// 	The first one that matches will set the icon and its css as well as, if only one state matches, the extendedDescription
-
-		// handle slashed validators
-		this.updateStateSlashed(dashboardStatus, slashedCount, validatorCount, foreignValidator, slashedValidators[0]?.data, currentEpoch, network)
-
-		// handle offline validators
-		const offlineCount = validatorCount - activeValidatorCount - exitedValidatorsCount - slashedCount - awaitingCount - eligibilityCount
-		this.updateStateOffline(dashboardStatus, validatorCount, offlineCount, foreignValidator)
-
-		// handle awaiting activation validators
-		if (awaitingCount > 0) {
-			this.updateStateAwaiting(dashboardStatus, awaitingCount, validatorCount, foreignValidator, awaitingActivation[0].data, currentEpoch, network)
-		}
-
-		// handle eligable validators
-		if (eligibilityCount > 0) {
-			this.updateStateEligibility(
-				dashboardStatus,
-				eligibilityCount,
-				validatorCount,
-				foreignValidator,
-				activationEligibility[0].data,
-				currentEpoch,
-				network
-			)
-		}
-
-		// handle exited validators
-		this.updateExitedState(dashboardStatus, exitedValidatorsCount, validatorCount, foreignValidator)
-
-		// handle ok state, always call last
-		this.updateStateOk(dashboardStatus, activeValidatorCount, validatorCount, foreignValidator, activeValidators[0]?.data, currentEpoch, network)
-
-		if (dashboardStatus.state == StateType.mixed) {
-			// remove extended description if more than one state is shown
-			dashboardStatus.extendedDescription = ''
-			dashboardStatus.extendedDescriptionPre = ''
-		}
-
-		return dashboardStatus
-	}
-
-	private descriptionSwitch(myText, foreignText, foreignValidator) {
-		return foreignValidator ? foreignText : myText
-	}
-
-	private getExitingDescription(validatorResp: ValidatorResponse, currentEpoch: EpochResponse, network: ApiNetwork): Description {
-		if (!validatorResp.exitepoch) return { extendedDescriptionPre: null, extendedDescription: null }
-
-		const exitDiff = validatorResp.exitepoch - currentEpoch.epoch
-		const isExiting = exitDiff >= 0 && exitDiff < 6480 // ~ 1 month
-		const exitingDate = isExiting ? this.getEpochDate(validatorResp.exitepoch, currentEpoch, network) : null
-
-		return {
-			extendedDescriptionPre: isExiting ? 'Exiting on ' : null,
-			extendedDescription: exitingDate,
-		}
-	}
-
-	private singularPluralSwitch(totalValidatorCount: number, validatorCount: number, verbSingular: string, verbPlural: string): string {
-		if (totalValidatorCount != validatorCount && validatorCount == 1) {
-			return ` ${verbSingular}`
-		} else {
-			return ` ${verbPlural}`
-		}
-	}
-
-	private updateStateSlashed(
-		dashboardStatus: DashboardStatus,
-		slashedCount: number,
-		validatorCount: number,
-		foreignValidator: boolean,
-		validatorResp: ValidatorResponse,
-		currentEpoch: EpochResponse,
-		network: ApiNetwork
-	) {
-		if (slashedCount == 0) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			dashboardStatus.icon = 'alert-circle-outline'
-			dashboardStatus.iconCss = 'err'
-			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch, network)
-			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
-			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
-			dashboardStatus.state = StateType.slashed
-		} else {
-			dashboardStatus.state = StateType.mixed
-		}
-
-		const pre = validatorCount == slashedCount ? 'All' : `${slashedCount}`
-		const helpingVerb = this.singularPluralSwitch(validatorCount, slashedCount, 'was', 'were')
+	if (dashboardStatus.state == StateType.none) {
+		const pre = validatorCount == activeCount ? 'All' : `${activeCount}`
+		const helpingVerb = singularPluralSwitch(validatorCount, activeCount, 'is', 'are')
 		dashboardStatus.description.push({
-			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' slashed', 'This validator was slashed', foreignValidator),
+			text: descriptionSwitch(pre + ' of your validators ' + helpingVerb + ' active', 'This validator is active', foreignValidator),
 			highlight: true,
 		})
+
+		dashboardStatus.state = StateType.online
 	}
+}
 
-	private updateStateAwaiting(
-		dashboardStatus: DashboardStatus,
-		awaitingCount: number,
-		validatorCount: number,
-		foreignValidator: boolean,
-		awaitingActivation: ValidatorResponse,
-		currentEpoch: EpochResponse,
-		network: ApiNetwork
-	) {
-		if (awaitingCount == 0) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			const estEta = this.getEpochDate(awaitingActivation.activationeligibilityepoch, currentEpoch, network)
-
-			dashboardStatus.icon = 'timer-outline'
-			dashboardStatus.iconCss = 'waiting'
-			dashboardStatus.state = StateType.activation
-			dashboardStatus.extendedDescriptionPre = estEta ? 'Estimated on ' : null
-			dashboardStatus.extendedDescription = estEta ? estEta : null
-		}
-
-		const pre = validatorCount == awaitingCount ? 'All' : `${awaitingCount}`
-		const helpingVerb = this.singularPluralSwitch(validatorCount, awaitingCount, 'is', 'are')
-		dashboardStatus.description.push({
-			text: this.descriptionSwitch(
-				pre + ' of your validators' + helpingVerb + ' waiting for activation',
-				'This validator is waiting for activation',
-				foreignValidator
-			),
-			highlight: true,
-		})
+function emptyPerformance(): Performance {
+	return {
+		performance1d: new BigNumber(0),
+		performance30d: new BigNumber(0),
+		performance7d: new BigNumber(0),
+		total: new BigNumber(0),
+		apr7d: 0,
+		apr30d: 0,
+		aprTotal: 0,
 	}
+}
 
-	private updateStateEligibility(
-		dashboardStatus: DashboardStatus,
-		eligibilityCount: number,
-		validatorCount: number,
-		foreignValidator: boolean,
-		eligbleState: ValidatorResponse,
-		currentEpoch: EpochResponse,
-		network: ApiNetwork
-	) {
-		if (eligibilityCount == 0) {
-			return
-		}
-
-		const estEta = this.getEpochDate(eligbleState.activationeligibilityepoch, currentEpoch, network)
-
-		if (dashboardStatus.state == StateType.none) {
-			dashboardStatus.icon = 'timer-outline'
-			dashboardStatus.iconCss = 'waiting'
-			dashboardStatus.state = StateType.eligibility
-			dashboardStatus.extendedDescriptionPre = estEta ? 'Estimated on ' : null
-			dashboardStatus.extendedDescription = estEta ? estEta : null
-		}
-
-		const pre = validatorCount == eligibilityCount ? 'All' : `${eligibilityCount}`
-		const helpingVerb = this.singularPluralSwitch(validatorCount, eligibilityCount, 'is', 'are')
-		dashboardStatus.description.push({
-			text: this.descriptionSwitch(
-				pre + " of your validators' deposits" + helpingVerb + ' being processed',
-				"This validator's deposit is being processed",
-				foreignValidator
-			),
-			highlight: true,
-		})
+function getExecutionPerformance(overviewData: VDBOverviewData): Performance {
+	if (!overviewData) return emptyPerformance()
+	return {
+		performance1d: new BigNumber(overviewData.rewards.last_24h.el),
+		performance30d: new BigNumber(overviewData.rewards.last_30d.el),
+		performance7d: new BigNumber(overviewData.rewards.last_7d.el),
+		total: new BigNumber(overviewData.rewards.all_time.el),
+		apr30d: overviewData.apr.last_30d.el,
+		apr7d: overviewData.apr.last_7d.el,
+		aprTotal: overviewData.apr.all_time.el,
 	}
+}
 
-	private updateExitedState(dashboardStatus: DashboardStatus, exitedCount: number, validatorCount: number, foreignValidator: boolean) {
-		if (exitedCount == 0) {
-			return
-		}
-
-		const allValidatorsExited = validatorCount == exitedCount
-		if (dashboardStatus.state == StateType.none && allValidatorsExited) {
-			dashboardStatus.icon = this.descriptionSwitch('ribbon-outline', 'home-outline', foreignValidator)
-			dashboardStatus.iconCss = 'ok'
-			dashboardStatus.state = StateType.exited
-			dashboardStatus.extendedDescription = this.descriptionSwitch('Thank you for your service', null, foreignValidator)
-		} else {
-			dashboardStatus.state = StateType.mixed
-		}
-
-		const pre = allValidatorsExited ? 'All' : `${exitedCount}`
-		const helpingVerb = this.singularPluralSwitch(validatorCount, exitedCount, 'has', 'have')
-		// exit message is only highlighted if it is about foreign validators or if all validators are exited
-		const highlight = foreignValidator || allValidatorsExited
-		dashboardStatus.description.push({
-			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' exited', 'This validator has exited', foreignValidator),
-			highlight: highlight,
-		})
+function getConsensusPerformance(overviewData: VDBOverviewData): Performance {
+	if (!overviewData) return emptyPerformance()
+	return {
+		performance1d: new BigNumber(overviewData.rewards.last_24h.cl),
+		performance30d: new BigNumber(overviewData.rewards.last_30d.cl),
+		performance7d: new BigNumber(overviewData.rewards.last_7d.cl),
+		total: new BigNumber(overviewData.rewards.all_time.cl),
+		apr30d: overviewData.apr.last_30d.cl,
+		apr7d: overviewData.apr.last_7d.cl,
+		aprTotal: overviewData.apr.all_time.cl,
 	}
+}
 
-	private updateStateOffline(dashboardStatus: DashboardStatus, validatorCount: number, offlineCount: number, foreignValidator: boolean) {
-		if (offlineCount == 0) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			dashboardStatus.icon = 'alert-circle-outline'
-			dashboardStatus.iconCss = 'warn'
-			dashboardStatus.state = StateType.offline
-		} else {
-			dashboardStatus.state = StateType.mixed
-		}
-
-		const pre = validatorCount == offlineCount ? 'All' : `${offlineCount}`
-		const helpingVerb = this.singularPluralSwitch(validatorCount, offlineCount, 'is', 'are')
-		dashboardStatus.description.push({
-			text: this.descriptionSwitch(pre + ' of your validators' + helpingVerb + ' offline', 'This validator is offline', foreignValidator),
-			highlight: true,
-		})
-	}
-
-	private updateStateOk(
-		dashboardStatus: DashboardStatus,
-		activeCount: number,
-		validatorCount: number,
-		foreignValidator: boolean,
-		validatorResp: ValidatorResponse,
-		currentEpoch: EpochResponse,
-		network: ApiNetwork
-	) {
-		if (dashboardStatus.state != StateType.mixed && dashboardStatus.state != StateType.none) {
-			return
-		}
-
-		if (dashboardStatus.state == StateType.none) {
-			const pre = validatorCount == activeCount ? 'All' : `${activeCount}`
-			const helpingVerb = this.singularPluralSwitch(validatorCount, activeCount, 'is', 'are')
-			dashboardStatus.description.push({
-				text: this.descriptionSwitch(pre + ' of your validators ' + helpingVerb + ' active', 'This validator is active', foreignValidator),
-				highlight: true,
-			})
-
-			const exitingDescription = this.getExitingDescription(validatorResp, currentEpoch, network)
-			dashboardStatus.extendedDescriptionPre = exitingDescription.extendedDescriptionPre
-			dashboardStatus.extendedDescription = exitingDescription.extendedDescription
-			dashboardStatus.state = StateType.online
-		}
-	}
-
-	private getEpochDate(activationEpoch: number, currentEpoch: EpochResponse, network: ApiNetwork) {
-		try {
-			const diff = activationEpoch - currentEpoch.epoch
-			if (diff <= 0) {
-				if (this.refreshCallback) this.refreshCallback()
-				return null
-			}
-
-			const date = new Date(currentEpoch.lastCachedTimestamp)
-
-			const inEpochOffset = (network.slotPerEpoch - currentEpoch.scheduledblocks) * network.slotsTime
-
-			date.setSeconds(diff * 6.4 * 60 - inEpochOffset)
-
-			const timeString = formatDate(date, 'medium', 'en-US')
-			return timeString
-		} catch (e) {
-			console.warn('could not get activation time', e)
-			return null
-		}
-	}
-
-	private getActiveValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.ACTIVE
-		})
-	}
-
-	private getOfflineValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.OFFLINE
-		})
-	}
-
-	private getSlashedValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.SLASHED
-		})
-	}
-
-	private getExitedValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.EXITED
-		})
-	}
-
-	private getWaitingForActivationValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.WAITING
-		})
-	}
-
-	private getEligableValidators(validators: Validator[]) {
-		return validators.filter((item) => {
-			return item.state == ValidatorState.ELIGABLE
-		})
-	}
-
-	private calculateSyncCommitteeStats(stats: SyncCommitteesStatisticsResponse, network: ApiNetwork): SyncCommitteesStatistics {
-		if (stats) {
-			// if no slots where expected yet, don't show any statistic as either no validator is subscribed or they have not been active in the selected timeframe
-			if (stats.expectedSlots > 0) {
-				const slotsTotal = stats.participatedSlots + stats.missedSlots
-				const slotsPerSyncPeriod = network.slotPerEpoch * network.epochsPerSyncPeriod
-				const r: SyncCommitteesStatistics = {
-					committeesParticipated: Math.ceil(slotsTotal / network.slotPerEpoch / network.epochsPerSyncPeriod),
-					committeesExpected: Math.round((stats.expectedSlots * 100) / network.slotPerEpoch / network.epochsPerSyncPeriod) / 100,
-					slotsPerSyncCommittee: slotsPerSyncPeriod,
-					slotsLeftInSyncCommittee: slotsPerSyncPeriod - stats.scheduledSlots,
-					slotsParticipated: stats.participatedSlots,
-					slotsMissed: stats.missedSlots,
-					slotsScheduled: stats.scheduledSlots,
-					efficiency: 0,
-					luck: (slotsTotal * 100) / stats.expectedSlots,
-				}
-				if (slotsTotal > 0) {
-					r.efficiency = Math.round(((stats.participatedSlots * 100) / slotsTotal) * 100) / 100
-				}
-
-				return r
-			}
-		}
-		return null
+function getCombinedPerformance(cons: Performance, exec: Performance, unit: UnitconvService): Performance {
+	return {
+		performance1d: cons.performance1d.plus(unit.convertELtoCL(exec.performance1d)),
+		performance30d: cons.performance30d.plus(unit.convertELtoCL(exec.performance30d)),
+		performance7d: cons.performance7d.plus(unit.convertELtoCL(exec.performance7d)),
+		total: cons.total.plus(unit.convertELtoCL(exec.total)),
+		apr30d: cons.apr30d + exec.apr30d,
+		apr7d: cons.apr7d + exec.apr7d,
+		aprTotal: cons.aprTotal + exec.aprTotal,
 	}
 }
 

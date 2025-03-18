@@ -1,0 +1,59 @@
+<div class="dashboard-card">
+	<ion-item *ngIf="data">
+		<div style="height: 50px; margin-right: 20px">
+			<ion-badge class="badge" (click)="setAsDefault()" slot="start" [class]="networkColor()">{{ networkName() }}</ion-badge>
+		</div>
+		<ion-label (click)="setAsDefault()" class="title">
+			<div>
+				{{ nameTruncated() }}
+			</div>
+			<div>
+				<ion-label class="smaller-info"
+					>Validators:
+					<span class="stat-count" [class]="reachedMaxValidatorClassStyle()">{{ data.validator_count }}</span>
+					/
+					<span class="stat-count" [class]="reachedMaxValidatorClassStyle()">{{ merchant.getCurrentPlanMaxValidator() }}</span>
+				</ion-label>
+				<ion-label class="smaller-info"
+					>Groups:
+					<span class="stat-count" [class]="reachedMaxGroupClassStyle()">{{ data.group_count }}</span>
+					/
+					<span class="stat-count" [class]="reachedMaxGroupClassStyle()">{{ merchant.getCurrentPlanMaxGroups() }}</span>
+				</ion-label>
+			</div>
+		</ion-label>
+		<div style="height: 56px">
+			<ion-icon
+				*ngIf="!legacyDashboard"
+				class="action opacity-icon touch-icon-padding"
+				(click)="setAsDefault()"
+				aria-hidden="true"
+				[name]="selected ? 'star' : 'star-outline'"
+				slot="end"
+				[class]="selected ? 'star' : 'opacity-icon'"></ion-icon>
+			<ion-icon
+				class="action opacity-icon touch-icon-padding"
+				aria-hidden="true"
+				name="ellipsis-vertical-outline"
+				slot="end"
+				[id]="triggerID"></ion-icon>
+		</div>
+	</ion-item>
+	<!-- <ion-item >
+    <ion-badge (click)="setAsDefault()" style="opacity: 0;" slot="start" [class]="networkColor()">{{networkName()}}</ion-badge>
+    <ion-label style="opacity: 0.6; font-size: 12px;">Groups: {{ data.group_count }} | Validators: {{ data.validator_count }} </ion-label>
+</ion-item> -->
+
+	<ion-popover [trigger]="triggerID" triggerAction="click" [dismissOnSelect]="true">
+		<ng-template>
+			<ion-content>
+				<ion-list>
+					<ion-item *ngIf="legacyDashboard" [button]="true" [detail]="false" (click)="legacyAddToCurrent()">Migrate dashboard</ion-item>
+					<ion-item *ngIf="legacyDashboard" [button]="true" [detail]="false" (click)="legacyCopyToClipboard()">Copy to clipboard</ion-item>
+					<ion-item *ngIf="!legacyDashboard" [button]="true" [detail]="false" (click)="rename()">Rename</ion-item>
+					<ion-item [button]="true" [detail]="false" (click)="remove()">Delete</ion-item>
+				</ion-list>
+			</ion-content>
+		</ng-template>
+	</ion-popover>
+</div>

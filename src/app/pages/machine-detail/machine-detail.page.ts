@@ -2,13 +2,14 @@ import { Component, OnInit, Input } from '@angular/core'
 import { ModalController } from '@ionic/angular'
 import { Options } from 'highcharts'
 import { fromEvent, Subscription } from 'rxjs'
-import { StorageService } from 'src/app/services/storage.service'
+import { StorageService } from '@services/storage.service'
 import MachineController, { ProcessedStats, bytes, MachineChartData } from '../../controllers/MachineController'
 
 @Component({
 	selector: 'app-machine-detail',
 	templateUrl: './machine-detail.page.html',
 	styleUrls: ['./machine-detail.page.scss'],
+	standalone: false,
 })
 export class MachineDetailPage extends MachineController implements OnInit {
 	@Input() key: string
@@ -77,9 +78,9 @@ export class MachineDetailPage extends MachineController implements OnInit {
 	diskUsageLabelReads = ''
 	diskUsageLabelWrites = ''
 
-	syncAttention = null
-	diskAttention = null
-	memoryAttention = null
+	syncAttention: string = null
+	diskAttention: string = null
+	memoryAttention: string = null
 	syncLabelState = ''
 	syncLabelEth1Connected = ''
 
@@ -89,7 +90,10 @@ export class MachineDetailPage extends MachineController implements OnInit {
 
 	private backbuttonSubscription: Subscription
 
-	constructor(private modalCtrl: ModalController, storage: StorageService) {
+	constructor(
+		private modalCtrl: ModalController,
+		storage: StorageService
+	) {
 		super(storage)
 	}
 
@@ -101,39 +105,39 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		})
 
 		if (this.data) {
-			this.magicGapNumber = this.normalizeTimeframeNumber(this.data.system)
-			this.os = this.formatOS(this.getLastFrom(this.data.system, (array) => array.misc_os))
-			this.uptime = this.getLastFrom(this.data.system, (array) => array.misc_node_boot_ts_seconds) * 1000
-			this.threadCount = this.getLastFrom(this.data.system, (array) => array.cpu_threads)
-			this.coreCount = this.getLastFrom(this.data.system, (array) => array.cpu_cores)
+			this.magicGapNumber = this.normalizeTimeframeNumber(this.data.system_metrics.map((value) => [value.timestamp, 0]))
+			this.os = this.formatOS(this.getLastFrom(this.data.system_metrics, (array) => array.misc_os))
+			this.uptime = this.getLastFrom(this.data.system_metrics, (array) => array.misc_node_boot_ts_seconds) * 1000
+			this.threadCount = this.getLastFrom(this.data.system_metrics, (array) => array.cpu_threads)
+			this.coreCount = this.getLastFrom(this.data.system_metrics, (array) => array.cpu_cores)
 
-			this.headslot = this.getLastFrom(this.data.node, (array) => array.sync_beacon_head_slot)
+			this.headslot = this.getLastFrom(this.data.node_metrics, (array) => array.sync_beacon_head_slot)
 
-			const synced = this.getLastFrom(this.data.node, (array) => array.sync_eth2_synced)
+			const synced = this.getLastFrom(this.data.node_metrics, (array) => array.sync_eth2_synced)
 			this.stateSynced = synced ? 'Synced' : 'Syncing'
 
-			this.validatorLabelActive = 'Active: ' + this.getLastFrom(this.data.validator, (array) => array.validator_active)
-			this.validatorLabelTotal = 'Total: ' + this.getLastFrom(this.data.validator, (array) => array.validator_total)
+			this.validatorLabelActive = 'Active: ' + this.getLastFrom(this.data.validator_metrics, (array) => array.validator_active)
+			this.validatorLabelTotal = 'Total: ' + this.getLastFrom(this.data.validator_metrics, (array) => array.validator_total)
 
-			const lastFreeBytes = this.getLastFrom(this.data.system, (array) => array.disk_node_bytes_free)
-			const totalBytes = this.getLastFrom(this.data.system, (array) => array.disk_node_bytes_total)
+			const lastFreeBytes = this.getLastFrom(this.data.system_metrics, (array) => array.disk_node_bytes_free)
+			const totalBytes = this.getLastFrom(this.data.system_metrics, (array) => array.disk_node_bytes_total)
 			const percent = Math.round((lastFreeBytes * 1000) / totalBytes) / 10
 			this.diskLabel = 'Free: ' + bytes(lastFreeBytes, true, true, 1) + ' - ' + percent + '%'
 			this.beaconchainLabel =
 				'Size: ' +
 				bytes(
-					this.getLastFrom(this.data.node, (array) => array.disk_beaconchain_bytes_total),
+					this.getLastFrom(this.data.node_metrics, (array) => array.disk_beaconchain_bytes_total),
 					true,
 					true,
 					3
 				)
 
-			this.peerLabel = 'Peers: ' + this.getLastFrom(this.data.node, (array) => array.network_peers_connected)
+			this.peerLabel = 'Peers: ' + this.getLastFrom(this.data.node_metrics, (array) => array.network_peers_connected)
 
 			this.networkLabelRx =
 				'Receive: ' +
 				bytes(
-					this.getAvgFrom(this.data.system, (array) => array.network_node_bytes_total_receive / this.magicGapNumber, true),
+					this.getAvgFrom(this.data.system_metrics, (array) => array.network_node_bytes_total_receive / this.magicGapNumber, true),
 					true,
 					true,
 					2
@@ -142,7 +146,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 			this.networkLabelTx =
 				'Transmit: ' +
 				bytes(
-					this.getAvgFrom(this.data.system, (array) => array.network_node_bytes_total_transmit / this.magicGapNumber, true),
+					this.getAvgFrom(this.data.system_metrics, (array) => array.network_node_bytes_total_transmit / this.magicGapNumber, true),
 					true,
 					true,
 					2
@@ -150,16 +154,16 @@ export class MachineDetailPage extends MachineController implements OnInit {
 				'/s'
 
 			const lastMemAv = this.getLastFrom(
-				this.data.system,
+				this.data.system_metrics,
 				(array) => array.memory_node_bytes_free + array.memory_node_bytes_buffers + array.memory_node_bytes_cached
 			)
-			const lastMemTotal = this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_total)
+			const lastMemTotal = this.getLastFrom(this.data.system_metrics, (array) => array.memory_node_bytes_total)
 			const percentMem = Math.round(1000 - (lastMemAv * 1000) / lastMemTotal) / 10
 			this.memoryLabelFree = 'Used: ' + bytes(lastMemTotal - lastMemAv, true, true, 1) + ' - ' + percentMem + '%'
 			this.memoryLabelTotal =
 				'Total: ' +
 				bytes(
-					this.getLastFrom(this.data.system, (array) => array.memory_node_bytes_total),
+					this.getLastFrom(this.data.system_metrics, (array) => array.memory_node_bytes_total),
 					true,
 					true,
 					1
@@ -168,7 +172,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 			this.memoryProcessLabelNode =
 				'Node: ' +
 				bytes(
-					this.getLastFrom(this.data.node, (array) => array.memory_process_bytes),
+					this.getLastFrom(this.data.node_metrics, (array) => array.memory_process_bytes),
 					true,
 					true,
 					2
@@ -176,7 +180,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 			this.memoryProcessLabelVal =
 				'Validator: ' +
 				bytes(
-					this.getLastFrom(this.data.validator, (array) => array.memory_process_bytes),
+					this.getLastFrom(this.data.validator_metrics, (array) => array.memory_process_bytes),
 					true,
 					true,
 					2
@@ -186,8 +190,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
 				'Node: ' +
 				(
 					this.getAvgRelativeFrom(
-						this.getLastN(this.data.node, (array) => array.cpu_process_seconds_total, true),
-						this.getLastN(this.data.system, (array) => array.cpu_node_system_seconds_total, true),
+						this.getLastN(this.data.node_metrics, (array) => array.cpu_process_seconds_total, true),
+						this.getLastN(this.data.system_metrics, (array) => array.cpu_node_system_seconds_total, true),
 						(val1, val2) => {
 							return val1 / val2
 						}
@@ -199,8 +203,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
 				'Validator: ' +
 				(
 					this.getAvgRelativeFrom(
-						this.getLastN(this.data.validator, (array) => array.cpu_process_seconds_total, true, 180),
-						this.getLastN(this.data.system, (array) => array.cpu_node_system_seconds_total, true, 180),
+						this.getLastN(this.data.validator_metrics, (array) => array.cpu_process_seconds_total, true, 180),
+						this.getLastN(this.data.system_metrics, (array) => array.cpu_node_system_seconds_total, true, 180),
 						(val1, val2) => {
 							return val1 / val2
 						}
@@ -213,8 +217,8 @@ export class MachineDetailPage extends MachineController implements OnInit {
 				(
 					100.0 -
 					this.getAvgRelativeFrom(
-						this.getLastN(this.data.system, (array) => array.cpu_node_idle_seconds_total, true),
-						this.getLastN(this.data.system, (array) => array.cpu_node_system_seconds_total, true),
+						this.getLastN(this.data.system_metrics, (array) => array.cpu_node_idle_seconds_total, true),
+						this.getLastN(this.data.system_metrics, (array) => array.cpu_node_system_seconds_total, true),
 						(val1, val2) => {
 							return val1 / val2
 						}
@@ -224,14 +228,18 @@ export class MachineDetailPage extends MachineController implements OnInit {
 				'%'
 
 			this.diskUsageLabelReads =
-				'Reads: ' + Math.round(this.getAvgFrom(this.data.system, (array) => array.disk_node_reads_total / this.magicGapNumber, true)) + ' iops'
+				'Reads: ' +
+				Math.round(this.getAvgFrom(this.data.system_metrics, (array) => array.disk_node_reads_total / this.magicGapNumber, true)) +
+				' iops'
 			this.diskUsageLabelWrites =
-				'Writes: ' + Math.round(this.getAvgFrom(this.data.system, (array) => array.disk_node_writes_total / this.magicGapNumber, true)) + ' iops'
+				'Writes: ' +
+				Math.round(this.getAvgFrom(this.data.system_metrics, (array) => array.disk_node_writes_total / this.magicGapNumber, true)) +
+				' iops'
 
-			const eth1Connected = this.getLastFrom(this.data.node, (array) => array.sync_eth1_connected)
+			const eth1Connected = this.getLastFrom(this.data.node_metrics, (array) => array.sync_eth1_connected)
 			this.syncLabelEth1Connected = eth1Connected ? 'Exec Connected' : 'Exec Offline'
 
-			const fullySynced = this.getLastFrom(this.data.node, (array) => array.sync_eth2_synced)
+			const fullySynced = this.getLastFrom(this.data.node_metrics, (array) => array.sync_eth2_synced)
 			this.syncLabelState = fullySynced ? 'Synced' : 'Syncing...'
 
 			this.syncAttention = this.getSyncAttention(this.data)
@@ -274,11 +282,11 @@ export class MachineDetailPage extends MachineController implements OnInit {
 	public doBeaconchainSizeChart(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
-		if (current && current.node) {
+		if (current && current.node_metrics) {
 			chartData.push({
 				name: 'Beaconchain Size',
 				color: '#7cb5ec',
-				data: this.timeAxisChanges(current.node, (value) => {
+				data: this.timeAxisChanges(current.node_metrics, (value) => {
 					return value.disk_beaconchain_bytes_total
 				}),
 				pointWidth: 25,
@@ -288,18 +296,18 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addBytesConfig(),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doPeerCharts(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
-		if (current && current.node) {
+		if (current && current.node_metrics) {
 			chartData.push({
 				name: 'Connected Peers',
 				color: '#7cb5ec',
 				data: this.timeAxisChanges(
-					current.node,
+					current.node_metrics,
 					(value) => {
 						return value.network_peers_connected
 					},
@@ -312,18 +320,18 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addAbsoluteConfig(),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doDiskCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
-		if (!current.system) return { Error: 'system_missing' } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
+		if (!current.system_metrics) return { Error: 'system_missing' } as MachineChartData
 
-		if (current && current.system) {
+		if (current && current.system_metrics) {
 			const data = this.timeAxisChanges(
-				current.system,
+				current.system_metrics,
 				(value) => {
 					return value.disk_node_bytes_free
 				},
@@ -341,18 +349,18 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addBytesConfig(),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doValidatorChart(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
-		if (current && current.validator) {
+		if (current && current.validator_metrics) {
 			chartData.push({
 				name: 'Total',
 				color: '#7cb5ec',
 				data: this.timeAxisChanges(
-					current.validator,
+					current.validator_metrics,
 					(value) => {
 						return value.validator_total
 					},
@@ -364,7 +372,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 				name: 'Active',
 				color: '#Dcb5ec',
 				data: this.timeAxisChanges(
-					current.validator,
+					current.validator_metrics,
 					(value) => {
 						return value.validator_active
 					},
@@ -388,21 +396,21 @@ export class MachineDetailPage extends MachineController implements OnInit {
 			Data: chartData,
 			Config: mergedConfig,
 			Error: undefined,
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doDiskIoUsageCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
-		if (!current.system) return { Error: 'system_missing' } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
+		if (!current.system_metrics) return { Error: 'system_missing' } as MachineChartData
 
-		if (current && current.system) {
+		if (current && current.system_metrics) {
 			chartData.push({
 				name: 'Reads',
 				color: '#Dcb5ec',
 				data: this.timeAxisChanges(
-					current.system,
+					current.system_metrics,
 					(value) => {
 						return value.disk_node_reads_total / this.magicGapNumber
 					},
@@ -414,7 +422,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 				name: 'Writes',
 				color: '#7cb5ec',
 				data: this.timeAxisChanges(
-					current.system,
+					current.system_metrics,
 					(value) => {
 						return value.disk_node_writes_total / this.magicGapNumber
 					},
@@ -427,22 +435,22 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addAbsoluteConfig(' iops'),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doNetworkCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
-		if (!current.system) return { Error: 'system_missing' } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
+		if (!current.system_metrics) return { Error: 'system_missing' } as MachineChartData
 
-		if (current && current.system) {
-			console.log('system', current.system)
+		if (current && current.system_metrics) {
+			console.log('system', current.system_metrics)
 			chartData.push({
 				name: 'Receive',
 				color: '#7cb5ec',
 				data: this.timeAxisChanges(
-					current.system,
+					current.system_metrics,
 					(value) => {
 						return value.network_node_bytes_total_receive / this.magicGapNumber
 					},
@@ -454,7 +462,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 				name: 'Transmit',
 				color: '#Dcb5ec',
 				data: this.timeAxisChanges(
-					current.system,
+					current.system_metrics,
 					(value) => {
 						return value.network_node_bytes_total_transmit / this.magicGapNumber
 					},
@@ -467,45 +475,45 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addBytesConfig(true),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doCPUSystemCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[][]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
-		if (!current.system) return { Error: 'system_missing' } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
+		if (!current.system_metrics) return { Error: 'system_missing' } as MachineChartData
 
 		const cpuSystemTotal = this.timeAxisChanges(
-			current.system,
+			current.system_metrics,
 			(value) => {
 				return value.cpu_node_system_seconds_total
 			},
 			true
 		)
 		const idle = this.timeAxisChanges(
-			current.system,
+			current.system_metrics,
 			(value) => {
 				return value.cpu_node_idle_seconds_total
 			},
 			true
 		)
 		const user = this.timeAxisChanges(
-			current.system,
+			current.system_metrics,
 			(value) => {
 				return value.cpu_node_user_seconds_total
 			},
 			true
 		)
 		const io = this.timeAxisChanges(
-			current.system,
+			current.system_metrics,
 			(value) => {
 				return value.cpu_node_iowait_seconds_total
 			},
 			true
 		)
 
-		if (current && current.system) {
+		if (current && current.system_metrics) {
 			chartData.push({
 				name: 'Total Usage',
 				color: '#7cb5ec',
@@ -557,20 +565,20 @@ export class MachineDetailPage extends MachineController implements OnInit {
 					},
 				} as Options,
 			},
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doMemorySystemCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
-		if (!current.system) return { Error: 'system_missing' } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
+		if (!current.system_metrics) return { Error: 'system_missing' } as MachineChartData
 
-		if (current && current.system) {
+		if (current && current.system_metrics) {
 			chartData.push({
 				name: 'Total',
 				color: '#7cb5ec',
-				data: this.timeAxisChanges(current.system, (value) => {
+				data: this.timeAxisChanges(current.system_metrics, (value) => {
 					return value.memory_node_bytes_total
 				}),
 				pointWidth: 25,
@@ -579,7 +587,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 			chartData.push({
 				name: 'Cached',
 				color: '#3335FF',
-				data: this.timeAxisChanges(current.system, (value) => {
+				data: this.timeAxisChanges(current.system_metrics, (value) => {
 					return value.memory_node_bytes_cached
 				}),
 				pointWidth: 25,
@@ -587,7 +595,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 			chartData.push({
 				name: 'Buffer',
 				color: '#3FF5ec',
-				data: this.timeAxisChanges(current.system, (value) => {
+				data: this.timeAxisChanges(current.system_metrics, (value) => {
 					return value.memory_node_bytes_buffers
 				}),
 				pointWidth: 25,
@@ -595,7 +603,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 			chartData.push({
 				name: 'Free',
 				color: '#Dcb5ec',
-				data: this.timeAxisChanges(current.system, (value) => {
+				data: this.timeAxisChanges(current.system_metrics, (value) => {
 					return value.memory_node_bytes_free
 				}),
 				pointWidth: 25,
@@ -605,7 +613,7 @@ export class MachineDetailPage extends MachineController implements OnInit {
 		return {
 			Data: chartData,
 			Config: this.addBytesConfig(),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	getDiskFullTimeEstimate(data: number[][]): number {

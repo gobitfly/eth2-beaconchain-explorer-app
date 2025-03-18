@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -24,5 +23,6 @@ import { Component } from '@angular/core'
 	selector: 'app-offline',
 	templateUrl: './offline.component.html',
 	styleUrls: ['./offline.component.scss'],
+	standalone: false,
 })
 export class OfflineComponent {}

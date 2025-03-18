@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,42 +17,58 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@angular/core'
-import { APIRequest, Method, RefreshTokenRequest } from '../requests/requests'
+import { Injectable, WritableSignal } from '@angular/core'
+import { APIRequest, ApiResult, Method, RefreshTokenRequest } from '@requests/requests'
 import { StorageService } from './storage.service'
 import { ApiNetwork } from '../models/StorageTypes'
 import { Mutex } from 'async-mutex'
-import { findConfigForKey, MAP } from '../utils/NetworkData'
-import { CacheModule } from '../utils/CacheModule'
+import { CHAIN_NETWORKS, findChainNetworkById, findConfigForKey, MAP } from '@utils/NetworkData'
+import { CacheModule } from '@utils/CacheModule'
 import { Capacitor, HttpOptions } from '@capacitor/core'
-
+import { CapacitorCookies } from '@capacitor/core'
+import { LatestStateData } from '@requests/types/latest_state'
+import { V2LatestState } from '@requests/v2-network'
+import { environment } from 'src/environments/environment'
+import { MigrateV1AuthToV2 } from '@requests/v2-auth'
+import { V2MyDashboards } from '@requests/v2-user'
+import { UserDashboardsData, ValidatorDashboard } from '@requests/types/dashboard'
 const LOGTAG = '[ApiService]'
 
 const SERVER_TIMEOUT = 25000
+
+const R = 2
 
 @Injectable({
 	providedIn: 'root',
 })
 export class ApiService extends CacheModule {
-	networkConfig: ApiNetwork
-
-	public connectionStateOK = true
+	networkConfig: ApiNetwork // todo signal?
 
 	private awaitingResponses: Map<string, Mutex> = new Map()
-
-	debug = false
 
 	public lastRefreshed = 0 // only updated by calls that have the updatesLastRefreshState flag enabled
 
 	private lastCacheInvalidate = 0
 
+	private sessionCookie: string
+	private apiUserKey: string = null
+	private apiAccessKey: string = null
+
+	// holds all cache keys if executed via execute2 and provided with a cacheKey
+	private associatedCacheKeyMap: Map<string, Set<string>> = new Map()
+
+	// debug
+	debug = false
+	private lastCsrfHeader: Map<string, string> = new Map()
+	private r = 8
+
 	constructor(private storage: StorageService) {
 		super('api', 6 * 60 * 1000, storage, 1000, false)
-		this.storage.getBooleanSetting('migrated_4_4_0', false).then((migrated) => {
+		this.storage.getBooleanSetting('migrated_5_0_0', false).then((migrated) => {
 			if (!migrated) {
 				this.clearHardCache()
-				console.info('Cleared hard cache storage as part of 4.4.0 migration')
-				this.storage.setBooleanSetting('migrated_4_4_0', true)
+				console.info('Cleared hard cache storage as part of 5.0.0 migration')
+				this.storage.setBooleanSetting('migrated_5_0_0', true)
 			}
 		})
 
@@ -62,10 +77,6 @@ export class ApiService extends CacheModule {
 			window.localStorage.setItem('debug', this.debug ? 'true' : 'false')
 		})
 		this.lastCacheInvalidate = Date.now()
-	}
-
-	mayInvalidateOnFaultyConnectionState() {
-		if (!this.connectionStateOK) this.invalidateCache()
 	}
 
 	invalidateCache() {
@@ -77,23 +88,60 @@ export class ApiService extends CacheModule {
 		}
 	}
 
+	storeInHardCache(cacheKey: string): boolean {
+		return (
+			(cacheKey.indexOf('dashboards') >= 0 && cacheKey.indexOf('slot-viz') < 0) || // do not save slotviz to hardcache
+			cacheKey.indexOf('produced?offset=0') >= 0 || // first page of blocks page // todo v2
+			(cacheKey.indexOf('beaconcha.in') < 0 && cacheKey.indexOf('gnosischa.in') < 0 && cacheKey.indexOf('ads.bitfly') < 0)
+		)
+	}
+
 	async initialize() {
-		this.networkConfig = await this.storage.getNetworkPreferences().then((config) => {
+		await this.loadNetworkConfig()
+		await Promise.all([this.initV2Cookies(), this.init()])
+		this.apiUserKey = await this.getApiKey()
+		this.apiAccessKey = this.use(environment.API_ACCESS_KEY)
+		console.log('API SERVICE INITIALISEDs', this.apiAccessKey, this.r)
+		return this
+	}
+
+	async loadNetworkConfig() {
+		async function getConfig(storage: StorageService, config: ApiNetwork) {
 			const temp = findConfigForKey(config.key)
 			if (temp) {
+				if (temp.v2NetworkConfigKey && (await storage.isV2())) {
+					const v2Config = findConfigForKey(config.v2NetworkConfigKey)
+					if (v2Config) {
+						return v2Config
+					}
+				}
 				return temp
 			}
 			return config
-		})
-		await this.init()
-		console.log('API SERVICE INITIALISED')
+		}
+
+		this.networkConfig = await getConfig(this.storage, await this.storage.getNetworkPreferences())
+		this.storage.setWidgetNetworkConfig(this.networkConfig)
 	}
 
-	networkName = null
+	networkName: string = null
 	getNetworkName(): string {
 		const temp = this.networkConfig.key
 		this.networkName = temp
 		return temp
+	}
+
+	findParentNetworkKey(childNetwork: ApiNetwork): ApiNetwork {
+		for (const entry of MAP) {
+			if (entry.v2NetworkConfigKey?.replace('_prod', '') == childNetwork.key) {
+				return entry
+			}
+		}
+		return childNetwork
+	}
+
+	getParentNetwork(): ApiNetwork {
+		return this.findParentNetworkKey(this.networkConfig)
 	}
 
 	getNetwork(): ApiNetwork {
@@ -101,6 +149,7 @@ export class ApiService extends CacheModule {
 		return temp
 	}
 
+	/** @deprecated v1 */
 	private async getAuthHeader(isTokenRefreshCall: boolean) {
 		let user = await this.storage.getAuthUser()
 		if (!user || !user.accessToken) return null
@@ -131,6 +180,33 @@ export class ApiService extends CacheModule {
 		}
 	}
 
+	public async initV2Cookies() {
+		this.r = 3
+		const user = await this.storage.getAuthUserv2()
+		this.r += this.r * R - R ** R
+		if (!user || !user.Session) return
+
+		console.log('init cookies', this.networkConfig.protocol + '://' + this.networkConfig.net + this.networkConfig.host, user.Session)
+
+		await CapacitorCookies.clearAllCookies()
+
+		for (const network of MAP) {
+			// only v2 networks with https
+			if (!network.v2NetworkConfigKey && network.protocol == 'https') {
+				console.log('init cookies', network.protocol + '://' + network.net + network.host, user.Session && user.Session.length > 0)
+
+				await CapacitorCookies.setCookie({
+					url: network.protocol + '://' + network.net + network.host,
+					key: 'session_id',
+					value: user.Session,
+				})
+			}
+		}
+
+		this.sessionCookie = user.Session
+	}
+
+	/** @deprecated v1 */
 	async refreshToken() {
 		const user = await this.storage.getAuthUser()
 		if (!user || !user.refreshToken) {
@@ -141,9 +217,8 @@ export class ApiService extends CacheModule {
 		const now = Date.now()
 		const req = new RefreshTokenRequest(user.refreshToken, Capacitor.getPlatform() == 'ios')
 
-		const resp = await this.execute(req)
-		const response = req.parse(resp)
-		const result = response[0]
+		const resp = await this.executeLegacy(req)
+		const result = req.parse(resp)
 
 		// Intention to not log access token in app logs
 		if (this.debug) {
@@ -168,15 +243,15 @@ export class ApiService extends CacheModule {
 		return user
 	}
 
-	private async lockOrWait(resource) {
-		if (!this.awaitingResponses[resource]) {
-			this.awaitingResponses[resource] = new Mutex()
+	private async lockOrWait(resource: string) {
+		if (!this.awaitingResponses.get(resource)) {
+			this.awaitingResponses.set(resource, new Mutex())
 		}
-		await this.awaitingResponses[resource].acquire()
+		await this.awaitingResponses.get(resource).acquire()
 	}
 
-	private unlock(resource) {
-		this.awaitingResponses[resource].release()
+	private unlock(resource: string) {
+		this.awaitingResponses.get(resource).release()
 	}
 
 	isNotEthereumMainnet(): boolean {
@@ -188,74 +263,250 @@ export class ApiService extends CacheModule {
 		return !this.isNotEthereumMainnet()
 	}
 
-	private getCacheKey(request: APIRequest<unknown>): string {
+	private getCacheKey(request: APIRequest<unknown>, networkConfig: ApiNetwork): string {
 		if (request.method == Method.GET) {
-			return request.method + this.getResourceUrl(request.resource, request.endPoint)
+			if (request.customCacheKey) {
+				return request.customCacheKey
+			}
+			return request.method + this.getResourceUrl(request.resource, request.endPoint, networkConfig)
 		} else if (request.cacheablePOST) {
-			return request.method + this.getResourceUrl(request.resource, request.endPoint) + JSON.stringify(request.postData)
+			return request.method + this.getResourceUrl(request.resource, request.endPoint, networkConfig) + JSON.stringify(request.postData)
 		}
 		return null
 	}
 
-	async execute(request: APIRequest<unknown>): Promise<Response> {
-		await this.initialized
+	async clearAllAssociatedCacheKeys(associatedCacheKey: string) {
+		const keys = this.associatedCacheKeyMap.get(associatedCacheKey)
+		if (keys) {
+			for (const key of keys) {
+				await this.putCache(key, null, 0)
+				this.findAndClearAssociatedKeyInOtherKeys(associatedCacheKey)
+			}
+			this.associatedCacheKeyMap.delete(associatedCacheKey)
+		}
+	}
 
-		if (!this.connectionStateOK) {
-			this.invalidateCache()
+	private findAndClearAssociatedKeyInOtherKeys(associatedCacheKey: string) {
+		for (const [_, value] of this.associatedCacheKeyMap) {
+			if (value.has(associatedCacheKey)) {
+				value.delete(associatedCacheKey)
+			}
+		}
+	}
+
+	/**
+	 * Shortcut to execute(new Request()).then(data => writeableSignal.set(data.data))
+	 * Executes requests and writes the data to the signal
+	 * @param request ApiRequest<T>
+	 * @param s signal to write to
+	 * @param associatedCacheKey optional cache key to invalidate
+	 * @returns ApiResult<T>
+	 */
+	set<T>(request: APIRequest<T>, s: WritableSignal<T>, associatedCacheKey: string = null, chainID: number = undefined) {
+		return this.getExecuteProvider(request, associatedCacheKey, chainID).then((data) => {
+			if (data.error) {
+				return data
+			}
+			s.set(data.data)
+			return data
+		})
+	}
+
+	getExecuteProvider<T>(request: APIRequest<T>, associatedCacheKey: string = null, chainID: number = undefined) {
+		if (chainID === undefined) {
+			return this.execute(request, associatedCacheKey)
+		} else {
+			return this.executeOnChainID(request, associatedCacheKey, chainID)
+		}
+	}
+
+	/**
+	 * This method can be used to break out of the global current network config and execute
+	 * a request on the beaconcha.in endpoint associated with a given chain id
+	 * @param request
+	 * @param associatedCacheKey
+	 * @param chainID
+	 * @returns
+	 */
+	public executeOnChainID<T>(request: APIRequest<T>, associatedCacheKey: string, chainID: number) {
+		const chain = findChainNetworkById(chainID)
+		const v1network = findConfigForKey(chain.legacyKey)
+		const v2network = findConfigForKey(v1network.v2NetworkConfigKey)
+		console.log('v2 network config for chain id', chainID, v2network)
+		return this.execute(request, associatedCacheKey, v2network)
+	}
+
+	/**
+	 * This method ignored current network config and queries all networks
+	 * whether they contain dashboards. In the future an API endpoint will be provided to query across
+	 * networks.
+	 */
+	async getAllUserDashboards(associatedCacheKey: string): Promise<ApiResult<UserDashboardsData>> {
+		const requests = CHAIN_NETWORKS.map((item) => this.executeOnChainID(new V2MyDashboards(), associatedCacheKey, item.id))
+		const results = await Promise.allSettled(requests)
+
+		let dashboards: ValidatorDashboard[] = []
+		let error: Error = null
+
+		for (const result of results) {
+			if (result.status === 'fulfilled') {
+				console.log('dashboard response', result)
+				if (result.value.error) {
+					error = result.value.error
+					break
+				}
+
+				if (result.value.data.validator_dashboards) {
+					dashboards = dashboards.concat(result.value.data.validator_dashboards)
+				}
+			} else if (result.status === 'rejected') {
+				console.log(`Promise rejected:`, result.reason)
+			}
 		}
 
-		await this.lockOrWait(request.resource)
+		return {
+			error: dashboards.length > 0 ? null : error,
+			data: {
+				validator_dashboards: dashboards,
+				account_dashboards: [],
+			},
+			cached: false,
+			paging: null,
+		}
+	}
+
+	async execute<T>(request: APIRequest<T>, associatedCacheKey: string = null, networkConfig: ApiNetwork = this.networkConfig): Promise<ApiResult<T>> {
+		try {
+			if (request.method != Method.GET && !this.lastCsrfHeader.get(networkConfig.host)) {
+				// use latest state to get csrf token for this network
+				await this.executeUnhandled(new V2LatestState(), networkConfig)
+			}
+
+			const response = await this.executeUnhandled(request, networkConfig)
+			if (associatedCacheKey) {
+				if (this.associatedCacheKeyMap.has(associatedCacheKey)) {
+					this.associatedCacheKeyMap.get(associatedCacheKey).add(this.getCacheKey(request, networkConfig))
+				} else {
+					this.associatedCacheKeyMap.set(associatedCacheKey, new Set([this.getCacheKey(request, networkConfig)]))
+				}
+			}
+			return request.parse2(response)
+		} catch (e) {
+			return {
+				error: e,
+				data: null,
+				cached: false,
+				paging: null,
+			}
+		}
+	}
+
+	/**
+	 * Old v1 execute method, should not be used any more unless for v1 migration.
+	 * @deprecated Use execute instead
+	 * */
+	private async executeLegacy<T>(request: APIRequest<T>): Promise<Response | null> {
+		try {
+			return await this.executeUnhandled(request)
+		} catch (e) {
+			console.error('Error in execute', e)
+			return null
+		}
+	}
+
+	private async executeUnhandled(request: APIRequest<unknown>, networkConfig: ApiNetwork = this.networkConfig): Promise<Response> {
+		await this.initialized
+
+		const lockKey = networkConfig.endpoint + request.resource
+		await this.lockOrWait(lockKey) // no parallel requests to the same resource
+
+		if (environment.dangerousCookiePassing) {
+			// This is a dangerous setting, only for development purposes
+			// This must never be enabled in production
+			console.warn('DANGEROUS COOKIE PASSING ENABLED')
+		}
 
 		try {
-			// If cached and not stale, return cache
-			const cached = (await this.getCache(this.getCacheKey(request))) as Response
-			if (cached) {
-				if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
-				cached.cached = true
-				return cached
+			if (request.allowCachedResponse) {
+				// If cached and not stale, return cache
+				const cached = (await this.getCache(this.getCacheKey(request, networkConfig))) as Response
+				if (cached) {
+					if (this.lastRefreshed == 0) this.lastRefreshed = Date.now()
+					cached.cached = true
+					return cached
+				}
 			}
 
 			const options = request.options
 
-			// second is special case for notifications
-			// notifications are rescheduled if response is != 200
-			// but user can switch network in the mean time, so we need to reapply the network
-			// the user was currently on, when they set the notification toggle
-			// hence the additional request.requiresAuth
+			// endPoint default = network specific beaconcha.in
 			if (request.endPoint == 'default' || request.requiresAuth) {
-				const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
+				// special case, migration needs the v1 token + csrf token
+				if (request instanceof MigrateV1AuthToV2) {
+					const authHeader = await this.getAuthHeader(false)
+					if (authHeader) {
+						const headers = { ...options.headers, ...authHeader }
+						options.headers = headers
+					}
 
-				if (authHeader) {
-					const headers = { ...options.headers, ...authHeader }
-					options.headers = headers
+					options.headers = { ...options.headers, 'X-Csrf-Token': this.lastCsrfHeader.get(networkConfig.host) }
+				} else if (await this.storage.isV2()) {
+					if (!this.sessionCookie) {
+						await this.initV2Cookies()
+					}
+
+					if (request.method != Method.GET) {
+						options.headers = { ...options.headers, 'X-Csrf-Token': this.lastCsrfHeader.get(networkConfig.host) }
+					}
+
+					// DANGEROUS
+					// Strictly for development purposes. Intention is this to be used in local
+					// setup to develop in browser instead of native device. Since fetch does not allow
+					// setting cookies yourself, we can use the X-Cookie header with a reverse proxy to
+					// get sessions working in development environment.
+					if (environment.dangerousCookiePassing) {
+						let sessionExtra = ''
+						if (this.sessionCookie) {
+							sessionExtra = 'session_id=' + this.sessionCookie + '; '
+						}
+
+						options.headers = { ...options.headers, 'X-Cookie': sessionExtra }
+					} else {
+						if (this.apiAccessKey) {
+							options.headers = { ...options.headers, 'x-mobile-token': this.apiAccessKey }
+						}
+					}
+				} else {
+					const authHeader = await this.getAuthHeader(request instanceof RefreshTokenRequest)
+
+					if (authHeader) {
+						const headers = { ...options.headers, ...authHeader }
+						options.headers = headers
+					}
 				}
 			}
 
 			console.log(LOGTAG + ' Send request: ' + request.resource, request.method, request)
 			const startTs = Date.now()
 
-			let response: Promise<Response>
-			switch (request.method) {
-				case Method.GET:
-					response = this.get(request.resource, request.endPoint, request.ignoreFails, options)
-					break
-				case Method.POST:
-					response = this.post(request.resource, request.postData, request.endPoint, request.ignoreFails, options)
-					break
-				default:
-					throw 'Unsupported method: ' + request.method
-			}
+			const response = this.doHttp(request.method, request.resource, request.postData, request.endPoint, options, networkConfig)
 
 			const result = await response
-			this.updateConnectionState(request.ignoreFails, result && result.data && !!result.url)
 
 			if (!result) {
 				console.log(LOGTAG + ' Empty Response: ' + request.resource, 'took ' + (Date.now() - startTs) + 'ms')
 				return result
 			}
 
-			if ((request.method == Method.GET || request.cacheablePOST) && result && result.status == 200 && result.data) {
-				this.putCache(this.getCacheKey(request), result, request.maxCacheAge)
+			if ((request.method == Method.GET || request.cacheablePOST) && result && result.status == request.expectedResponseStatus && result.data) {
+				this.putCache(this.getCacheKey(request, networkConfig), result, request.maxCacheAge)
+			}
+
+			if (request.method == Method.GET) {
+				const temp = result.headers.get('x-csrf-token')
+				if (temp) {
+					this.lastCsrfHeader.set(networkConfig.host, temp)
+				}
 			}
 
 			if (request.updatesLastRefreshState) this.updateLastRefreshed(result)
@@ -266,12 +517,51 @@ export class ApiService extends CacheModule {
 
 			return result
 		} finally {
-			this.unlock(request.resource)
+			this.unlock(lockKey)
 		}
 	}
 
-	async clearSpecificCache(request: APIRequest<unknown>) {
-		await this.putCache(this.getCacheKey(request), null, request.maxCacheAge)
+	private async doHttp(
+		method: Method,
+		resource: string,
+		data: unknown,
+		endpoint = 'default',
+		options: HttpOptions = { url: null, headers: {} },
+		networkConfig: ApiNetwork
+	) {
+		let body: BodyInit = undefined
+		if (method == Method.POST || method == Method.PUT) {
+			if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
+				if (!(data instanceof FormData)) {
+					options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentTypeBasedOnData(data) } }
+				}
+			}
+			body = this.formatPostData(data, resource)
+		}
+
+		if (this.apiUserKey && endpoint == 'default') {
+			options.headers = {
+				...options.headers,
+				...{
+					Authorization: 'Bearer ' + this.apiUserKey,
+				},
+			}
+		}
+
+		const isV2 = await this.storage.isV2()
+		const result = await fetch(this.getResourceUrl(resource, endpoint, networkConfig), {
+			method: Method[method],
+			headers: options.headers,
+			mode: 'cors',
+			body: body,
+			credentials: endpoint == 'default' && isV2 ? 'include' : 'omit',
+		})
+		if (!result) return null
+		return await this.validateResponse(result)
+	}
+
+	async clearSpecificCache(request: APIRequest<unknown>, networkConfig: ApiNetwork = this.networkConfig) {
+		await this.putCache(this.getCacheKey(request, networkConfig), null, request.maxCacheAge)
 	}
 
 	private updateLastRefreshed(response: Response) {
@@ -280,66 +570,40 @@ export class ApiService extends CacheModule {
 		}
 	}
 
-	private async get(resource: string, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
-		const result = await fetch(this.getResourceUrl(resource, endpoint), {
-			method: 'GET',
-			headers: options.headers,
-		}).catch((err) => {
-			this.updateConnectionState(ignoreFails, false)
-			console.warn('Connection err', err)
-		})
-		if (!result) return null
-		return await this.validateResponse(ignoreFails, result)
-	}
-
-	private async post(resource: string, data, endpoint = 'default', ignoreFails = false, options: HttpOptions = { url: null, headers: {} }) {
-		if (!Object.prototype.hasOwnProperty.call(options.headers, 'Content-Type')) {
-			if (!(data instanceof FormData)) {
-				options.headers = { ...options.headers, ...{ 'Content-Type': this.getContentTypeBasedOnData(data) } }
-			}
-		}
-
-		const result = await fetch(this.getResourceUrl(resource, endpoint), {
-			method: 'POST',
-			headers: options.headers,
-			body: this.formatPostData(data, resource),
-		}).catch((err) => {
-			this.updateConnectionState(ignoreFails, false)
-			console.warn('Connection err', err)
-		})
-		if (!result) return null
-		return await this.validateResponse(ignoreFails, result)
-	}
-
+	/** @deprecated not needed in v2 any more */
 	private getContentTypeBasedOnData(data: unknown): string {
 		if (data instanceof FormData) return 'application/x-www-form-urlencoded'
 		return 'application/json'
 	}
 
-	private formatPostData(data, resource: string): BodyInit {
-		if (data instanceof FormData || resource.indexOf('user/token') != -1) return data
+	/** @deprecated not needed in v2 any more, only json in v2 */
+	private formatPostData(data: unknown, resource: string): string | FormData {
+		if (data instanceof FormData || resource.indexOf('user/token') != -1) return data as FormData
 		return JSON.stringify(data)
 	}
 
-	private updateConnectionState(ignoreFails: boolean, working: boolean) {
-		if (ignoreFails) return
-		this.connectionStateOK = working
-		console.log(LOGTAG + ' setting status', working)
-	}
-
-	private async validateResponse(ignoreFails, response: globalThis.Response): Promise<Response> {
+	private async validateResponse(response: globalThis.Response): Promise<Response> {
 		if (!response) {
 			console.warn('can not get response', response)
-			this.updateConnectionState(ignoreFails, false)
 			return
 		}
-		const jsonData = await response.json()
-		if (!jsonData) {
-			console.warn('not json response', response, jsonData)
-			this.updateConnectionState(ignoreFails, false)
-			return
+		let jsonData
+		try {
+			jsonData = await response.json()
+			if (!jsonData) {
+				console.warn('not json response', response, jsonData)
+				return {
+					data: null,
+					status: response.status,
+					headers: response.headers,
+					url: response.url,
+					cached: false,
+				} as Response
+			}
+		} catch (e) {
+			console.log('could not parse json', e)
+			// Auth response can be empty, maybe improve handling in the future
 		}
-		this.updateConnectionState(ignoreFails, true)
 		return {
 			data: jsonData,
 			status: response.status,
@@ -349,42 +613,26 @@ export class ApiService extends CacheModule {
 		} as Response
 	}
 
-	getResourceUrl(resource: string, endpoint = 'default'): string {
-		const base = this.getBaseUrl()
+	getResourceUrl(resource: string, endpoint = 'default', networkConfig: ApiNetwork = this.networkConfig): string {
+		const base = this.getBaseUrl(networkConfig)
 		if (endpoint == 'default') {
-			return this.getApiBaseUrl() + '/' + resource
+			return this.getApiBaseUrl(networkConfig) + '/' + resource
+		} else if (endpoint == 'v1') {
+			const v1 = this.getParentNetwork()
+			console.log('v1 endpoint', v1)
+			return v1.protocol + '://' + v1.net + v1.host + v1.endpoint + v1.version + '/' + resource
 		} else {
 			const substitute = endpoint.replace('{$BASE}', base)
 			return substitute + '/' + resource
 		}
 	}
 
-	getApiBaseUrl() {
-		const cfg = this.networkConfig
-		return this.getBaseUrl() + cfg.endpoint + cfg.version
+	getApiBaseUrl(cfg: ApiNetwork) {
+		return this.getBaseUrl(cfg) + cfg.endpoint + cfg.version
 	}
 
-	getBaseUrl(): string {
-		const cfg = this.networkConfig
+	getBaseUrl(cfg: ApiNetwork = this.networkConfig): string {
 		return cfg.protocol + '://' + cfg.net + cfg.host
-	}
-
-	async getAllTestNetNames() {
-		const debug = await this.storage.isDebugMode()
-		const re: string[][] = []
-
-		for (const entry of MAP) {
-			if (entry.key == 'main') continue
-			if (entry.key == 'gnosis') continue
-			if (!entry.active) continue
-			if (entry.onlyDebug && !debug) continue
-			re.push([this.capitalize(entry.key) + ' (Testnet)', entry.key])
-		}
-		return re
-	}
-
-	capitalize(text) {
-		return text.charAt(0).toUpperCase() + text.slice(1)
 	}
 
 	getHostName() {
@@ -400,25 +648,82 @@ export class ApiService extends CacheModule {
 	 * @returns true if the current network is the mainnet
 	 */
 	isGnosis() {
+		// todo refactor to chainID
 		return this.networkConfig.key == 'gnosis'
 	}
 
 	/**
 	 * Returns the formatted currencies for the network
 	 */
-	public getCurrenciesFormatted(): string {
-		const network = this.networkConfig
+	public getCurrenciesFormatted(chainID: number): string {
+		const network = findChainNetworkById(chainID)
 		if (network.elCurrency.internalName == network.clCurrency.internalName) {
 			return network.clCurrency.formattedName
 		}
 		return network.clCurrency.formattedName + ' / ' + network.elCurrency.formattedName
 	}
+
+	// Helper function since this is used quite often
+	// and caching is already done by ApiService itself
+	public async getLatestState(force: boolean = false): Promise<LatestStateWithTime> {
+		const temp = await this.execute(new V2LatestState().withAllowedCacheResponse(!force))
+		if (temp.error) {
+			console.warn('getLatestState error', temp.error)
+			return null
+		}
+		const result = {
+			state: temp.data,
+			ts: Date.now(),
+		}
+
+		if (temp.cached != true) {
+			await this.storage.setLastEpochRequestTime(Date.now())
+		} else {
+			result.ts = await this.storage.getLastEpochRequestTime()
+		}
+		return result
+	}
+
+	setApiKey(apiKey: string) {
+		this.apiUserKey = apiKey
+		return this.storage.setItem('api_key', apiKey)
+	}
+
+	getApiKey(): Promise<string> {
+		return this.storage.getItem('api_key')
+	}
+
+	// @ts-expect-error ignore
+	use(e) {
+		if (!e) return null
+		const t = e.split('').reverse().join('')
+		let l = ''
+		for (e = 0; e < t.length; e += 2) l += t[e]
+		let n = ''
+		for (e = 0; e < l.length; e++) n += String.fromCharCode(l.charCodeAt(e) - this.r)
+		return n
+	}
+
+	async getCurrentDashboardChainID(): Promise<number> {
+		await this.initialized
+		return this.networkConfig.supportedChainIds
+	}
+}
+
+export interface LatestStateWithTime {
+	state: LatestStateData
+	ts: number // at which the request was made
 }
 
 export interface Response {
 	cached: boolean
-	data
+	data: unknown
 	headers: Headers
 	status: number
 	url: string
+}
+
+export function capitalize(text: string) {
+	if (typeof text !== 'string') return ''
+	return text.charAt(0).toUpperCase() + text.slice(1)
 }

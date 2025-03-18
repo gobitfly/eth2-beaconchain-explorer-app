@@ -1,6 +1,5 @@
 /* 
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  // 
  *  // This file is part of Beaconchain Dashboard.
  *  // 
@@ -18,55 +17,15 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import '../../../theme/variables.scss';
+@use '../../../theme/variables.scss';
 
-.blockie {
-	position: absolute;
-	top: 20px;
-	left: 22px;
-	border-radius: 20%;
-	height: 59px;
-	width: 56px;
-	image-rendering: pixelated;
-}
-
-.container {
-}
-
-.pubkey {
-	top: 83px;
-	text-align: center;
-	padding-top: 74px;
-	width: 66px;
-	font-size: 0.79rem;
-}
-
-.bookmarked {
-	color: var(--ion-color-primary);
-}
-
-.inner {
+.infi-item-middle-container {
+	margin-right: 15px;
 }
 
 ion-item {
 	background: var(--ion-card-background);
-}
-
-ion-icon {
-	position: absolute !important;
-	top: 2px;
-	right: 20px;
-	margin-top: 0px !important;
-	padding-top: 0px !important;
-	margin-bottom: 29px;
-	height: 56px;
-}
-
-.info {
-	margin-top: 15px;
-	margin-left: 0px;
-	margin-right: 45px;
-	margin-bottom: 15px;
+	margin: auto;
 }
 
 .balance {
@@ -76,11 +35,6 @@ ion-icon {
 .title {
 	font-size: 16px;
 	font-weight: bold;
-}
-
-.smaller-info {
-	font-size: 0.8rem;
-	color: var(--ion-text-color-secondary);
 }
 
 .online {
@@ -127,8 +81,44 @@ ion-icon {
 
 ion-badge {
 	margin: 0 4px;
+
+	font-size: 0.7rem;
+}
+
+.status-container {
+	height: 76px;
+	margin-right: 2px;
+	margin-left: 0px;
 }
 
 .onlinestate {
-	margin-right: 4px;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-bottom: 3px;
+	padding-top: 5px;
+	margin: 0;
+}
+
+.labels {
+	font-size: 0.65rem;
+	vertical-align: top;
+	margin-right: 3px;
+}
+
+ion-icon {
+	font-size: 0.65rem;
+	color: var(--ion-color-sync-icon-small);
+	position: absolute;
+	top: 3px;
+}
+
+.sync-active {
+	-webkit-animation: spin 6s linear infinite;
+	-moz-animation: spin 6s linear infinite;
+	animation: spin 6s linear infinite;
+}
+
+.sync-container {
+	height: 14px;
+	display: inline-block;
 }

@@ -1,4 +1,4 @@
-@import '../../../theme/variables.scss';
+@use '../../../theme/variables.scss';
 
 .purchase-btn {
 	--border-radius: var(--button-border-radius);
@@ -32,6 +32,20 @@ ion-content {
 	padding-bottom: 0px;
 }
 
+ion-segment-button {
+	color: var(--x-toolbar-title-color);
+}
+
+ion-segment {
+	background-color: var(--ion-toolbar-background);
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.segment-button-checked {
+	opacity: 1;
+}
+
 .packages {
 }
 
@@ -49,7 +63,7 @@ h2 {
 }
 
 .status-icon {
-	margin-bottom: 12px;
+	margin-bottom: 8px;
 	font-size: 60px;
 	color: var(--x-toolbar-title-color);
 }
@@ -66,35 +80,30 @@ h2 {
 
 .slide-container {
 	display: block;
-	padding-bottom: 22px;
+	padding-bottom: 8px;
 }
 
-ion-label {
+.white {
 	color: var(--x-toolbar-title-color);
+	padding: 0px;
+	margin: 0px;
 }
 
 .package {
-	width: 33.33%;
+	width: 25%;
 	text-align: center;
 	display: inline-block;
 
 	background-color: var(--x-update-messages-background);
 
-	height: 74px;
+	height: 82px;
 }
 
 .package-inner {
-	margin-top: 0.68em;
+	margin-top: 0.3em;
 	height: 30px;
 }
 
-.pkg-name {
-	font-size: 1.15em;
-}
-
-.slide-container {
-	margin-bottom: 6px;
-}
 .value {
 	text-align: end;
 	font-weight: bold !important;
@@ -131,18 +140,14 @@ ion-list {
 	line-height: 1em !important;
 }
 
-.check {
-	color: var(--ion-color-success);
-}
-
-.nocheck {
-	color: var(--ion-color-danger);
-}
-
 // Makes the iOS top bounce in our primary color
 // and the bottom bounce in main themes color
 ion-content {
-	--background: linear-gradient(0deg, var(--ion-background-color) 65%, var(--ion-toolbar-background) 35%);
+	--background: linear-gradient(0deg, var(--ion-background-color) 60%, var(--ion-toolbar-background) 40%);
+}
+
+.smallest-info {
+	font-size: 0.5rem !important;
 }
 
 @media only screen and (max-width: 380px) {
@@ -150,6 +155,29 @@ ion-content {
 		width: 85%;
 	}
 	.pkg-name {
-		font-size: 1.05em;
+		font-size: 1rem;
 	}
+}
+
+.pkg-name {
+	font-size: 1rem;
+	display: block;
+}
+
+.pkg-price {
+	font-size: var(--smaller-info-size);
+	display: block;
+}
+
+.pkg-price-yearly {
+	font-size: var(--smallest-info-size);
+	opacity: 0.8;
+	display: block;
+}
+
+.segment-label {
+	text-shadow: 0.65px 0 0 currentcolor;
+	font-weight: 400 !important;
+	font-family: 'Varela';
+	font-size: 0.77rem;
 }

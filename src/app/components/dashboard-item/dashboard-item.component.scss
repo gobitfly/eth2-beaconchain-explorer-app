@@ -1,0 +1,80 @@
+@use '../../../theme/variables.scss';
+
+.dashboard-card {
+	background-color: var(--ion-item-background);
+}
+
+.selected ion-label {
+	//color: var(--ion-color-primary);
+}
+
+.opacity-icon {
+	color: var(--ion-tab-button-color);
+	opacity: 0.95;
+}
+
+.touch-icon-padding {
+	padding: 0px 0px 9px 9px;
+}
+
+ion-badge {
+	--padding-end: 8px;
+	--padding-start: 8px;
+	--padding-top: 6px;
+	--padding-bottom: 6px;
+	min-width: 36px;
+}
+
+.ethereum {
+	--background: #497493;
+}
+
+.gnosis {
+	--background: #3e6957;
+}
+
+.holesky {
+	--background: #8695a0;
+}
+
+.sepolia {
+	--background: #a0869e;
+}
+
+.star {
+	color: var(--ion-color-primary);
+}
+
+.network {
+	//font-size: small;
+}
+
+.maxed {
+	color: var(--ion-color-danger) !important;
+}
+
+.stat-count {
+	font-weight: bold;
+}
+
+.action {
+	// height: 25px;
+	// width: 25px;
+	font-size: 21px;
+}
+
+.badge {
+	margin-top: -1px;
+	font-size: 0.63rem;
+	padding: 5px 8px;
+	padding-top: 6px; // seems to be off by 1px?
+	border-radius: 5px;
+}
+
+.ios .title {
+	padding-top: 9px;
+}
+
+.title {
+	padding-top: 5px;
+}

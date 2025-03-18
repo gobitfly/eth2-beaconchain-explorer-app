@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -23,12 +22,16 @@ import { AlertController, LoadingController } from '@ionic/angular'
 
 export const VALIDATORUTILS = 140
 export const PURCHASEUTILS = 150
+export const DASHBOARD_SELECTOR = 160
 
 @Injectable({
 	providedIn: 'root',
 })
 export class AlertService {
-	constructor(private alertController: AlertController, private loadingController: LoadingController) {}
+	constructor(
+		private alertController: AlertController,
+		private loadingController: LoadingController
+	) {}
 
 	async showError(title: string, message: string, code: number) {
 		const alert = await this.alertController.create({
@@ -40,11 +43,34 @@ export class AlertService {
 		await alert.present()
 	}
 
-	async showSelect(title: string, inputs: unknown[], callback: (data) => void) {
+	async showSelect(title: string, inputs: unknown[], callback: (data: unknown) => void) {
 		const alert = await this.alertController.create({
 			header: title,
 			inputs: inputs,
 			buttons: [
+				{
+					text: 'OK',
+					handler: callback,
+				},
+			],
+		})
+
+		await alert.present()
+	}
+
+	async showSelectWithCancel(title: string, inputs: unknown[], callback: (data: unknown) => void) {
+		const alert = await this.alertController.create({
+			header: title,
+			inputs: inputs,
+			buttons: [
+				{
+					text: 'Cancel',
+					role: 'cancel',
+					cssClass: 'secondary',
+					handler: () => {
+						return
+					},
+				},
 				{
 					text: 'OK',
 					handler: callback,
@@ -66,7 +92,31 @@ export class AlertService {
 		await alert.present()
 	}
 
-	async confirmDialog(title: string, message: string, confirmButton: string, confirmCallback: () => void) {
+	async noChoiceDialog(title: string, message: string, action: () => void, customCss: '' | 'bigger-alert' = '') {
+		const alert = await this.alertController.create({
+			cssClass: customCss,
+			header: title,
+			message: message,
+			backdropDismiss: false,
+			buttons: [
+				{
+					text: 'OK',
+					handler: action,
+				},
+			],
+		})
+
+		await alert.present()
+	}
+
+	async confirmDialog(
+		title: string,
+		message: string,
+		confirmButton: string,
+		confirmCallback: () => void,
+		customCSS: string | undefined = undefined,
+		cancelCallback: () => void = null
+	) {
 		const alert = await this.alertController.create({
 			cssClass: 'my-custom-class',
 			header: title,
@@ -77,12 +127,41 @@ export class AlertService {
 					role: 'cancel',
 					cssClass: 'secondary',
 					handler: () => {
+						if (cancelCallback) {
+							cancelCallback()
+						}
 						return
 					},
 				},
 				{
 					text: confirmButton,
+					cssClass: customCSS,
 					handler: confirmCallback,
+				},
+			],
+		})
+
+		await alert.present()
+	}
+
+	async confirmDialogReverse(title: string, message: string, confirmButton: string, confirmCallback: () => void, customCSS: string | null = null) {
+		const alert = await this.alertController.create({
+			cssClass: 'my-custom-class',
+			header: title,
+			message: message,
+			buttons: [
+				{
+					text: confirmButton,
+					cssClass: customCSS,
+					handler: confirmCallback,
+				},
+				{
+					text: 'Cancel',
+					role: 'cancel',
+					cssClass: 'secondary',
+					handler: () => {
+						return
+					},
 				},
 			],
 		})

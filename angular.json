@@ -12,18 +12,16 @@
 			"schematics": {},
 			"architect": {
 				"build": {
-					"builder": "@angular-devkit/build-angular:browser",
+					"builder": "@angular-devkit/build-angular:application",
 					"options": {
-						"outputPath": "www",
+						"outputPath": {
+							"base": "www",
+							"browser": ""
+						},
 						"index": "src/index.html",
-						"main": "src/main.ts",
-						"polyfills": "src/polyfills.ts",
+						"polyfills": ["zone.js"],
 						"tsConfig": "tsconfig.app.json",
-						 "allowedCommonJsDependencies": [
-							"highcharts",
-							"ethereum-blockies",
-							"magic-snowflakes"
-						],
+						"allowedCommonJsDependencies": ["highcharts", "ethereum-blockies", "cordova-plugin-purchase"],
 						"assets": [
 							{
 								"glob": "**/*",
@@ -44,7 +42,8 @@
 								"input": "src/global.scss"
 							}
 						],
-						"scripts": []
+						"scripts": [],
+						"browser": "src/main.ts"
 					},
 					"configurations": {
 						"production": {
@@ -56,21 +55,22 @@
 							],
 							"optimization": true,
 							"outputHashing": "none",
-							"sourceMap": true,
+							"sourceMap": {
+								"scripts": true,
+								"styles": false,
+								"hidden": true,
+								"vendor": false
+							},
 							"namedChunks": false,
 							"aot": true,
 							"extractLicenses": true,
-							"vendorChunk": false,
-							"buildOptimizer": true,
 							"budgets": []
 						},
 						"ci": {
 							"progress": false
 						},
 						"development": {
-							"buildOptimizer": true,
 							"optimization": false,
-							"vendorChunk": true,
 							"extractLicenses": false,
 							"sourceMap": true,
 							"namedChunks": true
@@ -80,48 +80,25 @@
 				"serve": {
 					"builder": "@angular-devkit/build-angular:dev-server",
 					"options": {
-						"browserTarget": "app:build"
+						"buildTarget": "app:build"
 					},
 					"configurations": {
 						"production": {
-							"browserTarget": "app:build:production"
+							"buildTarget": "app:build:production"
 						},
 						"ci": {
 							"progress": false
 						},
 						"development": {
-							"browserTarget": "app:build:development"
+							"buildTarget": "app:build:development"
 						}
 					},
-          "defaultConfiguration": "production"
+					"defaultConfiguration": "production"
 				},
 				"test": {
-					"builder": "@angular-devkit/build-angular:karma",
+					"builder": "@analogjs/vitest-angular:test",
 					"options": {
-						"main": "src/test.ts",
-						"polyfills": "src/polyfills.ts",
-						"tsConfig": "tsconfig.spec.json",
-						"karmaConfig": "karma.conf.js",
-						"styles": [],
-						"scripts": [],
-						"assets": [
-							{
-								"glob": "favicon.ico",
-								"input": "src/",
-								"output": "/"
-							},
-							{
-								"glob": "**/*",
-								"input": "src/assets",
-								"output": "/assets"
-							}
-						]
-					},
-					"configurations": {
-						"ci": {
-							"progress": false,
-							"watch": false
-						}
+						"viteConfigPath": "vite.config.mts"
 					}
 				},
 				"lint": {
@@ -174,7 +151,10 @@
 		}
 	},
 	"cli": {
-		"defaultCollection": "@ionic/angular-toolkit"
+		"defaultCollection": "@ionic/angular-toolkit",
+		"cache": {
+			"enabled": false
+		}
 	},
 	"schematics": {
 		"@ionic/angular-toolkit:component": {

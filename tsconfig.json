@@ -4,21 +4,45 @@
 		"baseUrl": "./",
 		"outDir": "./dist/out-tsc",
 		"sourceMap": true,
-		"allowSyntheticDefaultImports": true,
-		"noImplicitThis": false,
+		"noImplicitThis": true,
 		"esModuleInterop": true,
 		"declaration": false,
-		"downlevelIteration": true,
 		"experimentalDecorators": true,
-		"module": "esnext",
+		"allowSyntheticDefaultImports": true,
+		"module": "es2020",
 		"moduleResolution": "node",
+		"target": "es2020",
 		"importHelpers": true,
-		"target": "ES2022",
-		"lib": ["es2018", "dom"]
+		"noEmitHelpers": true,
+		"lib": ["es2020", "dom"],
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"removeComments": true,
+		"strictBindCallApply": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitAny": true,
+		"types": ["vitest/globals"],
+		"paths": {
+			"@components/*": ["src/app/components/*"],
+			"@controllers/*": ["src/app/controllers/*"],
+			"@modals/*": ["src/app/modals/*"],
+			"@pages/*": ["src/app/pages/*"],
+			"@pipes/*": ["src/app/pipes/*"],
+			"@requests/*": ["src/app/requests/*"],
+			"@services/*": ["src/app/services/*"],
+			"@utils/*": ["src/app/utils/*"],
+			"@typings/*": ["src/typings/*"]
+			// "cordova-plugin-purchase": ["src/cordova-plugin-purchase-wrapper.ts"]
+		}
 	},
 	"angularCompilerOptions": {
 		"fullTemplateTypeCheck": true,
-		"strictInjectionParameters": true
+		"strictInjectionParameters": true,
+		"strictTemplates": true,
+		"strictInputAccessModifiers": true,
+		"strictDomEventTypes": true,
+		"preserveWhitespaces": false,
+		"compilationMode": "full"
 	},
-	
+	"include": ["src/**/*.ts", "src/typings/**/*.d.ts"]
 }

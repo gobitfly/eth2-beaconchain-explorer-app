@@ -1,67 +1,62 @@
-import { Component, Input, OnInit } from '@angular/core'
-import { BlockResponse } from 'src/app/requests/requests'
+import { Component, Input } from '@angular/core'
 import * as blockies from 'ethereum-blockies'
-import { UnitconvService } from 'src/app/services/unitconv.service'
-import { BlockUtils, ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from 'src/app/utils/BlockUtils'
+import { UnitconvService } from '@services/unitconv.service'
+import { ETHPOOL, ROCKETPOOL_SMOOTHING_POOL } from '@utils/BlockUtils'
 import BigNumber from 'bignumber.js'
-import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
+import { VDBBlocksTableRow } from '@requests/types/validator_dashboard'
+import { slotToSecondsTimestamp } from '@utils/TimeUtils'
 
 @Component({
 	selector: 'app-block',
 	templateUrl: './block.component.html',
 	styleUrls: ['./block.component.scss'],
+	standalone: false,
 })
-export class BlockComponent implements OnInit {
-	@Input() block: BlockResponse
+export class BlockComponent {
+	@Input() block: VDBBlocksTableRow
+	@Input() first: boolean
+	@Input() last: boolean
+	@Input() chainID: number
 
-	fadeIn = 'fade-in'
-	imgData = null
+	imgData: string = null
 	timestamp = 0
 	producerReward = new BigNumber(0)
-	feeRecipient = ''
-	resolvedName = null
+	feeRecipient: string = null
+	resolvedName: string = null
 	resolvedClass = ''
 
-	constructor(public unit: UnitconvService, public blockUtils: BlockUtils, private validatorUtils: ValidatorUtils) {
-		this.validatorUtils.registerListener(() => {
-			this.ngOnChanges()
-		})
-	}
+	constructor(public unit: UnitconvService) {}
 
-	async ngOnChanges() {
+	ngOnChanges() {
 		this.imgData = this.getBlockies()
-		this.timestamp = this.block.timestamp * 1000
-		this.producerReward = await this.blockUtils.getBlockRewardWithShare(this.block)
+		this.timestamp = slotToSecondsTimestamp(this.chainID, this.block.slot) * 1000
+		if (this.block.reward) {
+			this.producerReward = new BigNumber(this.block.reward.el).plus(new BigNumber(this.block.reward.cl))
+		}
 		this.resolvedName = null
 
-		this.feeRecipient = this.block.feeRecipient
-		if (this.block.relay) {
-			this.feeRecipient = this.block.relay.producerFeeRecipient
+		this.feeRecipient = this.block.reward_recipient?.hash
+		if (this.block.reward_recipient?.ens != null) {
+			this.resolvedName = this.block.reward_recipient.ens
 		}
-		if (this.feeRecipient.toLocaleLowerCase() == ROCKETPOOL_SMOOTHING_POOL) {
+		if (this.block.reward_recipient?.hash?.toLocaleLowerCase() == ROCKETPOOL_SMOOTHING_POOL) {
 			this.resolvedName = 'Smoothing Pool'
 			this.resolvedClass = 'smoothing'
-		} else if (this.feeRecipient.toLocaleLowerCase() == ETHPOOL) {
+		} else if (this.block.reward_recipient?.hash?.toLocaleLowerCase() == ETHPOOL) {
 			this.resolvedName = 'ethpool.eth'
 			this.resolvedClass = 'ethpool'
 		}
 	}
 
-	setInput(block: BlockResponse) {
+	setInput(block: VDBBlocksTableRow) {
 		this.block = block
 		this.ngOnChanges()
 	}
 
-	ngOnInit() {
-		setTimeout(() => {
-			this.fadeIn = null
-		}, 500)
-	}
-
 	private getBlockies() {
 		// TODO: figure out why the first blockie image is always black
-		blockies.create({ seed: this.block.blockHash }).toDataURL()
-		const dataurl = blockies.create({ seed: this.block.blockHash, size: 8, scale: 7 }).toDataURL()
+		blockies.create({ seed: this.block.slot.toString() }).toDataURL()
+		const dataurl = blockies.create({ seed: this.block.slot.toString(), size: 8, scale: 7 }).toDataURL()
 		return dataurl
 	}
 }

@@ -1,0 +1,99 @@
+/* 
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
+ *  // 
+ *  // This file is part of Beaconchain Dashboard.
+ *  // 
+ *  // Beaconchain Dashboard is free software: you can redistribute it and/or modify
+ *  // it under the terms of the GNU General Public License as published by
+ *  // the Free Software Foundation, either version 3 of the License, or
+ *  // (at your option) any later version.
+ *  // 
+ *  // Beaconchain Dashboard is distributed in the hope that it will be useful,
+ *  // but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  // GNU General Public License for more details.
+ *  // 
+ *  // You should have received a copy of the GNU General Public License
+ *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@use '../../../theme/variables.scss';
+
+.inner-setup-head ion-icon {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	padding-bottom: 24px;
+}
+
+.setup-head {
+	background-image: var(--status-bg-image);
+	background-color: var(--ion-toolbar-background) !important;
+	color: var(--x-toolbar-title-color);
+}
+
+.inner-setup-head {
+	padding: 30px;
+	margin-top: 25px;
+	margin-top: 0px !important;
+	text-align: center;
+	width: 100%;
+}
+
+.setup-icon {
+	margin-top: 7px;
+	font-size: 69px;
+}
+
+ion-content {
+	width: calc(100% + 15px);
+}
+// Makes the iOS top bounce in our primary color
+// and the bottom bounce in main themes color
+.ios-background {
+	--background: linear-gradient(0deg, var(--ion-background-color) 60%, var(--ion-toolbar-background) 40%);
+}
+
+ion-content::part(scroll) {
+	padding-right: 15px;
+}
+
+.ion-content-scroll-host::before,
+.ion-content-scroll-host::after {
+	position: absolute;
+
+	width: 1px;
+	height: 1px;
+
+	content: '';
+}
+
+.ion-content-scroll-host::before {
+	bottom: -1px;
+}
+
+.ion-content-scroll-host::after {
+	top: -1px;
+}
+
+ion-refresher-content {
+	--color: #fff !important;
+}
+
+.selected {
+	font-weight: bold;
+	color: var(--ion-color-primary);
+}
+
+.sub-text {
+	--color: var(--x-toolbar-title-color);
+	left: 0;
+	top: 40px;
+	bottom: 0;
+	margin: auto;
+	position: absolute;
+	width: 100%;
+	text-align: center;
+	font-size: 0.65rem;
+}

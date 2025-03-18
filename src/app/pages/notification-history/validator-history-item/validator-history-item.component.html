@@ -1,0 +1,11 @@
+<app-base-history-item [data]="data" [first]="first" [last]="last" [title]="data.dashboard_name" (click)="open()">
+	<ion-label class="smaller-info smaller-pad">In Group {{ data.group_name }}</ion-label>
+	<ion-label class="smaller-info smaller-pad"
+		>Affecting <mark>{{ data.entity_count }}</mark> {{ data.entity_count > 1 ? 'Validators' : 'Validator' }}</ion-label
+	>
+	<ion-label class="smaller-info smaller-pad">
+		<span *ngFor="let item of eventTypeBadge">
+			<ion-badge [color]="item.color" style="margin-right: 4px">{{ item.short }}</ion-badge>
+		</span>
+	</ion-label>
+</app-base-history-item>

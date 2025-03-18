@@ -1,0 +1,194 @@
+<ion-header [translucent]="true">
+	<ion-toolbar class="top">
+		<ion-buttons slot="start" class="modal-buttons">
+			<ion-button (click)="closeModal()">
+				<ion-icon size="large" name="close-outline"></ion-icon>
+			</ion-button>
+		</ion-buttons>
+		<ion-title style="padding: 0px 10px">Legend</ion-title>
+	</ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="legend-content">
+	<ion-list>
+		<!-- Block State Explanation -->
+		<ion-item>
+			<ion-label>
+				<h2>Block States</h2>
+				<p>
+					Each block has two states. The <strong>border color</strong> represents the network status while the
+					<strong>content color</strong> indicates your validator's status. This makes it easy to backtrack if a missed duty was related to a network
+					issue or an issue on your end.
+				</p>
+			</ion-label>
+		</ion-item>
+
+		<!-- Content Color Scheme -->
+		<ion-item>
+			<ion-label>
+				<h2>Content Color Scheme</h2>
+				<p style="margin-left: 10px">
+					<span class="color-example success"></span>
+					Green = All validator duties successful<br />
+					<span class="color-example danger"></span>
+					Red = All validator duties failed<br />
+					<span class="color-example warning"></span>
+					Yellow = Some duties successful / some failed<br />
+					<span class="color-example pending"></span>
+					Empty = Some duties are still pending
+				</p>
+			</ion-label>
+		</ion-item>
+
+		<!-- Border Color Scheme -->
+		<ion-item>
+			<ion-label>
+				<h2>Border Color Scheme</h2>
+				<p style="margin-left: 10px">
+					<span class="border-example success"></span>
+					Green = Network proposed block<br />
+					<span class="border-example danger"></span>
+					Red = Network missed block
+				</p>
+			</ion-label>
+		</ion-item>
+
+		<!-- Icon Symbols -->
+		<ion-item>
+			<ion-label>
+				<h2>Symbols</h2>
+				<ion-grid>
+					<ion-row class="symbol-row">
+						<ion-col size="2">
+							<ion-icon name="cube-outline" class="symbol-icon"></ion-icon>
+						</ion-col>
+						<ion-col size="10">
+							<p>Block Proposal Duty</p>
+						</ion-col>
+					</ion-row>
+					<ion-row class="symbol-row">
+						<ion-col size="2">
+							<ion-icon name="document-text-outline" class="symbol-icon"></ion-icon>
+						</ion-col>
+						<ion-col size="10">
+							<p>Attestation Duty</p>
+						</ion-col>
+					</ion-row>
+					<ion-row class="symbol-row">
+						<ion-col size="2">
+							<ion-icon name="sync-outline" class="symbol-icon"></ion-icon>
+						</ion-col>
+						<ion-col size="10">
+							<p>Sync Committee Duty</p>
+						</ion-col>
+					</ion-row>
+					<ion-row class="symbol-row">
+						<ion-col size="2">
+							<ion-icon name="person-remove-outline" class="symbol-icon"></ion-icon>
+						</ion-col>
+						<ion-col size="10">
+							<p>Slashing</p>
+						</ion-col>
+					</ion-row>
+					<ion-row class="symbol-row">
+						<ion-col size="2">
+							<ion-icon name="add-outline" class="symbol-icon"></ion-icon>
+						</ion-col>
+						<ion-col size="10">
+							<p>Multiple duties / events in this block</p>
+							<small>You can click on any block for a breakdown</small>
+						</ion-col>
+					</ion-row>
+				</ion-grid>
+			</ion-label>
+		</ion-item>
+
+		<!-- Examples -->
+		<ion-item>
+			<ion-label>
+				<h2>Examples</h2>
+				<ion-grid>
+					<ion-row class="example-row">
+						<ion-col size="4">
+							<div class="square success color-example" style="border-color: var(--ion-color-success)">
+								<ion-icon name="document-text-outline" style="font-size: 24px"></ion-icon>
+							</div>
+						</ion-col>
+						<ion-col size="8">
+							<p>
+								<small>Green content with green border:</small><br />
+								Network proposed a block and you successfully attested to it
+							</p>
+						</ion-col>
+					</ion-row>
+					<ion-row class="example-row">
+						<ion-col size="4">
+							<div class="square danger color-example" style="border-color: var(--ion-color-danger)">
+								<ion-icon name="cube-outline" style="font-size: 24px"></ion-icon>
+							</div>
+						</ion-col>
+						<ion-col size="8">
+							<p>
+								<small>Red content with red border:</small><br />
+								You missed your block proposal
+							</p>
+						</ion-col>
+					</ion-row>
+					<ion-row class="example-row">
+						<ion-col size="4">
+							<div class="square warning color-example" style="border-color: var(--ion-color-success)">
+								<ion-icon name="document-text-outline" style="font-size: 24px"></ion-icon>
+							</div>
+						</ion-col>
+						<ion-col size="8">
+							<p>
+								<small>Yellow content with green border:</small><br />
+								Network proposed the block, but only some of your validators successfully attested to it.
+							</p>
+						</ion-col>
+					</ion-row>
+					<ion-row class="example-row">
+						<ion-col size="4">
+							<div class="square success color-example" style="border-color: var(--ion-color-danger)">
+								<ion-icon name="document-text-outline" style="font-size: 24px"></ion-icon>
+							</div>
+						</ion-col>
+						<ion-col size="8">
+							<p>
+								<small>Green content with red border:</small><br />
+								Network missed the block but your duties were successful
+							</p>
+						</ion-col>
+					</ion-row>
+					<ion-row class="example-row">
+						<ion-col size="4">
+							<div class="square success color-example" style="border-color: var(--ion-color-success)">
+								<ion-icon name="person-remove-outline" style="font-size: 24px"></ion-icon>
+							</div>
+						</ion-col>
+						<ion-col size="8">
+							<p>
+								<small>Green content with green border:</small><br />
+								Network proposed and you caught someone else's validator cheating and slashed them
+							</p>
+						</ion-col>
+					</ion-row>
+					<ion-row class="example-row">
+						<ion-col size="4">
+							<div class="square danger color-example" style="border-color: var(--ion-color-success)">
+								<ion-icon name="person-remove-outline" style="font-size: 24px"></ion-icon>
+							</div>
+						</ion-col>
+						<ion-col size="8">
+							<p>
+								<small>Red content with green border:</small><br />
+								Network proposed but your validator has been slashed.
+							</p>
+						</ion-col>
+					</ion-row>
+				</ion-grid>
+			</ion-label>
+		</ion-item>
+		<div style="padding-bottom: 45px"></div>
+	</ion-list>
+</ion-content>

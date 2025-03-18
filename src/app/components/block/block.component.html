@@ -1,26 +1,52 @@
-<div class="container" [class]="fadeIn">
+<!-- 
+    Copyright (C) 2020 - 2024 bitfly explorer GmbH
+    Manuel Caspari (manuel@bitfly.at)
+    
+    This file is part of Beaconchain Dashboard.
+
+    Beaconchain Dashboard is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Beaconchain Dashboard is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<div class="infi-item-container" [ngClass]="{ 'infi-item-first': first }">
 	<div class="inner">
 		<ion-item lines="none">
 			<div slot="start">
-				<img class="blockie" src="{{ imgData }}" />
-				<ion-label class="blocknr">{{ block.blockNumber }}</ion-label>
+				<img class="infi-item-blockie" src="{{ imgData }}" />
+				<ion-label class="infi-item-container-below-blockie smallest-info">{{ block.block || '-' }}</ion-label>
 			</div>
 
-			<div class="info">
-				<ion-text class="title">Reward: {{ producerReward | mcurrency : 'WEI' : unit.pref.Exec }}</ion-text>
-				<ion-label class="smaller-info" style="padding-bottom: 0px">
-					<span>Proposer: {{ block.posConsensus.proposerIndex }}</span>
+			<div class="infi-item-middle-container">
+				<ion-text class="title">Reward: {{ producerReward | mcurrency: 'WEI' : unit.pref.Exec }}</ion-text>
+				<ion-label class="smaller-info smaller-pad" style="padding-bottom: 0px">
+					<span>Proposer: {{ block.proposer }}</span>
 				</ion-label>
-				<ion-label class="smaller-info" style="padding-bottom: 0px">
-					<span *ngIf="!resolvedName">To: {{ feeRecipient | slice : 0 : 8 }}…{{ feeRecipient | slice : 35 : 42 }}</span>
+				<ion-label class="smaller-info smaller-pad">
+					<span *ngIf="!resolvedName && feeRecipient">To: {{ feeRecipient | slice: 0 : 6 }}…{{ feeRecipient | slice: 37 : 42 }}</span>
 					<span *ngIf="resolvedName"
 						>To: <span [class]="resolvedClass">{{ resolvedName }}</span></span
 					>
+					<span *ngIf="block.status != 'success'"
+						>Status: <span [class]="block.status">{{ block.status }}</span></span
+					>
 				</ion-label>
-				<ion-label class="smaller-info" style="padding-bottom: 0px">
-					<span>{{ timestamp | timeago }}</span>
+			</div>
+			<div slot="end" class="status-container">
+				<ion-label class="smallest-info" style="padding: var(--block-ts-padding)">
+					<span>{{ timestamp | shortertimeago }}</span>
 				</ion-label>
 			</div>
 		</ion-item>
 	</div>
 </div>
+<div [ngClass]="{ 'infi-item-last-padding': last }"></div>

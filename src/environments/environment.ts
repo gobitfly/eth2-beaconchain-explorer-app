@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -24,6 +23,11 @@
 
 export const environment = {
 	production: false,
+	API_ACCESS_KEY: null as string, // Cloudflare API access key, needed for PROD builds(!). Available in Bitwarden "App Cloudflare Key"
+	mock_combine_machines: false, // Debug flag: Combines all machines when talking to the mock API into a single one - kind of a workaround, sometime in the future API mock should better mock this. Should be false in prod
+	debug_set_default_network: '', // Debug flag: change default network of the app. Defaults to eth mainnet unless set otherwise. Should be empty in prod
+	debug: false, // Debug flag: Enabled access to the developer menu. Should be false in prod(!)
+	dangerousCookiePassing: true,
 }
 
 /*

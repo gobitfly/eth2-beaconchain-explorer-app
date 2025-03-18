@@ -13,11 +13,14 @@ Thumbs.db
 UserInterfaceState.xcuserstate
 $RECYCLE.BIN/
 .angular
+.env
+bundle*.zip
 
 *.log
 log.txt
 npm-debug.log*
 
+/tmp
 /.idea
 /.ionic
 /.sass-cache
@@ -30,10 +33,15 @@ npm-debug.log*
 /platforms
 /plugins
 /www
+/www-sourcemap
 /android/app/src/prod/google-services.json
 /android/app/src/beta/google-services.json
 /ios/App/GoogleService-Info.plist
 /appassets
+/local_env/server.*
 /android/.idea
 android/.idea/jarRepositories.xml
 android/.idea/misc.xml
+/src/environments/environment.prod.ts
+ios/GoogleService-Info.plist
+test/user-auth/auth.js

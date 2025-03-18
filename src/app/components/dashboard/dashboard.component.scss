@@ -1,6 +1,5 @@
 /* 
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  // 
  *  // This file is part of Beaconchain Dashboard.
  *  // 
@@ -18,17 +17,10 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import '../../../theme/variables.scss';
-
+@use '../../../theme/variables.scss';
 ion-segment-button {
-	--indicator-height: 0px !important;
-	text-transform: none !important;
-	--ripple-color: transparent !important;
-	//transition: color 0.15s ease;
-	font-family: 'Varela';
-	font-size: 0.75em;
 	--background-focused-opacity: 1;
-	opacity: 1 !important;
+	color: var(--ion-text-color-lighter);
 }
 
 ion-segment-button.md::part(native) {
@@ -42,6 +34,7 @@ ion-segment {
 .segment-button-checked {
 	color: var(--segment-primary) !important;
 	font-weight: 600 !important;
+	opacity: 1 !important;
 }
 
 .segment-button-checked.md::part(native) {
@@ -54,13 +47,6 @@ ion-segment {
 	justify-content: center;
 	text-align: center;
 	padding-bottom: 12px;
-}
-
-.center {
-	width: 100%;
-	display: flex;
-	justify-content: center;
-	text-align: center;
 }
 
 .status {
@@ -131,21 +117,11 @@ ion-segment {
 	padding-bottom: 6px !important;
 }
 
-ion-list-header {
-	padding-left: 0px;
-	text-align: center;
-}
-ion-list-header ion-label {
-	font-size: 0.9rem;
-	font-weight: 600 !important;
-	font-family: 'Varela';
-	letter-spacing: 1.05px;
-}
-
 ion-item {
-	max-width: 92%;
+	//max-width: var(--ion-item-max-width);
 
-	margin: auto;
+	//margin: auto;
+	margin: var(--edge-padding);
 }
 
 .value {
@@ -155,14 +131,9 @@ ion-item {
 }
 
 .chartcontainer {
-	padding-top: 20px;
-	width: 97%;
+	padding-top: 5px;
+	width: 98%;
 	margin: auto;
-}
-
-.loading-spinner {
-	margin-top: 55px;
-	margin-bottom: 10px;
 }
 
 .updates {
@@ -179,34 +150,19 @@ ion-item {
 }
 
 .loading-container {
-	height: 100%;
-}
-
-.grid-cell {
-	width: 50%;
-	float: left;
-	margin-bottom: 7px;
-	margin-top: 7px;
-}
-
-.left {
-	text-align: start !important;
-}
-
-.right {
-	text-align: end !important;
+	height: 100vh !important;
+	background-color: var(--ion-background-color);
 }
 
 .stat-title {
-	opacity: 0.85;
-}
-
-.income-title {
-	opacity: 0.85;
-	font-size: 1em;
-	//color: var(--ion-text-color-lighter);
+	opacity: var(--default-secondary-transparency);
+	font-weight: var(--smaller-label-weight);
 }
 
 .grid {
 	width: 100%;
+}
+
+ion-item ion-label {
+	margin-right: 0px; // fixes ios margin at the right side
 }

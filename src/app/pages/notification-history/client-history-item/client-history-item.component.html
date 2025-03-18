@@ -1,0 +1,6 @@
+<app-base-history-item [data]="data" [first]="first" [last]="last" [title]="data.client_name" (click)="open()">
+	<ion-label class="smaller-info smaller-pad"
+		>New version <mark>{{ data.version }}</mark></ion-label
+	>
+	<ion-label class="smaller-info smaller-pad"><ion-icon name="open-outline"></ion-icon></ion-label>
+</app-base-history-item>

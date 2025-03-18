@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -19,14 +18,16 @@
  */
 
 import { Options } from 'highcharts'
-import { HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from '../services/storage.service'
+import { HDD_THRESHOLD, RAM_THRESHOLD, StorageService } from '@services/storage.service'
+import { MachineMetricNode, MachineMetricSystem, MachineMetricValidator } from '@requests/types/machine_metrics'
+import { environment } from 'src/environments/environment'
 
 const OFFLINE_THRESHOLD = 8 * 60 * 1000
 
 export interface MachineChartData {
 	Data: Highcharts.SeriesAreaOptions[]
 	Config: MachineChartConfig
-	Error: string
+	Error?: string | undefined
 }
 
 export default class MachineController {
@@ -34,7 +35,7 @@ export default class MachineController {
 
 	selectionTimeFrame = 180
 
-	public addBytesConfig(perS = false) {
+	public addBytesConfig(perS = false): MachineChartConfig {
 		return {
 			config: {
 				tooltip: {
@@ -59,7 +60,7 @@ export default class MachineController {
 					labels: {
 						x: -5,
 						formatter: function () {
-							return bytes(this.value, true, this.isFirst, 0) + (perS ? '/s' : '')
+							return bytes(parseInt(this.value.toString()), true, this.isFirst, 0) + (perS ? '/s' : '')
 						},
 					},
 				},
@@ -75,14 +76,18 @@ export default class MachineController {
 						color: 'var(--text-color)',
 						fontWeight: 'bold',
 					},
+					// @ts-expect-error: noImplicitThis disabled for this line
 					pointFormatter: function () {
+						// @ts-expect-error: noImplicitThis disabled for this line
 						return '<span style="color:' + this.color + '">\u25CF</span> ' + this.series.name + ': <b>' + this.y.toFixed(0) + postFix + '</b>'
 					},
 				},
 				yAxis: {
 					labels: {
 						x: -5,
+						// @ts-expect-error: noImplicitThis disabled for this line
 						formatter: function () {
+							// @ts-expect-error: noImplicitThis disabled for this line
 							return this.value
 						},
 					},
@@ -94,33 +99,33 @@ export default class MachineController {
 	public doMemoryCharts(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
-		if (current && current.system) {
+		if (current && current.system_metrics) {
 			chartData.push({
 				name: 'Memory: System',
 				color: '#7cb5ec',
-				data: this.timeAxisChanges(current.system, (value) => {
+				data: this.timeAxisChanges(current.system_metrics, (value) => {
 					return value.memory_node_bytes_total
 				}),
 				pointWidth: 25,
 			})
 		}
 
-		if (current && current.node) {
+		if (current && current.node_metrics) {
 			chartData.push({
 				name: 'Memory: Beaconnode',
 				color: '#Dcb5ec',
-				data: this.timeAxisChanges(current.node, (value) => {
+				data: this.timeAxisChanges(current.node_metrics, (value) => {
 					return value.memory_process_bytes
 				}),
 				pointWidth: 25,
 			})
 		}
 
-		if (current && current.validator) {
+		if (current && current.validator_metrics) {
 			chartData.push({
 				name: 'Memory: Validator',
 				color: '#3FF5ec',
-				data: this.timeAxisChanges(current.validator, (value) => {
+				data: this.timeAxisChanges(current.validator_metrics, (value) => {
 					return value.memory_process_bytes
 				}),
 				pointWidth: 25,
@@ -130,26 +135,26 @@ export default class MachineController {
 		return {
 			Data: chartData,
 			Config: this.addBytesConfig(),
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doCPUCharts(current: ProcessedStats): MachineChartData {
-		const chartData = []
+		const chartData: { name: string; color: string; data: unknown[][]; pointWidth: number }[] = []
 
-		if (!current) return { Data: chartData } as MachineChartData
-		if (!current.system) return { Error: 'system_missing' } as MachineChartData
+		if (!current) return { Data: chartData } as unknown as MachineChartData
+		if (!current.system_metrics) return { Error: 'system_missing' } as MachineChartData
 
 		const cpuSystemTotal = this.timeAxisChanges(
-			current.system,
+			current.system_metrics,
 			(value) => {
 				return value.cpu_node_system_seconds_total
 			},
 			true
 		)
 
-		if (current && current.validator) {
+		if (current && current.validator_metrics) {
 			const cpuValidator = this.timeAxisChanges(
-				current.validator,
+				current.validator_metrics,
 				(value) => {
 					return value.cpu_process_seconds_total
 				},
@@ -163,9 +168,9 @@ export default class MachineController {
 			})
 		}
 
-		if (current && current.node) {
+		if (current && current.node_metrics) {
 			const cpuNode = this.timeAxisChanges(
-				current.node,
+				current.node_metrics,
 				(value) => {
 					return value.cpu_process_seconds_total
 				},
@@ -202,18 +207,18 @@ export default class MachineController {
 					},
 				} as Options,
 			},
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	public doSyncCharts(current: ProcessedStats): MachineChartData {
 		const chartData = []
 
-		if (current && current.node) {
+		if (current && current.node_metrics) {
 			chartData.push({
 				name: 'Exec Connected',
 				color: '#3335FF',
 				data: this.timeAxisChanges(
-					current.node,
+					current.node_metrics,
 					(value) => {
 						return value.sync_eth1_connected ? 1.2 : 0
 					},
@@ -223,12 +228,12 @@ export default class MachineController {
 			})
 		}
 
-		if (current && current.node) {
+		if (current && current.node_metrics) {
 			chartData.push({
 				name: 'Cons Synced',
 				color: '#3FF5ec',
 				data: this.timeAxisChanges(
-					current.node,
+					current.node_metrics,
 					(value) => {
 						return value.sync_eth2_synced ? 1.3 : 0
 					},
@@ -263,11 +268,11 @@ export default class MachineController {
 					},
 				} as Options,
 			},
-		} as MachineChartData
+		} as unknown as MachineChartData
 	}
 
 	isBuggyPrysmVersion(data: ProcessedStats): boolean {
-		return data.client == 'prysm' && (!data.system || data.system.length <= 2 || data.system[0].cpu_cores == 0)
+		return data.client == 'prysm' && (!data.system_metrics || data.system_metrics.length <= 2 || data.system_metrics[0].cpu_cores == 0)
 	}
 
 	async getAnyAttention(data: ProcessedStats) {
@@ -279,8 +284,8 @@ export default class MachineController {
 	}
 
 	protected async getDiskAttention(data: ProcessedStats): Promise<string> {
-		if (!data || !data.system) return null
-		const freePercentage = this.getLastFrom(data.system, (array) => array.disk_node_bytes_free / array.disk_node_bytes_total)
+		if (!data || !data.system_metrics) return null
+		const freePercentage = this.getLastFrom(data.system_metrics, (array) => array.disk_node_bytes_free / array.disk_node_bytes_total)
 		const threshold = 100 - ((await this.store.getSetting(HDD_THRESHOLD, 90)) as number)
 		console.log('HDD threshold', threshold)
 
@@ -292,11 +297,11 @@ export default class MachineController {
 	}
 
 	protected async getMemoryAttention(data: ProcessedStats): Promise<string> {
-		if (!data || !data.system) return null
+		if (!data || !data.system_metrics) return null
 		const usagePercentage =
 			1 -
 			this.getLastFrom(
-				data.system,
+				data.system_metrics,
 				(array) => (array.memory_node_bytes_free + array.memory_node_bytes_buffers + array.memory_node_bytes_cached) / array.memory_node_bytes_total
 			)
 		const threshold = (await this.store.getSetting(RAM_THRESHOLD, 80)) as number
@@ -322,16 +327,16 @@ export default class MachineController {
 	}
 
 	protected getSyncAttention(data: ProcessedStats): string {
-		const synced = this.getLastFrom(data.node, (array) => array.sync_eth2_synced)
-		const eth1Connected = this.getLastFrom(data.node, (array) => array.sync_eth1_connected)
+		const synced = this.getLastFrom(data.node_metrics, (array) => array.sync_eth2_synced)
+		const eth1Connected = this.getLastFrom(data.node_metrics, (array) => array.sync_eth1_connected)
 
-		if (!data.node) {
+		if (!data.node_metrics) {
 			return "No beaconnode data found. If you wish to track this data, make sure to configure metric tracking on your beaconnode machine too. <a target='_blank' href='https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node'>Learn more here</a>."
 		} else if (!eth1Connected) {
 			return 'No execution client connection, make sure you have configured an execution endpoint and it is currently active and synced.'
 		} else if (!synced) {
 			return 'Your beaconnode is currently syncing. It might take some time to get fully synced.'
-		} else if (!data.validator) {
+		} else if (!data.validator_metrics) {
 			return "No validator data found. If you wish to track this data, make sure to configure metric tracking on your validator machine too. <a target='_blank' href='https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node'>Learn more here</a>."
 		}
 		return null
@@ -365,7 +370,7 @@ export default class MachineController {
 		return Math.round((erg / (depth - 1)) * 100) / 100
 	}
 
-	protected getAvgRelativeFrom(data1LastN: number[], data2LastN: number[], callback: (val1, val2) => number) {
+	protected getAvgRelativeFrom(data1LastN: number[], data2LastN: number[], callback: (val1: number, val2: number) => number) {
 		if (!data1LastN || !data2LastN) return null
 		const length = Math.min(data1LastN.length, data2LastN.length)
 
@@ -388,11 +393,11 @@ export default class MachineController {
 
 	// --- Data helper functions ---
 
-	getTimeDiff(dataSet: StatsBase[], startIndex, endIndex) {
-		return Math.abs(dataSet[startIndex].timestamp - dataSet[endIndex].timestamp)
+	getTimeDiff(dataSet: number[][], startIndex: number, endIndex: number) {
+		return Math.abs(dataSet[startIndex][0] - dataSet[endIndex][0])
 	}
 
-	getGapSize(dataSet: StatsBase[]) {
+	getGapSize(dataSet: number[][]) {
 		if (!dataSet || dataSet.length == 0) return 60000
 		let temp = this.getTimeDiff(dataSet, dataSet.length - 2, dataSet.length - 1)
 
@@ -404,12 +409,12 @@ export default class MachineController {
 		return temp
 	}
 
-	normalizeTimeframeNumber(dataSet: StatsBase[]): number {
+	normalizeTimeframeNumber(dataSet: number[][]): number {
 		const gapSize = Math.round(this.getGapSize(dataSet) / 1000)
 		return gapSize
 	}
 
-	timeAxisRelative(max: StatsBase[], current: number[], inverted = false, rounding = 10) {
+	timeAxisRelative(max: number[][], current: number[][], inverted = false, rounding = 10) {
 		const result = []
 		const gapSize = this.normalizeTimeframeNumber(max)
 
@@ -443,8 +448,8 @@ export default class MachineController {
 		return result
 	}
 
-	public timeAxisChanges<T extends StatsBase>(data: T[], delegateValue: (value: T, timeDiff?) => number, accumilative = false) {
-		let result = []
+	public timeAxisChanges<T extends StatsBase>(data: T[], delegateValue: (value: T, timeDiff?: unknown) => number, accumilative = false) {
+		let result: number[][] = []
 		let summedUp = -1
 		let lastValue = 0
 		let lastTimestamp = -1
@@ -493,37 +498,38 @@ export default class MachineController {
 		return array
 	}
 
-	public combineByMachineName(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
+	public async combineByMachineName(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
 		const allKeys = this.findAllKeys(validator, node, system)
+		const debugShowOldMachines = await this.store.getBooleanSetting('debug_show_old_machines', false)
 
-		const result: ProcessedStats[] = []
-		for (const key in allKeys) {
-			const sortedVal = this.sortData(validator.get(key)) as StatsValidator[]
-			const sortedNode = this.sortData(node.get(key)) as StatsNode[]
-			const sortedSystem = this.sortData(system.get(key)) as StatsSystem[]
+		const result: Map<string, ProcessedStats> = new Map()
+		for (const key of allKeys) {
+			const sortedVal = this.sortData(validator.get(key))
+			const sortedNode = this.sortData(node.get(key))
+			const sortedSystem = this.sortData(system.get(key))
 
 			const unixTime = this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => {
 				return value.timestamp
 			})
 
 			// do not display machines that have not been online for more than 4 days
-			if (unixTime && Date.now() - unixTime > 96 * 60 * 60 * 1000) {
+			if (!debugShowOldMachines && !environment.mock_combine_machines && unixTime && Date.now() - unixTime > 96 * 60 * 60 * 1000) {
 				continue
 			}
 
-			result[key] = {
-				validator: sortedVal,
-				node: sortedNode,
-				system: sortedSystem,
+			result.set(key, {
+				validator_metrics: sortedVal,
+				node_metrics: sortedNode,
+				system_metrics: sortedSystem,
 				client: this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => {
-					return value.client_name
+					return (value as ProcessBase).client_name
 				}),
 				clientVersion: this.findAnyData(sortedVal, sortedNode, sortedSystem, (value) => {
-					return value.client_version
+					return (value as ProcessBase).client_version
 				}),
 				formattedDate: unixTime ? new Date(unixTime) : null,
 				status: 'ONLINE',
-			}
+			})
 		}
 
 		return result
@@ -538,7 +544,12 @@ export default class MachineController {
 		})
 	}
 
-	public findAnyData<V>(validator: StatsValidator[], node: StatsNode[], system: StatsSystem[], dataCallback: (value) => V) {
+	public findAnyData<V>(
+		validator: StatsValidator[],
+		node: StatsNode[],
+		system: StatsSystem[],
+		dataCallback: (value: StatsValidator | StatsNode | StatsSystem) => V
+	) {
 		const result1 = this.findAnyDataIn(validator, dataCallback)
 		const result3 = this.findAnyDataIn(node, dataCallback)
 		const result4 = this.findAnyDataIn(system, dataCallback)
@@ -548,38 +559,37 @@ export default class MachineController {
 	public findAnyDataIn<T, V>(current: T[], dataCallback: (value: T) => V) {
 		if (!current || current.length <= 0) return null
 		const result = dataCallback(current[current.length - 1])
-		if (result && result != '') {
+		if (result) {
 			return result
 		}
 		return null
 	}
 
-	public findAllKeys(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>) {
-		const result = []
+	public findAllKeys(validator: Map<string, StatsValidator[]>, node: Map<string, StatsNode[]>, system: Map<string, StatsSystem[]>): string[] {
+		const set = new Set<string>()
 		for (const key of validator.keys()) {
-			result[key] = true
+			set.add(key)
 		}
 		for (const key of node.keys()) {
-			result[key] = true
+			set.add(key)
 		}
 		for (const key of system.keys()) {
-			result[key] = true
+			set.add(key)
 		}
-		return result
+		return Array.from(set)
 	}
 
-	public filterMachines<Type extends StatsBase>(data: Type[]): Map<string, Type[]> {
-		const result = new Map()
-		for (let i = 0; i < data.length; i++) {
-			let array = result.get(data[i].machine)
-			if (array == null) {
-				array = []
+	public filterMachines<T extends StatsBase>(data: T[]): Map<string, T[]> {
+		return data.reduce((result, current) => {
+			if (environment.mock_combine_machines) {
+				current.machine = 'test'
 			}
-			array.push(data[i])
-			result.set(data[i].machine, array)
-		}
 
-		return result
+			const existingArray = result.get(current.machine) || []
+			existingArray.push(current)
+			result.set(current.machine, existingArray)
+			return result
+		}, new Map<string, T[]>())
 	}
 
 	public hashCode(string: string) {
@@ -595,10 +605,10 @@ export default class MachineController {
 
 export const bytes = (function () {
 	const s = ['b', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
-		tempLabel = []
-	let count
+		tempLabel: number[] = []
+	let count: number
 
-	return function (byteData, label, isFirst, precision = 3) {
+	return function (byteData: number, label: unknown, isFirst: unknown, precision = 3) {
 		let e, value
 
 		if (byteData == 0) return 0
@@ -606,7 +616,7 @@ export const bytes = (function () {
 		if (isFirst) count = 0
 
 		e = Math.floor(Math.log(byteData) / Math.log(1024))
-		value = (byteData / Math.pow(1024, Math.floor(e))).toFixed(precision)
+		value = parseInt((byteData / Math.pow(1024, Math.floor(e))).toFixed(precision))
 
 		tempLabel[count] = value
 		if (count > 0 && Math.abs(tempLabel[count - 1] - tempLabel[count]) < 0.0001)
@@ -632,57 +642,26 @@ export interface ProcessedStats extends StatsResponse {
 }
 
 export interface StatsBase {
-	machine: string
-	timestamp: number
-	row: number
+	machine?: string
+	timestamp?: number
+	//row: number
 }
 
 export interface ProcessBase extends StatsBase {
-	client_name: string
-	client_version: string
-	cpu_process_seconds_total: number
-	memory_process_bytes: number
+	client_name?: string
+	client_version?: string
+	cpu_process_seconds_total?: number
+	memory_process_bytes?: number
 }
 
 export interface StatsResponse {
-	validator: StatsValidator[]
-	node: StatsNode[]
-	system: StatsSystem[]
+	validator_metrics: StatsValidator[]
+	node_metrics: StatsNode[]
+	system_metrics: StatsSystem[]
 }
 
-export interface StatsValidator extends ProcessBase {
-	validator_active: number
-	validator_total: number
-}
+export interface StatsValidator extends MachineMetricValidator, ProcessBase {}
 
-export interface StatsNode extends ProcessBase {
-	disk_beaconchain_bytes_total: number
-	network_libp2p_bytes_total_receive: number
-	network_libp2p_bytes_total_transmit: number
-	network_peers_connected: number
-	sync_eth1_connected: boolean
-	sync_eth2_synced: boolean
-	sync_beacon_head_slot: number
-}
+export interface StatsNode extends MachineMetricNode, ProcessBase {}
 
-export interface StatsSystem extends StatsBase {
-	cpu_cores: number
-	cpu_node_idle_seconds_total: number
-	cpu_node_iowait_seconds_total: number
-	cpu_node_system_seconds_total: number
-	cpu_node_user_seconds_total: number
-	cpu_threads: number
-	disk_node_bytes_free: number
-	disk_node_bytes_total: number
-	disk_node_io_seconds: number
-	disk_node_reads_total: number
-	disk_node_writes_total: number
-	memory_node_bytes_buffers: number
-	memory_node_bytes_cached: number
-	memory_node_bytes_free: number
-	memory_node_bytes_total: number
-	misc_node_boot_ts_seconds: number
-	misc_os: string
-	network_node_bytes_total_receive: number
-	network_node_bytes_total_transmit: number
-}
+export interface StatsSystem extends MachineMetricSystem, StatsBase {}

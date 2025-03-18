@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,12 +17,11 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { StorageService } from '../services/storage.service'
+import { StorageService } from '@services/storage.service'
 import { Injectable } from '@angular/core'
 import { NavigationBarPlugin } from 'capacitor-navigationbarnx'
 import { Capacitor, Plugins } from '@capacitor/core'
 import { Platform } from '@ionic/angular'
-import * as Snowflakes from 'magic-snowflakes'
 import confetti from 'canvas-confetti'
 
 import { StatusBar, Style } from '@capacitor/status-bar'
@@ -48,11 +46,14 @@ export default class ThemeUtils {
 	currentThemeColor = ''
 	private lock: Promise<void | ThemeStorage>
 
-	private snowFlakes
+	private snowFlakes: { destroy: () => void }
 
-	private currentStatusBarColor = null
+	private currentStatusBarColor: string = null
 
-	constructor(private storage: StorageService, private platform: Platform) {}
+	constructor(
+		private storage: StorageService,
+		private platform: Platform
+	) {}
 
 	init(splashScreenCallback: () => void) {
 		this.lock = this.storage.getObject(STORAGE_KEY).then((preferenceDarkMode) => {
@@ -81,7 +82,7 @@ export default class ThemeUtils {
 		) // fade out duration = 200ms
 	}
 
-	private internalInit(preferenceDarkMode) {
+	private internalInit(preferenceDarkMode: StoredTheme) {
 		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
 		if (preferenceDarkMode) {
 			this.userPreference = preferenceDarkMode.theme
@@ -103,7 +104,7 @@ export default class ThemeUtils {
 		if (themeColor && themeColor != '') document.body.classList.remove(themeColor)
 	}
 
-	async toggle(darkModeEnabled: boolean, setColorHandler = true, themeColor: string = this.currentThemeColor) {
+	toggle(darkModeEnabled: boolean, setColorHandler = true, themeColor: string = this.currentThemeColor) {
 		document.body.classList.toggle('dark', darkModeEnabled)
 		if (themeColor && themeColor != '') document.body.classList.toggle(themeColor, true)
 		if (setColorHandler) this.colorHandler()
@@ -111,24 +112,12 @@ export default class ThemeUtils {
 		this.storage.setObject(STORAGE_KEY, { theme: themeString, themeColor: themeColor } as StoredTheme)
 		this.userPreference = themeString
 		this.currentThemeColor = themeColor
-		this.toggleWinter(await this.isWinterEnabled(), false)
 	}
 
 	resetTheming() {
 		this.undoColor()
 		this.colorHandler()
 		this.storage.setObject(STORAGE_KEY, { theme: this.userPreference, themeColor: '' } as StoredTheme)
-	}
-
-	async isWinterEnabled() {
-		if (!this.isWinterSeason()) return false
-		const temp = await this.storage.getBooleanSetting('snow_enabled', true)
-		return temp
-	}
-
-	isWinterSeason() {
-		const d = new Date()
-		return d.getMonth() == 11 && d.getDate() >= 24 && d.getDate() <= 24
 	}
 
 	isSilvester() {
@@ -144,7 +133,7 @@ export default class ThemeUtils {
 		const animationEnd = Date.now() + duration
 		const defaults = { startVelocity: 30, spread: 100, ticks: 70, zIndex: 0 }
 
-		function randomInRange(min, max) {
+		function randomInRange(min: number, max: number) {
 			return Math.random() * (max - min) + min
 		}
 
@@ -160,14 +149,6 @@ export default class ThemeUtils {
 			confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }))
 			confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }))
 		}, 350)
-	}
-
-	toggleWinter(enabled, saveWinterSetting = true) {
-		this.stopSnow(this.snowFlakes)
-		if (this.isWinterSeason() && saveWinterSetting) this.storage.setBooleanSetting('snow_enabled', enabled)
-
-		if (!enabled) return
-		this.snowFlakes = this.winterSeason(this.userPreference == Theme.DARK)
 	}
 
 	async getThemeColor() {
@@ -192,7 +173,7 @@ export default class ThemeUtils {
 	 * @param isDarkThemed Android bottom button bar
 	 * @returns
 	 */
-	private async changeNavigationBarColor(isDarkThemed) {
+	private async changeNavigationBarColor(isDarkThemed: boolean) {
 		if (!Capacitor.isPluginAvailable('StatusBar')) return
 		try {
 			const themeColor = await this.getThemeColor()
@@ -211,7 +192,7 @@ export default class ThemeUtils {
 		}
 	}
 
-	private async changeStatusBarColor(color: string, isDarkThemed) {
+	private async changeStatusBarColor(color: string, isDarkThemed: boolean) {
 		let darker = isDarkThemed ? '#000000' : color.trim() //this.shadeColor(color, -12)
 		if (this.platform.is('android')) {
 			const themeColor = await this.getThemeColor()
@@ -227,7 +208,8 @@ export default class ThemeUtils {
 		}
 	}
 
-	setStatusBarColor(color) {
+	setStatusBarColor(color: string, recursiveCount = 0) {
+		if (recursiveCount > 5) return
 		try {
 			if (Capacitor.isPluginAvailable('StatusBar')) {
 				StatusBar.setStyle({
@@ -236,6 +218,9 @@ export default class ThemeUtils {
 				StatusBar.setBackgroundColor({
 					color: color,
 				})
+				setTimeout(() => {
+					this.setStatusBarColor(color, ++recursiveCount)
+				}, 40)
 			} else {
 				console.info('Statusbar is not available on this platform')
 			}
@@ -246,39 +231,6 @@ export default class ThemeUtils {
 
 	revertStatusBarColor() {
 		this.setStatusBarColor(this.currentStatusBarColor)
-	}
-
-	private getSnowFlakeColor(darkTheme: boolean) {
-		return darkTheme ? '#fff' : '#5ECDEF'
-	}
-
-	private winterSeason(darkTheme: boolean) {
-		if (!this.isWinterSeason()) return false
-		return this.snow(darkTheme)
-	}
-
-	public snow(darkTheme: boolean = this.userPreference == Theme.DARK) {
-		return Snowflakes({
-			color: this.getSnowFlakeColor(darkTheme), // Default: "#5ECDEF"
-			count: 14, // 100 snowflakes. Default: 50
-			minOpacity: 0.1, // From 0 to 1. Default: 0.6
-			maxOpacity: 0.95, // From 0 to 1. Default: 1
-			minSize: 8, // Default: 8
-			maxSize: 15, // Default: 18
-			rotation: true, // Default: true
-			speed: 1, // The property affects the speed of falling. Default: 1
-			wind: false, // Without wind. Default: true
-		})
-	}
-
-	public stopSnow(snow) {
-		if (snow) {
-			try {
-				snow.destroy()
-			} catch (error) {
-				console.warn('error in stopSnow()', error)
-			}
-		}
 	}
 }
 

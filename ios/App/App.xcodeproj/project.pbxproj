@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2799A3DBF6024D568580B288 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9AD28401CDFC4DFC99D4171C /* PrivacyInfo.xcprivacy */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -26,8 +27,6 @@
 		C76F886C263021BF0066804A /* Beaconchain WidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C76F885C263021BC0066804A /* Beaconchain WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C790154F257E70EA0077FB87 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C790154E257E70EA0077FB87 /* GoogleService-Info.plist */; };
 		C7A11E3D26AF015F00BCBA28 /* public in Resources */ = {isa = PBXBuildFile; fileRef = C7A11E3C26AF015F00BCBA28 /* public */; };
-		C7AAA53A26398A5A00CCFC42 /* StorageMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7AAA53926398A5A00CCFC42 /* StorageMirror.swift */; };
-		C7AAA54226398DD600CCFC42 /* StorageMirror.m in Sources */ = {isa = PBXBuildFile; fileRef = C7AAA54126398DD600CCFC42 /* StorageMirror.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +63,7 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		64322C5426BBEFF60080504C /* Beaconchain WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Beaconchain WidgetExtension.entitlements"; sourceTree = "<group>"; };
+		9AD28401CDFC4DFC99D4171C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
 		C7065CAD2632EEE800DF9149 /* WebAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAPI.swift; sourceTree = "<group>"; };
@@ -80,9 +80,7 @@
 		C790154E257E70EA0077FB87 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C7901566257FC9CD0077FB87 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		C7A11E3C26AF015F00BCBA28 /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
-		C7AAA53926398A5A00CCFC42 /* StorageMirror.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageMirror.swift; sourceTree = "<group>"; };
 		C7AAA54026398DD600CCFC42 /* App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "App-Bridging-Header.h"; sourceTree = "<group>"; };
-		C7AAA54126398DD600CCFC42 /* StorageMirror.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StorageMirror.m; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -126,6 +124,7 @@
 				504EC3051FED79650016851F /* Products */,
 				7F8756D8B27F46E3366F6CEA /* Pods */,
 				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
+				9AD28401CDFC4DFC99D4171C /* PrivacyInfo.xcprivacy */,
 			);
 			sourceTree = "<group>";
 		};
@@ -152,8 +151,6 @@
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
 				504EC3131FED79650016851F /* Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
-				C7AAA53926398A5A00CCFC42 /* StorageMirror.swift */,
-				C7AAA54126398DD600CCFC42 /* StorageMirror.m */,
 				C7AAA54026398DD600CCFC42 /* App-Bridging-Header.h */,
 			);
 			path = App;
@@ -275,6 +272,7 @@
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				C790154F257E70EA0077FB87 /* GoogleService-Info.plist in Resources */,
 				C7A11E3D26AF015F00BCBA28 /* public in Resources */,
+				2799A3DBF6024D568580B288 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,8 +328,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C76F8869263021BF0066804A /* Beaconchain_Widget.intentdefinition in Sources */,
-				C7AAA53A26398A5A00CCFC42 /* StorageMirror.swift in Sources */,
-				C7AAA54226398DD600CCFC42 /* StorageMirror.m in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -504,15 +500,15 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 110;
-				DEVELOPMENT_TEAM = 3HYX3N9WTV;
+				CURRENT_PROJECT_VERSION = 120;
+				DEVELOPMENT_TEAM = M6RLJ8D785;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.5.5;
+				MARKETING_VERSION = 5.0.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = in.beaconcha.mobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -535,15 +531,15 @@
 				CODE_SIGN_ENTITLEMENTS = App/AppRelease.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 110;
-				DEVELOPMENT_TEAM = 3HYX3N9WTV;
+				CURRENT_PROJECT_VERSION = 120;
+				DEVELOPMENT_TEAM = M6RLJ8D785;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 4.5.5;
+				MARKETING_VERSION = 5.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = in.beaconcha.mobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -566,8 +562,8 @@
 				CODE_SIGN_ENTITLEMENTS = "Beaconchain WidgetExtension.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 110;
-				DEVELOPMENT_TEAM = 3HYX3N9WTV;
+				CURRENT_PROJECT_VERSION = 120;
+				DEVELOPMENT_TEAM = M6RLJ8D785;
 				INFOPLIST_FILE = "Beaconchain Widget/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -575,10 +571,10 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 4.5.5;
+				MARKETING_VERSION = 5.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "in.beaconcha.mobile.Beaconchain-Widget";
+				PRODUCT_BUNDLE_IDENTIFIER = "in.beaconcha.mobile.Beaconchain-Widget2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -598,8 +594,8 @@
 				CODE_SIGN_ENTITLEMENTS = "Beaconchain WidgetExtension.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 110;
-				DEVELOPMENT_TEAM = 3HYX3N9WTV;
+				CURRENT_PROJECT_VERSION = 120;
+				DEVELOPMENT_TEAM = M6RLJ8D785;
 				INFOPLIST_FILE = "Beaconchain Widget/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -607,9 +603,9 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 4.5.5;
+				MARKETING_VERSION = 5.0.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "in.beaconcha.mobile.Beaconchain-Widget";
+				PRODUCT_BUNDLE_IDENTIFIER = "in.beaconcha.mobile.Beaconchain-Widget2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;

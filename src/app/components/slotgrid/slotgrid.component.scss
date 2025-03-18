@@ -1,0 +1,138 @@
+// Copyright (C) 2025 Bitfly GmbH
+//
+// This file is part of Beaconchain Dashboard.
+//
+// Beaconchain Dashboard is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Beaconchain Dashboard is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
+
+@use '../../../theme/variables.scss';
+
+.slot-grid {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	background-color: var(--ion-card-background);
+	padding: 0 0 10px 0;
+
+	.row {
+		display: flex;
+		margin: 0 auto;
+	}
+
+	.square {
+		position: relative;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		border: 2px solid #ccc;
+		box-sizing: border-box;
+		background-color: var(--ion-card-background);
+		transition:
+			border-color 0.3s ease,
+			background-color 0.3s ease;
+		border-radius: 4px;
+
+		.overlay {
+			position: absolute;
+			bottom: 100%; // positions it directly above the square
+			left: 50%;
+			transform: translateX(-50%);
+			min-width: 150px; // ensures the overlay is wider than the square
+			padding: 5px;
+			background-color: var(--ion-card-background);
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			z-index: 10;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+			font-size: 0.8em;
+
+			div {
+				margin-bottom: 2px;
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+}
+
+ion-list-header {
+	margin-bottom: 5px;
+}
+
+.smallicon {
+	position: absolute; /* Position relative to the parent square */
+	top: 5px;
+	left: 5px; /* Align to the top-left corner */
+}
+
+.bigicon {
+	position: absolute; /* Position relative to the parent square */
+	bottom: 5px;
+	right: 5px; /* Align to the bottom-right corner */
+}
+
+.network-scheduled {
+	border: 2px solid #ccc !important;
+}
+
+.network-proposed {
+	border: 2px solid var(--ion-color-success) !important;
+}
+
+.network-missed {
+	border: 2px solid var(--ion-color-danger) !important;
+}
+
+#epoch-title {
+	text-align: center;
+	width: 100%;
+	font-family: 'Varela';
+	font-size: 1em;
+}
+
+.unknown {
+	opacity: 0.5;
+	animation: var(--blink-animation);
+}
+
+.warning {
+	opacity: 1;
+	background-color: var(--ion-color-warning) !important;
+
+	ion-icon {
+		color: #000;
+	}
+}
+
+.danger {
+	opacity: 1;
+	background-color: var(--ion-color-danger) !important;
+
+	ion-icon {
+		color: #000;
+	}
+}
+
+.success {
+	opacity: 1;
+	background-color: var(--ion-color-success) !important;
+
+	ion-icon {
+		color: #000;
+	}
+}
+
+ion-color {
+	transition: color 0.3s ease; /* Smooth transition for icon color */
+}

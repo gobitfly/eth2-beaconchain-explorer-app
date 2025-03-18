@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Bitfly GmbH
+// Copyright (C) 2022 bitfly explorer GmbH
 //
 // This file is part of Beaconchain Dashboard.
 //
@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
 
-@import '../../../theme/variables.scss';
+@use '../../../theme/variables.scss';
 
 // Makes the iOS top bounce in our primary color
 // and the bottom bounce in main themes color
@@ -48,19 +48,10 @@ ion-refresher-content {
 	margin: 0 10px;
 }
 
-ion-segment-button {
-	--indicator-height: 0px !important;
-	text-transform: none !important;
-	--ripple-color: transparent !important;
-	//transition: color 0.15s ease;
-	font-size: 1.05em !important;
-	letter-spacing: normal !important;
-	opacity: 1 !important;
-}
-
 .segment-button-checked {
 	color: var(--segment-primary) !important;
 	font-weight: 600 !important;
+	opacity: 1 !important;
 }
 
 .status ion-icon {
@@ -150,9 +141,10 @@ ion-list {
 }
 
 ion-item {
-	max-width: 92%;
+	// max-width: var(--ion-item-max-width);
 
-	margin: auto;
+	// margin: auto;
+	margin: var(--edge-padding);
 }
 
 .value {
@@ -208,15 +200,30 @@ ion-item {
 }
 
 .stat-title {
-	opacity: 0.85;
-}
-
-.income-title {
-	opacity: 0.85;
-	font-size: 1em;
-	//color: var(--ion-text-color-lighter);
+	opacity: var(--default-secondary-transparency);
+	font-weight: var(--smaller-label-weight);
 }
 
 .grid {
 	width: 100%;
+}
+
+.proposed {
+}
+
+.orphaned {
+	color: var(--ion-color-warning);
+}
+
+ion-badge {
+	padding: 4px 5px 2px 5px;
+	margin: 5px;
+}
+
+.missed {
+	color: var(--ion-color-danger);
+}
+
+.scheduled {
+	color: var(--ion-color-secondary);
 }

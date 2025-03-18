@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -19,19 +18,19 @@
  */
 
 import { Component, OnInit, Input } from '@angular/core'
-import { AlertController, ModalController } from '@ionic/angular'
-import { StorageService } from 'src/app/services/storage.service'
+import { AlertController } from '@ionic/angular'
+import { StorageService } from '@services/storage.service'
 import confetti from 'canvas-confetti'
 
 import { Browser } from '@capacitor/browser'
-import { MergeChecklistPage } from 'src/app/pages/merge-checklist/merge-checklist.page'
 import { Output, EventEmitter } from '@angular/core'
-import FirebaseUtils from 'src/app/utils/FirebaseUtils'
+import FirebaseUtils from '@utils/FirebaseUtils'
 
 @Component({
 	selector: 'app-message',
 	templateUrl: './message.component.html',
 	styleUrls: ['./message.component.scss'],
+	standalone: false,
 })
 export class MessageComponent implements OnInit {
 	@Input() title: string
@@ -44,7 +43,6 @@ export class MessageComponent implements OnInit {
 	@Input() msgTitle: string
 	@Input() msgText: string
 	@Input() confettiOnClick = false
-	@Input() mergeChecklist = false
 	@Input() notificationPermission = false
 	@Output() onResult = new EventEmitter<string>()
 
@@ -53,7 +51,6 @@ export class MessageComponent implements OnInit {
 	constructor(
 		private alertController: AlertController,
 		private storage: StorageService,
-		private modalController: ModalController,
 		private firebaseUtils: FirebaseUtils
 	) {}
 
@@ -89,8 +86,6 @@ export class MessageComponent implements OnInit {
 			} else {
 				await Browser.open({ url: this.openUrl, toolbarColor: '#2f2e42' })
 			}
-		} else if (this.mergeChecklist) {
-			this.openMergeChecklist()
 		} else if (this.notificationPermission) {
 			const alert = await this.alertController.create({
 				header: 'Notifications',
@@ -126,7 +121,7 @@ export class MessageComponent implements OnInit {
 		}
 	}
 
-	async showDialog(title, text) {
+	async showDialog(title: string, text: string) {
 		const alert = await this.alertController.create({
 			header: title,
 			message: text,
@@ -143,16 +138,5 @@ export class MessageComponent implements OnInit {
 	dismiss() {
 		this.notDismissed = false
 		this.storage.setBooleanSetting(this.dismissKey, true)
-	}
-
-	async openMergeChecklist() {
-		const modal = await this.modalController.create({
-			component: MergeChecklistPage,
-			cssClass: 'my-custom-class',
-		})
-		modal.onDidDismiss().then(() => {
-			this.onResult.emit('reload-dismiss')
-		})
-		return await modal.present()
 	}
 }

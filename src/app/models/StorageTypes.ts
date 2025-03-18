@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,10 +17,15 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**@deprecated */
 export interface AuthUser {
 	accessToken: string
 	refreshToken: string
 	expiresIn: number
+}
+
+export interface AuthUserv2 {
+	Session: string
 }
 
 export interface ApiNetwork {
@@ -33,13 +37,9 @@ export interface ApiNetwork {
 	version: string
 	onlyDebug: boolean
 	active: boolean
-	genesisTs: number
-	elCurrency: NetworkMainCurrency
-	clCurrency: NetworkMainCurrency
-	slotPerEpoch: number
-	slotsTime: number
-	epochsPerSyncPeriod: number
+	supportedChainIds: number
 	name: string
+	v2NetworkConfigKey?: string
 }
 
 export class NetworkMainCurrency {

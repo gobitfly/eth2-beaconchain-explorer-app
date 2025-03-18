@@ -9,8 +9,14 @@
 			"launchAutoHide": false,
 			"androidScaleType": "CENTER_CROP"
 		},
+		"CapacitorCookies": {
+			"enabled": true
+		},
 		"CapacitorHttp": {
 			"enabled": true
+		},
+		"CapacitorUpdater": {
+			"autoUpdate": false
 		}
 	},
 	"android": {

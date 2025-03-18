@@ -1,4 +1,4 @@
-<div class="ad-container" *ngIf="location != info && !isAdFree" (click)="openUpgrades()">
+<div class="ad-container" *ngIf="location != info && !this.merchantUtils.userInfo()?.premium_perks.ad_free" (click)="openUpgrades()">
 	<div [innerHtml]="adHtml" [class]="location"></div>
 	<div *ngIf="location != info" class="ad-info-container">
 		<span class="ad-info">Ad</span>

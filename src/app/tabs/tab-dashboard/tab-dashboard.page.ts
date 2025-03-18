@@ -1,0 +1,254 @@
+/*
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
+ *  //
+ *  // This file is part of Beaconchain Dashboard.
+ *  //
+ *  // Beaconchain Dashboard is free software: you can redistribute it and/or modify
+ *  // it under the terms of the GNU General Public License as published by
+ *  // the Free Software Foundation, either version 3 of the License, or
+ *  // (at your option) any later version.
+ *  //
+ *  // Beaconchain Dashboard is distributed in the hope that it will be useful,
+ *  // but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  // GNU General Public License for more details.
+ *  //
+ *  // You should have received a copy of the GNU General Public License
+ *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import { Component, computed, OnInit } from '@angular/core'
+import { ApiService } from '@services/api.service'
+import { OverviewData2, OverviewProvider, SummaryChartOptions } from '../../controllers/OverviewController'
+import ClientUpdateUtils from '@utils/ClientUpdateUtils'
+import { StorageService } from '@services/storage.service'
+import { UnitconvService } from '@services/unitconv.service'
+import { App, AppState } from '@capacitor/app'
+import { MerchantUtils } from '@utils/MerchantUtils'
+import { ModalController } from '@ionic/angular'
+import { DashboardAndGroupSelectComponent } from '@modals/dashboard-and-group-select/dashboard-and-group-select.component'
+import { dashboardID, Period } from '@requests/v2-dashboard'
+import { AlertService } from '@services/alert.service'
+import { Toast } from '@capacitor/toast'
+import { DashboardUtils } from '@utils/DashboardUtils'
+import { APIError, APINotFoundError, APIUnauthorizedError } from '@requests/requests'
+
+export const REAPPLY_KEY = 'reapply_notification2'
+
+const DASHBOARD_UPDATE = 'dashboard_update'
+export const ASSOCIATED_CACHE_KEY = 'dashboard'
+
+@Component({
+	selector: 'app-tab1',
+	templateUrl: 'tab-dashboard.page.html',
+	styleUrls: ['tab-dashboard.page.scss'],
+	standalone: false,
+})
+export class Tab1Page implements OnInit {
+	readonly Period = Period
+
+	lastRefreshTs = 0
+	overallData: OverviewData2
+	currentY = 0
+	scrolling = false
+	isLoggedIn = false
+	dashboardID: dashboardID = null
+
+	loading: boolean = true
+	fadeInCompleted: boolean = false
+
+	online: boolean = true
+	dashboardName: string = ''
+
+	constructor(
+		public api: ApiService,
+		public updates: ClientUpdateUtils,
+		private storage: StorageService,
+		private unitConv: UnitconvService,
+		public merchant: MerchantUtils,
+		private modalCtrl: ModalController,
+		private alert: AlertService,
+		private overviewProvider: OverviewProvider,
+		private dashboardUtils: DashboardUtils
+	) {
+		this.dashboardUtils.dashboardAwareListener.register(DASHBOARD_UPDATE)
+		App.addListener('appStateChange', (state: AppState) => {
+			if (state.isActive) {
+				if (this.lastRefreshTs + 6 * 60 > this.getUnixSeconds()) return
+				this.setup(false)
+			} else {
+				console.log('App has become inactive')
+			}
+		})
+	}
+
+	ngOnInit() {}
+
+	ionViewWillEnter() {
+		if (this.dashboardUtils.dashboardAwareListener.hasAndConsume(DASHBOARD_UPDATE)) {
+			this.setup(false, true)
+			return
+		}
+
+		if (this.lastRefreshTs + 6 * 60 > this.getUnixSeconds()) return
+		this.setup()
+	}
+
+	async changedGroup() {
+		await Promise.all([
+			this.overviewProvider.setGroup(this.overallData, await this.storage.getDashboardGroupID()),
+			this.changeTimeframe(await this.storage.getDashboardTimeframe()),
+		])
+	}
+
+	async changeTimeframe(period: Period) {
+		if (!this.overallData) {
+			return
+		}
+		this.storage.setDashboardTimeframe(period)
+		const groupID = await this.storage.getDashboardGroupID()
+
+		const loading = await this.alert.presentLoading('Loading...')
+		loading.present()
+		const result = await this.overviewProvider.setTimeframe(this.overallData, period, groupID)
+		this.online = true
+		if (result[0].error) {
+			console.error('Error fetching summary table', result[0].error)
+			Toast.show({
+				text: 'Error fetching summary table',
+			})
+			this.online = false
+		}
+		if (result[1].error) {
+			console.error('Error fetching summary group', result[1].error)
+			Toast.show({
+				text: 'Error fetching summary group',
+			})
+			this.online = false
+		}
+		loading.dismiss()
+	}
+
+	onScroll($event: { detail: { currentY: number } }) {
+		this.currentY = $event.detail.currentY
+	}
+
+	onScrollStarted() {
+		this.scrolling = true
+		this.removeTooltips()
+	}
+
+	onScrollEnded() {
+		this.scrolling = false
+	}
+
+	private removeTooltips() {
+		const inputs = Array.from(document.getElementsByTagName('tooltip') as HTMLCollectionOf<HTMLElement>)
+		for (let i = 0; i < inputs.length; i++) {
+			inputs[i].style.display = 'none'
+		}
+	}
+
+	async openDashboardAndGroupSelect() {
+		const modal = await this.modalCtrl.create({
+			component: DashboardAndGroupSelectComponent,
+			componentProps: {
+				dashboardChangedCallback: () => {
+					this.overallData = null
+					this.setup(false)
+				},
+			},
+		})
+		modal.present()
+
+		await modal.onWillDismiss()
+	}
+
+	async setup(checkUpdates: boolean = true, force: boolean = false, recursiveMax = false): Promise<void> {
+		if (checkUpdates) {
+			this.updates.checkAllUpdates()
+		}
+		this.isLoggedIn = await this.storage.isLoggedIn()
+		this.dashboardID = await this.dashboardUtils.initDashboard()
+		this.online = true
+		this.loading = true
+		try {
+			this.overallData = await this.overviewProvider.create(
+				this.dashboardID,
+				await this.storage.getDashboardTimeframe(),
+				await this.storage.getDashboardGroupID(),
+				{
+					aggregation: await this.storage.getDashboardSummaryAggregation(),
+					startTime: null,
+					force: false,
+				} as SummaryChartOptions,
+				ASSOCIATED_CACHE_KEY
+			)
+		} catch (e) {
+			if (e instanceof APINotFoundError) {
+				if (recursiveMax) {
+					Toast.show({
+						text: 'Dashboard not found',
+					})
+					return
+				}
+				await this.storage.setDashboardID(null)
+
+				// if dashboard is not available any more (maybe user deleted it) reinit and try again
+				this.dashboardID = await this.dashboardUtils.initDashboard()
+				return this.setup(false, force, true)
+			} else if (e instanceof APIUnauthorizedError) {
+				this.dashboardUtils.defaultDashboardErrorHandler(e)
+			} else if (e instanceof APIError) {
+				this.dashboardUtils.defaultDashboardErrorHandler(e)
+				this.online = false
+			} else {
+				console.error(e)
+				Toast.show({
+					text: 'Error loading dashboard',
+				})
+				this.online = false
+			}
+		}
+		this.loading = false
+		if (this.overallData) {
+			//this.api.setCurrentDashboardChainID(this.overallData.chainNetwork().id)
+		}
+
+		console.log('overallData', this.overallData)
+		//this.dashboardName = this.overallData.overviewData().name
+		this.lastRefreshTs = this.getUnixSeconds()
+	}
+
+	getUnixSeconds() {
+		return new Date().getTime() / 1000
+	}
+
+	private lastRefreshedTs: number = 0
+	async doRefresh(event: { target: { complete: () => void } }) {
+		console.log('henlo 2')
+		if (this.lastRefreshedTs + 60 * 1000 > new Date().getTime()) {
+			Toast.show({
+				text: 'Nothing to update',
+			})
+			if (event) event.target.complete()
+			return
+		}
+		this.lastRefreshedTs = new Date().getTime()
+
+		const old = Object.assign({}, this.overallData)
+		await this.overviewProvider.clearRequestCache(this.overallData)
+		this.overallData = null
+		await this.setup(true, true).catch(() => {
+			this.overallData = old
+			if (event) event.target.complete()
+		})
+		await this.unitConv.updatePriceData()
+		if (event) event.target.complete()
+	}
+
+	formattedSelectedTimeframe = computed(() => {
+		if (!this.overallData) return ''
+		return this.overallData.timeframeDisplay()
+	})
+}

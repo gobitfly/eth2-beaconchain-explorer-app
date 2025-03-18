@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -18,15 +17,18 @@
  *  // along with Beaconchain Dashboard.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { CommonModule } from '@angular/common'
 import { Component, Input } from '@angular/core'
 import { Browser } from '@capacitor/browser'
 import { Toast } from '@capacitor/toast'
-import ClientUpdateUtils, { Release } from '../../utils/ClientUpdateUtils'
+import { IonicModule } from '@ionic/angular'
+import ClientUpdateUtils, { Release } from '@utils/ClientUpdateUtils'
 
 @Component({
 	selector: 'app-clientupdate',
 	templateUrl: './clientupdate.component.html',
 	styleUrls: ['./clientupdate.component.scss'],
+	imports: [CommonModule, IonicModule],
 })
 export class ClientupdateComponent {
 	@Input() data: Release

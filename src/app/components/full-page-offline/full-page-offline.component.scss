@@ -1,0 +1,55 @@
+/**
+ * Copyright (C) 2024 Bitfly GmbH
+ * 
+ * This file is part of Beaconchain Dashboard.
+ * 
+ * Beaconchain Dashboard is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Beaconchain Dashboard is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Beaconchain Dashboard.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+.content {
+	display: block;
+	height: 100%;
+	position: relative;
+}
+
+.container {
+	background-color: var(--ion-background-color);
+	height: 100vh;
+}
+
+.center {
+	width: 100%;
+	// display: flex;
+	// justify-content: center;
+	// text-align: center;
+	//padding-top: 42.5vh;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background-color: var(--ion-background-color);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+ion-icon {
+	font-size: 4rem;
+}
+
+.link {
+	color: var(--ion-color-primary);
+	font-weight: bold;
+	font-size: var(--smaller-info-size);
+}

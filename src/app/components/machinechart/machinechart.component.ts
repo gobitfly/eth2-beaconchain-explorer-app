@@ -1,14 +1,15 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core'
-import { highChartOptions } from 'src/app/utils/HighchartOptions'
+import { highChartOptions } from '@utils/HighchartOptions'
 import * as HighCharts from 'highcharts'
 import * as Highstock from 'highcharts/highstock'
-import { MachineChartData } from 'src/app/controllers/MachineController'
-import { ApiService } from 'src/app/services/api.service'
+import { MachineChartData } from '@controllers/MachineController'
+import { ApiService } from '@services/api.service'
 
 @Component({
 	selector: 'app-machinechart',
 	templateUrl: './machinechart.component.html',
 	styleUrls: ['./machinechart.component.scss'],
+	standalone: false,
 })
 export class MachinechartComponent implements OnInit {
 	@Input() title?: string = null
@@ -65,7 +66,7 @@ export class MachinechartComponent implements OnInit {
 		this.id = makeid(6)
 	}
 
-	public doChart(key, type = '', data: MachineChartData) {
+	public doChart(key: string, type = '', data: MachineChartData) {
 		const id = 'machinechart_' + type + '_' + this.hashCode(key)
 
 		let overrideConfig = {}
@@ -146,7 +147,7 @@ export class MachinechartComponent implements OnInit {
 	}
 }
 
-function makeid(length) {
+function makeid(length: number) {
 	let result = ''
 	const characters = 'abcdefghijklmnopqrstuvwxyz0123456789'
 	const charactersLength = characters.length

@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -22,12 +21,27 @@ import { Pipe, PipeTransform } from '@angular/core'
 
 @Pipe({
 	name: 'fadeoutpipe',
+	standalone: false,
 })
 export class FadeoutpipePipe implements PipeTransform {
 	transform(currentY: number, fullHide: number): number {
 		if (currentY <= 0) return 1
 		const opacity = 1 - currentY / fullHide
 		if (opacity <= 0) return 0
+		return opacity
+	}
+}
+
+@Pipe({
+	name: 'fadeinpipe',
+	standalone: false,
+})
+export class FadeinpipePipe implements PipeTransform {
+	transform(currentY: number, fullHide: number, offset = 0): number {
+		currentY -= offset
+		if (currentY <= 0) return 0
+		const opacity = currentY / fullHide
+		if (opacity >= 1) return 1
 		return opacity
 	}
 }

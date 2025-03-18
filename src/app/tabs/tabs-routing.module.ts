@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -29,23 +28,23 @@ const routes: Routes = [
 		children: [
 			{
 				path: 'dashboard',
-				loadChildren: () => import('../tab-dashboard/tab-dashboard.module').then((m) => m.Tab1PageModule),
+				loadChildren: () => import('./tab-dashboard/tab-dashboard.module').then((m) => m.Tab1PageModule),
 			},
 			{
 				path: 'validators',
-				loadChildren: () => import('../tab-validators/tab-validators.module').then((m) => m.Tab2PageModule),
+				loadChildren: () => import('./tab-validators/tab-validators.module').then((m) => m.Tab2PageModule),
 			},
 			{
 				path: 'preferences',
-				loadChildren: () => import('../tab-preferences/tab-preferences.module').then((m) => m.Tab3PageModule),
+				loadChildren: () => import('./tab-preferences/tab-preferences.module').then((m) => m.Tab3PageModule),
 			},
 			{
 				path: 'machines',
-				loadChildren: () => import('../pages/machines/machines.module').then((m) => m.MachinesPageModule),
+				loadChildren: () => import('./tab-machines/machines.module').then((m) => m.MachinesPageModule),
 			},
 			{
 				path: 'blocks',
-				loadChildren: () => import('../tab-blocks/tab-blocks.module').then((m) => m.TabBlocksPageModule),
+				loadChildren: () => import('./tab-blocks/tab-blocks.module').then((m) => m.TabBlocksPageModule),
 			},
 			{
 				path: '',

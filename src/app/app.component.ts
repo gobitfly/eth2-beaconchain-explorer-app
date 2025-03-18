@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -25,48 +24,96 @@ import ThemeUtils from './utils/ThemeUtils'
 import { SplashScreen } from '@capacitor/splash-screen'
 import { StorageService } from './services/storage.service'
 import BigNumber from 'bignumber.js'
+import V2Migrator from './utils/V2Migrator'
+import { App } from '@capacitor/app'
+import { CapacitorUpdater } from '@capgo/capacitor-updater'
+import { AppUpdater } from './utils/AppUpdater'
+import { environment } from 'src/environments/environment'
+import { findConfigForKey } from './utils/NetworkData'
 import { ApiService } from './services/api.service'
-import { SyncService } from './services/sync.service'
-import { ValidatorUtils } from './utils/ValidatorUtils'
-
+import { Toast } from '@capacitor/toast'
 @Component({
 	selector: 'app-root',
 	templateUrl: 'app.component.html',
 	styleUrls: ['app.component.scss'],
+	standalone: false,
 })
 export class AppComponent {
+	static PREVENT_BACK_PRESS = false
+
 	constructor(
 		private platform: Platform,
 		private theme: ThemeUtils,
 		private modalController: ModalController,
 		private storage: StorageService,
-		private api: ApiService,
-		private sync: SyncService,
-		private validatorUtils: ValidatorUtils
+		private v2Migrator: V2Migrator,
+		private appUpdater: AppUpdater,
+		private api: ApiService
 	) {
 		this.initializeApp()
 	}
 
-	initializeApp() {
+	async initializeApp() {
 		BigNumber.config({ DECIMAL_PLACES: 25 })
-		this.platform.ready().then(() => {
-			this.storage.migrateToCapacitor3().then(async () => {
-				const networkName = this.api.getNetworkName()
-				// migrate to 3.2+
-				const result = await this.storage.getBooleanSetting(networkName + 'migrated_to_3.2', false)
-				if (!result) {
-					this.storage.setBooleanSetting(networkName + 'migrated_to_3.2', true)
-					this.sync.developDeleteQueue()
-					this.validatorUtils.migrateTo3Dot2()
-					console.log('== MIGRATED TO 3.2 ==')
+		await this.platform.ready()
+		await CapacitorUpdater.notifyAppReady() // call as soon as possible otherwise will rollback to last working bundle
+
+		try {
+			await this.appUpdater.checkForNewNative()
+			this.appUpdater.check() // do not wait
+		} catch (e) {
+			console.error('Failed to check for updates', e)
+		}
+
+		try {
+			await this.storage.migrateToCapacitor3()
+			if (environment.debug_set_default_network.length > 0) {
+				const completed = await this.storage.getBooleanSetting('debug_change_network', false)
+				if (!completed) {
+					this.storage.setBooleanSetting('debug_change_network', true)
+					const newConfig = findConfigForKey(environment.debug_set_default_network)
+
+					await this.storage.setNetworkPreferences(newConfig)
+					await this.api.initialize()
+					Toast.show({
+						text: `Beta: Network changed to ${newConfig.name} v2`,
+						duration: 'long',
+					})
 				}
+			}
+			await this.v2Migrator.migrate()
 
-				this.theme.init(() => {
-					SplashScreen.hide()
-				}) // just initialize the theme service
+			this.theme.init(() => {
+				SplashScreen.hide()
+			}) // just initialize the theme service
 
-				this.setAndroidBackButtonBehavior()
+			this.setAndroidBackButtonBehavior()
+		} catch (e) {
+			console.error('Failed to initialize app', e)
+		}
+	}
+
+	ngAfterViewInit() {
+		// Set up a mutation observer
+		const observer = new MutationObserver((mutationsList) => {
+			mutationsList.forEach((mutation) => {
+				if (mutation.addedNodes.length > 0) {
+					this.cleanUpPopoverContainers()
+				}
 			})
+		})
+
+		// Start observing the entire body for any DOM changes
+		observer.observe(document.body, { childList: true, subtree: true })
+	}
+
+	cleanUpPopoverContainers() {
+		// Fix ionic bug of popover-viewport inside popover-viewport
+		const popoverContainers = document.querySelectorAll('.popover-viewport')
+
+		popoverContainers.forEach((popover) => {
+			const viewPort1 = popover?.querySelector('.popover-viewport')
+			viewPort1?.remove()
 		})
 	}
 
@@ -74,8 +121,8 @@ export class AppComponent {
 		if (this.platform.is('android')) {
 			this.platform.backButton.subscribe(async () => {
 				const isModalOpened = await this.modalController.getTop()
-				if (window.location.pathname.startsWith('/tabs') && !isModalOpened) {
-					navigator['app'].exitApp()
+				if (window.location.pathname.startsWith('/tabs') && !isModalOpened && !AppComponent.PREVENT_BACK_PRESS) {
+					App.exitApp()
 				}
 			})
 		}

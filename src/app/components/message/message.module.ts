@@ -1,6 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //
@@ -25,9 +24,10 @@ import { FormsModule } from '@angular/forms'
 import { IonicModule } from '@ionic/angular'
 
 import { MessageComponent } from './message.component'
+import { FirebaseUtilsModule } from '@utils/Firebase.module'
 
 @NgModule({
-	imports: [CommonModule, FormsModule, IonicModule],
+	imports: [CommonModule, FormsModule, IonicModule, FirebaseUtilsModule],
 	declarations: [MessageComponent],
 	exports: [MessageComponent],
 })

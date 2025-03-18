@@ -1,6 +1,5 @@
 /* 
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
- *  // Manuel Caspari (manuel@bitfly.at)
+ *  // Copyright (C) 2020 - 2024 bitfly explorer GmbH
  *  // 
  *  // This file is part of Beaconchain Dashboard.
  *  // 
@@ -21,4 +20,22 @@
 ion-tab-bar {
 	--border-top: var(--tab-top-border);
 	border-top: var(--tab-top-border);
+
+	position: absolute;
+	z-index: 99;
+	width: 100%;
+	height: 50px;
+	bottom: -1px;
+}
+
+@supports ((-webkit-backdrop-filter: blur(0)) or (backdrop-filter: blur(0))) {
+	ion-tab-bar {
+		--background: rgba(var(--ion-background-color-rgb, 255, 255, 255), var(--bar-transparency)); // Default (light mode) transparency
+
+		//--background: rgba(var(--ion-background-color-rgb, 255, 255, 255), 0.9);
+		-webkit-backdrop-filter: saturate(180%) blur(5px);
+		backdrop-filter: saturate(180%) blur(5px);
+		will-change: transform; /* Create a new layer to avoid flickering */
+		transform: translateZ(0); /* Forces the browser to create a new layer */
+	}
 }
