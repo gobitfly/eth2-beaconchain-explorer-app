@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="widgetBackground" format="color" />
+    <attr name="widgetBackground2" format="color" />
+    <attr name="switchColor" format="color" />
+
+    <attr name="descriptionTextColor" format="color" />
+    <attr name="statusColor" format="color" />
+</resources>
