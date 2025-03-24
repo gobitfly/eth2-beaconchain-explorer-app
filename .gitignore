@@ -43,3 +43,4 @@ android/.idea/misc.xml
 /src/environments/environment.prod.ts
 ios/GoogleService-Info.plist
 /storage-mirror
+/tmp
