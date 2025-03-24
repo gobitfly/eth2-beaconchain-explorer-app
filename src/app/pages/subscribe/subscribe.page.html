@@ -69,14 +69,6 @@
 		</ion-item>
 
 		<ion-item lines="none">
-			<ion-label> Custom Themes </ion-label>
-			<ion-label class="value">
-				<ion-icon class="check" class="check" name="checkmark-outline" *ngIf="selectedPackage.customTheme"></ion-icon>
-				<ion-icon class="nocheck" class="nocheck" name="close-outline" *ngIf="!selectedPackage.customTheme"></ion-icon>
-			</ion-label>
-		</ion-item>
-
-		<ion-item lines="none">
 			<ion-label> Widgets <span *ngIf="isiOS">*¹</span> </ion-label>
 			<ion-label class="value">
 				<ion-icon class="check" name="checkmark-outline" *ngIf="selectedPackage.widgets"></ion-icon>
