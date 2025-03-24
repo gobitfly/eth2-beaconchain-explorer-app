@@ -182,13 +182,6 @@
 					</ion-item>
 
 					<ion-item lines="none">
-						<ion-label> Custom Themes </ion-label>
-						<ion-label class="value">
-							<app-bool-checked [value]="selectedProduct()?.premium_perks.mobile_app_custom_themes"></app-bool-checked>
-						</ion-label>
-					</ion-item>
-
-					<ion-item lines="none">
 						<ion-label> Widgets <span *ngIf="isiOS">*¹</span> </ion-label>
 						<ion-label class="value">
 							<app-bool-checked [value]="selectedProduct()?.premium_perks.mobile_app_widget"></app-bool-checked>
