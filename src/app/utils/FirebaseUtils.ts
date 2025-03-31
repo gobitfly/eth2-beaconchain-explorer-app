@@ -24,12 +24,11 @@ import { UpdateTokenRequest } from '../requests/requests'
 import { Injectable } from '@angular/core'
 import { AlertController, Platform } from '@ionic/angular'
 
-import { ActionPerformed, PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications'
+import { PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications'
 
 import { LocalNotifications } from '@capacitor/local-notifications'
 import FlavorUtils from './FlavorUtils'
 import { Capacitor } from '@capacitor/core'
-import { Browser } from '@capacitor/browser'
 
 const LOGTAG = '[FirebaseUtils]'
 
@@ -132,14 +131,9 @@ export default class FirebaseUtils {
 		})
 
 		// Method called when tapping on a notification
-		PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
+		/*PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
 			//alert("Push action performed: " + JSON.stringify(notification));
-			console.log(LOGTAG + 'Push action performed: ', notification)
-			if (notification.inputValue) {
-				Browser.open({ url: 'https://v2-beta-mainnet.beaconcha.in/notifications#dashboards', toolbarColor: '#2f2e42' })
-			}
-			//
-		})
+		})*/
 	}
 
 	private async inAppNotification(title, message) {
