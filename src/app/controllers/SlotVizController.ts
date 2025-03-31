@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Bitfly GmbH
+// Copyright (C) 2025 bitfly explorer GmbH
 //
 // This file is part of Beaconchain Dashboard.
 //
