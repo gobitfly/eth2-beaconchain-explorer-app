@@ -1,7 +1,7 @@
 {
   "name": "beaconchain-dashboard",
   "version": "2.0.0",
-  "author": "Bitfly GmbH",
+  "author": "bitfly explorer GmbH",
   "homepage": "https://beaconcha.in",
   "scripts": {
     "test": "ng test",
