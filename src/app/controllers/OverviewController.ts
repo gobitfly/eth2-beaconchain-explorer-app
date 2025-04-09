@@ -457,7 +457,7 @@ export default class OverviewController {
 				totalDeposit = VALIDATOR_32ETH
 			}
 
-			const rewards = new BigNumber(cur.data.performancetotal.toString()) //new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
+			const rewards = new BigNumber(cur.data.balance).minus(totalDeposit) //new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
 
 			const nodeShare = nodeDeposit.dividedBy(totalDeposit).toNumber()
 			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
