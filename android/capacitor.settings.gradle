@@ -43,3 +43,6 @@ project(':capacitor-toast').projectDir = new File('../node_modules/@capacitor/to
 
 include ':capacitor-navigationbarnx'
 project(':capacitor-navigationbarnx').projectDir = new File('../node_modules/capacitor-navigationbarnx/android')
+
+include ':storage-mirror'
+project(':storage-mirror').projectDir = new File('../storage-mirror/android')
