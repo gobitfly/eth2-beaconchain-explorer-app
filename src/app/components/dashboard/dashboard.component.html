@@ -641,17 +641,6 @@
 					>
 				</span>
 			</ion-item>
-			<ion-item lines="none">
-				<ion-label class="stat-title">Luck</ion-label>
-				<span
-					[class]="data.syncCommitteesStats.luck / 100 | valuestyle : 1"
-					tooltip="Sync committees expected: {{ data.syncCommitteesStats.committeesExpected }}"
-					trigger="click"
-					hideDelayAfterClick="5000">
-					<ion-label class="value" *ngIf="data.syncCommitteesStats.luck > 0">{{ data.syncCommitteesStats.luck | number : '1.0-1' }}%</ion-label>
-					<ion-label class="value" style="color: var(--text-color)" *ngIf="data.syncCommitteesStats.luck <= 0">-</ion-label>
-				</span>
-			</ion-item>
 		</ion-list>
 	</div>
 

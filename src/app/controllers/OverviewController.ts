@@ -923,19 +923,17 @@ export default class OverviewController {
 	private calculateSyncCommitteeStats(stats: SyncCommitteesStatisticsResponse, network: ApiNetwork): SyncCommitteesStatistics {
 		if (stats) {
 			// if no slots where expected yet, don't show any statistic as either no validator is subscribed or they have not been active in the selected timeframe
-			if (stats.expectedSlots > 0) {
+			if (stats.missedSlots > 0 || stats.participatedSlots > 0) {
 				const slotsTotal = stats.participatedSlots + stats.missedSlots
 				const slotsPerSyncPeriod = network.slotPerEpoch * network.epochsPerSyncPeriod
 				const r: SyncCommitteesStatistics = {
 					committeesParticipated: Math.ceil(slotsTotal / network.slotPerEpoch / network.epochsPerSyncPeriod),
-					committeesExpected: Math.round((stats.expectedSlots * 100) / network.slotPerEpoch / network.epochsPerSyncPeriod) / 100,
 					slotsPerSyncCommittee: slotsPerSyncPeriod,
 					slotsLeftInSyncCommittee: slotsPerSyncPeriod - stats.scheduledSlots,
 					slotsParticipated: stats.participatedSlots,
 					slotsMissed: stats.missedSlots,
 					slotsScheduled: stats.scheduledSlots,
 					efficiency: 0,
-					luck: (slotsTotal * 100) / stats.expectedSlots,
 				}
 				if (slotsTotal > 0) {
 					r.efficiency = Math.round(((stats.participatedSlots * 100) / slotsTotal) * 100) / 100

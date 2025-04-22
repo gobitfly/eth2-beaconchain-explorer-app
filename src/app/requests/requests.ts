@@ -194,14 +194,12 @@ export interface SyncCommitteeResponse {
 
 export interface SyncCommitteesStatistics {
 	committeesParticipated: number
-	committeesExpected: number
 	slotsPerSyncCommittee: number
 	slotsLeftInSyncCommittee: number
 	slotsParticipated: number
 	slotsMissed: number
 	slotsScheduled: number
 	efficiency: number
-	luck: number
 }
 
 export interface SyncCommitteesStatisticsResponse {
