@@ -1,0 +1,68 @@
+<?xpacket begin='' id='W5M0MpCehiHzreSzNTczkc9d'?>
+<x:xmpmeta xmlns:x='adobe:ns:meta/'>
+    <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'
+             xmlns:xapRights='http://ns.adobe.com/xap/1.0/rights/'
+             xmlns:cc='http://creativecommons.org/ns#'xmlns:dc='http://purl.org/dc/elements/1.1/'>
+        <rdf:Description rdf:about=''>
+            <xapRights:Marked>True</xapRights:Marked>
+            <xapRights:Owner>
+                <rdf:Bag>
+                    <rdf:li>Mahdi amolimoghaddam</rdf:li>
+                </rdf:Bag>
+            </xapRights:Owner>
+            <xapRights:WebStatement rdf:resource='https://github.com/gobitfly/eth2-beaconchain-explorer-app'/>
+            <xapRights:UsageTerms>
+                <rdf:Alt>
+                  <rdf:li xml:lang='x-default'>This work is licensed under &lt;a href=&quot;http://creativecommons.org/licenses/by/4.0/&quot;&gt;Attribution 4.0 International&lt;/a&gt;</rdf:li>
+                  <rdf:li xml:lang='en-US' >This work is licensed under &lt;a href=&quot;http://creativecommons.org/licenses/by/4.0/&quot;&gt;Attribution 4.0 International&lt;/a&gt;</rdf:li>
+                </rdf:Alt>
+            </xapRights:UsageTerms>
+            <cc:license rdf:resource='http://creativecommons.org/licenses/by/4.0/'/>
+            <cc:attributionName>Mahdi amolimoghaddam</cc:attributionName>
+            <dc:title>Using 3.3.5 as input from file .ruby-version
+::group::Modifying PATH
+Entries added to PATH to use selected Ruby:
+  /opt/hostedtoolcache/Ruby/3.3.5/x64/bin
+::endgroup::
+::group::Print Ruby version
+[command]/opt/hostedtoolcache/Ruby/3.3.5/x64/bin/ruby --version
+ruby 3.3.5 (2024-09-03 revision ef084cc8f4) [x86_64-linux]
+Took   0.02 seconds
+::endgroup::
+::group::Installing Bundler
+Using Bundler 2.5.19 from Gemfile.lock BUNDLED WITH 2.5.19
+[command]/opt/hostedtoolcache/Ruby/3.3.5/x64/bin/gem install bundler -v 2.5.19
+Successfully installed bundler-2.5.19
+1 gem installed
+Took   0.74 seconds
+::endgroup::
+> bundle install
+[command]/opt/hostedtoolcache/Ruby/3.3.5/x64/bin/bundle config --local path /workspace/Commish.in/commish.in/api/vendor/bundle
+[command]/opt/hostedtoolcache/Ruby/3.3.5/x64/bin/bundle config --local deployment true
+Cache key: setup-ruby-bundler-cache-v6-ubuntu-22.04-x64-ruby-3.3.5-wd-/workspace/redacted/api-with--without--only--Gemfile.lock-7486641e6325f2bf8e24e908dba169da4ab28249902cd0eaa371b29dc1a25caf
+Cache Size: ~58 MB (60884954 B)
+[command]/usr/bin/tar -xf /tmp/5b998dcd-0b7f-40d0-8255-94849d313efc/cache.tzst -P -C /workspace/redacted --use-compress-program unzstd
+Cache restored successfully
+Found cache for key: setup-ruby-bundler-cache-v6-ubuntu-22.04-x64-ruby-3.3.5-wd-/workspace/redacted/api-with--without--only--gemfile.lock-7486641e6325f2bf8e24e908dba169da4ab28249902cd0eaa371b29dc1a25caf
+[command]/opt/hostedtoolcache/Ruby/3.3.5/x64/bin/bundle install --jobs 4
+Don't run Bundler as root. Installing your bundle as root will break this
+application for all non-root users on this machine.
+Bundle complete! 45 Gemfile dependencies, 154 gems now installed.
+Bundled gems are installed into `./vendor/bundle`
+1 installed gem you directly depend on is looking for funding.
+  Run `bundle fund` for details
+[command]/opt/hostedtoolcache/Ruby/3.3.5/x64/bin/bundle clean
+Saving cache
+[command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /workspace/redacted --files-from manifest.txt --use-compress-program zstdmt
+Cache Size: ~58 MB (60885070 B)
+Cache saved successfully
+Took   7.25 seconds
+                <rdf:Alt>
+                  <rdf:li xml:lang='x-default'>Beaconchain</rdf:li>
+                  <rdf:li xml:lang='en-US'>Beaconchain</rdf:li>
+                </rdf:Alt>
+            </dc:title>
+        </rdf:Description>
+    </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end='r'?>
