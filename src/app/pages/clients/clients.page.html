@@ -75,6 +75,19 @@
 						>Nethermind</ion-toggle
 					>
 				</ion-item>
+				<ion-item lines="none">
+					<ion-icon class="opacity-icon" slot="start" name="cube-outline"></ion-icon>
+					<ion-toggle
+						checked
+						id="clientToggle"
+						[ngModel]="notificationBase.clientUpdatesTogglesMap.get('RETH')"
+						(ngModelChange)="notificationBase.setClientToggleState('RETH', $event)"
+						(ionChange)="notificationBase.clientUpdateOnToggle('RETH')"
+						labelPlacement="start"
+						justify="space-between"
+						>Reth</ion-toggle
+					>
+				</ion-item>
 			</ion-list>
 		</span>
 		<span *ngSwitchCase="'eth2Clients'">

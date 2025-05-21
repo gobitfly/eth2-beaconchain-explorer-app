@@ -94,6 +94,13 @@ export const Clients: ClientInfo[] = [
 		repo: 'NethermindEth/nethermind',
 		storageKey: 'client_updates_nethermind',
 	},
+
+	{
+		key: 'RETH',
+		name: 'Reth',
+		repo: 'paradigmxyz/reth',
+		storageKey: 'client_updates_reth',
+	},
 	// Various
 	{
 		key: 'ROCKETPOOL',
