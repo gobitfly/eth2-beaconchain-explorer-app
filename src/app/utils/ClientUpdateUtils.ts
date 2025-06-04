@@ -105,7 +105,7 @@ export const Clients: ClientInfo[] = [
 	{
 		key: 'ROCKETPOOL',
 		name: 'Rocketpool',
-		repo: 'rocket-pool/smartnode-install',
+		repo: 'rocket-pool/smartnode',
 		storageKey: 'smart_node_updates',
 	},
 	{
