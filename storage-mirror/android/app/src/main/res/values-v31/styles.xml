@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget" parent="@android:style/Theme.DeviceDefault.DayNight">
+        <item name="widgetBackground">?android:attr/colorAccent</item>
+        <item name="widgetBackground2">?android:attr/colorPrimary</item>
+        <item name="android:textColor">?android:attr/colorAccent</item>
+        <item name="descriptionTextColor">?android:attr/textColorSecondary</item>
+        <item name="statusColor">?android:attr/colorPrimary</item>
+        <item name="switchColor">?android:attr/colorAccent</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.Dark" parent="@android:style/Theme.DeviceDefault.DayNight">
+        <item name="widgetBackground">?android:attr/colorAccent</item>
+        <item name="widgetBackground2">?android:attr/colorPrimary</item>
+        <item name="android:textColor">?android:attr/colorAccent</item>
+        <item name="descriptionTextColor">?android:attr/textColorSecondary</item>
+        <item name="switchColor">?android:attr/colorAccent</item>
+        <item name="statusColor">?android:attr/colorPrimary</item>
+    </style>
+
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splashscreenbg</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_round</item>
+    </style>
+
+</resources>

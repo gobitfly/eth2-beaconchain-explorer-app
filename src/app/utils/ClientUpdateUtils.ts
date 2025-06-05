@@ -1,5 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
+ *  // Copyright (C) 2020 - 2021 bitfly explorer GmbH
  *  // Manuel Caspari (manuel@bitfly.at)
  *  //
  *  // This file is part of Beaconchain Dashboard.
@@ -105,7 +105,7 @@ export const Clients: ClientInfo[] = [
 	{
 		key: 'ROCKETPOOL',
 		name: 'Rocketpool',
-		repo: 'rocket-pool/smartnode-install',
+		repo: 'rocket-pool/smartnode',
 		storageKey: 'smart_node_updates',
 	},
 	{

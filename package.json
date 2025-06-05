@@ -1,7 +1,7 @@
 {
   "name": "beaconchain-dashboard",
   "version": "2.0.0",
-  "author": "Bitfly GmbH",
+  "author": "bitfly explorer GmbH",
   "homepage": "https://beaconcha.in",
   "scripts": {
     "test": "ng test",
@@ -57,6 +57,7 @@
     "ng2-tooltip-directive-major-angular-updates": "^2.11.0",
     "ngx-timeago": "^3.0.0",
     "rxjs": "~7.8.1",
+    "storage-mirror": "file:storage-mirror",
     "tslib": "^2.6.2",
     "zone.js": "~0.13.0"
   },
