@@ -20,14 +20,12 @@
 
 import { StorageService } from '../services/storage.service'
 import { Injectable } from '@angular/core'
-import { NavigationBarPlugin } from 'capacitor-navigationbarnx'
-import { Capacitor, Plugins } from '@capacitor/core'
+import { Capacitor } from '@capacitor/core'
 import { Platform } from '@ionic/angular'
 import * as Snowflakes from 'magic-snowflakes'
 import confetti from 'canvas-confetti'
-
+import { NavigationBar } from '@capgo/capacitor-navigation-bar'
 import { StatusBar, Style } from '@capacitor/status-bar'
-const NavigationBar = Plugins.NavigationBar as NavigationBarPlugin
 
 enum Theme {
 	DARK,
@@ -193,22 +191,26 @@ export default class ThemeUtils {
 	 * @returns
 	 */
 	private async changeNavigationBarColor(isDarkThemed) {
-		if (!Capacitor.isPluginAvailable('StatusBar')) return
 		try {
 			const themeColor = await this.getThemeColor()
 			if (themeColor == 'ethpool') {
-				if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#24201f' })
-				else NavigationBar.setBackgroundColor({ color: '#e1d8d8' })
+				if (isDarkThemed) this.setNavigationBarColor({ color: '#24201f', darkButtons: false })
+				else this.setNavigationBarColor({ color: '#e1d8d8', darkButtons: true })
 			} else if (themeColor == 'rocketpool') {
-				if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#1a1a1a' })
-				else NavigationBar.setBackgroundColor({ color: '#f76f75' })
+				if (isDarkThemed) this.setNavigationBarColor({ color: '#1a1a1a', darkButtons: false })
+				else this.setNavigationBarColor({ color: '#f76f75', darkButtons: true })
 			} else {
-				if (isDarkThemed) NavigationBar.setBackgroundColor({ color: '#000000' })
-				else NavigationBar.setBackgroundColor({ color: '#f7f7f7' })
+				if (isDarkThemed) this.setNavigationBarColor({ color: '#000000', darkButtons: false })
+				else this.setNavigationBarColor({ color: '#f7f7f7', darkButtons: true })
 			}
 		} catch (e) {
 			console.warn('error setting navigation bar color', e)
 		}
+	}
+
+	private async setNavigationBarColor(options: { color: string; darkButtons?: boolean }) {
+		await NavigationBar.setNavigationBarColor({ color: options.color, darkButtons: options.darkButtons })
+		//await EdgeToEdge.setBackgroundColor({ color: options.color });
 	}
 
 	private async changeStatusBarColor(color: string, isDarkThemed) {

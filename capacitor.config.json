@@ -14,7 +14,8 @@
 		}
 	},
 	"android": {
-		"flavor": "prod"
+		"flavor": "prod",
+		"adjustMarginsForEdgeToEdge": "disabled"
 	},
 	"server": {
 		"androidScheme": "http"
