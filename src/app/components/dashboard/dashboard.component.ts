@@ -888,7 +888,8 @@ export class DashboardComponent implements OnInit {
 				return
 			} else {
 				const title = 'New Web Dashboard'
-				const message = 'Our web dashboard has been updated! To view your complete dashboard online, please log in on web and create a new dashboard. <br/><br/>For your convenience, all your validators have been copied to your clipboard so you can easily paste them into the new dashboard.'
+				const message =
+					'Our web dashboard has been updated! To view your complete dashboard online, please log in on web and create a new dashboard. <br/><br/>For your convenience, all your validators have been copied to your clipboard so you can easily paste them into the new dashboard.'
 				const alert = await this.alertController.create({
 					cssClass: 'my-custom-class',
 					header: title,
@@ -903,7 +904,7 @@ export class DashboardComponent implements OnInit {
 							},
 						},
 						{
-							text: "OK",
+							text: 'OK',
 							handler: openBrowserWithClipboard,
 						},
 					],
@@ -911,25 +912,25 @@ export class DashboardComponent implements OnInit {
 
 				await alert.present()
 				return
-			} 
+			}
 		}
-		
+
 		Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
 	}
 
 	copyValidatorsToClipboard() {
 		Clipboard.write({ string: this.data.lazyChartValidators })
-		.then(() => {
-			Toast.show({
-				text: 'Copied validators to clipboard',
+			.then(() => {
+				Toast.show({
+					text: 'Copied validators to clipboard',
+				})
 			})
-		})
-		.catch((err) => {
-			Toast.show({
-				text: 'Failed to copy to clipboard, please copy manually!',
+			.catch((err) => {
+				Toast.show({
+					text: 'Failed to copy to clipboard, please copy manually!',
+				})
+				console.error(err)
 			})
-			console.error(err)
-		})
 	}
 
 	getBrowserURL(): string {
