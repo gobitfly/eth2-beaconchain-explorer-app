@@ -7,6 +7,7 @@
     "test": "ng test",
     "serve": "ionic serve --live-reload --no-open --configuration=development",
     "build-android-for-release": "ionic cap build android --prod --release --source-map=true",
+    "open": "ionic cap open android",
     "build-ios-for-release": "ionic cap build ios --prod --release --source-map=true",
     "prettier-format": "prettier --config .prettierrc.yml 'src/**/*.{ts,html,scss}' --write",
     "prettier-check": "prettier -c --config .prettierrc.yml 'src/**/*.{ts,html,scss}'",

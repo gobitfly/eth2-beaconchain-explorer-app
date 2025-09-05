@@ -32,12 +32,15 @@ import { highChartOptions } from 'src/app/utils/HighchartOptions'
 import { StorageService } from 'src/app/services/storage.service'
 import confetti from 'canvas-confetti'
 import { Browser } from '@capacitor/browser'
-import { ModalController, Platform } from '@ionic/angular'
+import { AlertController, ModalController, Platform } from '@ionic/angular'
 import { SubscribePage } from 'src/app/pages/subscribe/subscribe.page'
 import { MerchantUtils } from 'src/app/utils/MerchantUtils'
 import { ValidatorUtils } from 'src/app/utils/ValidatorUtils'
 import FirebaseUtils from 'src/app/utils/FirebaseUtils'
 import { trigger, style, animate, transition } from '@angular/animations'
+import { Clipboard } from '@capacitor/clipboard'
+import { Toast } from '@capacitor/toast'
+
 @Component({
 	selector: 'app-validator-dashboard',
 	templateUrl: './dashboard.component.html',
@@ -113,7 +116,8 @@ export class DashboardComponent implements OnInit {
 		private merchant: MerchantUtils,
 		public validatorUtils: ValidatorUtils,
 		private firebaseUtils: FirebaseUtils,
-		private platform: Platform
+		private platform: Platform,
+		private alertController: AlertController
 	) {
 		this.randomChartId = getRandomInt(Number.MAX_SAFE_INTEGER)
 		this.updateMergeListDismissed()
@@ -870,14 +874,74 @@ export class DashboardComponent implements OnInit {
 	}
 
 	async openBrowser() {
-		await Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
+		const storageKeyDoNotShow = 'v2_dont_show_new_dashboard_msg'
+		const dontShowAgain = await this.storage.getBooleanSetting(storageKeyDoNotShow, false)
+
+		const openBrowserWithClipboard = () => {
+			this.copyValidatorsToClipboard()
+			Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
+		}
+
+		if (this.data.lazyChartValidators.length > 20) {
+			if (dontShowAgain) {
+				openBrowserWithClipboard()
+				return
+			} else {
+				const title = 'New Web Dashboard'
+				const message =
+					'Our web dashboard has been updated! To view your complete dashboard online, please log in on web and create a new dashboard. <br/><br/>For your convenience, all your validators have been copied to your clipboard so you can easily paste them into the new dashboard.'
+				const alert = await this.alertController.create({
+					cssClass: 'my-custom-class',
+					header: title,
+					message: message,
+					buttons: [
+						{
+							text: 'Dont show again',
+							handler: () => {
+								this.storage.setBooleanSetting(storageKeyDoNotShow, true)
+								openBrowserWithClipboard()
+								return
+							},
+						},
+						{
+							text: 'OK',
+							handler: openBrowserWithClipboard,
+						},
+					],
+				})
+
+				await alert.present()
+				return
+			}
+		}
+
+		Browser.open({ url: this.getBrowserURL(), toolbarColor: '#2f2e42' })
+	}
+
+	copyValidatorsToClipboard() {
+		Clipboard.write({ string: this.data.lazyChartValidators })
+			.then(() => {
+				Toast.show({
+					text: 'Copied validators to clipboard',
+				})
+			})
+			.catch((err) => {
+				Toast.show({
+					text: 'Failed to copy to clipboard, please copy manually!',
+				})
+				console.error(err)
+			})
 	}
 
 	getBrowserURL(): string {
 		if (this.data.foreignValidator) {
 			return this.api.getBaseUrl() + '/validator/' + this.data.foreignValidatorItem.pubkey
 		} else {
-			return this.api.getBaseUrl() + '/dashboard?validators=' + this.data.lazyChartValidators
+			const base = this.api.getBaseUrl() + '/dashboard'
+			if (this.data.lazyChartValidators.length <= 20) {
+				return base + '?validators=' + this.data.lazyChartValidators
+			}
+			return base
 		}
 	}
 }
