@@ -209,6 +209,9 @@ export default class ThemeUtils {
 	}
 
 	private async setNavigationBarColor(options: { color: string; darkButtons?: boolean }) {
+		if (!this.platform.is('android')) {
+			return
+		}
 		await NavigationBar.setNavigationBarColor({ color: options.color, darkButtons: options.darkButtons })
 		//await EdgeToEdge.setBackgroundColor({ color: options.color });
 	}
