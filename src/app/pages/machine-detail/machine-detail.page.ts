@@ -228,9 +228,6 @@ export class MachineDetailPage extends MachineController implements OnInit {
 			this.diskUsageLabelWrites =
 				'Writes: ' + Math.round(this.getAvgFrom(this.data.system, (array) => array.disk_node_writes_total / this.magicGapNumber, true)) + ' iops'
 
-			const eth1Connected = this.getLastFrom(this.data.node, (array) => array.sync_eth1_connected)
-			this.syncLabelEth1Connected = eth1Connected ? 'Exec Connected' : 'Exec Offline'
-
 			const fullySynced = this.getLastFrom(this.data.node, (array) => array.sync_eth2_synced)
 			this.syncLabelState = fullySynced ? 'Synced' : 'Syncing...'
 
