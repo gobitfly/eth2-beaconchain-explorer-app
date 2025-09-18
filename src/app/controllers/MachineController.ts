@@ -210,22 +210,7 @@ export default class MachineController {
 
 		if (current && current.node) {
 			chartData.push({
-				name: 'Exec Connected',
-				color: '#3335FF',
-				data: this.timeAxisChanges(
-					current.node,
-					(value) => {
-						return value.sync_eth1_connected ? 1.2 : 0
-					},
-					false
-				),
-				pointWidth: 25,
-			})
-		}
-
-		if (current && current.node) {
-			chartData.push({
-				name: 'Cons Synced',
+				name: 'Synced',
 				color: '#3FF5ec',
 				data: this.timeAxisChanges(
 					current.node,
@@ -323,12 +308,9 @@ export default class MachineController {
 
 	protected getSyncAttention(data: ProcessedStats): string {
 		const synced = this.getLastFrom(data.node, (array) => array.sync_eth2_synced)
-		const eth1Connected = this.getLastFrom(data.node, (array) => array.sync_eth1_connected)
 
 		if (!data.node) {
 			return "No beaconnode data found. If you wish to track this data, make sure to configure metric tracking on your beaconnode machine too. <a target='_blank' href='https://kb.beaconcha.in/mobile-app-less-than-greater-than-beacon-node'>Learn more here</a>."
-		} else if (!eth1Connected) {
-			return 'No execution client connection, make sure you have configured an execution endpoint and it is currently active and synced.'
 		} else if (!synced) {
 			return 'Your beaconnode is currently syncing. It might take some time to get fully synced.'
 		} else if (!data.validator) {
