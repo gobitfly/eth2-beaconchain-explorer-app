@@ -8,8 +8,8 @@ android {
         namespace "in.beaconcha.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 123
-        versionName "4.5.22"
+        versionCode 125
+        versionName "4.5.24"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
