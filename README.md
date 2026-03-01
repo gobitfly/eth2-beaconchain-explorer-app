@@ -112,7 +112,7 @@ Adapt the --host param to match your macs IP.
 * Use components when we need it for multiple pages.
 * Use pipes for currency conversion or interpreting a value
 * Keep in mind that the app can be used in light and dark theme, use css vars when styling. Global theme attributes can be found in src/app/theme/variables.scss and src/app/global.scss.
-
+[![Run spec tests and linter](https://github.com/ethereum/consensus-specs/actions/workflows/run-tests.yml/badge.svg?branch=dev)](https://github.com/ethereum/consensus-specs/actions/workflows/run-tests.yml)
 ## License
 
 This project is licensed under GPLv3. [LICENSE](LICENSE)
