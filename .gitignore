@@ -13,6 +13,8 @@ Thumbs.db
 UserInterfaceState.xcuserstate
 $RECYCLE.BIN/
 .angular
+.env
+bundle*.zip
 
 *.log
 log.txt
@@ -30,6 +32,7 @@ npm-debug.log*
 /platforms
 /plugins
 /www
+/www-sourcemap
 /android/app/src/prod/google-services.json
 /android/app/src/beta/google-services.json
 /ios/App/GoogleService-Info.plist
@@ -37,3 +40,7 @@ npm-debug.log*
 /android/.idea
 android/.idea/jarRepositories.xml
 android/.idea/misc.xml
+/src/environments/environment.prod.ts
+ios/GoogleService-Info.plist
+/storage-mirror
+/tmp
