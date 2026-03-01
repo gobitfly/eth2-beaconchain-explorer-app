@@ -1,6 +1,5 @@
 ![[beaconchain Dashboard](https://beaconcha.in/mobile)](.github/banner.png)  
 [![Build](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml/badge.svg)](https://github.com/gobitfly/eth2-beaconchain-explorer-app/actions/workflows/build.yaml)  
-
 # Beaconchain Dashboard App
 
 Beaconchain Dashboard is an open source ethereum and gnosis validator performance tracker app for Android and iOS. It utilizes the beaconcha.in API. 
@@ -108,11 +107,18 @@ Adapt the --host param to match your macs IP.
 `npm run-script build-ios-for-production`
 
 ### Best Practices
+gobitfly-eth2-beaconchain-explorer © 2 by Mahdi amolimoghaddam is licensed under CC BY 4.0
 
+
+
+<p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><a property="dct:title" rel="cc:attributionURL" href="https://pin.it/5HKqakCLp">gobitfly-eth2-beaconchain-explorer</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://github.com/gobitfly/eth2-beaconchain-explorer-app">Mahdi amolimoghaddam</a> is licensed under <a href="https://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Creative Commons Attribution 4.0 International<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""></a></p>
+
+
+
+This work © 2 by M is licensed under Creative Commons Attribution 4.0 International. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/
 * Use components when we need it for multiple pages.
 * Use pipes for currency conversion or interpreting a value
 * Keep in mind that the app can be used in light and dark theme, use css vars when styling. Global theme attributes can be found in src/app/theme/variables.scss and src/app/global.scss.
-
+[![Run spec tests and linter](https://github.com/ethereum/consensus-specs/actions/workflows/run-tests.yml/badge.svg?branch=dev)](https://github.com/ethereum/consensus-specs/actions/workflows/run-tests.yml)
 ## License
-
-This project is licensed under GPLv3. [LICENSE](LICENSE)
+eth2-beaconchain-explorer © 2 by Mahdi Amolimoghaddam is licensed under Creative Commons Attribution-NoDerivatives 4.0 International 
