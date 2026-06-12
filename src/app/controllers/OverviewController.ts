@@ -1,5 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
+ *  // Copyright (C) 2020 - 2021 bitfly explorer GmbH
  *  // Manuel Caspari (manuel@bitfly.at)
  *  //
  *  // This file is part of Beaconchain Dashboard.
@@ -123,6 +123,7 @@ export type Description = {
 	extendedDescriptionPre: string
 }
 
+// @deprecated DO NOT USE ANY MORE AFTER PECTRA
 const VALIDATOR_32ETH = new BigNumber(32000000000)
 
 export default class OverviewController {
@@ -155,12 +156,14 @@ export default class OverviewController {
 		const effectiveBalance = sumBigInt(validators, (cur) => cur.data.effectivebalance)
 		const validatorDepositActive = sumBigInt(validators, (cur) => {
 			if (cur.data.activationepoch <= currentEpoch.epoch) {
-				if (!cur.rocketpool || !cur.rocketpool.node_address) return VALIDATOR_32ETH.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
+				if (!cur.rocketpool || !cur.rocketpool.node_address)
+					return new BigNumber(cur.data.effectivebalance.toString()).multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
 
 				let nodeDeposit
 				if (cur.rocketpool.node_deposit_balance) {
 					nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
 				} else {
+					// should never happen
 					nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
 				}
 				return nodeDeposit.multipliedBy(new BigNumber(cur.share == null ? 1 : cur.share))
@@ -252,7 +255,7 @@ export default class OverviewController {
 
 		let foreignWCAre0x01 = false
 		if (foreignValidator) {
-			foreignWCAre0x01 = validators[0].data.withdrawalcredentials.startsWith('0x01')
+			foreignWCAre0x01 = !validators[0].data.withdrawalcredentials.startsWith('0x00')
 		}
 
 		return {
@@ -442,15 +445,21 @@ export default class OverviewController {
 			}
 
 			let nodeDeposit
+			let totalDeposit
 			if (cur.rocketpool.node_deposit_balance) {
 				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+				totalDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString())
+					.plus(new BigNumber(cur.rocketpool.user_deposit_balance.toString()))
+					.dividedBy(new BigNumber(1e9))
 			} else {
+				// should never happen
 				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
+				totalDeposit = VALIDATOR_32ETH
 			}
 
-			const rewards = new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
+			const rewards = new BigNumber(cur.data.balance).minus(totalDeposit) //new BigNumber(fieldVal.toString()).minus(VALIDATOR_32ETH)
 
-			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
+			const nodeShare = nodeDeposit.dividedBy(totalDeposit).toNumber()
 			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
 			const rewardNodeFromPool = new BigNumber(rewards)
 				.multipliedBy(new BigNumber(1 - nodeShare))
@@ -484,15 +493,21 @@ export default class OverviewController {
 			}
 
 			let nodeDeposit
+			let totalDeposit
 			if (cur.rocketpool.node_deposit_balance) {
 				nodeDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString()).dividedBy(new BigNumber(1e9))
+				totalDeposit = new BigNumber(cur.rocketpool.node_deposit_balance.toString())
+					.plus(new BigNumber(cur.rocketpool.user_deposit_balance.toString()))
+					.dividedBy(new BigNumber(1e9))
 			} else {
+				// should never happen
 				nodeDeposit = VALIDATOR_32ETH.dividedBy(new BigNumber(2))
+				totalDeposit = VALIDATOR_32ETH
 			}
 
 			const rewards = new BigNumber(fieldResolved.toString())
 
-			const nodeShare = nodeDeposit.dividedBy(VALIDATOR_32ETH).toNumber()
+			const nodeShare = nodeDeposit.dividedBy(totalDeposit).toNumber()
 
 			const rewardNode = new BigNumber(rewards).multipliedBy(new BigNumber(nodeShare))
 			const rewardNodeFromPool = new BigNumber(rewards)
@@ -908,19 +923,17 @@ export default class OverviewController {
 	private calculateSyncCommitteeStats(stats: SyncCommitteesStatisticsResponse, network: ApiNetwork): SyncCommitteesStatistics {
 		if (stats) {
 			// if no slots where expected yet, don't show any statistic as either no validator is subscribed or they have not been active in the selected timeframe
-			if (stats.expectedSlots > 0) {
+			if (stats.missedSlots > 0 || stats.participatedSlots > 0) {
 				const slotsTotal = stats.participatedSlots + stats.missedSlots
 				const slotsPerSyncPeriod = network.slotPerEpoch * network.epochsPerSyncPeriod
 				const r: SyncCommitteesStatistics = {
 					committeesParticipated: Math.ceil(slotsTotal / network.slotPerEpoch / network.epochsPerSyncPeriod),
-					committeesExpected: Math.round((stats.expectedSlots * 100) / network.slotPerEpoch / network.epochsPerSyncPeriod) / 100,
 					slotsPerSyncCommittee: slotsPerSyncPeriod,
 					slotsLeftInSyncCommittee: slotsPerSyncPeriod - stats.scheduledSlots,
 					slotsParticipated: stats.participatedSlots,
 					slotsMissed: stats.missedSlots,
 					slotsScheduled: stats.scheduledSlots,
 					efficiency: 0,
-					luck: (slotsTotal * 100) / stats.expectedSlots,
 				}
 				if (slotsTotal > 0) {
 					r.efficiency = Math.round(((stats.participatedSlots * 100) / slotsTotal) * 100) / 100

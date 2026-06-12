@@ -12,7 +12,7 @@ import Capacitor
 public class StorageMirror: CAPPlugin {
     
     let defaults = UserDefaults.standard
-    let shared = UserDefaults(suiteName: "group.in.beaconcha.mobile")
+    let shared = UserDefaults(suiteName: "group.in.beaconcha.mobile2")
     
     @objc func reflect(_ call: CAPPluginCall) {
         let keysToReflect = call.getArray("keys", String.self) ?? []

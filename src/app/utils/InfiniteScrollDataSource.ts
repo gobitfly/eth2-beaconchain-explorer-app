@@ -1,5 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
+ *  // Copyright (C) 2020 - 2021 bitfly explorer GmbH
  *  //
  *  // This file is part of Beaconchain Dashboard.
  *  //

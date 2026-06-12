@@ -1,5 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
+ *  // Copyright (C) 2020 - 2021 bitfly explorer GmbH
  *  // Manuel Caspari (manuel@bitfly.at)
  *  //
  *  // This file is part of Beaconchain Dashboard.
@@ -194,14 +194,12 @@ export interface SyncCommitteeResponse {
 
 export interface SyncCommitteesStatistics {
 	committeesParticipated: number
-	committeesExpected: number
 	slotsPerSyncCommittee: number
 	slotsLeftInSyncCommittee: number
 	slotsParticipated: number
 	slotsMissed: number
 	slotsScheduled: number
 	efficiency: number
-	luck: number
 }
 
 export interface SyncCommitteesStatisticsResponse {

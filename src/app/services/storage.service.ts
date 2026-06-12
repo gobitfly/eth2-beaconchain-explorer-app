@@ -1,5 +1,5 @@
 /*
- *  // Copyright (C) 2020 - 2021 Bitfly GmbH
+ *  // Copyright (C) 2020 - 2021 bitfly explorer GmbH
  *  // Manuel Caspari (manuel@bitfly.at)
  *  //
  *  // This file is part of Beaconchain Dashboard.
@@ -19,7 +19,6 @@
  */
 
 import { Injectable, isDevMode } from '@angular/core'
-import { Plugins } from '@capacitor/core'
 import * as StorageTypes from '../models/StorageTypes'
 import { MAP, findConfigForKey } from '../utils/NetworkData'
 import { CacheModule } from '../utils/CacheModule'
@@ -28,7 +27,7 @@ import { Platform } from '@ionic/angular'
 
 import { Preferences } from '@capacitor/preferences'
 import { LogviewPage } from '../pages/logview/logview.page'
-const { StorageMirror } = Plugins
+import { StorageMirror } from 'storage-mirror'
 
 const AUTH_USER = 'auth_user'
 const PREFERENCES = 'network_preferences'
